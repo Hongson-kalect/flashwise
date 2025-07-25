@@ -4,9 +4,13 @@
     "strict": true,
     "paths": {
       "@/*": ["./*"]
-    }
+    },
+    "jsx": "react-jsx",
+    "resolveJsonModule": true
   },
   "include": [
+    "**/*.js",
+    "**/*.jsx",
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
