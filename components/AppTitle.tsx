@@ -1,9 +1,9 @@
-import { StyleProp, ViewStyle } from "react-native";
+import { StyleProp, TextStyle } from "react-native";
 import AppText from "./AppText";
 
 type Props = {
   title: string;
-  style?: StyleProp<ViewStyle>;
+  style?: StyleProp<TextStyle>;
 };
 const AppTitle = ({ title, style }: Props) => {
   return (
@@ -13,8 +13,8 @@ const AppTitle = ({ title, style }: Props) => {
         {
           fontSize: 24,
           fontWeight: "bold",
+          lineHeight: 24 * 1.4,
           // textAlign: "center",
-          marginVertical: 20,
         },
         style,
       ]}

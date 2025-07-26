@@ -1,6 +1,7 @@
 import { useTheme } from "@/providers/Theme";
 import React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
+import AppIcon from "./AppIcon";
 import AppText from "./AppText";
 
 type Props = {
@@ -28,6 +29,7 @@ const AppCheckbox = ({
 
   return (
     <TouchableOpacity
+      hitSlop={10}
       onPress={onChange}
       activeOpacity={0.8}
       disabled={disabled}
@@ -48,7 +50,9 @@ const AppCheckbox = ({
           },
         ]}
       >
-        {checked && <View style={styles.tick} />}
+        {checked && (
+          <AppIcon name="check" branch="antd" size={16} color="#fff" />
+        )}
       </View>
       {customLabel || label ? (
         <AppText style={styles.label} color="text">

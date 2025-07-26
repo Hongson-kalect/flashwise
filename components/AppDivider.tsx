@@ -18,7 +18,7 @@ export const AppDivider = ({ height, width, type, style }: Props) => {
           height: height || 0.5,
           backgroundColor: backgroundColor,
           width: width || "100%",
-          marginVertical: 10,
+          // marginVertical: 10,
         },
         style,
       ]}
