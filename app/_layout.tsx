@@ -22,8 +22,12 @@ export default function RootLayout() {
     <ThemeProvider>
       <LanguageProvider>
         <AppWrapper>
-          <Stack>
-            <Stack.Screen name="screens" options={{ headerShown: false }} />
+          <Stack
+            screenOptions={{ headerShown: false }}
+            // initialRouteName="screens/Card/Create/screen"
+          >
+            <Stack.Screen name="tabs" />
+            <Stack.Screen name="screens/Card/Create/screen" />
             <Stack.Screen name="+not-found" />
           </Stack>
         </AppWrapper>

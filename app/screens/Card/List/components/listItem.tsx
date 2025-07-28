@@ -6,7 +6,7 @@ const CardListItem = () => {
   return (
     <TouchableOpacity className="flex-row h-16 items-center gap-2">
       <View className="w-10 text-center">
-        <AppCheckbox onChange={() => {}} checked={true} />
+        <AppCheckbox onChange={() => {}} checked={false} />
       </View>
       <AppText size={"sm"} className="flex-1 text-center">
         Từ

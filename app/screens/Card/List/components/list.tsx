@@ -9,7 +9,11 @@ const CardList = () => {
   const { theme } = useTheme();
   return (
     <View
-      style={{ backgroundColor: theme.secondary, elevation: 5 }}
+      style={{
+        backgroundColor: theme.secondary,
+        elevation: 4,
+        shadowColor: theme.secondary,
+      }}
       className="rounded-lg"
     >
       <View
@@ -32,16 +36,19 @@ const CardList = () => {
 
         <View className="w-24 items-center">
           {/* Collection nêm */}
-          <AppIcon branch="mui" name={"folder"} size={24} color="orange" />
+          <AppIcon branch="mui" name={"folder"} size={24} color="white" />
         </View>
       </View>
 
-      <View className="bg-white rounded-b-lg overflow-hidden">
-        {Array.from({ length: 10 }).map((_, index) => (
-          <>
-            <CardListItem key={index} />
+      <View
+        style={{ backgroundColor: theme.background }}
+        className="rounded-b-lg overflow-hidden"
+      >
+        {Array.from({ length: 50 }).map((_, index) => (
+          <View key={index}>
+            <CardListItem />
             {index !== 9 && <AppDivider />}
-          </>
+          </View>
         ))}
       </View>
     </View>

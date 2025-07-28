@@ -1,6 +1,6 @@
 export const lightTheme = {
   primary: "#2563eb", // Xanh da trời chủ đạo
-  secondary: "#64B5F6", // Xanh phụ nhẹ hơn
+  secondary: "#FE9900", // Xanh phụ nhẹ hơn
   tertiary: "#BBDEFB", // Xanh phụ nhạt nhất
   title: "#0D47A1", // Màu tiêu đề đậm hơn
 
@@ -16,8 +16,10 @@ export const lightTheme = {
   subText3: "#BDBDBD", // Text phụ cấp 3
 
   background: "#FFFFFF", // Nền sáng
+  background2: "#F5F5F5", // Nền sáng 2
   constract: "#FFFFFF", // Màu cho nút, tương phản với nền đậm
   card: "#F5F5F5", // Màu nền thẻ
+  white: "#FFFFFF",
 };
 
 export const darkTheme = {
@@ -38,8 +40,10 @@ export const darkTheme = {
   subText3: "#9E9E9E", // Text phụ cấp 3
 
   background: "#121212", // Nền tối
+  background2: "#1E1E1E",
   constract: "#1E1E1E", // Màu cho nút, tương phản với nền sáng
   card: "#1E1E1E", // Nền thẻ dạng tối
+  white: "#FFFFFF",
 };
 
 export const headerColor = ["blue", "orange"];

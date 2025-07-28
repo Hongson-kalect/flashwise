@@ -1,14 +1,42 @@
 import { AppContainer } from "@/components/AppContainer";
 import { AppDivider } from "@/components/AppDivider";
-import AppText from "@/components/AppText";
-import AppTitle from "@/components/AppTitle";
-import { ScrollView, StyleSheet, View } from "react-native";
+import AppIcon from "@/components/AppIcon";
+import { useTheme } from "@/providers/Theme";
+import { useRef, useState } from "react";
+import {
+  Animated,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import ListHeader from "./components/header";
 import CardList from "./components/list";
 import ItemListHeader from "./components/listHeader";
 import ListSumary from "./components/sumary";
 
 export default function CardPage() {
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollY = new Animated.Value(0);
+
+  const { theme } = useTheme();
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, layoutMeasurement } = event.nativeEvent;
+    setShowScrollTop(contentOffset.y > layoutMeasurement.height);
+    scrollY.setValue(contentOffset.y);
+  };
+
+  const scrollToTop = () => {
+    if (scrollRef.current) {
+      scrollY.setValue(0);
+      scrollRef.current.scrollTo({ y: 0, animated: true });
+    }
+  };
+
   return (
     <View className="flex-1">
       <View className="px-2">
@@ -18,7 +46,11 @@ export default function CardPage() {
       <View className="mt-1">
         <AppDivider />
       </View>
-      <ScrollView>
+      <ScrollView
+        ref={scrollRef}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         <AppContainer>
           <View className="mt-4">
             <ListSumary />
@@ -31,31 +63,40 @@ export default function CardPage() {
           <View className="mt-4">
             <CardList />
           </View>
-
-          <AppTitle title="Chức năng chính"></AppTitle>
-
-          <View className="px-2">
-            <AppText>Title và add button</AppText>
-
-            <AppText>
-              Panel Hiển thị thống kê đơn giản về số lương từ trong danh sách.
-            </AppText>
-
-            <AppText>
-              Card filter / Bottom sheet với các mục: Layout, modal check
-              collections, created by, sort, lang, target_lang, favorite,
-            </AppText>
-
-            <AppText>Search input name / tags / description</AppText>
-            <AppText>Số lượng card tìm thấy</AppText>
-
-            <AppText>Hiển thị danh sách card</AppText>
-          </View>
         </AppContainer>
         <View className="h-10"></View>
       </ScrollView>
+      {showScrollTop && (
+        <TouchableOpacity
+          style={{
+            position: "absolute",
+            bottom: 20,
+            right: 20,
+            backgroundColor: theme.subText1,
+            padding: 10,
+            borderRadius: 50,
+          }}
+          onPress={scrollToTop}
+        >
+          <AppIcon
+            branch="feather"
+            name="arrow-up"
+            size={24}
+            color={theme.background}
+          />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  scrollTopButton: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    backgroundColor: "#000",
+    padding: 10,
+    borderRadius: 50,
+  },
+});

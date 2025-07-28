@@ -16,27 +16,27 @@ export const buttonSizes = {
   },
   sm: {
     px: 14,
-    py: 5,
+    py: 7,
     fontSize: textSizes.sm,
   },
   md: {
     px: 16,
-    py: 6,
+    py: 10,
     fontSize: textSizes.md,
   },
   lg: {
     px: 18,
-    py: 8,
+    py: 12,
     fontSize: textSizes.lg,
   },
   xl: {
     px: 24,
-    py: 10,
+    py: 14,
     fontSize: textSizes.xl,
   },
   "2xl": {
     px: 28,
-    py: 12,
+    py: 16,
     fontSize: textSizes["2xl"],
   },
 };

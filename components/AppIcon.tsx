@@ -44,7 +44,7 @@ const AppIcon = <B extends IconBranch>({
   const IconComponent = iconBranchMap[branch];
 
   return (
-    <Pressable hitSlop={10} onPress={onPress}>
+    <Pressable hitSlop={10} disabled={!onPress} onPress={onPress}>
       <IconComponent
         name={name}
         size={size}

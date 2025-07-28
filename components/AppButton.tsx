@@ -60,12 +60,7 @@ const AppButton = ({
       style={[
         {
           transform: [{ scale }],
-          shadowColor: "#000",
-          shadowOffset: { width: 1, height: 3 },
-          shadowOpacity: 0.2,
-          elevation: 6,
           width,
-          alignSelf: "flex-start",
         },
         style,
       ]}

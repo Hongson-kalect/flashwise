@@ -3,10 +3,10 @@ import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { Image, ImageSourcePropType, View } from "react-native";
 import { BottomNavigation } from "react-native-paper";
-import CardPage from "./Card/List";
-import CollectionsPage from "./Collection";
-import HomePage from "./Home";
-import ProfilePage from "./Profile";
+import CardPage from "./screens/Card/List";
+import CollectionsPage from "./screens/Collection";
+import HomePage from "./screens/Home";
+import ProfilePage from "./screens/Profile";
 
 export default function Layout() {
   const [activeTab, setActiveTab] = useState(0);

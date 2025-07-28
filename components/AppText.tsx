@@ -21,7 +21,8 @@ type Props = {
     | "link"
     | "subText1"
     | "subText2"
-    | "subText3";
+    | "subText3"
+    | "white";
 
   numberOfLines?: number;
   ellipsizeMode?: "head" | "middle" | "tail" | "clip";

@@ -3,9 +3,11 @@ import AppText from "./AppText";
 
 type Props = {
   title: string;
+  onPress?: () => void;
+  underline?: boolean;
   style?: StyleProp<TextStyle>;
 };
-const AppTitle = ({ title, style }: Props) => {
+const AppTitle = ({ title, style, ...props }: Props) => {
   return (
     <AppText
       color="title"
@@ -14,7 +16,7 @@ const AppTitle = ({ title, style }: Props) => {
           fontSize: 24,
           fontWeight: "bold",
           lineHeight: 24 * 1.4,
-          // textAlign: "center",
+          textDecorationLine: props.underline ? "underline" : "none",
         },
         style,
       ]}
