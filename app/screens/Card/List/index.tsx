@@ -38,7 +38,7 @@ export default function CardPage() {
   };
 
   return (
-    <View className="flex-1">
+    <View style={{ backgroundColor: theme.background }} className="flex-1">
       <View className="px-2">
         <ListHeader />
       </View>

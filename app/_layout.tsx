@@ -5,8 +5,18 @@ import "react-native-reanimated";
 import "./globals.css";
 
 import { AppWrapper } from "@/components/AppWrapper";
+import { ListModal } from "@/components/modals/OptionModal";
 import { LanguageProvider } from "@/providers/Language";
+import { GlobalModal } from "@/providers/Modal";
 import { ThemeProvider } from "@/providers/Theme";
+import { Portal, Provider } from "react-native-paper";
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+import { BottomSheetProvider } from "@/providers/BottomSheet";
+
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [loaded] = useFonts({
@@ -19,20 +29,32 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <AppWrapper>
-          <Stack
-            screenOptions={{ headerShown: false }}
-            // initialRouteName="screens/Card/Create/screen"
-          >
-            <Stack.Screen name="tabs" />
-            <Stack.Screen name="screens/Card/Create/screen" />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </AppWrapper>
-        <StatusBar style="auto" />
-      </LanguageProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <GestureHandlerRootView>
+          <Provider>
+            <LanguageProvider>
+              <BottomSheetProvider>
+                <AppWrapper>
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen name="tabs" />
+                    <Stack.Screen name="screens/Card/Create/screen" />
+                    <Stack.Screen name="+not-found" />
+                  </Stack>
+                </AppWrapper>
+              </BottomSheetProvider>
+
+              {/* <Toast /> */}
+              {/* <AppUsageTracker /> */}
+              <Portal>
+                <ListModal />
+                <GlobalModal />
+              </Portal>
+              <StatusBar style="auto" />
+            </LanguageProvider>
+          </Provider>
+        </GestureHandlerRootView>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
