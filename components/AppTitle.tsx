@@ -1,11 +1,13 @@
-import { StyleProp, ViewStyle } from "react-native";
+import { StyleProp, TextStyle } from "react-native";
 import AppText from "./AppText";
 
 type Props = {
   title: string;
-  style?: StyleProp<ViewStyle>;
+  onPress?: () => void;
+  underline?: boolean;
+  style?: StyleProp<TextStyle>;
 };
-const AppTitle = ({ title, style }: Props) => {
+const AppTitle = ({ title, style, ...props }: Props) => {
   return (
     <AppText
       color="title"
@@ -13,8 +15,8 @@ const AppTitle = ({ title, style }: Props) => {
         {
           fontSize: 24,
           fontWeight: "bold",
-          // textAlign: "center",
-          marginVertical: 20,
+          lineHeight: 24 * 1.4,
+          textDecorationLine: props.underline ? "underline" : "none",
         },
         style,
       ]}

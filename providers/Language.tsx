@@ -11,7 +11,7 @@ import vi from "@/locales/vi.json";
 // Init i18next (only once)
 if (!i18n.isInitialized) {
   i18n.use(initReactI18next).init({
-    compatibilityJSON: "v3", // React Native compatibility
+    compatibilityJSON: "v4", // React Native compatibility
     lng: "en", // default
     fallbackLng: "en",
     resources: {

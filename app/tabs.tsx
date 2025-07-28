@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import { routes } from "@/configs/bottomTab";
+import { useTheme } from "@/providers/Theme";
+import { useState } from "react";
 import { Image, ImageSourcePropType, View } from "react-native";
 import { BottomNavigation } from "react-native-paper";
-import CollectionsPage from "./Collection";
-import HomePage from "./Home";
-import CardPage from "./Card";
-import ProfilePage from "./Profile";
-import { routes } from "@/configs/bottomTab";
+import CardPage from "./screens/Card/List";
+import CollectionsPage from "./screens/Collection";
+import HomePage from "./screens/Home";
+import ProfilePage from "./screens/Profile";
 
 export default function Layout() {
   const [activeTab, setActiveTab] = useState(0);
+  const { theme } = useTheme();
 
   const renderScene = BottomNavigation.SceneMap({
     home: HomePage,
@@ -73,7 +75,12 @@ export default function Layout() {
         inactiveColor="#aaa"
         navigationState={{ index: activeTab, routes }}
         onIndexChange={setActiveTab}
-        renderScene={renderScene}
+        theme={{
+          colors: { primary: theme.primary, background: theme.background },
+        }}
+        renderScene={(props) => (
+          <View style={{ flex: 1 }}>{renderScene(props)}</View>
+        )}
       />
     </>
   );

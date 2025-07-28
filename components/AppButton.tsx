@@ -1,29 +1,41 @@
+import { buttonSizes } from "@/configs/size";
 import { useTheme } from "@/providers/Theme";
-import React, { useRef } from "react";
-import { Animated, Pressable, ViewStyle } from "react-native";
+import React, { useMemo, useRef } from "react";
+import { Animated, Pressable, View, ViewStyle } from "react-native";
+import Reanimated, { FadeIn, FadeOut } from "react-native-reanimated";
+import AppIcon from "./AppIcon";
 import AppText from "./AppText";
 
 type Props = {
-  title: string;
   onPress: () => void;
-  type: "primary" | "secondary" | "success" | "error" | "warning";
+  title?: string;
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  type?: "primary" | "secondary" | "success" | "error" | "warning";
   style?: ViewStyle;
   children?: React.ReactNode;
   height?: number;
   width?: number;
+  disabled?: boolean;
+  isLoading?: boolean;
 };
 
-const AnimatedButton = ({
+const AppButton = ({
   title,
   onPress,
   style,
-  type,
+  size = "md",
+  type = "primary",
   children,
   height,
   width,
+  disabled,
+  isLoading,
 }: Props) => {
   const { theme } = useTheme();
   const scale = useRef(new Animated.Value(1)).current;
+  const { fontSize, px, py } = useMemo(() => {
+    return buttonSizes[size];
+  }, [size]);
 
   const onPressIn = () => {
     Animated.spring(scale, {
@@ -48,13 +60,7 @@ const AnimatedButton = ({
       style={[
         {
           transform: [{ scale }],
-          shadowColor: "#000",
-          shadowOffset: { width: 1, height: 3 },
-          shadowOpacity: 0.2,
-          shadowRadius: 4,
-          elevation: 6,
-
-          backgroundColor: theme[type || "primary"],
+          width,
         },
         style,
       ]}
@@ -63,22 +69,46 @@ const AnimatedButton = ({
         onPress={onPress}
         onPressIn={onPressIn}
         onPressOut={onPressOut}
+        disabled={disabled || isLoading}
         style={{
-          paddingVertical: 12,
-          paddingHorizontal: 20,
-          borderRadius: 8,
+          shadowColor: "#000",
+          shadowOffset: { width: 1, height: 3 },
+          shadowOpacity: 0.2,
+          elevation: 6,
+          paddingVertical: py,
+          paddingHorizontal: px,
+          borderRadius: 12,
+          // flexDirection: "row",
+          // gap: 8,
           alignItems: "center",
           justifyContent: "center",
           minWidth: 64,
-          height: height || 48,
-          width: width || "100%",
-          backgroundColor: theme[type || "primary"],
+          // height: height || 48,
+          backgroundColor: disabled ? theme.disabled : theme[type || "primary"],
         }}
       >
-        {children || <AppText color="constract">{title}</AppText>}
+        {isLoading && (
+          <Reanimated.View
+            entering={FadeIn}
+            exiting={FadeOut}
+            className="absolute top-1.5 left-1.5 animate-spin bg-white items-center justify-center rounded-full h-3 w-3"
+          >
+            <AppIcon branch="feather" name="loader" size={9} color="#888" />
+          </Reanimated.View>
+        )}
+        {/* <Reanimated.View layout={LinearTransition.springify()}> */}
+
+        {children ? (
+          <View className="flex-row items-center gap-2">{children}</View>
+        ) : (
+          <AppText size={size} color="constract">
+            {title}
+          </AppText>
+        )}
+        {/* </Reanimated.View> */}
       </Pressable>
     </Animated.View>
   );
 };
 
-export default AnimatedButton;
+export default AppButton;
