@@ -6,6 +6,7 @@ import { ScrollView, View } from "react-native";
 import CreateHeader from "./components/header";
 import Information from "./components/information";
 import WordInput from "./components/wordInput";
+import WordLink from "./components/wordLink";
 
 const CreateCardScreen = () => {
   const { theme } = useTheme();
@@ -31,10 +32,26 @@ const CreateCardScreen = () => {
             </View>
           </View>
 
+          <View className="mt-4">
+            <Information editable label="Phiên âm" value="Phiên âm" />
+            <Information
+              editable
+              label="Phát âm"
+              value="Chọn file âm thanh (Giới hạn dung lượng và thời gian)"
+            />
+          </View>
+
+          <View className="mt-6 items-center justify-center">
+            <View className="h-40 w-40 border border-dashed border-gray-400 rounded-lg p-4">
+              <AppText color="subText2" size={"xs"}>
+                Chọn hình minh hoạ
+              </AppText>
+            </View>
+          </View>
           <View className="gap-2 mt-6">
             <Information
               editable
-              label="Ví dụ"
+              label="Example"
               value="Em là búp măng non, em lớn lên trong mùa cách mạng"
             />
 
@@ -42,49 +59,49 @@ const CreateCardScreen = () => {
             <Information editable label="Độ khó" value="A1" />
             <Information editable label="Độ phổ biến" value="Rất phổ biến" />
             <Information editable label="Chủ đề" value="..." />
-            <Information
-              editable
-              label="Độ trang trọng"
-              value="Rất trang trọng"
-            />
-            <Information editable label="Phiên âm" value="Rất trang trọng" />
+            <Information editable label="Phong cách" value="Rất trang trọng" />
 
-            <AppText>Mức độ thông dụng</AppText>
-            <AppText>Độ khó (A1, B1,...)</AppText>
-            <AppText>Chủ đề</AppText>
-            <AppText>Tags</AppText>
-            <AppText>Phong cách</AppText>
+            <View>
+              <AppText>Tag:</AppText>
+              <View className="flex-row gap-2 flex-wrap">
+                <View className="bg-gray-200 rounded-lg px-2 py-1">
+                  <AppText size={"xs"} color="subText2">
+                    1
+                  </AppText>
+                </View>
+                <View className="bg-gray-200 rounded-lg px-2 py-1">
+                  <AppText size={"xs"} color="subText2">
+                    1
+                  </AppText>
+                </View>
+                <View className="bg-gray-200 rounded-lg px-2 py-1">
+                  <AppText size={"xs"} color="subText2">
+                    1
+                  </AppText>
+                </View>
+              </View>
+            </View>
           </View>
 
           {/* Form định nghĩa */}
 
-          <View className="h-20"></View>
+          <View className="mt-8">
+            <AppTitle title="Từ liên quan " />
 
-          <AppText>Hình minh hoạ (giới hạn dung lượng)</AppText>
-          <AppText>Nhập định nghĩa</AppText>
-          <AppText>Nhập Ví dụ</AppText>
-          <AppText>
-            Chọn kiểu từ (Động từ, tính từ, danh từ, trạng từ, đại từ, giới từ,
-            liên từ, thán từ, số từ, từ hạn định)
-          </AppText>
-          <AppText>Cách phát âm (chị google có thể đọc được)</AppText>
-          <AppText>
-            File phát âm (giới hạn dung lượng và thời gian) có thể nhiều phong
-            cách
-          </AppText>
-          <AppText>
-            Từ loại chuyển đổi: Biến thể của từ: happy → happiness → happily →
-            unhappiness...
-          </AppText>
-
-          <AppText>Mức độ thông dụng</AppText>
-          <AppText>Độ khó (A1, B1,...)</AppText>
-          <AppText>Chủ đề</AppText>
-          <AppText>Tags</AppText>
-          <AppText>Phong cách</AppText>
+            <View className="mt-4">
+              <WordLink
+                editable
+                label="Biến thể"
+                value={[
+                  { value: "ceck" },
+                  { value: "ceck", link_to: "bruh" },
+                  { value: "ceck", link_to: "broh" },
+                ]}
+              />
+            </View>
+          </View>
 
           {/* Form link */}
-          <Information editable label="Biến thể" value="Rất trang trọng" />
 
           <AppText>Từ liên quan (search- chọn)</AppText>
           <AppText>Từ đồng nghĩa (search- chọn)</AppText>
