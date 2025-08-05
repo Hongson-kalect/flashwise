@@ -1,6 +1,6 @@
 import { textSizes } from "@/configs/size";
 import { useTheme } from "@/providers/Theme";
-import { StyleProp, Text, TextStyle } from "react-native";
+import { LayoutChangeEvent, StyleProp, Text, TextStyle } from "react-native";
 
 type Props = {
   children: React.ReactNode;
@@ -25,6 +25,7 @@ type Props = {
     | "white";
 
   numberOfLines?: number;
+  onLayout?: (event: LayoutChangeEvent) => void;
   ellipsizeMode?: "head" | "middle" | "tail" | "clip";
   textAlign?: "left" | "center" | "right" | "justify";
 };

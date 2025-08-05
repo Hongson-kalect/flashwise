@@ -3,7 +3,7 @@ import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { Image, ImageSourcePropType, View } from "react-native";
 import { BottomNavigation } from "react-native-paper";
-import CardPage from "./screens/Card/List";
+import CardPage from "./screens/Word/List";
 import CollectionsPage from "./screens/Collection";
 import HomePage from "./screens/Home";
 import ProfilePage from "./screens/Profile";
