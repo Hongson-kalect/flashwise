@@ -1,6 +1,7 @@
 import { AppDivider } from "@/components/AppDivider";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
+import { useEffect, useMemo, useState } from "react";
 import {
   ScrollView,
   TouchableOpacity,
@@ -9,17 +10,31 @@ import {
 } from "react-native";
 import ReactNativeModal from "react-native-modal";
 import { RadioButton } from "react-native-paper";
+import Animated from "react-native-reanimated";
 
 type ListModalProps = {
   value: string;
   options: { label: string; value: string | number }[];
   onSubmit: (value: string | number) => void;
   onCancel: () => void;
+  type?: "checkbox" | "radio";
   title?: string;
   show?: boolean;
 };
 
 export const OptionsModal = (props: ListModalProps) => {
+  // Modal sẽ ẩn khi props = null => Dữ liệu bị mất ngay lập tức
+  // Animation out sẽ thực hiện với màn trắng => dùng cái này để cache dữ liệu trước đó
+  const [placeholder, setPlaceholder] = useState(props);
+  useEffect(() => {
+    props.show && setPlaceholder(props);
+  }, [props]);
+
+  const showValue = useMemo(
+    () => (props.show ? props : placeholder),
+    [placeholder, props]
+  );
+
   const { height } = useWindowDimensions();
   const { theme } = useTheme();
   const onSubmit = (val: number | string) => {
@@ -43,7 +58,7 @@ export const OptionsModal = (props: ListModalProps) => {
         <RadioButton
           onPress={submit}
           value={value?.toString()}
-          status={value === props.value ? "checked" : "unchecked"}
+          status={value === showValue.value ? "checked" : "unchecked"}
         />
       </TouchableOpacity>
     );
@@ -52,8 +67,8 @@ export const OptionsModal = (props: ListModalProps) => {
   return (
     <ReactNativeModal
       onBackButtonPress={props.onCancel}
-      // animationOut={props.outAnimation}
-      // animationIn={props.inAnimation}
+      animationIn={"slideInUp"}
+      animationOut={"slideOutDown"}
       isVisible={props.show}
       backdropTransitionOutTiming={1}
       backdropColor={theme.text}
@@ -62,33 +77,32 @@ export const OptionsModal = (props: ListModalProps) => {
       style={{ zIndex: 1000 }}
       avoidKeyboard
     >
-      <View
+      <Animated.View
         className="p-4 rounded-xl"
         style={{
           maxHeight: (height / 4) * 3,
           backgroundColor: theme.background,
         }}
       >
-        <AppText
-          style={{ fontFamily: "PlaypenSans-Semibold" }}
-          className="text-2xl text-center mb-4"
-        >
-          {props.title}
-        </AppText>
+        {showValue.title && (
+          <AppText className="text-2xl mb-4" weight="bold" size={"xl"}>
+            {showValue.title}
+          </AppText>
+        )}
 
         <ScrollView>
-          {props.options.map((option, index) => (
+          {showValue.options.map((option, index) => (
             <View key={option.value || "null value"}>
               <SelectItem
                 key={option.value}
                 label={option.label}
                 value={option.value}
               />
-              {index !== props.options.length - 1 && <AppDivider />}
+              {index !== showValue.options.length - 1 && <AppDivider />}
             </View>
           ))}
         </ScrollView>
-      </View>
+      </Animated.View>
       {/* </TouchableWithoutFeedback> */}
     </ReactNativeModal>
   );

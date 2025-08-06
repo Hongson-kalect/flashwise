@@ -7,32 +7,37 @@ import {
 import React, {
   createContext,
   Dispatch,
+  forwardRef,
   SetStateAction,
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 
+import AppText from "@/components/AppText";
 import { AntDesign } from "@expo/vector-icons";
 import {
   BackHandler,
   Pressable,
   TouchableOpacity,
-  View,
   useWindowDimensions,
+  View,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Divider } from "react-native-paper";
-import AppText from "@/components/AppText";
+
+type SheetSize = "short" | "medium" | "long" | "full";
 
 const BottomSheetContext = createContext<{
-  present: (
-    render: () => React.ReactNode,
-    title: string,
-    onClose?: () => void
-  ) => void;
+  present: (options: {
+    render: () => React.ReactNode;
+    title: string;
+    size?: "short" | "medium" | "long" | "full";
+    onClose?: () => void;
+  }) => void;
   isPresent: boolean;
   close: () => void;
   setOnClose: Dispatch<SetStateAction<(() => void) | null>>;
@@ -49,24 +54,67 @@ export const BottomSheetProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const [activeSheet, setActiveSheet] = useState<
+    "short" | "medium" | "long" | "full" | null
+  >(null);
+
+  const shortSheetRef = useRef<BottomSheetModal>(null);
+  const mediumSheetRef = useRef<BottomSheetModal>(null);
+  const longSheetRef = useRef<BottomSheetModal>(null);
+  const fullSheetRef = useRef<BottomSheetModal>(null);
+
+  const sheetMap = useMemo<{
+    [key in SheetSize]: {
+      ref: React.RefObject<BottomSheetModal | null>;
+      snapPoint: `${number}%`;
+    };
+  }>(() => {
+    return {
+      short: {
+        ref: shortSheetRef,
+        snapPoint: "30%",
+      },
+      medium: {
+        ref: mediumSheetRef,
+        snapPoint: "50%",
+      },
+      long: {
+        ref: longSheetRef,
+        snapPoint: "75%",
+      },
+      full: {
+        ref: fullSheetRef,
+        snapPoint: "90%",
+      },
+    };
+  }, []);
+
   const contentRef = useRef<() => React.ReactNode>(() => null);
   const isOpen = useRef(false);
-  const [version, setVersion] = useState(0);
   const [isPresent, setIsPresent] = useState(false);
   const [title, setTitle] = useState("");
   const [onClose, setOnClose] = useState<(() => void) | null>(null);
 
   const present = useCallback(
-    (render: () => React.ReactNode, title?: string, onClose?: () => void) => {
+    ({
+      render,
+      onClose,
+      size,
+      title,
+    }: {
+      render: () => React.ReactNode;
+      title?: string;
+      size?: "short" | "medium" | "long" | "full";
+      onClose?: () => void;
+    }) => {
       isOpen.current = true;
       setIsPresent(true);
       contentRef.current = render;
-      bottomSheetRef.current?.present();
-      setVersion((v) => v + 1);
+      setActiveSheet(size || "medium");
       setTitle(title || "");
-
       setOnClose(() => onClose || null);
+
+      sheetMap[size || "medium"].ref.current?.present();
     },
     []
   );
@@ -80,12 +128,11 @@ export const BottomSheetProvider = ({
   const close = useCallback(() => {
     isOpen.current = false;
     setIsPresent(false);
-    setVersion((v) => v + 1);
-    bottomSheetRef.current?.dismiss();
-  }, []);
+    sheetMap[activeSheet || "medium"].ref.current?.dismiss();
+  }, [activeSheet]);
 
   const backAction = () => {
-    if (bottomSheetRef.current?.dismiss) {
+    if (sheetMap[activeSheet || "medium"].ref.current?.dismiss) {
       if (isOpen.current) {
         if (onClose) onClose();
         else {
@@ -119,8 +166,8 @@ export const BottomSheetProvider = ({
     <BottomSheetContext.Provider
       value={{ present, close, isPresent, setOnClose }}
     >
+      {children}
       <BottomSheetModalProvider>
-        {children}
         {isOpen.current && (
           <Pressable
             onPress={backAction}
@@ -128,59 +175,92 @@ export const BottomSheetProvider = ({
             className="bg-black absolute top-0 left-0"
           ></Pressable>
         )}
-
-        <BottomSheetModal
-          enableContentPanningGesture={false}
-          ref={bottomSheetRef}
-          snapPoints={["70%"]}
-          enableDynamicSizing={false}
-          onChange={handleSheetChanges}
-          onDismiss={() => (contentRef.current = () => null)}
-        >
-          <BottomSheetView>
-            <TouchableOpacity
-              onPress={backAction}
-              style={{ right: 16, top: 0 }}
-              className=" absolute"
-            >
-              <AntDesign name="closecircle" size={24} color="#aaa" />
-            </TouchableOpacity>
-            {title && (
-              <>
-                <View className="items-center flex-row px-4 mb-2">
-                  <AppText
-                    style={{ fontFamily: "PlaypenSans-Semibold" }}
-                    className="text-xl"
-                  >
-                    {title}
-                  </AppText>
-                  <TouchableOpacity
-                    onPress={backAction}
-                    style={{ right: 16, top: 0 }}
-                    className=" absolute"
-                  >
-                    <AntDesign name="closecircle" size={24} color="#aaa" />
-                  </TouchableOpacity>
-                </View>
-                <Divider />
-              </>
-            )}
-            <View style={{ height: "100%", width: "100%" }}>
-              <ScrollView
-                keyboardShouldPersistTaps="handled"
-                contentContainerStyle={{
-                  padding: 16,
-                  flexGrow: 1,
-                }}
-                showsVerticalScrollIndicator={false}
-              >
-                {contentRef.current?.()}
-                <View style={{ height: 80 }}></View>
-              </ScrollView>
-            </View>
-          </BottomSheetView>
-        </BottomSheetModal>
+        {Object.entries(sheetMap).map(([key, { ref, snapPoint }], index) => (
+          <BottomSheetInstance
+            key={key}
+            ref={ref}
+            content={contentRef.current}
+            title={title}
+            backAction={backAction}
+            onSheetChanges={handleSheetChanges}
+            snappoints={snapPoint}
+          />
+        ))}
       </BottomSheetModalProvider>
     </BottomSheetContext.Provider>
   );
 };
+
+type BottomSheetProps = {
+  snappoints?: number | "auto" | `${number}%`;
+  backAction?: () => void;
+  content: () => React.ReactNode;
+  onSheetChanges?: (index: number) => void;
+  title: string;
+};
+
+const BottomSheetInstance = forwardRef<BottomSheetModal, BottomSheetProps>(
+  (
+    {
+      title,
+      content,
+      onSheetChanges,
+      backAction = () => {},
+      snappoints,
+    }: BottomSheetProps,
+    ref
+  ) => {
+    return (
+      <BottomSheetModal
+        enableContentPanningGesture={false}
+        ref={ref}
+        snapPoints={[snappoints || "70%"]}
+        enableDynamicSizing={false}
+        onChange={onSheetChanges}
+        onDismiss={() => (content = () => null)}
+      >
+        <BottomSheetView>
+          <TouchableOpacity
+            onPress={backAction}
+            style={{ right: 16, top: 0 }}
+            className=" absolute"
+          >
+            <AntDesign name="closecircle" size={24} color="#aaa" />
+          </TouchableOpacity>
+          {title && (
+            <>
+              <View className="items-center flex-row px-4 mb-2">
+                <AppText weight="bold" size={"2xl"}>
+                  {title}
+                </AppText>
+                <TouchableOpacity
+                  onPress={backAction}
+                  style={{ right: 16, top: 0 }}
+                  className=" absolute"
+                >
+                  <AntDesign name="closecircle" size={24} color="#aaa" />
+                </TouchableOpacity>
+              </View>
+              <Divider />
+            </>
+          )}
+          <View style={{ height: "100%", width: "100%" }}>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{
+                padding: 16,
+                flexGrow: 1,
+              }}
+              showsVerticalScrollIndicator={false}
+            >
+              {content?.()}
+              <View style={{ height: 80 }}></View>
+            </ScrollView>
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
+    );
+  }
+);
+
+BottomSheetInstance.displayName = "BottomSheetInstance";

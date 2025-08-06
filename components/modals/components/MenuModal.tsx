@@ -13,12 +13,9 @@ const MenuModal = (modal: Props) => {
 
   return (
     <View>
-      {modal.menuTitle && (
-        <AppText
-          style={{ fontFamily: "PlaypenSans-Semibold" }}
-          className="text-xl mb-4"
-        >
-          {modal.menuTitle}
+      {modal.title && (
+        <AppText className="text-2xl mb-4" weight="bold" size={"xl"}>
+          {modal.title}
         </AppText>
       )}
       <ScrollView>

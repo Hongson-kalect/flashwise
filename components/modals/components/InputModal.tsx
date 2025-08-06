@@ -1,18 +1,23 @@
 import AppText from "@/components/AppText";
-import { BasicModalOptions, PromptModalOptions } from "@/providers/Modal";
+import { BasicModalOptions, InputModalOptions } from "@/providers/Modal";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, TextInput, TouchableOpacity, View } from "react-native";
 
-type Props = PromptModalOptions & BasicModalOptions;
+type Props = InputModalOptions & BasicModalOptions;
 
-const PromptModal = (modal: Props) => {
+const InputModal = (modal: Props) => {
   const { setGlobalModal } = useModalStore();
   const [value, setValue] = useState("");
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
   const { theme } = useTheme();
+
+  const submit = () => {
+    modal.onOk?.(value);
+    setGlobalModal(null);
+  };
 
   useEffect(() => {
     setTimeout(() => textFocus(), 300);
@@ -48,11 +53,10 @@ const PromptModal = (modal: Props) => {
       >
         {modal.textInnerHeader}
         <TextInput
-          style={{ textAlignVertical: "top", height: 90 }}
-          className="text-gray-700 "
+          //   style={{ textAlignVertical: "top", height: 90 }}
+          className="text-gray-700 text-lg"
           ref={textRef}
-          multiline
-          numberOfLines={4}
+          onSubmitEditing={submit}
           value={value}
           onChangeText={setValue}
           placeholder={modal.placeholder}
@@ -86,10 +90,7 @@ const PromptModal = (modal: Props) => {
           style={{
             backgroundColor: theme.primary,
           }}
-          onPress={() => {
-            modal.onOk?.(value);
-            setGlobalModal(null);
-          }}
+          onPress={submit}
         >
           <AppText color="white">{modal.okText || "OK"}</AppText>
         </TouchableOpacity>
@@ -98,4 +99,4 @@ const PromptModal = (modal: Props) => {
   );
 };
 
-export default PromptModal;
+export default InputModal;

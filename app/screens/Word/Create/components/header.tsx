@@ -8,7 +8,7 @@ const CreateHeader = () => {
   return (
     <View className="flex-row justify-between items-center">
       <AppReturnHeader
-        title="Create Card"
+        title="Create Word"
         rightElement={
           <AppButton onPress={() => {}} type="primary">
             <AppIcon name="save" branch="fa6" size={18} color="white" />

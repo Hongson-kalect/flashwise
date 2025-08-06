@@ -11,12 +11,9 @@ const ConfirmModal = (modal: Props) => {
   const { theme } = useTheme();
   return (
     <View>
-      {modal.confirmTitle && (
-        <AppText
-          style={{ fontFamily: "PlaypenSans-Semibold" }}
-          className="text-xl mb-2"
-        >
-          {modal.confirmTitle}
+      {modal.title && (
+        <AppText className="text-2xl mb-2" weight="bold" size={"xl"}>
+          {modal.title}
         </AppText>
       )}
       <AppText className="mb-4">{modal.message}</AppText>

@@ -1,3 +1,4 @@
+import { useTheme } from "@/providers/Theme";
 import {
   ScrollView,
   TouchableOpacity,
@@ -7,13 +8,12 @@ import {
 import ReactNativeModal from "react-native-modal";
 import { Card } from "react-native-paper";
 import Animated, { LinearTransition } from "react-native-reanimated";
-import AppText from "../AppText";
 import { AppDivider } from "../AppDivider";
-import { useTheme } from "@/providers/Theme";
+import AppText from "../AppText";
 
 type Props = {
   show: boolean;
-  type?: "alert" | "confirm" | "prompt" | "custom" | "menu" | "tabs";
+  type?: "input" | "alert" | "confirm" | "prompt" | "custom" | "menu" | "tabs";
   title?: string | React.ReactNode;
   bottom?: React.ReactNode;
   titlePosition?: "center" | "left" | "right";
@@ -34,8 +34,8 @@ export default function ModalWrapper(props: Props) {
     // <Modal visible={props.show}>
     <ReactNativeModal
       onBackButtonPress={props.onCancel}
-      animationOut={props.outAnimation || "zoomOut"}
       animationIn={props.inAnimation || "zoomIn"}
+      animationOut={props.outAnimation || "slideOutDown"}
       isVisible={props.show}
       backdropTransitionOutTiming={1}
       backdropColor="black"
@@ -46,7 +46,9 @@ export default function ModalWrapper(props: Props) {
     >
       <Animated.View
         layout={
-          props.type === "prompt" ? LinearTransition.mass(0.6) : undefined
+          ["prompt", "input"].includes(props?.type)
+            ? LinearTransition.mass(0.6)
+            : undefined
         }
       >
         <Card

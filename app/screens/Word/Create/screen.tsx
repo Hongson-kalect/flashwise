@@ -2,6 +2,7 @@ import AppButton from "@/components/AppButton";
 import { AppDivider } from "@/components/AppDivider";
 import AppTitle from "@/components/AppTitle";
 import { useTheme } from "@/providers/Theme";
+import useModalStore from "@/stores/modalStore";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { LayoutChangeEvent, ScrollView, View } from "react-native";
@@ -11,21 +12,57 @@ import CreateHeader from "./components/header";
 import WordCreateMoreForm from "./components/moreForm";
 import WordInput from "./components/wordInput";
 
+export type CreateWordInputModalProps = {
+  title: string;
+  field: string;
+  type?: "prompt" | "input";
+};
+
+export type CreateWordRadioModalProps = {
+  title: string;
+  field: string;
+  type?: "checkbox" | "radio";
+  options: { label: string; value: string | number }[];
+};
+
 const CreateCardScreen = () => {
   const { theme } = useTheme();
   const router = useRouter();
 
   const [labelWidth, setLabelWidth] = useState(0);
-  const [advanceLabelWidth, setAdvanceLabelWidth] = useState(0);
+  const { setGlobalModal, setListModal } = useModalStore();
+
+  const openInputModal = ({
+    title,
+    field,
+    type = "input",
+  }: CreateWordInputModalProps) => {
+    setGlobalModal({
+      type: type,
+      title: title,
+    });
+  };
+
+  const openRadioModal = ({
+    title,
+    field,
+    options,
+  }: CreateWordRadioModalProps) => {
+    setListModal({
+      onSubmit: () => {},
+      options,
+      title,
+
+      value: "1",
+    });
+  };
 
   const onLabelLayout = (event: LayoutChangeEvent) => {
     const width = event.nativeEvent.layout.width;
-    setLabelWidth((prev) => Math.max(prev, width));
+
+    setLabelWidth((prev) => (width > prev ? width : prev));
   };
-  const onAdvanceLabelLayout = (event: LayoutChangeEvent) => {
-    const width = event.nativeEvent.layout.width;
-    setAdvanceLabelWidth((prev) => Math.max(prev, width));
-  };
+
   return (
     <View style={{ backgroundColor: theme.background }} className="flex-1">
       <View>
@@ -41,10 +78,12 @@ const CreateCardScreen = () => {
 
           {/* Cơ bản */}
 
-          <View className="mt-4">
+          <View className="mt-12">
             <WordCreateBasicForm
               labelWidth={labelWidth}
               onLabelLayout={onLabelLayout}
+              openInputModal={openInputModal}
+              openRadioModal={openRadioModal}
             />
           </View>
           {/* Mở rộng */}
@@ -55,18 +94,20 @@ const CreateCardScreen = () => {
               <WordCreateMoreForm
                 labelWidth={labelWidth}
                 onLabelLayout={onLabelLayout}
+                openInputModal={openInputModal}
+                openRadioModal={openRadioModal}
               />
             </View>
           </View>
 
           {/* Form link */}
 
-          <View className="h-8"></View>
-
-          <WordCreateAdvanceForm
-            labelWidth={advanceLabelWidth}
-            onLabelLayout={onAdvanceLabelLayout}
-          />
+          <View className="mt-8">
+            <WordCreateAdvanceForm
+              labelWidth={labelWidth}
+              onLabelLayout={onLabelLayout}
+            />
+          </View>
         </View>
         <View className="mt-8 px-4">
           <AppButton

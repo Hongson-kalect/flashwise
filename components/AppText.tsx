@@ -6,7 +6,7 @@ type Props = {
   children: React.ReactNode;
   style?: StyleProp<TextStyle>;
   className?: string;
-  size?: "xs" | "sm" | "md" | "lg" | "xl" | number;
+  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | number;
   weight?: "100" | "200" | "300" | "400" | "500" | "600" | "700" | "bold";
   color?:
     | "title"

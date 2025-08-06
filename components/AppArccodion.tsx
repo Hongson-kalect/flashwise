@@ -1,65 +1,75 @@
 import { useTheme } from "@/providers/Theme";
-import React, { useEffect, useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
+import React, { useRef, useState } from "react";
+import {
+  Animated,
+  Easing,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
 import AppIcon from "./AppIcon";
 import AppTitle from "./AppTitle";
 
-type Size = "lg" | "md" | "sm";
+type AccordionSize = "sm" | "md" | "lg";
 
-interface ArccodionProps {
+interface IAccordion {
   title: string;
   children: React.ReactNode;
-  size?: Size;
-  titleColor?: string;
+  style?: ViewStyle;
+  size?: AccordionSize;
 }
 
-const fontSizeMap: Record<Size, number> = {
-  lg: 28,
-  md: 24,
+const fontSizeMap: Record<AccordionSize, number> = {
   sm: 16,
+  md: 20,
+  lg: 24,
 };
 
-export const Arccodion: React.FC<ArccodionProps> = ({
-  title,
-  children,
-  size = "md",
-  titleColor,
-}) => {
+const Accordion = ({ title, children, style, size = "md" }: IAccordion) => {
   const { theme } = useTheme();
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const animationController = useRef(new Animated.Value(0)).current;
 
-  const progress = useSharedValue(0);
+  // Lấy maxHeight từ props hoặc giá trị mặc định lớn
+  const maxHeight = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    progress.value = withTiming(open ? 1 : 0, {
-      duration: open ? 300 : 400,
-    });
-  }, [open]);
+  // Xử lý transform icon
+  const arrowTransform = animationController.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "90deg"],
+  });
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scaleY: progress.value }],
-    opacity: interpolate(progress.value, [0, 0.2, 1], [0, 0.3, 1]),
-  }));
+  // maxHeightAnim
+  const maxHeightAnim = animationController.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 500], // Đặt một giá trị lớn, ví dụ 500
+  });
+
+  const onToggle = () => {
+    const toValue = isOpen ? 0 : 1;
+    setIsOpen(!isOpen);
+
+    Animated.timing(animationController, {
+      toValue,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.accordion, style]}>
+      {/* Header */}
       <TouchableOpacity
-        onPress={() => setOpen(!open)}
+        onPress={onToggle}
+        activeOpacity={0.8}
         style={[
           styles.header,
           {
-            borderBottomWidth: 3,
-            borderColor: theme.title + (open ? "ff" : "66"),
+            borderColor: theme.title + (isOpen ? "ff" : "66"),
             backgroundColor: theme.background,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
+            borderBottomWidth: fontSizeMap[size] / 8,
           },
         ]}
       >
@@ -67,37 +77,44 @@ export const Arccodion: React.FC<ArccodionProps> = ({
           title={title}
           style={{
             fontSize: fontSizeMap[size],
-            color: titleColor ?? theme.title,
+            color: theme.title,
           }}
         />
-        <AppIcon
-          name={open ? "chevron-down" : "chevron-right"}
-          branch="feather"
-          size={24}
-          color={theme.title}
-        />
+        <Animated.View style={{ transform: [{ rotateZ: arrowTransform }] }}>
+          <AppIcon
+            name="chevron-right"
+            branch="feather"
+            size={fontSizeMap[size] + 4}
+            color={theme.title}
+          />
+        </Animated.View>
       </TouchableOpacity>
 
-      <Animated.View style={[styles.contentContainer, animatedStyle]}>
-        <View style={styles.innerContent}>{children}</View>
+      {/* Content */}
+      <Animated.View style={{ maxHeight: maxHeightAnim, overflow: "hidden" }}>
+        <View style={styles.contentContainer}>{children}</View>
       </Animated.View>
     </View>
   );
 };
 
+export default Accordion;
+
 const styles = StyleSheet.create({
-  container: {
+  accordion: {
+    // borderRadius: 8,
     overflow: "hidden",
   },
   header: {
-    paddingTop: 6,
-    paddingBottom: 2,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   contentContainer: {
-    overflow: "hidden",
-    transformOrigin: "top", // quan trọng với scaleY
-  },
-  innerContent: {
-    paddingTop: 8,
+    // position: "absolute", // Nội dung không chiếm chỗ làm layout rung
+    width: "100%",
+    left: 0,
+    right: 0,
+    top: 0,
   },
 });

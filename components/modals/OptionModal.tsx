@@ -1,6 +1,6 @@
-import React, { memo } from "react";
 import useModalStore from "@/stores/modalStore";
-import { OptionsModal } from "./components/OptionModal";
+import { memo } from "react";
+import { OptionsModal } from "./components/RadioModal";
 
 export type ListModalOptions = {
   title: string;

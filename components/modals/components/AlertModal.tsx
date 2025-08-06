@@ -11,12 +11,9 @@ const AlertModal = (modal: Props) => {
   const { theme } = useTheme();
   return (
     <View>
-      {modal.alertTitle && (
-        <AppText
-          style={{ fontFamily: "PlaypenSans-Semibold" }}
-          className="text-xl mb-2"
-        >
-          {modal.alertTitle}
+      {modal.title && (
+        <AppText className="text-2xl mb-2" weight="bold" size={"xl"}>
+          {modal.title}
         </AppText>
       )}
       <AppText color="subText1">{modal.message}</AppText>

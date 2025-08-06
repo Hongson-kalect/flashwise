@@ -32,9 +32,13 @@ const WordLink = ({
         weight="bold"
         color="subText2"
         size={"sm"}
-        style={{
-          width: labelWidth || "auto",
-        }}
+        style={
+          labelWidth
+            ? {
+                width: labelWidth,
+              }
+            : {}
+        }
         onLayout={onLabelLayout}
       >
         {label}
@@ -68,7 +72,7 @@ const WordLink = ({
               name="edit"
               branch="antd"
               size={16}
-              color="grey"
+              color={theme.secondary}
             />
           </TouchableOpacity>
         </View>

@@ -28,12 +28,16 @@ const Information = ({
       className="flex-row gap-2"
     >
       <AppText
-        weight="bold"
+        weight="100"
         color="subText2"
         size={"sm"}
-        style={{
-          width: labelWidth || "auto",
-        }}
+        style={
+          labelWidth
+            ? {
+                width: labelWidth || 32,
+              }
+            : {}
+        }
         onLayout={onLabelLayout}
       >
         {label}
@@ -65,7 +69,7 @@ const Information = ({
               name="edit"
               branch="antd"
               size={16}
-              color="grey"
+              color={theme.secondary}
             />
           </TouchableOpacity>
         </View>

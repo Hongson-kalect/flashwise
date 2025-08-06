@@ -3,7 +3,7 @@ import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { TextInput, View } from "react-native";
-import Animated, { ZoomIn } from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 const WordInput = () => {
   const { theme } = useTheme();
@@ -25,6 +25,7 @@ const WordInput = () => {
           <TextInput
             onFocus={() => setFocusing(true)}
             onBlur={() => setFocusing(false)}
+            className="py-2"
             style={{
               fontSize: 24,
               lineHeight: 34,
@@ -38,7 +39,7 @@ const WordInput = () => {
 
         {focusing && (
           <Animated.View
-            entering={ZoomIn}
+            entering={FadeInDown}
             className="absolute"
             style={{
               backgroundColor: theme.background,

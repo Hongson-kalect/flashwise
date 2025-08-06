@@ -12,12 +12,9 @@ const TabsModal = (modal: Props) => {
   const [tabIndex, setTabIndex] = useState(0);
   return (
     <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
-      {modal.tabTitle && (
-        <AppText
-          style={{ fontFamily: "PlaypenSans-Semibold" }}
-          className="text-lg mb-2 text-gray-800"
-        >
-          {modal.tabTitle}
+      {modal.title && (
+        <AppText className="text-2xl" weight="bold" size={"xl"}>
+          {modal.title}
         </AppText>
       )}
       <AppText className="text-gray-700">{modal.message}</AppText>

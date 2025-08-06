@@ -1,19 +1,20 @@
 import AppText from "@/components/AppText";
 import AlertModal from "@/components/modals/components/AlertModal";
 import ConfirmModal from "@/components/modals/components/ConfirmModal";
+import InputModal from "@/components/modals/components/InputModal";
 import MenuModal from "@/components/modals/components/MenuModal";
 import PromptModal from "@/components/modals/components/PromptModal";
 import TabsModal from "@/components/modals/components/TabModal";
 import ModalWrapper from "@/components/modals/ModalWrapper";
 import { useDebounce } from "@/hooks/useDebouce";
 import useModalStore from "@/stores/modalStore";
-import React, { memo } from "react";
+import React, { memo, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 
 export type AlertModalOptions = {
   type: "alert";
-  alertTitle?: string;
-  message: string;
+  title?: string;
+  message?: string;
   subMessage?: string;
   okText?: string;
   onOk?: () => void;
@@ -21,17 +22,17 @@ export type AlertModalOptions = {
 };
 export type ConfirmModalOptions = {
   type: "confirm";
-  confirmTitle?: string;
-  message: string;
+  title?: string;
+  message?: string;
   subMessage?: string;
   okText?: string;
   cancelText?: string;
   onOk?: () => void;
   onCancel?: () => void;
 };
-export type PromptModalOptions = {
-  type: "prompt";
-  promptTitle?: string;
+export type InputModalOptions = {
+  type: "input";
+  title?: string;
 
   defaultValue?: string;
   placeholder?: string;
@@ -40,7 +41,26 @@ export type PromptModalOptions = {
   textOuterHeader?: React.ReactNode;
   textInnerFooter?: React.ReactNode;
   textOuterFooter?: React.ReactNode;
-  message: string;
+  message?: string;
+  subMessage?: string;
+  okText?: string;
+  cancelText?: string;
+  onOk?: (value: string) => void;
+  onCancel?: () => void;
+};
+
+export type PromptModalOptions = {
+  type: "prompt";
+  title?: string;
+
+  defaultValue?: string;
+  placeholder?: string;
+  isShowCancelButton?: boolean;
+  textInnerHeader?: React.ReactNode;
+  textOuterHeader?: React.ReactNode;
+  textInnerFooter?: React.ReactNode;
+  textOuterFooter?: React.ReactNode;
+  message?: string;
   subMessage?: string;
   okText?: string;
   cancelText?: string;
@@ -63,7 +83,7 @@ export type MenuOption = {
 
 export type MenuModalOptions = {
   type: "menu";
-  menuTitle?: string;
+  title?: string;
   message?: string;
   subMessage?: string;
   menuOptions: MenuOption[];
@@ -75,8 +95,8 @@ export type MenuModalOptions = {
 
 export type TabsModalOptions = {
   type: "tabs";
-  tabTitle?: string;
-  message: string;
+  title?: string;
+  message?: string;
   subMessage?: string;
   tabs: React.ReactNode[];
   okText?: string;
@@ -91,7 +111,7 @@ export type CustomModalOptions = {
 };
 
 export type BasicModalOptions = {
-  title?: string;
+  modalTitle?: string;
   render?: React.ReactNode;
   onDismiss?: () => void; // lúc đóng modal
   header?: React.ReactNode;
@@ -104,6 +124,7 @@ export type GlobalModalOptions = BasicModalOptions &
   (
     | AlertModalOptions
     | ConfirmModalOptions
+    | InputModalOptions
     | PromptModalOptions
     | MenuModalOptions
     | CustomModalOptions
@@ -113,6 +134,7 @@ export type GlobalModalOptions = BasicModalOptions &
 export type ListModalOptions = {
   title: string;
   value: number | string;
+  type?: "checkbox" | "radio";
   options: { label: string; value: number | string }[];
   onDismiss?: () => void;
   onSubmit: (val: number | string) => void;
@@ -120,6 +142,19 @@ export type ListModalOptions = {
 
 const GlobalModalComponent = () => {
   const { globalModal, setGlobalModal } = useModalStore();
+
+  // Modal sẽ ẩn khi props = null => Dữ liệu bị mất ngay lập tức
+  // Animation out sẽ thực hiện với màn trắng => dùng cái này để cache dữ liệu trước đó
+  const [placeholder, setPlaceholder] = useState(globalModal);
+  useEffect(() => {
+    globalModal && setPlaceholder(globalModal);
+  }, [globalModal]);
+
+  const showValue = useMemo(
+    () => (globalModal ? globalModal : placeholder),
+    [placeholder, globalModal]
+  );
+
   const outAnimation = useDebounce(globalModal?.outAnimation, 200); // when close all modal will be null, include outAnimation, so keep this to close it correctly
 
   const closeModal = () => {
@@ -140,6 +175,9 @@ const GlobalModalComponent = () => {
       case "menu":
         return <MenuModal {...modal} />;
 
+      case "input":
+        return <InputModal {...modal} />;
+
       case "prompt":
         return <PromptModal {...modal} />;
 
@@ -159,7 +197,7 @@ const GlobalModalComponent = () => {
 
   return (
     <ModalWrapper
-      title={globalModal?.title}
+      title={globalModal?.modalTitle}
       show={!!globalModal}
       onCancel={closeModal}
       inAnimation={globalModal?.inAnimation}
@@ -168,7 +206,7 @@ const GlobalModalComponent = () => {
     >
       <View className="px-3 rounded-lg">
         {globalModal?.header}
-        <RenderContent modal={globalModal} />
+        <RenderContent modal={showValue} />
         {globalModal?.footer}
       </View>
     </ModalWrapper>

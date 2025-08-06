@@ -1,4 +1,4 @@
-import { Arccodion } from "@/components/AppArccodion";
+import Arccodion from "@/components/AppArccodion";
 import { LayoutChangeEvent, View } from "react-native";
 import Information from "./information";
 import WordLink from "./wordLink";
@@ -12,7 +12,7 @@ const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
     <Arccodion title="Nâng cao">
       {/* <AppTitle title="Từ liên quan " /> */}
 
-      <View className="mt-4 gap-2 pl-2">
+      <View className="mt-4 gap-2">
         <WordLink
           labelWidth={labelWidth}
           onLabelLayout={onLabelLayout}
