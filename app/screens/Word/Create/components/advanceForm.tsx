@@ -1,13 +1,39 @@
 import Arccodion from "@/components/AppArccodion";
+import { useBottomSheet } from "@/providers/BottomSheet";
 import { LayoutChangeEvent, View } from "react-native";
 import Information from "./information";
 import WordLink from "./wordLink";
+import WordSelectForm from "./wordSelectForm";
 
 type Props = {
   labelWidth?: number;
   onLabelLayout?: (event: LayoutChangeEvent) => void;
 };
+
+const bottomSheetTitle = {
+  related: "Từ liên quan",
+  synonym: "Từ đồng nghĩa",
+  antonym: "Từ trái nghĩa",
+};
+
 const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
+  const { present } = useBottomSheet();
+  const openWordSelectForm = ({
+    type,
+  }: {
+    type: keyof typeof bottomSheetTitle;
+  }) => {
+    present({
+      size: "full",
+      title: bottomSheetTitle[type],
+      render: () => (
+        <View className="px-4">
+          <WordSelectForm />
+        </View>
+      ),
+    });
+  };
+
   return (
     <Arccodion title="Nâng cao">
       {/* <AppTitle title="Từ liên quan " /> */}
@@ -19,6 +45,7 @@ const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
           editable
           label="Liên quan"
           value={[{ value: "search" }]}
+          onPress={() => openWordSelectForm({ type: "related" })}
         />
         <WordLink
           labelWidth={labelWidth}

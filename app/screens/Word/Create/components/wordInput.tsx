@@ -1,9 +1,7 @@
-import { AppDivider } from "@/components/AppDivider";
-import AppText from "@/components/AppText";
+import AppSuggestion from "@/components/AppSuggestion";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { TextInput, View } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
 
 const WordInput = () => {
   const { theme } = useTheme();
@@ -37,33 +35,13 @@ const WordInput = () => {
           />
         </View>
 
-        {focusing && (
-          <Animated.View
-            entering={FadeInDown}
-            className="absolute"
-            style={{
-              backgroundColor: theme.background,
-              elevation: 4,
-              shadowColor: theme.text,
-              top: 47,
-              left: 0,
-              right: 0,
-              zIndex: 1,
-            }}
-          >
-            {Array.from({ length: 2 }).map((_, index) => {
-              const isLast = index === 4;
-              return (
-                <View key={index}>
-                  <View className="px-2 h-14 flex-row items-center">
-                    <AppText className="">GỢi ý 1</AppText>
-                  </View>
-                  {!isLast && <AppDivider />}
-                </View>
-              );
-            })}
-          </Animated.View>
-        )}
+        <AppSuggestion
+          show={focusing}
+          options={[{ label: "test", value: "test" }]}
+          onSelect={(val) => {
+            alert("Bạn vừa chọn " + val);
+          }}
+        />
       </View>
 
       <View className="w-24 h-14 items-center justify-center">

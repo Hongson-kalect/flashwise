@@ -35,6 +35,7 @@ const BottomSheetContext = createContext<{
   present: (options: {
     render: () => React.ReactNode;
     title: string;
+    scrollable?: boolean;
     size?: "short" | "medium" | "long" | "full";
     onClose?: () => void;
   }) => void;
@@ -92,6 +93,7 @@ export const BottomSheetProvider = ({
   const contentRef = useRef<() => React.ReactNode>(() => null);
   const isOpen = useRef(false);
   const [isPresent, setIsPresent] = useState(false);
+  const [scrollable, setScrollable] = useState(false);
   const [title, setTitle] = useState("");
   const [onClose, setOnClose] = useState<(() => void) | null>(null);
 
@@ -99,11 +101,13 @@ export const BottomSheetProvider = ({
     ({
       render,
       onClose,
+      scrollable,
       size,
       title,
     }: {
       render: () => React.ReactNode;
       title?: string;
+      scrollable?: boolean;
       size?: "short" | "medium" | "long" | "full";
       onClose?: () => void;
     }) => {
@@ -112,8 +116,8 @@ export const BottomSheetProvider = ({
       contentRef.current = render;
       setActiveSheet(size || "medium");
       setTitle(title || "");
+      setScrollable(scrollable || false);
       setOnClose(() => onClose || null);
-
       sheetMap[size || "medium"].ref.current?.present();
     },
     []
@@ -180,6 +184,7 @@ export const BottomSheetProvider = ({
             key={key}
             ref={ref}
             content={contentRef.current}
+            scrollable={scrollable}
             title={title}
             backAction={backAction}
             onSheetChanges={handleSheetChanges}
@@ -192,8 +197,9 @@ export const BottomSheetProvider = ({
 };
 
 type BottomSheetProps = {
-  snappoints?: number | "auto" | `${number}%`;
+  snappoints: number | `${number}%`;
   backAction?: () => void;
+  scrollable?: boolean;
   content: () => React.ReactNode;
   onSheetChanges?: (index: number) => void;
   title: string;
@@ -207,9 +213,16 @@ const BottomSheetInstance = forwardRef<BottomSheetModal, BottomSheetProps>(
       onSheetChanges,
       backAction = () => {},
       snappoints,
+      scrollable,
     }: BottomSheetProps,
     ref
   ) => {
+    const { height } = useWindowDimensions();
+    const contentHeight =
+      typeof snappoints === "number"
+        ? snappoints
+        : (height * Number(snappoints.replace("%", ""))) / 100;
+
     return (
       <BottomSheetModal
         enableContentPanningGesture={false}
@@ -244,18 +257,18 @@ const BottomSheetInstance = forwardRef<BottomSheetModal, BottomSheetProps>(
               <Divider />
             </>
           )}
-          <View style={{ height: "100%", width: "100%" }}>
-            <ScrollView
-              keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{
-                padding: 16,
-                flexGrow: 1,
-              }}
-              showsVerticalScrollIndicator={false}
-            >
-              {content?.()}
-              <View style={{ height: 80 }}></View>
-            </ScrollView>
+          <View style={{ height: contentHeight, width: "100%" }}>
+            {scrollable ? (
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {content?.()}
+                <View style={{ height: 80 }}></View>
+              </ScrollView>
+            ) : (
+              content?.()
+            )}
           </View>
         </BottomSheetView>
       </BottomSheetModal>
