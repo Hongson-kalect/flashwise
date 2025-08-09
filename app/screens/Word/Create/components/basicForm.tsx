@@ -2,13 +2,26 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import { useTheme } from "@/providers/Theme";
-import useModalStore from "@/stores/modalStore";
-import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
-import Information from "./information";
+import useRecordingStore, { AudioType } from "@/stores/recordingStore";
+import { startRecording } from "@/utils/audioRecord";
+import { pickAudio } from "@/utils/pickaudio";
+import { pickImage } from "@/utils/pickImage";
+import { Audio } from "expo-av";
+import { DocumentPickerAsset } from "expo-document-picker";
+import { ImageResult } from "expo-image-manipulator";
+import { useState } from "react";
+import {
+  Image,
+  LayoutChangeEvent,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
 } from "../screen";
+import Information from "./information";
 
 type Props = {
   labelWidth: number;
@@ -24,7 +37,58 @@ const WordCreateBasicForm = ({
   openRadioModal,
 }: Props) => {
   const { theme } = useTheme();
+  const [image, setImage] = useState<ImageResult | null>(null);
+  const { onRecording, setOnRecording } = useRecordingStore();
+  const [audio, setAudio] = useState<DocumentPickerAsset | AudioType | null>(
+    null
+  );
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const { width, height } = useWindowDimensions();
 
+  const handlePickImage = async () => {
+    const result = await pickImage();
+    if (result) {
+      const { image, uri } = result;
+      setImage(image);
+    }
+  };
+
+  const handlePickAudio = async () => {
+    // setIsRecording(true);
+    const result = await pickAudio();
+    if (result) {
+      setAudio(result);
+    }
+  };
+
+  const handleRecording = () => {
+    startRecording();
+    setOnRecording((result) => {
+      console.log("aaaaaaaaaa", result);
+      if (result?.duration && result?.duration > 5000)
+        return alert("Recording must be less than 5 seconds");
+      else setAudio(result);
+    });
+  };
+
+  const playAudio = async () => {
+    try {
+      if (!audio) return;
+      if (sound) {
+        await sound.unloadAsync(); // Xóa âm thanh cũ nếu có
+      }
+
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: audio.uri || "" },
+        { shouldPlay: true }
+      );
+
+      setSound(newSound);
+      console.log("🔊 Đang phát audio...");
+    } catch (err) {
+      console.error("❌ Lỗi khi phát audio:", err);
+    }
+  };
   return (
     <View>
       <AppTitle title="Định nghĩa " />
@@ -50,11 +114,27 @@ const WordCreateBasicForm = ({
       </TouchableOpacity>
 
       <View className="mt-6 items-center justify-center">
-        <View className="h-40 w-40 border border-dashed border-gray-400 rounded-lg p-4">
-          <AppText color="subText2" size={"xs"}>
-            Chọn hình minh hoạ
-          </AppText>
-        </View>
+        {image?.uri ? (
+          <TouchableOpacity
+            onPress={handlePickImage}
+            style={{ elevation: 4, overflow: "hidden" }}
+            className="h-40 w-40  rounded-lg"
+          >
+            <Image
+              source={{ uri: image?.uri }}
+              style={{ width: "100%", height: "100%" }}
+            />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={handlePickImage}
+            className="h-40 w-40 border border-dashed border-gray-400 rounded-lg p-4"
+          >
+            <AppText color="subText2" size={"xs"}>
+              Chọn hình minh hoạ
+            </AppText>
+          </TouchableOpacity>
+        )}
       </View>
 
       <View className="mt-8 gap-1">
@@ -89,37 +169,41 @@ const WordCreateBasicForm = ({
           editable
           label="Phát âm"
           value={
-            <View>
-              <View className="flex-row gap-2">
+            <View className="flex-row gap-2">
+              <View className="gap-2 w-1/2">
                 <TouchableOpacity
+                  onPress={handlePickAudio}
                   style={{ backgroundColor: theme.secondary }}
-                  className=" border-gray-400 rounded-lg px-3 py-2"
+                  className="flex-1 border-gray-400 rounded-lg h-10 px-3 py-2 items-center justify-center"
                 >
-                  <AppText color="white" size={"xs"}>
+                  <AppText color="white" size={"sm"}>
                     Chọn file
                   </AppText>
                 </TouchableOpacity>
-                <View
-                  style={{ borderRightWidth: 0.5, borderColor: theme.subText3 }}
-                ></View>
 
                 <TouchableOpacity
                   style={{ borderWidth: 0.5, borderColor: theme.secondary }}
-                  className="rounded-lg items-center justify-center w-16 py-1"
+                  className="rounded-lg items-center justify-center flex-1 h-10"
                 >
                   <AppIcon
+                    onPress={handleRecording}
                     name={"mic"}
                     branch="feather"
-                    size={16}
+                    size={20}
                     color={theme.secondary}
                   />
                 </TouchableOpacity>
               </View>
 
-              <View className="mt-2 flex-row gap-2 items-end">
+              <View className="flex-row gap-2 items-end flex-1">
                 <TouchableOpacity
-                  style={{ backgroundColor: theme.primary }}
-                  className=" border-gray-400 rounded-lg h-16 w-16 items-center justify-center"
+                  onPress={() => playAudio()}
+                  style={{
+                    backgroundColor: audio?.uri
+                      ? theme.primary
+                      : theme.subText3,
+                  }}
+                  className=" border-gray-400 rounded-lg h-24 w-full items-center justify-center"
                 >
                   <AppIcon
                     name={"volume-2"}
@@ -128,14 +212,6 @@ const WordCreateBasicForm = ({
                     size={32}
                   />
                 </TouchableOpacity>
-                <AppText
-                  className="mb-1 flex-1"
-                  numberOfLines={2}
-                  size={"xs"}
-                  color="subText2"
-                >
-                  Nhạc sập sình là nhạc sập sình. ấu dề
-                </AppText>
               </View>
             </View>
           }

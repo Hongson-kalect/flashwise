@@ -116,7 +116,7 @@ export const BottomSheetProvider = ({
       contentRef.current = render;
       setActiveSheet(size || "medium");
       setTitle(title || "");
-      setScrollable(scrollable || false);
+      setScrollable(scrollable ?? true);
       setOnClose(() => onClose || null);
       sheetMap[size || "medium"].ref.current?.present();
     },
@@ -267,7 +267,7 @@ const BottomSheetInstance = forwardRef<BottomSheetModal, BottomSheetProps>(
                 <View style={{ height: 80 }}></View>
               </ScrollView>
             ) : (
-              content?.()
+              <View className="h-full">{content?.()}</View>
             )}
           </View>
         </BottomSheetView>

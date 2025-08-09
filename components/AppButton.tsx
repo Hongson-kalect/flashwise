@@ -10,8 +10,9 @@ type Props = {
   onPress: () => void;
   title?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
-  type?: "primary" | "secondary" | "success" | "error" | "warning";
+  type?: "primary" | "secondary" | "success" | "error" | "warning" | "white";
   style?: ViewStyle;
+  containerStyle?: ViewStyle;
   children?: React.ReactNode;
   height?: number;
   width?: number;
@@ -23,6 +24,7 @@ const AppButton = ({
   title,
   onPress,
   style,
+  containerStyle,
   size = "md",
   type = "primary",
   children,
@@ -70,22 +72,27 @@ const AppButton = ({
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         disabled={disabled || isLoading}
-        style={{
-          shadowColor: "#000",
-          shadowOffset: { width: 1, height: 3 },
-          shadowOpacity: 0.2,
-          elevation: 6,
-          paddingVertical: py,
-          paddingHorizontal: px,
-          borderRadius: 12,
-          // flexDirection: "row",
-          // gap: 8,
-          alignItems: "center",
-          justifyContent: "center",
-          minWidth: 64,
-          // height: height || 48,
-          backgroundColor: disabled ? theme.disabled : theme[type || "primary"],
-        }}
+        style={[
+          {
+            shadowColor: "#000",
+            shadowOffset: { width: 1, height: 3 },
+            shadowOpacity: 0.2,
+            elevation: 6,
+            paddingVertical: py,
+            paddingHorizontal: px,
+            borderRadius: 12,
+            // flexDirection: "row",
+            // gap: 8,
+            alignItems: "center",
+            justifyContent: "center",
+            minWidth: 64,
+            // height: height || 48,
+            backgroundColor: disabled
+              ? theme.disabled
+              : theme[type || "primary"],
+          },
+          style,
+        ]}
       >
         {isLoading && (
           <Reanimated.View

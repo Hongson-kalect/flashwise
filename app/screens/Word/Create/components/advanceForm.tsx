@@ -1,39 +1,28 @@
 import Arccodion from "@/components/AppArccodion";
-import { useBottomSheet } from "@/providers/BottomSheet";
 import { LayoutChangeEvent, View } from "react-native";
+import {
+  bottomSheetTitle,
+  CreateWordInputModalProps,
+  CreateWordRadioModalProps,
+} from "../screen";
 import Information from "./information";
 import WordLink from "./wordLink";
-import WordSelectForm from "./wordSelectForm";
 
 type Props = {
   labelWidth?: number;
   onLabelLayout?: (event: LayoutChangeEvent) => void;
+  openInputModal: (props: CreateWordInputModalProps) => void;
+  openWordSelectModal: (props: { type: keyof typeof bottomSheetTitle }) => void;
+  openRadioModal: (props: CreateWordRadioModalProps) => void;
 };
 
-const bottomSheetTitle = {
-  related: "Từ liên quan",
-  synonym: "Từ đồng nghĩa",
-  antonym: "Từ trái nghĩa",
-};
-
-const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
-  const { present } = useBottomSheet();
-  const openWordSelectForm = ({
-    type,
-  }: {
-    type: keyof typeof bottomSheetTitle;
-  }) => {
-    present({
-      size: "full",
-      title: bottomSheetTitle[type],
-      render: () => (
-        <View className="px-4">
-          <WordSelectForm />
-        </View>
-      ),
-    });
-  };
-
+const WordCreateAdvanceForm = ({
+  labelWidth,
+  onLabelLayout,
+  openInputModal,
+  openWordSelectModal,
+  openRadioModal,
+}: Props) => {
   return (
     <Arccodion title="Nâng cao">
       {/* <AppTitle title="Từ liên quan " /> */}
@@ -45,7 +34,7 @@ const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
           editable
           label="Liên quan"
           value={[{ value: "search" }]}
-          onPress={() => openWordSelectForm({ type: "related" })}
+          onPress={() => openWordSelectModal({ type: "related" })}
         />
         <WordLink
           labelWidth={labelWidth}
@@ -53,6 +42,7 @@ const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
           editable
           label="Đồng nghĩa"
           value={[{ value: "search" }]}
+          onPress={() => openWordSelectModal({ type: "related" })}
         />
         <WordLink
           labelWidth={labelWidth}
@@ -60,6 +50,7 @@ const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
           editable
           label="Trái nghĩa"
           value={[{ value: "search" }]}
+          onPress={() => openWordSelectModal({ type: "related" })}
         />
         <WordLink
           labelWidth={labelWidth}
@@ -67,6 +58,7 @@ const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
           editable
           label="Đồng âm"
           value={[{ value: "search" }]}
+          onPress={() => openWordSelectModal({ type: "related" })}
         />
         <WordLink
           labelWidth={labelWidth}
@@ -78,6 +70,7 @@ const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
             { value: "ceck", link_to: "bruh" },
             { value: "ceck", link_to: "broh" },
           ]}
+          onPress={() => openWordSelectModal({ type: "related" })}
         />
 
         <Information
@@ -86,6 +79,9 @@ const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
           editable
           label="Cụm từ"
           value="Úm ba la xì bùa"
+          onPress={() =>
+            openInputModal({ type: "input", title: "Cụm từ", field: "" })
+          }
         />
         <Information
           onLabelLayout={onLabelLayout}
@@ -93,6 +89,14 @@ const WordCreateAdvanceForm = ({ labelWidth, onLabelLayout }: Props) => {
           editable
           label="Note"
           value="Rất trang trọng"
+          onPress={() =>
+            openRadioModal({
+              field: "note",
+              type: "radio",
+              title: "Note",
+              options: [],
+            })
+          }
         />
       </View>
 

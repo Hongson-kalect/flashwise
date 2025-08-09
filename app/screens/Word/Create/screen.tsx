@@ -1,6 +1,7 @@
 import AppButton from "@/components/AppButton";
 import { AppDivider } from "@/components/AppDivider";
 import AppTitle from "@/components/AppTitle";
+import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { useRouter } from "expo-router";
@@ -11,6 +12,7 @@ import WordCreateBasicForm from "./components/basicForm";
 import CreateHeader from "./components/header";
 import WordCreateMoreForm from "./components/moreForm";
 import WordInput from "./components/wordInput";
+import WordSelectForm from "./components/wordSelectForm";
 
 export type CreateWordInputModalProps = {
   title: string;
@@ -25,9 +27,16 @@ export type CreateWordRadioModalProps = {
   options: { label: string; value: string | number }[];
 };
 
+export const bottomSheetTitle = {
+  related: "Từ liên quan",
+  synonym: "Từ đồng nghĩa",
+  antonym: "Từ trái nghĩa",
+};
+
 const CreateCardScreen = () => {
   const { theme } = useTheme();
   const router = useRouter();
+  const { present } = useBottomSheet();
 
   const [labelWidth, setLabelWidth] = useState(0);
   const { setGlobalModal, setListModal } = useModalStore();
@@ -54,6 +63,19 @@ const CreateCardScreen = () => {
       title,
 
       value: "1",
+    });
+  };
+
+  const openWordSelectForm = ({
+    type,
+  }: {
+    type: keyof typeof bottomSheetTitle;
+  }) => {
+    present({
+      size: "full",
+      scrollable: false,
+      title: bottomSheetTitle[type],
+      render: () => <WordSelectForm />,
     });
   };
 
@@ -104,6 +126,9 @@ const CreateCardScreen = () => {
 
           <View className="mt-8">
             <WordCreateAdvanceForm
+              openInputModal={openInputModal}
+              openRadioModal={openRadioModal}
+              openWordSelectModal={openWordSelectForm}
               labelWidth={labelWidth}
               onLabelLayout={onLabelLayout}
             />

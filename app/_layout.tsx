@@ -14,6 +14,7 @@ import { Portal, Provider } from "react-native-paper";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
+import AppRecording from "@/components/AppRecording";
 import { BottomSheetProvider } from "@/providers/BottomSheet";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ export default function RootLayout() {
 
               {/* <Toast /> */}
               {/* <AppUsageTracker /> */}
+              <AppRecording />
               <Portal>
                 <ListModal />
                 <GlobalModal />
