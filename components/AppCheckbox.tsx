@@ -6,7 +6,7 @@ import AppText from "./AppText";
 
 type Props = {
   checked: boolean;
-  onChange: () => void;
+  onChange?: () => void;
   direction?: "row" | "column";
   label?: string;
   customLabel?: React.ReactNode;
@@ -32,7 +32,7 @@ const AppCheckbox = ({
       hitSlop={10}
       onPress={onChange}
       activeOpacity={0.8}
-      disabled={disabled}
+      disabled={disabled || !onChange}
       style={{
         flexDirection: direction,
         justifyContent: "center",

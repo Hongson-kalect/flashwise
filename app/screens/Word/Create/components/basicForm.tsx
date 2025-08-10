@@ -62,13 +62,14 @@ const WordCreateBasicForm = ({
   };
 
   const handleRecording = () => {
-    startRecording();
-    setOnRecording((result) => {
-      console.log("aaaaaaaaaa", result);
-      if (result?.duration && result?.duration > 5000)
-        return alert("Recording must be less than 5 seconds");
-      else setAudio(result);
-    });
+    startRecording(handleRecordAudio);
+  };
+
+  const handleRecordAudio = (audio: AudioType | null) => {
+    if (!audio) return;
+    if (audio?.duration && audio?.duration > 5000)
+      return alert("Recording must be less than 5 seconds");
+    else setAudio(audio);
   };
 
   const playAudio = async () => {

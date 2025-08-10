@@ -29,7 +29,7 @@ const WordLink = ({
       className="flex-row gap-2"
     >
       <AppText
-        weight="bold"
+        weight="100"
         color="subText2"
         size={"sm"}
         style={

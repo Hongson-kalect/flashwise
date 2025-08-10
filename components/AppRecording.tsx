@@ -50,13 +50,12 @@ const AppRecording = () => {
   };
 
   const handleFinishRecording = async () => {
-    const result = await stopRecording();
-    onRecording?.(result);
+    await stopRecording();
     endRecord();
   };
 
   const handleDismiss = () => {
-    stopRecording();
+    stopRecording(false);
     endRecord();
   };
 
