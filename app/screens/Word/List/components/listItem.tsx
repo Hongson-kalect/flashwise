@@ -1,10 +1,16 @@
 import AppCheckbox from "@/components/AppCheckbox";
 import AppText from "@/components/AppText";
+import { useRouter } from "expo-router";
 import { TouchableOpacity, View } from "react-native";
 
-const CardListItem = () => {
+const WordListItem = () => {
+  const router = useRouter();
+
   return (
-    <TouchableOpacity className="flex-row h-16 items-center gap-2">
+    <TouchableOpacity
+      onPress={() => router.push(`/screens/Word/Detail/${2}`)}
+      className="flex-row h-16 items-center gap-2"
+    >
       <View className="w-10 text-center">
         <AppCheckbox onChange={() => {}} checked={false} />
       </View>
@@ -26,4 +32,4 @@ const CardListItem = () => {
   );
 };
 
-export default CardListItem;
+export default WordListItem;

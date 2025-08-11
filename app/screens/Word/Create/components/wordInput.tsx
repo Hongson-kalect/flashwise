@@ -8,10 +8,6 @@ const WordInput = () => {
   const [focusing, setFocusing] = useState(false);
   return (
     <View className="flex-row gap-4 items-center">
-      {/* <View className="flex-1">
-        <AppInput placeholder="Word" />
-      </View> */}
-
       <View
         className="flex-1 h-14 px-2 justify-end relative"
         style={{
@@ -21,6 +17,7 @@ const WordInput = () => {
       >
         <View>
           <TextInput
+            autoFocus // Không có dữ liệu thì sẽ auto focus
             onFocus={() => setFocusing(true)}
             onBlur={() => setFocusing(false)}
             className="py-2"

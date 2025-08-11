@@ -2,26 +2,28 @@ import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
-import { useAppNavigation } from "@/hooks/useNavigation";
 import { useRouter } from "expo-router";
 import { View } from "react-native";
 
-const TranslateListHeader = () => {
+type Props = {
+  id: string;
+  title: string;
+};
+const TranslateDetailHeader = (props: Props) => {
   const router = useRouter();
-  const { routerPush } = useAppNavigation();
   return (
     <View className="flex-row justify-between items-center">
       <AppReturnHeader
-        title="Translate"
+        title={props.title}
         rightElement={
           <AppButton
             onPress={() => {
-              routerPush("/screens/Word/Create/Translate/Create/screen");
+              router.push(`/screens/Word/Create/Translate/Edit/${props.id}`);
             }}
-            type="primary"
+            type="secondary"
           >
-            <AppIcon name="plus" branch="antd" size={18} color="white" />
-            <AppText color="white">Create</AppText>
+            <AppIcon name="edit" branch="fa6" size={18} color="white" />
+            <AppText color="white">Edit</AppText>
           </AppButton>
         }
       />
@@ -29,4 +31,4 @@ const TranslateListHeader = () => {
   );
 };
 
-export default TranslateListHeader;
+export default TranslateDetailHeader;

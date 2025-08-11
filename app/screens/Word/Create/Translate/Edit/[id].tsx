@@ -18,7 +18,7 @@ import Information from "../../components/information";
 import WordInput from "../../components/wordInput";
 import CreateTranslateHeader from "./components/header";
 
-export default function TranslateCreate() {
+export default function TranslateEdit() {
   const { theme } = useTheme();
   const [labelWidth, setLabelWidth] = useState(0);
   const [audio, setAudio] = useState<DocumentPickerAsset | AudioType | null>(

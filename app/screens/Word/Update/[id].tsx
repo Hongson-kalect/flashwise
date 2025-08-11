@@ -4,15 +4,16 @@ import { useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 import UpdateWordHeader from "./components/header";
 
-const WordDetail = () => {
+const UpdateWord = () => {
   const { theme } = useTheme();
   const { id } = useLocalSearchParams();
+
   return (
     <View style={{ backgroundColor: theme.background }} className="flex-1">
       <UpdateWordHeader />
-      <AppText>Word Detail {id}</AppText>
+      <AppText>UpdateWord {id}</AppText>
     </View>
   );
 };
 
-export default WordDetail;
+export default UpdateWord;

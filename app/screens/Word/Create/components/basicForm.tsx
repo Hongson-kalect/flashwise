@@ -3,6 +3,7 @@ import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import { useTheme } from "@/providers/Theme";
 import useRecordingStore, { AudioType } from "@/stores/recordingStore";
+import { playAudio } from "@/utils/audioPlay";
 import { startRecording } from "@/utils/audioRecord";
 import { pickAudio } from "@/utils/pickaudio";
 import { pickImage } from "@/utils/pickImage";
@@ -42,7 +43,7 @@ const WordCreateBasicForm = ({
   const [audio, setAudio] = useState<DocumentPickerAsset | AudioType | null>(
     null
   );
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const sound = useState<Audio.Sound | null>(null);
   const { width, height } = useWindowDimensions();
 
   const handlePickImage = async () => {
@@ -72,24 +73,6 @@ const WordCreateBasicForm = ({
     else setAudio(audio);
   };
 
-  const playAudio = async () => {
-    try {
-      if (!audio) return;
-      if (sound) {
-        await sound.unloadAsync(); // Xóa âm thanh cũ nếu có
-      }
-
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: audio.uri || "" },
-        { shouldPlay: true }
-      );
-
-      setSound(newSound);
-      console.log("🔊 Đang phát audio...");
-    } catch (err) {
-      console.error("❌ Lỗi khi phát audio:", err);
-    }
-  };
   return (
     <View>
       <AppTitle title="Định nghĩa " />
@@ -198,7 +181,8 @@ const WordCreateBasicForm = ({
 
               <View className="flex-row gap-2 items-end flex-1">
                 <TouchableOpacity
-                  onPress={() => playAudio()}
+                  onPress={() => playAudio(audio?.uri || "", sound)}
+                  disabled={!audio?.uri}
                   style={{
                     backgroundColor: audio?.uri
                       ? theme.primary
