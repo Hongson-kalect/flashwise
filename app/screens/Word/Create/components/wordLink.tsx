@@ -8,41 +8,51 @@ import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
 type Props = {
   label: string;
   value: { value: string; link_to?: string }[];
-  editable?: boolean;
+  mode?: "create" | "update" | "view";
   onPress?: () => void;
   labelWidth?: number;
   onLabelLayout?: (event: LayoutChangeEvent) => void;
+  icon?: React.ReactNode;
 };
 const WordLink = ({
   label,
-  editable,
+  mode = "view",
   onPress,
   value,
   labelWidth,
   onLabelLayout,
+  icon,
 }: Props) => {
   const { theme } = useTheme();
   return (
     <TouchableOpacity
+      style={{
+        minHeight: 28,
+      }}
       onPress={onPress}
-      disabled={!editable}
+      disabled={mode !== "create"}
       className="flex-row gap-2"
     >
-      <AppText
-        weight="100"
-        color="subText2"
-        size={"sm"}
-        style={
-          labelWidth
-            ? {
-                width: labelWidth,
-              }
-            : {}
-        }
-        onLayout={onLabelLayout}
-      >
-        {label}
-      </AppText>
+      <View className="flex-row gap-1 items-center h-6">
+        {icon && <View style={{ width: 14 }}>{icon}</View>}
+
+        <AppText
+          weight="100"
+          color="subText2"
+          size={"sm"}
+          style={
+            labelWidth
+              ? {
+                  width: labelWidth || "auto",
+                }
+              : {}
+          }
+          onLayout={onLabelLayout}
+        >
+          {label}
+        </AppText>
+      </View>
+
       <AppText weight="bold" color="subText2" size={"sm"}>
         :
       </AppText>
@@ -54,14 +64,14 @@ const WordLink = ({
               isLast={index === value.length - 1}
               value={item.value}
               link_to={item.link_to}
-              isEditable={editable}
+              isEditable={mode === "create"}
             />
           ))
         ) : (
           <AppText color="subText3">Chưa có</AppText>
         )}
       </View>
-      {editable && (
+      {mode !== "view" && (
         <View>
           <TouchableOpacity
             className="px-3 py-1.5 items-center justify-center rounded"
@@ -113,17 +123,19 @@ const LinkElement = ({
     <View className="flex-row">
       <View style={{ paddingRight: isEditable ? 14 : 0 }} className="pr-4">
         {render()}
-        <View className="absolute -top-0.5 right-0">
-          <AppIcon
-            onPress={() => {
-              alert("delete");
-            }}
-            branch="antd"
-            name="closecircle"
-            size={13}
-            color="#b3b3b3"
-          />
-        </View>
+        {isEditable && (
+          <View className="absolute -top-0.5 right-0">
+            <AppIcon
+              onPress={() => {
+                alert("delete");
+              }}
+              branch="antd"
+              name="closecircle"
+              size={13}
+              color="#b3b3b3"
+            />
+          </View>
+        )}
       </View>
       <AppText>{isLast ? "." : ","}</AppText>
     </View>

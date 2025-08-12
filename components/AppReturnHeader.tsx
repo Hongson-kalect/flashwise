@@ -4,7 +4,7 @@ import AppIcon from "./AppIcon";
 import AppText from "./AppText";
 
 interface AppReturnHeaderProps {
-  title: string;
+  title?: string;
   rightElement?: React.ReactElement;
 }
 

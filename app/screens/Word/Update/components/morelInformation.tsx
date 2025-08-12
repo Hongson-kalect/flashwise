@@ -1,10 +1,13 @@
+import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import { useTheme } from "@/providers/Theme";
+import { Entypo } from "@expo/vector-icons";
 import { LayoutChangeEvent, View } from "react-native";
+import Information from "../../Create/components/information";
 import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
-} from "../screen";
-import Information from "./information";
+} from "../../Create/screen";
 
 type Props = {
   labelWidth: number;
@@ -13,12 +16,13 @@ type Props = {
   openRadioModal: (props: CreateWordRadioModalProps) => void;
 };
 
-const WordCreateMoreForm = ({
-  onLabelLayout,
+const WordMoreInformation = ({
   labelWidth,
+  onLabelLayout,
   openInputModal,
   openRadioModal,
 }: Props) => {
+  const { theme } = useTheme();
   return (
     <View className="gap-2">
       <Information
@@ -26,6 +30,7 @@ const WordCreateMoreForm = ({
         labelWidth={labelWidth}
         mode="create"
         label="Example"
+        icon={<AppIcon branch="fa6" name={"book"} size={12} color="subText2" />}
         value="Em là búp măng non, em lớn lên trong mùa cách mạng"
         onPress={() =>
           openInputModal({ type: "prompt", title: "Example", field: "" })
@@ -36,6 +41,7 @@ const WordCreateMoreForm = ({
         onLabelLayout={onLabelLayout}
         labelWidth={labelWidth}
         mode="create"
+        icon={<Entypo name="gauge" size={12} color={theme.subText2} />}
         label="Độ khó"
         value="A1"
         onPress={() =>
@@ -59,6 +65,7 @@ const WordCreateMoreForm = ({
         labelWidth={labelWidth}
         mode="create"
         label="Độ phổ biến"
+        icon={<AppIcon branch="fa6" name={"fire"} size={12} color="subText2" />}
         value="Rất phổ biến"
         onPress={() =>
           openRadioModal({
@@ -78,6 +85,9 @@ const WordCreateMoreForm = ({
         onLabelLayout={onLabelLayout}
         labelWidth={labelWidth}
         mode="create"
+        icon={
+          <AppIcon branch="feather" name={"image"} size={12} color="subText2" />
+        }
         label="Chủ đề"
         value="..."
         onPress={() => openInputModal({ title: "Chủ đề", field: "" })}
@@ -86,6 +96,14 @@ const WordCreateMoreForm = ({
         onLabelLayout={onLabelLayout}
         labelWidth={labelWidth}
         mode="create"
+        icon={
+          <AppIcon
+            branch="fa6"
+            name={"paintbrush"}
+            size={12}
+            color="subText2"
+          />
+        }
         label="Phong cách"
         value="Rất trang trọng"
         onPress={() =>
@@ -104,21 +122,23 @@ const WordCreateMoreForm = ({
       />
 
       <View>
-        <AppText>Tag:</AppText>
-        <View className="flex-row gap-2 flex-wrap">
+        <AppText color="title" weight="bold" size={"lg"}>
+          Tag 🏷️
+        </AppText>
+        <View className="flex-row gap-2 flex-wrap mt-2 px-2">
           <View className="bg-gray-200 rounded-lg px-2 py-1">
             <AppText size={"xs"} color="subText2">
-              1
+              tag 1
             </AppText>
           </View>
           <View className="bg-gray-200 rounded-lg px-2 py-1">
             <AppText size={"xs"} color="subText2">
-              1
+              y a y e
             </AppText>
           </View>
           <View className="bg-gray-200 rounded-lg px-2 py-1">
             <AppText size={"xs"} color="subText2">
-              1
+              bum ba la bum
             </AppText>
           </View>
         </View>
@@ -127,4 +147,4 @@ const WordCreateMoreForm = ({
   );
 };
 
-export default WordCreateMoreForm;
+export default WordMoreInformation;

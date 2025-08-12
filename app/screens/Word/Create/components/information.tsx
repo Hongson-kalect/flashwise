@@ -6,42 +6,51 @@ import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
 type Props = {
   label: string;
   value?: React.ReactNode;
-  editable?: boolean;
   onPress?: () => void;
   labelWidth?: number;
+  mode?: "create" | "update" | "view";
   onLabelLayout?: (event: LayoutChangeEvent) => void;
+  icon?: React.ReactNode;
 };
 const Information = ({
   label,
-  editable,
+  mode = "view",
   onPress,
   value,
   labelWidth,
   onLabelLayout,
+  icon,
 }: Props) => {
   const { theme } = useTheme();
 
   return (
     <TouchableOpacity
-      disabled={!editable}
+      disabled={mode !== "create"}
       onPress={onPress}
+      style={{
+        minHeight: 28,
+      }}
       className="flex-row gap-2"
     >
-      <AppText
-        weight="100"
-        color="subText2"
-        size={"sm"}
-        style={
-          labelWidth
-            ? {
-                width: labelWidth || 32,
-              }
-            : {}
-        }
-        onLayout={onLabelLayout}
-      >
-        {label}
-      </AppText>
+      <View className="flex-row gap-1 items-center h-6">
+        {icon && <View style={{ width: 14 }}>{icon}</View>}
+
+        <AppText
+          weight="100"
+          color="subText2"
+          size={"sm"}
+          style={
+            labelWidth
+              ? {
+                  width: labelWidth || "auto",
+                }
+              : {}
+          }
+          onLayout={onLabelLayout}
+        >
+          {label}
+        </AppText>
+      </View>
 
       <AppText weight="bold" color="subText2" size={"sm"}>
         :
@@ -58,9 +67,10 @@ const Information = ({
         )}
       </View>
 
-      {editable && (
+      {mode !== "view" && (
         <View>
           <TouchableOpacity
+            onPress={onPress}
             className="px-3 py-1.5 items-center justify-center rounded"
             style={{ backgroundColor: theme.background }}
           >

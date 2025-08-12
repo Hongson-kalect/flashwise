@@ -1,6 +1,6 @@
 export const lightTheme = {
   primary: "#2563eb", // Xanh da trời chủ đạo
-  secondary: "#FE9900", // Xanh phụ nhẹ hơn
+  secondary: "#FF7700", // Xanh phụ nhẹ hơn
   tertiary: "#BBDEFB", // Xanh phụ nhạt nhất
   title: "#0D47A1", // Màu tiêu đề đậm hơn
 

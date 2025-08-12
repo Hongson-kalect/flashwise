@@ -1,9 +1,10 @@
 import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import PhatAm from "@/components/PhatAm";
+import PhienAm from "@/components/PhienAm";
 import { useTheme } from "@/providers/Theme";
 import { AudioType } from "@/stores/recordingStore";
-import { playAudio } from "@/utils/audioPlay";
 import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { useLocalSearchParams } from "expo-router/build/hooks";
@@ -12,12 +13,12 @@ import {
   LayoutChangeEvent,
   ScrollView,
   StatusBar,
-  TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
 import LabelInformation from "../../components/labelInformation";
 import TranslateDetailHeader from "./components/header";
+import WordTitle from "../../components/wordTitle";
 
 export default function TranslateCreate() {
   const { theme } = useTheme();
@@ -47,27 +48,9 @@ export default function TranslateCreate() {
           }}
         >
           <View className="items-center justify-center">
-            <AppText color="primary" weight="bold" size={36}>
-              Chạy
-            </AppText>
-            <AppText size={"sm"} color={"subText3"}>
-              /caːj˧˦/
-            </AppText>
-            <TouchableOpacity
-              onPress={() => playAudio(audio?.uri || "", sound)}
-              disabled={!audio?.uri}
-              style={{
-                backgroundColor: audio?.uri ? theme.primary : theme.subText3,
-              }}
-              className=" border-gray-400 rounded-lg h-16 w-16 items-center justify-center mt-2"
-            >
-              <AppIcon
-                name={"volume-2"}
-                branch="feather"
-                color="white"
-                size={32}
-              />
-            </TouchableOpacity>
+            <WordTitle>Chạy</WordTitle>
+            <PhienAm>/caːj˧˦/</PhienAm>
+            <PhatAm audio={audio} disabled={!audio?.uri} sound={sound} />
           </View>
 
           <View className="mt-8">

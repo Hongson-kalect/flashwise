@@ -31,7 +31,7 @@ const WordCreateAdvanceForm = ({
         <WordLink
           labelWidth={labelWidth}
           onLabelLayout={onLabelLayout}
-          editable
+          mode="create"
           label="Liên quan"
           value={[{ value: "search" }]}
           onPress={() => openWordSelectModal({ type: "related" })}
@@ -39,7 +39,7 @@ const WordCreateAdvanceForm = ({
         <WordLink
           labelWidth={labelWidth}
           onLabelLayout={onLabelLayout}
-          editable
+          mode="create"
           label="Đồng nghĩa"
           value={[{ value: "search" }]}
           onPress={() => openWordSelectModal({ type: "related" })}
@@ -47,7 +47,7 @@ const WordCreateAdvanceForm = ({
         <WordLink
           labelWidth={labelWidth}
           onLabelLayout={onLabelLayout}
-          editable
+          mode="create"
           label="Trái nghĩa"
           value={[{ value: "search" }]}
           onPress={() => openWordSelectModal({ type: "related" })}
@@ -55,7 +55,7 @@ const WordCreateAdvanceForm = ({
         <WordLink
           labelWidth={labelWidth}
           onLabelLayout={onLabelLayout}
-          editable
+          mode="create"
           label="Đồng âm"
           value={[{ value: "search" }]}
           onPress={() => openWordSelectModal({ type: "related" })}
@@ -63,7 +63,7 @@ const WordCreateAdvanceForm = ({
         <WordLink
           labelWidth={labelWidth}
           onLabelLayout={onLabelLayout}
-          editable
+          mode="create"
           label="Biến thể"
           value={[
             { value: "ceck" },
@@ -76,7 +76,7 @@ const WordCreateAdvanceForm = ({
         <Information
           labelWidth={labelWidth}
           onLabelLayout={onLabelLayout}
-          editable
+          mode="create"
           label="Cụm từ"
           value="Úm ba la xì bùa"
           onPress={() =>
@@ -86,7 +86,7 @@ const WordCreateAdvanceForm = ({
         <Information
           onLabelLayout={onLabelLayout}
           labelWidth={labelWidth}
-          editable
+          mode="create"
           label="Note"
           value="Rất trang trọng"
           onPress={() =>

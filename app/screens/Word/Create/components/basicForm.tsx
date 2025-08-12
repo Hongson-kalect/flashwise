@@ -2,7 +2,7 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import { useTheme } from "@/providers/Theme";
-import useRecordingStore, { AudioType } from "@/stores/recordingStore";
+import { AudioType } from "@/stores/recordingStore";
 import { playAudio } from "@/utils/audioPlay";
 import { startRecording } from "@/utils/audioRecord";
 import { pickAudio } from "@/utils/pickaudio";
@@ -11,13 +11,7 @@ import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
 import { useState } from "react";
-import {
-  Image,
-  LayoutChangeEvent,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Image, LayoutChangeEvent, TouchableOpacity, View } from "react-native";
 import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
@@ -39,12 +33,10 @@ const WordCreateBasicForm = ({
 }: Props) => {
   const { theme } = useTheme();
   const [image, setImage] = useState<ImageResult | null>(null);
-  const { onRecording, setOnRecording } = useRecordingStore();
   const [audio, setAudio] = useState<DocumentPickerAsset | AudioType | null>(
     null
   );
   const sound = useState<Audio.Sound | null>(null);
-  const { width, height } = useWindowDimensions();
 
   const handlePickImage = async () => {
     const result = await pickImage();
@@ -125,7 +117,7 @@ const WordCreateBasicForm = ({
         <Information
           labelWidth={labelWidth}
           onLabelLayout={onLabelLayout}
-          editable
+          // mode="create"
           label="Loại từ"
           value=""
           onPress={() =>
@@ -142,7 +134,7 @@ const WordCreateBasicForm = ({
         <Information
           onLabelLayout={onLabelLayout}
           labelWidth={labelWidth}
-          editable
+          mode="create"
           label="Phiên âm"
           value="Phiên âm"
           onPress={() => openInputModal({ title: "Phiên âm", field: "" })}
@@ -150,7 +142,7 @@ const WordCreateBasicForm = ({
         <Information
           onLabelLayout={onLabelLayout}
           labelWidth={labelWidth}
-          editable
+          mode="create"
           label="Phát âm"
           value={
             <View className="flex-row gap-2">
