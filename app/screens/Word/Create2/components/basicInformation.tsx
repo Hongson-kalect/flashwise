@@ -1,4 +1,3 @@
-import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import EditIcon from "@/components/icons/editIcon";
@@ -52,8 +51,20 @@ const BasicInformation = ({
   return (
     <View>
       <View className="items-center mb-6">
+        <TouchableOpacity
+          onPress={() => alert("Đổi Ngôn ngữ em ây")}
+          className=" w-full mr-4 flex-row gap-2 items-center justify-end"
+        >
+          <View className="-scale-x-100">
+            <EditIcon />
+          </View>
+          <View className="rounded bg-red-400 h-10 w-16"></View>
+        </TouchableOpacity>
+
         {/* <WordTitle>Run</WordTitle> */}
-        <WordInput editable={mode !== "view"} />
+        <View className="py-2 w-full">
+          <WordInput editable={true} />
+        </View>
         <View className="flex-row gap-2 items-center mt-2">
           <TouchableOpacity
             onPress={() =>
@@ -70,7 +81,8 @@ const BasicInformation = ({
               </View>
             )}
             <Entypo name="sound" size={16} color={theme.subText3} />
-            <PhienAm> /caːj˧˦/</PhienAm>
+            <PhienAm> Phiên âm...</PhienAm>
+            {/* <PhienAm> /caːj˧˦/</PhienAm> */}
           </TouchableOpacity>
           <View
             style={{ height: 20, borderRightWidth: 0.5, borderColor: "gray" }}
@@ -82,8 +94,11 @@ const BasicInformation = ({
             }
             className="flex-1 gap-2 flex-row items-center"
           >
-            <AppText size={"sm"} color="subText2">
+            {/* <AppText size={"sm"} color="subText2">
               Động từ (v)
+            </AppText> */}
+            <AppText size={"sm"} color="subText3">
+              Từ loại...
             </AppText>
 
             {mode !== "view" && (
@@ -91,27 +106,35 @@ const BasicInformation = ({
             )}
           </TouchableOpacity>
         </View>
-        <View className="flex-row items-center justify-center gap-2 mt-2">
-          {/* <AppText></AppText> */}
-          {mode !== "view" && (
-            <Animated.View entering={SlideInLeft} exiting={SlideOutLeft}>
-              <AudioPicker />
-            </Animated.View>
-          )}
-          <PhatAm audio={audio} sound={sound} disabled={!audio?.uri} />
+        <View>
+          <View className="flex-row items-center justify-center gap-2 mt-2">
+            {/* <AppText></AppText> */}
+            {mode !== "view" && (
+              <Animated.View entering={SlideInLeft} exiting={SlideOutLeft}>
+                <AudioPicker />
+              </Animated.View>
+            )}
+            <PhatAm audio={audio} sound={sound} disabled={!audio?.uri} />
 
-          {mode !== "view" && (
-            <Animated.View entering={SlideInRight} exiting={SlideOutRight}>
-              <AudioRecoder />
-            </Animated.View>
-          )}
+            {mode !== "view" && (
+              <Animated.View entering={SlideInRight} exiting={SlideOutRight}>
+                <AudioRecoder />
+              </Animated.View>
+            )}
+          </View>
+          <View className="flex-row items-center justify-center">
+            <AppText size={"sm"} color="subText3" style={{ marginTop: 4 }}>
+              Phát âm của từ...
+            </AppText>
+          </View>
         </View>
       </View>
       <AppTitle title="Định nghĩa 📖" />
       <View>
         <Information
           mode={mode}
-          value={"Cái này là mô phỏng của chức năng định nghĩa"}
+          placeholder="Nhập định nghĩa của từ..."
+          // value={"Cái này là mô phỏng của chức năng định nghĩa"}
         />
       </View>
 
@@ -128,12 +151,18 @@ const BasicInformation = ({
           </View>
         ) : (
           // <TouchableOpacity className="h-40 w-40 bg-gray-200 rounded-lg p-4">
-          <AppIcon
-            name={"image"}
-            branch="feather"
-            size={140}
-            color="subText3"
-          />
+          <TouchableOpacity
+            // onPress={handlePickImage}
+            style={{
+              borderColor: theme.secondary,
+              backgroundColor: theme.secondary + "10",
+            }}
+            className="h-40 w-40 border border-dashed  rounded-lg p-4"
+          >
+            <AppText color="subText2" size={"xs"}>
+              Hình minh hoạ
+            </AppText>
+          </TouchableOpacity>
           //  </TouchableOpacity>
         )}
       </View>

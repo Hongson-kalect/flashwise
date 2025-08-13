@@ -3,16 +3,24 @@ import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { TextInput, View } from "react-native";
 
-const WordInput = () => {
+type Props = {
+  editable?: boolean;
+  value?: string;
+};
+const WordInput = (props: Props) => {
   const { theme } = useTheme();
   const [focusing, setFocusing] = useState(false);
   return (
     <View className="flex-row gap-4 items-center">
       <View
-        className="flex-1 h-14 px-2 justify-end relative"
+        className="flex-1  px-2 justify-end relative"
         style={{
-          borderBottomWidth: 3,
-          borderBottomColor: focusing ? theme.primary : theme.disabled,
+          borderBottomWidth: 2,
+          borderBottomColor: props.editable
+            ? focusing
+              ? theme.primary
+              : theme.disabled
+            : "transparent",
         }}
       >
         <View>
@@ -20,14 +28,21 @@ const WordInput = () => {
             autoFocus // Không có dữ liệu thì sẽ auto focus
             onFocus={() => setFocusing(true)}
             onBlur={() => setFocusing(false)}
-            className="py-2"
+            className="py-0"
+            readOnly={!props.editable}
+            multiline
+            scrollEnabled={false}
             style={{
-              fontSize: 24,
-              lineHeight: 34,
-              fontWeight: 600,
+              fontSize: 36,
+              lineHeight: 36 * 1.4,
+              fontWeight: 500,
               color: theme.primary,
+              textAlign: "center",
+              // width: 200,
+              paddingHorizontal: 10,
             }}
             placeholder="Word..."
+            value={props.value}
             placeholderTextColor={theme.disabled}
           />
         </View>
@@ -41,12 +56,11 @@ const WordInput = () => {
         />
       </View>
 
-      <View className="w-24 h-14 items-center justify-center">
+      {/* <View className="w-24 h-14 items-center justify-center">
         <View
-          //   style={{ backgroundColor: "red" }}
           className="h-12 w-20 bg-red-500"
         ></View>
-      </View>
+      </View> */}
     </View>
   );
 };

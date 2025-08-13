@@ -10,6 +10,7 @@ import {
 } from "../../Create/screen";
 
 type Props = {
+  mode?: "create" | "update" | "view";
   labelWidth?: number;
   onLabelLayout?: (event: LayoutChangeEvent) => void;
   openInputModal: (props: CreateWordInputModalProps) => void;
@@ -18,6 +19,7 @@ type Props = {
 };
 
 const WordAdvanceInformation = ({
+  mode = "view",
   labelWidth,
   onLabelLayout,
   openInputModal,
@@ -32,7 +34,7 @@ const WordAdvanceInformation = ({
       <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="create"
+        mode={mode}
         icon={
           <AppIcon
             branch="feather"
@@ -42,35 +44,35 @@ const WordAdvanceInformation = ({
           />
         }
         label="Liên quan"
-        value={[{ value: "search" }]}
+        value={[]}
         onPress={() => openWordSelectModal({ type: "related" })}
       />
       <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="create"
+        mode={mode}
         icon={
           <AppIcon branch="feather" name={"copy"} size={12} color="subText2" />
         }
         label="Đồng nghĩa"
-        value={[{ value: "search" }]}
+        value={[]}
         onPress={() => openWordSelectModal({ type: "related" })}
       />
       <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="create"
+        mode={mode}
         icon={
           <AppIcon branch="antd" name={"retweet"} size={12} color="subText2" />
         }
         label="Trái nghĩa"
-        value={[{ value: "search" }]}
+        value={[]}
         onPress={() => openWordSelectModal({ type: "related" })}
       />
       <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="create"
+        mode={mode}
         icon={
           <AppIcon
             branch="feather"
@@ -80,13 +82,13 @@ const WordAdvanceInformation = ({
           />
         }
         label="Đồng âm"
-        value={[{ value: "search" }]}
+        value={[]}
         onPress={() => openWordSelectModal({ type: "related" })}
       />
       <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="create"
+        mode={mode}
         icon={
           <AppIcon
             branch="fa6"
@@ -96,21 +98,18 @@ const WordAdvanceInformation = ({
           />
         }
         label="Biến thể"
-        value={[
-          { value: "ceck" },
-          { value: "ceck", link_to: "bruh" },
-          { value: "ceck", link_to: "broh" },
-        ]}
+        value={[]}
         onPress={() => openWordSelectModal({ type: "related" })}
       />
 
       <Information
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="create"
+        mode={mode}
         icon={<AppIcon branch="fa6" name={"pen"} size={12} color="subText2" />}
         label="Cụm từ"
-        value="Úm ba la xì bùa"
+        // value="Úm ba la xì bùa"
+        placeholder="Không có"
         onPress={() =>
           openInputModal({ type: "input", title: "Cụm từ", field: "" })
         }
@@ -118,7 +117,7 @@ const WordAdvanceInformation = ({
       <Information
         onLabelLayout={onLabelLayout}
         labelWidth={labelWidth}
-        mode="create"
+        mode={mode}
         icon={
           <AppIcon
             branch="fa6"
@@ -128,7 +127,8 @@ const WordAdvanceInformation = ({
           />
         }
         label="Note"
-        value="Rất trang trọng"
+        value=""
+        placeholder="Nhập ghi chú"
         onPress={() =>
           openRadioModal({
             field: "note",

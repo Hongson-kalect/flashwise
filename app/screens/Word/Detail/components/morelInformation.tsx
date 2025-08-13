@@ -3,13 +3,14 @@ import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { Entypo } from "@expo/vector-icons";
 import { LayoutChangeEvent, View } from "react-native";
-import Information from "../../Create/components/information";
+import Information from "../../../../../components/output/information";
 import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
 } from "../../Create/screen";
 
 type Props = {
+  mode?: "create" | "update" | "view";
   labelWidth: number;
   onLabelLayout: (event: LayoutChangeEvent) => void;
   openInputModal: (props: CreateWordInputModalProps) => void;
@@ -17,6 +18,7 @@ type Props = {
 };
 
 const WordMoreInformation = ({
+  mode = "view",
   labelWidth,
   onLabelLayout,
   openInputModal,
@@ -28,7 +30,7 @@ const WordMoreInformation = ({
       <Information
         onLabelLayout={onLabelLayout}
         labelWidth={labelWidth}
-        mode="view"
+        mode={mode}
         label="Example"
         icon={<AppIcon branch="fa6" name={"book"} size={12} color="subText2" />}
         value="Em là búp măng non, em lớn lên trong mùa cách mạng"
@@ -40,7 +42,7 @@ const WordMoreInformation = ({
       <Information
         onLabelLayout={onLabelLayout}
         labelWidth={labelWidth}
-        mode="view"
+        mode={mode}
         icon={<Entypo name="gauge" size={12} color={theme.subText2} />}
         label="Độ khó"
         value="A1"
@@ -63,7 +65,7 @@ const WordMoreInformation = ({
       <Information
         onLabelLayout={onLabelLayout}
         labelWidth={labelWidth}
-        mode="view"
+        mode={mode}
         label="Độ phổ biến"
         icon={<AppIcon branch="fa6" name={"fire"} size={12} color="subText2" />}
         value="Rất phổ biến"
@@ -84,7 +86,7 @@ const WordMoreInformation = ({
       <Information
         onLabelLayout={onLabelLayout}
         labelWidth={labelWidth}
-        mode="view"
+        mode={mode}
         icon={
           <AppIcon branch="feather" name={"image"} size={12} color="subText2" />
         }
@@ -95,7 +97,7 @@ const WordMoreInformation = ({
       <Information
         onLabelLayout={onLabelLayout}
         labelWidth={labelWidth}
-        mode="view"
+        mode={mode}
         icon={
           <AppIcon
             branch="fa6"

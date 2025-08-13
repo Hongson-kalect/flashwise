@@ -1,10 +1,10 @@
 import AppText from "@/components/AppText";
 import { LayoutChangeEvent, View } from "react-native";
+import Information from "../../../../../components/output/information";
 import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
 } from "../screen";
-import Information from "./information";
 
 type Props = {
   labelWidth: number;

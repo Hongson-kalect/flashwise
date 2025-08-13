@@ -23,7 +23,9 @@ const WordDetail = () => {
   const { present } = useBottomSheet();
   const { id } = useLocalSearchParams();
   const [labelWidth, setLabelWidth] = useState(0);
-  const [pageMode, setPageMode] = useState<"view" | "update">("view");
+  const [pageMode, setPageMode] = useState<"view" | "update" | "create">(
+    "create"
+  );
   const onLabelLayout = (event: LayoutChangeEvent) => {
     const { width } = event.nativeEvent.layout;
 
@@ -33,7 +35,7 @@ const WordDetail = () => {
   const openInputModal = ({
     title,
     field,
-    type = "input",
+    type = "prompt",
   }: CreateWordInputModalProps) => {
     setGlobalModal({
       type: type,
@@ -71,7 +73,7 @@ const WordDetail = () => {
   return (
     <View style={{ backgroundColor: theme.background }} className="flex-1">
       <View>
-        <WordDetailHeader mode={pageMode} setMode={setPageMode} />
+        <WordDetailHeader />
       </View>
       <AppDivider />
 

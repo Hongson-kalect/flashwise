@@ -1,9 +1,11 @@
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import EditIcon from "@/components/icons/editIcon";
 import { useAppNavigation } from "@/hooks/useNavigation";
 import { useTheme } from "@/providers/Theme";
 import { useRouter } from "expo-router";
 import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
+import Animated, { LinearTransition } from "react-native-reanimated";
 
 type Props = {
   label: string;
@@ -25,69 +27,65 @@ const WordLink = ({
 }: Props) => {
   const { theme } = useTheme();
   return (
-    <TouchableOpacity
-      style={{
-        minHeight: 28,
-      }}
-      onPress={onPress}
-      disabled={mode !== "create"}
-      className="flex-row gap-2"
-    >
-      <View className="flex-row gap-1 items-center h-6">
-        {icon && <View style={{ width: 14 }}>{icon}</View>}
+    <Animated.View layout={LinearTransition.springify()}>
+      <TouchableOpacity
+        onPress={onPress}
+        disabled={mode === "view"}
+        style={{
+          minHeight: 28,
+        }}
+        className="flex-row gap-2"
+      >
+        <View className="flex-row gap-1 items-center h-6">
+          {icon && <View style={{ width: 14 }}>{icon}</View>}
 
-        <AppText
-          weight="100"
-          color="subText2"
-          size={"sm"}
-          style={
-            labelWidth
-              ? {
-                  width: labelWidth || "auto",
-                }
-              : {}
-          }
-          onLayout={onLabelLayout}
-        >
-          {label}
-        </AppText>
-      </View>
-
-      <AppText weight="bold" color="subText2" size={"sm"}>
-        :
-      </AppText>
-      <View className="flex-1 flex-row flex-wrap gap-1">
-        {value?.length ? (
-          value.map((item, index) => (
-            <LinkElement
-              key={index}
-              isLast={index === value.length - 1}
-              value={item.value}
-              link_to={item.link_to}
-              isEditable={mode === "create"}
-            />
-          ))
-        ) : (
-          <AppText color="subText3">Chưa có</AppText>
-        )}
-      </View>
-      {mode !== "view" && (
-        <View>
-          <TouchableOpacity
-            className="px-3 py-1.5 items-center justify-center rounded"
-            style={{ backgroundColor: theme.background }}
+          <AppText
+            weight="100"
+            color="subText2"
+            size={"sm"}
+            style={
+              labelWidth
+                ? {
+                    width: labelWidth || "auto",
+                  }
+                : {}
+            }
+            onLayout={onLabelLayout}
           >
-            <AppIcon
-              onPress={onPress}
-              name="edit"
-              branch="antd"
-              size={16}
-              color={theme.secondary}
-            />
-          </TouchableOpacity>
+            {label}
+          </AppText>
         </View>
-      )}
-    </TouchableOpacity>
+
+        <AppText weight="bold" color="subText2" size={"sm"}>
+          :
+        </AppText>
+        <View className="flex-1 flex-row flex-wrap gap-1">
+          {value?.length ? (
+            value.map((item, index) => (
+              <LinkElement
+                key={index}
+                isLast={index === value.length - 1}
+                value={item.value}
+                link_to={item.link_to}
+                isEditable={mode === "create"}
+              />
+            ))
+          ) : (
+            <AppText color="subText3">Chưa có</AppText>
+          )}
+        </View>
+        {mode !== "view" && (
+          <View>
+            <TouchableOpacity
+              className="px-3 py-1.5 items-center justify-center rounded"
+              // style={{ backgroundColor: theme.background }}
+            >
+              <EditIcon />
+            </TouchableOpacity>
+          </View>
+        )}
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 

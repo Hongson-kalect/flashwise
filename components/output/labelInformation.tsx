@@ -1,6 +1,7 @@
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
+import EditIcon from "../icons/editIcon";
 
 type Props = {
   label: string;
@@ -9,6 +10,7 @@ type Props = {
   onPress?: () => void;
   labelWidth?: number;
   onLabelLayout?: (event: LayoutChangeEvent) => void;
+  mode?: "create" | "update" | "view";
 };
 const LabelInformation = ({
   label,
@@ -17,6 +19,7 @@ const LabelInformation = ({
   value,
   labelWidth,
   onLabelLayout,
+  mode,
 }: Props) => {
   const { theme } = useTheme();
 
@@ -41,15 +44,28 @@ const LabelInformation = ({
       {/* <AppText weight="bold" color="subText2" size={"sm"}>
         :
       </AppText> */}
-      <View className=" ml-6">
-        {value ? (
-          typeof value === "string" ? (
-            <AppText>{value}</AppText>
+      <View className="ml-6 flex-row items-center">
+        <View className="flex-1">
+          {value ? (
+            typeof value === "string" ? (
+              <AppText>{value}</AppText>
+            ) : (
+              value
+            )
           ) : (
-            value
-          )
-        ) : (
-          <AppText color="subText3">Chưa có</AppText>
+            <AppText color="subText3">Chưa có</AppText>
+          )}
+        </View>
+        {mode !== "view" && (
+          <View>
+            <TouchableOpacity
+              onPress={onPress}
+              className="px-3 py-1.5 items-center justify-center rounded"
+              // style={{ backgroundColor: theme.background }}
+            >
+              <EditIcon />
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 

@@ -1,8 +1,8 @@
 import AppIcon from "@/components/AppIcon";
 import AppTitle from "@/components/AppTitle";
 import { LayoutChangeEvent, View } from "react-native";
-import Information from "../../Create/components/information";
-import WordLink from "../../Create/components/wordLink";
+import Information from "../../../../../components/output/information";
+import WordLink from "../../../../../components/output/wordLink";
 import {
   bottomSheetTitle,
   CreateWordInputModalProps,
@@ -10,6 +10,7 @@ import {
 } from "../../Create/screen";
 
 type Props = {
+  mode?: "create" | "update" | "view";
   labelWidth?: number;
   onLabelLayout?: (event: LayoutChangeEvent) => void;
   openInputModal: (props: CreateWordInputModalProps) => void;
@@ -18,6 +19,7 @@ type Props = {
 };
 
 const WordAdvanceInformation = ({
+  mode = "view",
   labelWidth,
   onLabelLayout,
   openInputModal,
@@ -32,7 +34,7 @@ const WordAdvanceInformation = ({
       <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="update"
+        mode={mode}
         icon={
           <AppIcon
             branch="feather"
@@ -48,7 +50,7 @@ const WordAdvanceInformation = ({
       <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="update"
+        mode={mode}
         icon={
           <AppIcon branch="feather" name={"copy"} size={12} color="subText2" />
         }
@@ -59,7 +61,7 @@ const WordAdvanceInformation = ({
       <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="update"
+        mode={mode}
         icon={
           <AppIcon branch="antd" name={"retweet"} size={12} color="subText2" />
         }
@@ -70,7 +72,7 @@ const WordAdvanceInformation = ({
       <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="update"
+        mode={mode}
         icon={
           <AppIcon
             branch="feather"
@@ -86,7 +88,7 @@ const WordAdvanceInformation = ({
       <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="update"
+        mode={mode}
         icon={
           <AppIcon
             branch="fa6"
@@ -107,7 +109,7 @@ const WordAdvanceInformation = ({
       <Information
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
-        mode="update"
+        mode={mode}
         icon={<AppIcon branch="fa6" name={"pen"} size={12} color="subText2" />}
         label="Cụm từ"
         value="Úm ba la xì bùa"
@@ -118,7 +120,7 @@ const WordAdvanceInformation = ({
       <Information
         onLabelLayout={onLabelLayout}
         labelWidth={labelWidth}
-        mode="update"
+        mode={mode}
         icon={
           <AppIcon
             branch="fa6"

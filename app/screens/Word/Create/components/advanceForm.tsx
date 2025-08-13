@@ -1,12 +1,12 @@
 import Arccodion from "@/components/AppArccodion";
 import { LayoutChangeEvent, View } from "react-native";
+import Information from "../../../../../components/output/information";
+import WordLink from "../../../../../components/output/wordLink";
 import {
   bottomSheetTitle,
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
 } from "../screen";
-import Information from "./information";
-import WordLink from "./wordLink";
 
 type Props = {
   labelWidth?: number;

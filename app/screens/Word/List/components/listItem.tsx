@@ -18,16 +18,16 @@ const WordListItem = () => {
         Từ
       </AppText>
       <AppText size={"sm"} className="w-16 text-center">
-        {Math.floor(Math.random() * 10)}
+        {["n", "v", "adj"][Math.floor(Math.random() * 3)]}
       </AppText>
       <AppText size={"sm"} className="w-16 text-center">
-        {["n", "v", "adj"][Math.floor(Math.random() * 3)]}
+        {Math.floor(Math.random() * 10)}
       </AppText>
       {/* <View className="w-8 h-4 bg-red-400 text-center"></View> */}
 
-      <AppText size={"sm"} className="w-24 text-center" numberOfLines={1}>
+      {/* <AppText size={"sm"} className="w-24 text-center" numberOfLines={1}>
         Collection nêm
-      </AppText>
+      </AppText> */}
     </TouchableOpacity>
   );
 };

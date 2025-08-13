@@ -7,11 +7,11 @@ import useModalStore from "@/stores/modalStore";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { LayoutChangeEvent, ScrollView, View } from "react-native";
+import WordInput from "../../../../components/input/wordInput";
 import WordCreateAdvanceForm from "./components/advanceForm";
 import WordCreateBasicForm from "./components/basicForm";
 import CreateHeader from "./components/header";
 import WordCreateMoreForm from "./components/moreForm";
-import WordInput from "./components/wordInput";
 import WordSelectForm from "./components/wordSelectForm";
 
 export type CreateWordInputModalProps = {

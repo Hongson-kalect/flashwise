@@ -1,5 +1,4 @@
 import { AppDivider } from "@/components/AppDivider";
-import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { View } from "react-native";
@@ -27,17 +26,17 @@ const CardList = () => {
           Word
         </AppText>
         <AppText color="constract" className="w-16 text-center" weight="bold">
-          Level
+          Type
         </AppText>
         <AppText color="constract" className="w-16 text-center" weight="bold">
-          Type
+          Level
         </AppText>
         {/* <AppText className="w-12 text-center">Nation</AppText> */}
 
-        <View className="w-24 items-center">
-          {/* Collection nêm */}
+        {/* Collection nêm */}
+        {/* <View className="w-24 items-center">
           <AppIcon branch="mui" name={"folder"} size={24} color="white" />
-        </View>
+        </View> */}
       </View>
 
       <View

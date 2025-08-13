@@ -23,7 +23,7 @@ const PhatAm = ({ audio, disabled, sound }: Props) => {
       style={{
         backgroundColor: audio?.uri ? theme.primary : theme.subText3,
       }}
-      className=" border-gray-400 rounded-lg h-16 w-16 items-center justify-center mt-2"
+      className=" border-gray-400 rounded-lg h-16 w-16 items-center justify-center"
     >
       <AppIcon name={"volume-2"} branch="feather" color="white" size={32} />
     </TouchableOpacity>

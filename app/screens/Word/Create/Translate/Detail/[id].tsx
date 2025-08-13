@@ -1,6 +1,8 @@
 import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import EditIcon from "@/components/icons/editIcon";
+import WordInput from "@/components/input/wordInput";
 import PhatAm from "@/components/PhatAm";
 import PhienAm from "@/components/PhienAm";
 import { useTheme } from "@/providers/Theme";
@@ -13,17 +15,28 @@ import {
   LayoutChangeEvent,
   ScrollView,
   StatusBar,
+  TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
-import LabelInformation from "../../components/labelInformation";
+import Animated, {
+  SlideInLeft,
+  SlideInRight,
+  SlideOutLeft,
+  SlideOutRight,
+} from "react-native-reanimated";
+import LabelInformation from "../../../../../../components/output/labelInformation";
+import AudioPicker from "../../../components/AudioPicker";
+import AudioRecoder from "../../../components/AudioRecorder";
 import TranslateDetailHeader from "./components/header";
-import WordTitle from "../../components/wordTitle";
 
 export default function TranslateCreate() {
   const { theme } = useTheme();
   const { height } = useWindowDimensions();
   const [labelWidth, setLabelWidth] = useState(0);
+  const [pageMode, setPageMode] = useState<"view" | "update" | "create">(
+    "view"
+  );
   const [audio, setAudio] = useState<DocumentPickerAsset | AudioType | null>(
     null
   );
@@ -38,7 +51,12 @@ export default function TranslateCreate() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: theme.background }}>
-      <TranslateDetailHeader title={"Run"} id={id} />
+      <TranslateDetailHeader
+        title={"Run"}
+        id={id}
+        mode={pageMode}
+        setMode={setPageMode}
+      />
       <ScrollView keyboardShouldPersistTaps="handled" className="px-2">
         {/* <AppText>Chọn quốc gia</AppText> */}
         <View
@@ -48,19 +66,43 @@ export default function TranslateCreate() {
           }}
         >
           <View className="items-center justify-center">
-            <WordTitle>Chạy</WordTitle>
-            <PhienAm>/caːj˧˦/</PhienAm>
-            <PhatAm audio={audio} disabled={!audio?.uri} sound={sound} />
+            {/* <WordTitle>Chạy</WordTitle> */}
+            <WordInput value="Chạy" />
+            <TouchableOpacity className="my-2">
+              <PhienAm>/caːj˧˦/</PhienAm>
+              {pageMode !== "view" && (
+                <View className="absolute -right-8 top-1/2 -translate-y-1/2">
+                  <EditIcon />
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* <PhatAm audio={audio} disabled={!audio?.uri} sound={sound} /> */}
+            <View className="flex-row items-center justify-center gap-2 mt-2">
+              {/* <AppText></AppText> */}
+              {pageMode !== "view" && (
+                <Animated.View entering={SlideInLeft} exiting={SlideOutLeft}>
+                  <AudioPicker />
+                </Animated.View>
+              )}
+              <PhatAm audio={audio} sound={sound} disabled={!audio?.uri} />
+
+              {pageMode !== "view" && (
+                <Animated.View entering={SlideInRight} exiting={SlideOutRight}>
+                  <AudioRecoder />
+                </Animated.View>
+              )}
+            </View>
           </View>
 
           <View className="mt-8">
             <View className="mt-2 gap-6">
+              <LabelInformation label="💡 Ví dụ" />
+              <LabelInformation label="🌎 Bản dịch khác" />
               <LabelInformation
                 label="📝 Ghi chú"
                 value={"Ngày buồn rười rượi là ngày mà em xa tâu"}
               />
-              <LabelInformation label="💡 Ví dụ" />
-              <LabelInformation label="🌎 Bản dịch khác" />
             </View>
           </View>
         </View>

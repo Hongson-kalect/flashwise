@@ -12,11 +12,11 @@ import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
 import { useState } from "react";
 import { Image, LayoutChangeEvent, TouchableOpacity, View } from "react-native";
+import Information from "../../../../../components/output/information";
 import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
 } from "../screen";
-import Information from "./information";
 
 type Props = {
   labelWidth: number;

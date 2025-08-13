@@ -11,7 +11,7 @@ import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
 import { useState } from "react";
 import { Image, LayoutChangeEvent, View } from "react-native";
-import WordTitle from "../../Create/components/wordTitle";
+import WordTitle from "../../../../../components/output/wordTitle";
 
 interface Props {
   labelWidth: number;

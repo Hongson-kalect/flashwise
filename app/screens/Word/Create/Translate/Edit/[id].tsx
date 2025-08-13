@@ -14,8 +14,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import Information from "../../components/information";
-import WordInput from "../../components/wordInput";
+import WordInput from "../../../../../../components/input/wordInput";
+import Information from "../../../../../../components/output/information";
 import CreateTranslateHeader from "./components/header";
 
 export default function TranslateEdit() {
