@@ -1,11 +1,14 @@
 import AppButton from "@/components/AppButton";
 import { AppDivider } from "@/components/AppDivider";
+import AppIcon from "@/components/AppIcon";
+import AppText from "@/components/AppText";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { LayoutChangeEvent, ScrollView, View } from "react-native";
+import Animated, { SlideInDown, SlideOutDown } from "react-native-reanimated";
 import WordSelectForm from "../Create/components/wordSelectForm";
 import {
   bottomSheetTitle,
@@ -123,7 +126,6 @@ const WordDetail = () => {
             }
           />
         </View>
-
         <View className="h-10"></View>
       </ScrollView>
 

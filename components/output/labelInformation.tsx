@@ -6,7 +6,6 @@ import EditIcon from "../icons/editIcon";
 type Props = {
   label: string;
   value?: React.ReactNode;
-  editable?: boolean;
   onPress?: () => void;
   labelWidth?: number;
   onLabelLayout?: (event: LayoutChangeEvent) => void;
@@ -14,17 +13,20 @@ type Props = {
 };
 const LabelInformation = ({
   label,
-  editable,
   onPress,
   value,
   labelWidth,
   onLabelLayout,
-  mode,
+  mode = "view",
 }: Props) => {
   const { theme } = useTheme();
 
   return (
-    <TouchableOpacity disabled={!editable} onPress={onPress} className="gap-2">
+    <TouchableOpacity
+      disabled={mode === "view"}
+      onPress={onPress}
+      className="gap-2"
+    >
       <AppText
         weight="100"
         color="subText2"
@@ -45,7 +47,7 @@ const LabelInformation = ({
         :
       </AppText> */}
       <View className="ml-6 flex-row items-center">
-        <View className="flex-1">
+        <View style={{ minHeight: 28 }} className="flex-1">
           {value ? (
             typeof value === "string" ? (
               <AppText>{value}</AppText>

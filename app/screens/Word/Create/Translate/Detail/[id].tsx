@@ -1,6 +1,3 @@
-import AppButton from "@/components/AppButton";
-import AppIcon from "@/components/AppIcon";
-import AppText from "@/components/AppText";
 import EditIcon from "@/components/icons/editIcon";
 import WordInput from "@/components/input/wordInput";
 import PhatAm from "@/components/PhatAm";
@@ -82,14 +79,22 @@ export default function TranslateCreate() {
               {/* <AppText></AppText> */}
               {pageMode !== "view" && (
                 <Animated.View entering={SlideInLeft} exiting={SlideOutLeft}>
-                  <AudioPicker />
+                  <AudioPicker
+                    onAudioChange={(result) => {
+                      setAudio(result);
+                    }}
+                  />
                 </Animated.View>
               )}
               <PhatAm audio={audio} sound={sound} disabled={!audio?.uri} />
 
               {pageMode !== "view" && (
                 <Animated.View entering={SlideInRight} exiting={SlideOutRight}>
-                  <AudioRecoder />
+                  <AudioRecoder
+                    onAudioChange={(result) => {
+                      setAudio(result);
+                    }}
+                  />
                 </Animated.View>
               )}
             </View>
@@ -97,23 +102,15 @@ export default function TranslateCreate() {
 
           <View className="mt-8">
             <View className="mt-2 gap-6">
-              <LabelInformation label="💡 Ví dụ" />
-              <LabelInformation label="🌎 Bản dịch khác" />
+              <LabelInformation mode={pageMode} label="💡 Ví dụ" />
+              <LabelInformation mode={pageMode} label="🌎 Bản dịch khác" />
               <LabelInformation
+                mode={pageMode}
                 label="📝 Ghi chú"
                 value={"Ngày buồn rười rượi là ngày mà em xa tâu"}
               />
             </View>
           </View>
-        </View>
-
-        <View className="my-12">
-          <AppButton size="lg" type="error" title="Delete" onPress={() => {}}>
-            <AppIcon name="trash" branch="feather" size={20} color="white" />
-            <AppText color="white" size={"lg"}>
-              Delete
-            </AppText>
-          </AppButton>
         </View>
       </ScrollView>
     </View>

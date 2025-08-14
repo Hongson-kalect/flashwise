@@ -47,7 +47,6 @@ const WordCreateBasicForm = ({
   };
 
   const handlePickAudio = async () => {
-    // setIsRecording(true);
     const result = await pickAudio();
     if (result) {
       setAudio(result);

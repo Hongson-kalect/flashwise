@@ -111,14 +111,14 @@ const BasicInformation = ({
             {/* <AppText></AppText> */}
             {mode !== "view" && (
               <Animated.View entering={SlideInLeft} exiting={SlideOutLeft}>
-                <AudioPicker />
+                <AudioPicker onAudioChange={setAudio} />
               </Animated.View>
             )}
             <PhatAm audio={audio} sound={sound} disabled={!audio?.uri} />
 
             {mode !== "view" && (
               <Animated.View entering={SlideInRight} exiting={SlideOutRight}>
-                <AudioRecoder />
+                <AudioRecoder onAudioChange={setAudio} />
               </Animated.View>
             )}
           </View>

@@ -17,10 +17,25 @@ import {
 import WordInput from "../../../../../../components/input/wordInput";
 import Information from "../../../../../../components/output/information";
 import CreateTranslateHeader from "./components/header";
+import PhienAm from "@/components/PhienAm";
+import EditIcon from "@/components/icons/editIcon";
+import Animated, {
+  SlideInLeft,
+  SlideInRight,
+  SlideOutLeft,
+  SlideOutRight,
+} from "react-native-reanimated";
+import AudioPicker from "../../../components/AudioPicker";
+import PhatAm from "@/components/PhatAm";
+import AudioRecoder from "../../../components/AudioRecorder";
+import LabelInformation from "@/components/output/labelInformation";
 
 export default function TranslateCreate() {
   const { theme } = useTheme();
   const [labelWidth, setLabelWidth] = useState(0);
+  const [pageMode, setPageMode] = useState<"view" | "update" | "create">(
+    "create"
+  );
   const [audio, setAudio] = useState<DocumentPickerAsset | AudioType | null>(
     null
   );
@@ -53,92 +68,49 @@ export default function TranslateCreate() {
   return (
     <View className="flex-1" style={{ backgroundColor: theme.background }}>
       <CreateTranslateHeader />
-      {/* <AppText>Tạo bản dịch [nhiều]</AppText> */}
-      <ScrollView keyboardShouldPersistTaps="handled" className="px-2 mt-8">
+      <ScrollView keyboardShouldPersistTaps="handled" className="px-2">
         {/* <AppText>Chọn quốc gia</AppText> */}
-        <WordInput />
-
         <View className="mt-8">
-          <Information
-            labelWidth={labelWidth}
-            onLabelLayout={onLabelLayout}
-            label="Phiên âm"
-            editable
-          />
-          <Information
-            onLabelLayout={onLabelLayout}
-            labelWidth={labelWidth}
-            editable
-            label="Phát âm"
-            value={
-              <View className="flex-row gap-2">
-                <View className="gap-2 w-1/2">
-                  <TouchableOpacity
-                    onPress={handlePickAudio}
-                    style={{ backgroundColor: theme.secondary }}
-                    className="flex-1 border-gray-400 rounded-lg h-10 px-3 py-2 items-center justify-center"
-                  >
-                    <AppText color="white" size={"sm"}>
-                      Chọn file
-                    </AppText>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={{ borderWidth: 0.5, borderColor: theme.secondary }}
-                    className="rounded-lg items-center justify-center flex-1 h-10"
-                  >
-                    <AppIcon
-                      onPress={handleStartRecording}
-                      name={"mic"}
-                      branch="feather"
-                      size={20}
-                      color={theme.secondary}
-                    />
-                  </TouchableOpacity>
+          <View className="items-center justify-center">
+            {/* <WordTitle>Chạy</WordTitle> */}
+            <WordInput value="Chạy" />
+            <TouchableOpacity className="my-2">
+              <PhienAm>/caːj˧˦/</PhienAm>
+              {pageMode !== "view" && (
+                <View className="absolute -right-8 top-1/2 -translate-y-1/2">
+                  <EditIcon />
                 </View>
+              )}
+            </TouchableOpacity>
 
-                <View className="flex-row gap-2 items-end flex-1">
-                  <TouchableOpacity
-                    onPress={() => playAudio(audio?.uri || "", sound)}
-                    disabled={!audio?.uri}
-                    style={{
-                      backgroundColor: audio?.uri
-                        ? theme.primary
-                        : theme.subText3,
-                    }}
-                    className=" border-gray-400 rounded-lg h-24 w-full items-center justify-center"
-                  >
-                    <AppIcon
-                      name={"volume-2"}
-                      branch="feather"
-                      color="white"
-                      size={32}
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            }
-          />
+            {/* <PhatAm audio={audio} disabled={!audio?.uri} sound={sound} /> */}
+            <View className="flex-row items-center justify-center gap-2 mt-2">
+              {/* <AppText></AppText> */}
+              {pageMode !== "view" && (
+                <Animated.View entering={SlideInLeft} exiting={SlideOutLeft}>
+                  <AudioPicker onAudioChange={setAudio} />
+                </Animated.View>
+              )}
+              <PhatAm audio={audio} sound={sound} disabled={!audio?.uri} />
 
-          <View className="mt-2">
-            <Information
-              labelWidth={labelWidth}
-              onLabelLayout={onLabelLayout}
-              label="Ghi chú"
-              editable
-            />
-            <Information
-              labelWidth={labelWidth}
-              onLabelLayout={onLabelLayout}
-              label="Ví dụ"
-              editable
-            />
-            <Information
-              labelWidth={labelWidth}
-              onLabelLayout={onLabelLayout}
-              label="Bản dịch khác"
-              editable
-            />
+              {pageMode !== "view" && (
+                <Animated.View entering={SlideInRight} exiting={SlideOutRight}>
+                  <AudioRecoder onAudioChange={setAudio} />
+                </Animated.View>
+              )}
+            </View>
+          </View>
+
+          <View className="mt-8">
+            <View className="mt-2 gap-6">
+              <LabelInformation mode={pageMode} label="💡 Ví dụ" />
+              <LabelInformation mode={pageMode} label="🌎 Bản dịch khác" />
+              <LabelInformation
+                mode={pageMode}
+                label="📝 Ghi chú"
+                value={"Ngày buồn rười rượi là ngày mà em xa tâu"}
+              />
+            </View>
           </View>
         </View>
       </ScrollView>
