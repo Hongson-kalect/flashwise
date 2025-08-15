@@ -1,8 +1,9 @@
-import AppIcon from "@/components/AppIcon";
-import AppText from "@/components/AppText";
+import PhatAm from "@/components/PhatAm";
+import PhienAm from "@/components/PhienAm";
+import EditIcon from "@/components/icons/editIcon";
+import LabelInformation from "@/components/output/labelInformation";
 import { useTheme } from "@/providers/Theme";
 import { AudioType } from "@/stores/recordingStore";
-import { playAudio } from "@/utils/audioPlay";
 import { startRecording } from "@/utils/audioRecord";
 import { pickAudio } from "@/utils/pickaudio";
 import { Audio } from "expo-av";
@@ -14,21 +15,16 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import WordInput from "../../../../../../components/input/wordInput";
-import Information from "../../../../../../components/output/information";
-import CreateTranslateHeader from "./components/header";
-import PhienAm from "@/components/PhienAm";
-import EditIcon from "@/components/icons/editIcon";
 import Animated, {
   SlideInLeft,
   SlideInRight,
   SlideOutLeft,
   SlideOutRight,
 } from "react-native-reanimated";
+import WordInput from "../../../../../../components/input/wordInput";
 import AudioPicker from "../../../components/AudioPicker";
-import PhatAm from "@/components/PhatAm";
 import AudioRecoder from "../../../components/AudioRecorder";
-import LabelInformation from "@/components/output/labelInformation";
+import CreateTranslateHeader from "./components/header";
 
 export default function TranslateCreate() {
   const { theme } = useTheme();
@@ -73,7 +69,7 @@ export default function TranslateCreate() {
         <View className="mt-8">
           <View className="items-center justify-center">
             {/* <WordTitle>Chạy</WordTitle> */}
-            <WordInput value="Chạy" />
+            <WordInput value="Chạy" editable={pageMode !== "view"} />
             <TouchableOpacity className="my-2">
               <PhienAm>/caːj˧˦/</PhienAm>
               {pageMode !== "view" && (

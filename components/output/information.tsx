@@ -87,7 +87,8 @@ const Information = ({
               className="px-3 py-1.5 items-center justify-center rounded"
               // style={{ backgroundColor: theme.background }}
             >
-              <EditIcon />
+              <EditIcon opacity={1} />
+              {/* Nếu có dữ liệu rồi thì giảm opacity */}
             </TouchableOpacity>
           </View>
         )}

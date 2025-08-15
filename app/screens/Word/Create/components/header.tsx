@@ -2,17 +2,28 @@ import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
+import { useState } from "react";
 import { View } from "react-native";
 
-const CreateHeader = () => {
+type Props = {};
+const WordDetailHeader = ({}: Props) => {
+  const [submitable, setSubmitable] = useState(false);
+
   return (
     <View className="flex-row justify-between items-center">
       <AppReturnHeader
-        title="Create Word"
+        // title="Detail"
         rightElement={
-          <AppButton onPress={() => {}} type="primary">
-            <AppIcon name="save" branch="fa6" size={18} color="white" />
-            <AppText color="white">Save</AppText>
+          <AppButton
+            onPress={() => {
+              // router.push(`/screens/Word/Update/${1}`);
+              // setMode((prev) => (prev === "view" ? "update" : "view"));
+            }}
+            disabled={!submitable}
+            type={"primary"}
+          >
+            <AppIcon name={"plus"} branch="fa6" size={18} color="white" />
+            <AppText color="white">{"Create"}</AppText>
           </AppButton>
         }
       />
@@ -20,4 +31,4 @@ const CreateHeader = () => {
   );
 };
 
-export default CreateHeader;
+export default WordDetailHeader;

@@ -7,7 +7,7 @@ import {
   bottomSheetTitle,
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
-} from "../../Create/screen";
+} from "@/interfaces/word";
 
 type Props = {
   mode?: "create" | "update" | "view";

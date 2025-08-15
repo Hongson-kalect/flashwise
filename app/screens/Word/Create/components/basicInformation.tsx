@@ -24,7 +24,7 @@ import AudioRecoder from "../../components/AudioRecorder";
 import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
-} from "../../Create/screen";
+} from "@/interfaces/word";
 
 interface Props {
   mode?: "create" | "update" | "view";

@@ -1,7 +1,8 @@
+import AppCheckbox from "@/components/AppCheckbox";
 import { AppDivider } from "@/components/AppDivider";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
-import { View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import CardListItem from "./listItem";
 
 const CardList = () => {
@@ -19,9 +20,12 @@ const CardList = () => {
         style={{ borderBottomColor: theme.secondary, borderBottomWidth: 1 }}
         className="flex-row h-12 items-center gap-2"
       >
-        <View className="w-8 text-center">
-          {/* <AppCheckbox onChange={() => {}} checked={true} /> */}
-        </View>
+        <TouchableOpacity
+          onPress={() => {}}
+          className="w-12 h-full items-center justify-center"
+        >
+          <AppCheckbox onChange={() => {}} checked={false} />
+        </TouchableOpacity>
         <AppText color="constract" className="flex-1 text-center" weight="bold">
           Word
         </AppText>
@@ -43,7 +47,7 @@ const CardList = () => {
         style={{ backgroundColor: theme.background }}
         className="rounded-b-lg overflow-hidden"
       >
-        {Array.from({ length: 50 }).map((_, index) => (
+        {Array.from({ length: 100 }).map((_, index) => (
           <View key={index}>
             <CardListItem />
             {index !== 9 && <AppDivider />}

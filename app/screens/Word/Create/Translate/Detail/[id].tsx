@@ -64,7 +64,7 @@ export default function TranslateCreate() {
         >
           <View className="items-center justify-center">
             {/* <WordTitle>Chạy</WordTitle> */}
-            <WordInput value="Chạy" />
+            <WordInput value="Chạy" editable={pageMode !== "view"} />
             <TouchableOpacity className="my-2">
               <PhienAm>/caːj˧˦/</PhienAm>
               {pageMode !== "view" && (

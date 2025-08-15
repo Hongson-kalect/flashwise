@@ -25,7 +25,7 @@ const WordInput = (props: Props) => {
       >
         <View>
           <TextInput
-            autoFocus // Không có dữ liệu thì sẽ auto focus
+            autoFocus={!props.value} // Không có dữ liệu thì sẽ auto focus
             onFocus={() => setFocusing(true)}
             onBlur={() => setFocusing(false)}
             className="py-0"

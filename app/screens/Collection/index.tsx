@@ -1,12 +1,8 @@
-import { View, StyleSheet, Text } from "react-native";
-import React from "react";
+import { StyleSheet } from "react-native";
+import CollectionList from "./List/screen";
 
 export default function CollectionsPage() {
-  return (
-    <View>
-      <Text>CollectionsPage</Text>
-    </View>
-  );
+  return <CollectionList />;
 }
 
 const styles = StyleSheet.create({});

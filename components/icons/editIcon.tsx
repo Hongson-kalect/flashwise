@@ -1,4 +1,5 @@
 import { useTheme } from "@/providers/Theme";
+import { View } from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -20,6 +21,7 @@ const OutAnimated = {
   default: FadeOut,
 };
 type Props = {
+  opacity?: number;
   in?: keyof typeof InAnimated;
   out?: keyof typeof OutAnimated;
 };
@@ -31,7 +33,9 @@ const EditIcon = (props: Props) => {
       entering={InAnimated[props.in || "default"]}
       exiting={OutAnimated[props.out || "default"]}
     >
-      <AppIcon name="edit" branch="antd" size={16} color={theme.secondary} />
+      <View style={{ opacity: props.opacity }}>
+        <AppIcon name="edit" branch="antd" size={16} color={theme.secondary} />
+      </View>
     </Animated.View>
   );
 };

@@ -2,27 +2,25 @@ import { AppContainer } from "@/components/AppContainer";
 import { AppDivider } from "@/components/AppDivider";
 import AppIcon from "@/components/AppIcon";
 import { useTheme } from "@/providers/Theme";
-import { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   Animated,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
-  StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
-import ListHeader from "./components/header";
-import CardList from "./components/list";
+import CollectionListHeader from "./components/header";
+import CollectionList from "./components/list";
 import ItemListHeader from "./components/listHeader";
-import ListSumary from "./components/sumary";
+import CollectionSumary from "./components/sumary";
 
-export default function CardPage() {
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const scrollRef = useRef<ScrollView>(null);
-  const scrollY = new Animated.Value(0);
-
+const CollectionListScreen = () => {
   const { theme } = useTheme();
+  const scrollRef = React.useRef<ScrollView>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const scrollY = new Animated.Value(0);
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { contentOffset, layoutMeasurement } = event.nativeEvent;
@@ -40,12 +38,13 @@ export default function CardPage() {
   return (
     <View style={{ backgroundColor: theme.background }} className="flex-1">
       <View className="px-2">
-        <ListHeader />
+        <CollectionListHeader />
       </View>
 
       <View className="mt-1">
         <AppDivider />
       </View>
+
       <ScrollView
         ref={scrollRef}
         onScroll={handleScroll}
@@ -53,19 +52,19 @@ export default function CardPage() {
       >
         <AppContainer>
           <View className="my-4">
-            <ListSumary />
+            <CollectionSumary />
           </View>
 
           <View className="mt-12">
             <ItemListHeader isSelecting={false} />
           </View>
 
-          <View className="mt-4">
-            <CardList />
+          <View>
+            <CollectionList />
           </View>
         </AppContainer>
-        <View className="h-10"></View>
       </ScrollView>
+
       {showScrollTop && (
         <TouchableOpacity
           style={{
@@ -88,15 +87,6 @@ export default function CardPage() {
       )}
     </View>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  scrollTopButton: {
-    position: "absolute",
-    bottom: 20,
-    right: 20,
-    backgroundColor: "#000",
-    padding: 10,
-    borderRadius: 50,
-  },
-});
+export default CollectionListScreen;
