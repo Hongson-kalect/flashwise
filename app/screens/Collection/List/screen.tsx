@@ -36,12 +36,12 @@ const CollectionListScreen = () => {
   };
 
   return (
-    <View style={{ backgroundColor: theme.background }} className="flex-1">
-      <View className="px-2">
+    <View style={{ backgroundColor: theme.background2 }} className="flex-1">
+      <View className="px-2 pb-1" style={{ backgroundColor: theme.background }}>
         <CollectionListHeader />
       </View>
 
-      <View className="mt-1">
+      <View>
         <AppDivider />
       </View>
 
@@ -55,7 +55,7 @@ const CollectionListScreen = () => {
             <CollectionSumary />
           </View>
 
-          <View className="mt-12">
+          <View className="mt-8">
             <ItemListHeader isSelecting={false} />
           </View>
 

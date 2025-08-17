@@ -21,6 +21,7 @@ const CollectionList = () => {
             </View>
           )}
           keyExtractor={(item, index) => index.toString()}
+          ListFooterComponent={() => <View className="h-10" />}
         />
       </View>
     </View>

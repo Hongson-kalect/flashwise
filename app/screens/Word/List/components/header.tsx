@@ -10,7 +10,7 @@ const ListHeader = () => {
 
   return (
     <View className="flex-row justify-between items-center h-14">
-      <AppLabel titles={["Flash", "card"]} />
+      <AppLabel titles={["Word", "list"]} />
       <AppButton
         onPress={() => routerPush("/screens/Word/Create/screen")}
         // onPress={testFunction}

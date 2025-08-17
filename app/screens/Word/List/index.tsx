@@ -38,12 +38,12 @@ export default function CardPage() {
   };
 
   return (
-    <View style={{ backgroundColor: theme.background }} className="flex-1">
-      <View className="px-2">
+    <View style={{ backgroundColor: theme.background2 }} className="flex-1">
+      <View className="px-2 pb-1" style={{ backgroundColor: theme.background }}>
         <ListHeader />
       </View>
 
-      <View className="mt-1">
+      <View>
         <AppDivider />
       </View>
       <ScrollView

@@ -16,7 +16,7 @@ export const lightTheme = {
   subText3: "#BDBDBD", // Text phụ cấp 3
 
   background: "#FFFFFF", // Nền sáng
-  background2: "#F5F5F5", // Nền sáng 2
+  background2: "#f8f8f8", // Nền sáng 2
   constract: "#FFFFFF", // Màu cho nút, tương phản với nền đậm
   card: "#F5F5F5", // Màu nền thẻ
   white: "#FFFFFF",

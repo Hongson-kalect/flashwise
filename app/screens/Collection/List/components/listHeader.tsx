@@ -67,6 +67,7 @@ type Props = {
   isSelecting: boolean;
 };
 const ItemListHeader = ({ isSelecting }: Props) => {
+  const { theme } = useTheme();
   return <View>{isSelecting ? <Selecting /> : <ListOptions />}</View>;
 };
 
