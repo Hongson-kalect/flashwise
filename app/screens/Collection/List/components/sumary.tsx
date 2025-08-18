@@ -8,8 +8,8 @@ const CollectionSumary = () => {
   const { theme } = useTheme();
   return (
     <View
-      style={{ elevation: 4, backgroundColor: theme.background, height: 380 }}
-      className="p-4 rounded-lg"
+      style={{ elevation: 2, backgroundColor: theme.background, height: 380 }}
+      className="p-4"
     >
       <View className="flex-row justify-between items-center">
         <AppText color="subText3">

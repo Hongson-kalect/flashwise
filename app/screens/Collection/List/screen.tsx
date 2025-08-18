@@ -50,11 +50,10 @@ const CollectionListScreen = () => {
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
+        <View className="my-4">
+          <CollectionSumary />
+        </View>
         <AppContainer>
-          <View className="my-4">
-            <CollectionSumary />
-          </View>
-
           <View className="mt-8">
             <ItemListHeader isSelecting={false} />
           </View>

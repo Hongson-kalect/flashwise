@@ -48,7 +48,7 @@ const ListOptions = () => {
           size={20}
           color={filter ? theme["error"] : theme["disabled"]}
         />
-        <AppText color="subText2">200 card(s)</AppText>
+        <AppText>200 card(s)</AppText>
       </Pressable>
       <AppIcon
         onPress={() => {
@@ -57,7 +57,7 @@ const ListOptions = () => {
         branch="antd"
         name={"appstore1"}
         size={30}
-        color="#888"
+        color="primary"
       />
     </View>
   );

@@ -27,16 +27,16 @@ const CollectionItem = () => {
       }}
       className="bg-white rounded-lg overflow-hidden"
     >
-      <View
+      {/* <View
         style={{ elevation: 4 }}
         className="h-6 w-6 absolute top-1 right-1 rounded-full bg-blue-500 z-[1]"
-      ></View>
+      ></View> */}
       <View className="h-32 bg-gray-100">
         {/* <AppText>Colllecion Image / icon</AppText> */}
       </View>
       <AppDivider />
       <AppText className="mt-2 px-2" weight="700" size={"sm"}>
-        Giao tiếp cơ bả
+        Giao tiếp cơ bản
       </AppText>
 
       {/* <View className="flex-row items-center justify-between">
