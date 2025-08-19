@@ -2,6 +2,7 @@ import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
+import { router } from "expo-router";
 import { View } from "react-native";
 
 const CollectionSumary = () => {
@@ -19,7 +20,12 @@ const CollectionSumary = () => {
           {" Collection(s)"}
         </AppText>
 
-        <AppButton onPress={() => {}} type="success">
+        <AppButton
+          onPress={() => {
+            router.push("/screens/Collection/Create/screen");
+          }}
+          type="success"
+        >
           <AppIcon name="plus" branch="fa6" size={16} color="white" />
           <AppText color="white">Create</AppText>
         </AppButton>

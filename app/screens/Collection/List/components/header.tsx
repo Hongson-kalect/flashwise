@@ -10,7 +10,7 @@ const CollectionListHeader = () => {
     <View className="flex-row justify-between items-center h-14">
       <AppLabel titles={["Collec", "tion"]} />
       <AppButton
-        onPress={() => router.push("/screens/Word/Create/screen")}
+        onPress={() => router.push("/screens/Collection/Discover/List/screen")}
         // onPress={testFunction}
         type="primary"
       >

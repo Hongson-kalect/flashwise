@@ -1,12 +1,15 @@
 import { AppDivider } from "@/components/AppDivider";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
-import { View } from "react-native";
+import { router, useLocalSearchParams } from "expo-router";
+import { TouchableOpacity, View } from "react-native";
 
 const CollectionItem = () => {
   const { theme } = useTheme();
+  const { id } = useLocalSearchParams();
   return (
-    <View
+    <TouchableOpacity
+      onPress={() => router.push(`/screens/Collection/Detail/${id}`)}
       style={{
         elevation: 4,
         // shadowOffset: {
@@ -83,7 +86,7 @@ const CollectionItem = () => {
           </AppText>
         </View> */}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
