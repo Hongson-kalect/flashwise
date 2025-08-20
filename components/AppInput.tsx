@@ -10,8 +10,10 @@ import {
 } from "react-native";
 import { useTheme } from "@/providers/Theme";
 import { textSizes } from "@/configs/size";
+import AppText from "./AppText";
 
 type Props = TextInputProps & {
+  label?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl" | number;
   border?: boolean;
   focusedBorderColor?: keyof ReturnType<typeof useTheme>["theme"];
@@ -20,6 +22,7 @@ type Props = TextInputProps & {
 };
 
 const AppInput = ({
+  label,
   size = "md",
   border = true,
   focusedBorderColor = "primary",
@@ -35,38 +38,45 @@ const AppInput = ({
   const borderColor = focused ? theme[focusedBorderColor] : "#E0E0E0"; // Default border color when not focused
 
   return (
-    <View
-      style={[
-        styles.container,
-        border && { borderColor, borderWidth: 1 },
-        containerStyle,
-      ]}
-    >
-      <TextInput
-        {...rest}
+    <View>
+      {label && (
+        <AppText weight="bold" size={"sm"} color="subText2" className="mb-1">
+          {label}
+        </AppText>
+      )}
+      <View
         style={[
-          {
-            fontSize,
-            color: theme.text,
-            fontFamily: "SpaceMono, System",
-            lineHeight: fontSize * 1.4,
-            paddingVertical: 8,
-            paddingHorizontal: 12,
-          },
-          inputStyle,
+          styles.container,
+          border && { borderColor, borderWidth: 1 },
+          containerStyle,
         ]}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        placeholderTextColor={theme.subText2}
-        secureTextEntry={rest.secureTextEntry}
-        keyboardType={
-          rest.secureTextEntry
-            ? "default"
-            : rest.keyboardType || rest.autoComplete === "email"
-            ? "email-address"
-            : "default"
-        }
-      />
+      >
+        <TextInput
+          {...rest}
+          style={[
+            {
+              fontSize,
+              color: theme.text,
+              fontFamily: "SpaceMono, System",
+              lineHeight: fontSize * 1.4,
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+            },
+            inputStyle,
+          ]}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          placeholderTextColor={theme.subText2}
+          secureTextEntry={rest.secureTextEntry}
+          keyboardType={
+            rest.secureTextEntry
+              ? "default"
+              : rest.keyboardType || rest.autoComplete === "email"
+              ? "email-address"
+              : "default"
+          }
+        />
+      </View>
     </View>
   );
 };
