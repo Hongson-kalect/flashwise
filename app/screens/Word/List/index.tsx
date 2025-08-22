@@ -1,5 +1,4 @@
 import { AppContainer } from "@/components/AppContainer";
-import { AppDivider } from "@/components/AppDivider";
 import AppIcon from "@/components/AppIcon";
 import { useTheme } from "@/providers/Theme";
 import { useRef, useState } from "react";
@@ -38,24 +37,20 @@ export default function CardPage() {
   };
 
   return (
-    <View style={{ backgroundColor: theme.background2 }} className="flex-1">
+    <View style={{ backgroundColor: theme.background }} className="flex-1">
       <View className="px-2 pb-1" style={{ backgroundColor: theme.background }}>
         <ListHeader />
       </View>
 
-      <View>
-        <AppDivider />
-      </View>
       <ScrollView
         ref={scrollRef}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
+        <View className="my-4 px-3">
+          <ListSumary />
+        </View>
         <AppContainer>
-          <View className="my-4">
-            <ListSumary />
-          </View>
-
           <View className="mt-12">
             <ItemListHeader isSelecting={false} />
           </View>

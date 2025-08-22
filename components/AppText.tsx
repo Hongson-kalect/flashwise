@@ -1,13 +1,14 @@
+import { FontFamily } from "@/configs/fonts";
 import { textSizes } from "@/configs/size";
 import { useTheme } from "@/providers/Theme";
 import { LayoutChangeEvent, StyleProp, Text, TextStyle } from "react-native";
 
 type Props = {
   children: React.ReactNode;
+  font?: FontFamily;
   style?: StyleProp<TextStyle>;
   className?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | number;
-  weight?: "100" | "200" | "300" | "400" | "500" | "600" | "700" | "bold";
   color?:
     | "title"
     | "constract"
@@ -30,7 +31,13 @@ type Props = {
   textAlign?: "left" | "center" | "right" | "justify";
 };
 
-const AppText = ({ children, style, color, ...props }: Props) => {
+const AppText = ({
+  children,
+  style,
+  color,
+  font = "PoppinsRegular",
+  ...props
+}: Props) => {
   const { theme } = useTheme();
   const fontSize =
     typeof props.size === "number" ? props.size : textSizes[props.size || "md"];
@@ -41,10 +48,10 @@ const AppText = ({ children, style, color, ...props }: Props) => {
       style={[
         {
           color: theme[color || "text"],
-          fontFamily: "SpaceMono, System",
+          fontFamily: font,
           fontSize: fontSize,
-          fontWeight: props.weight || "400",
-          lineHeight: fontSize * 1.4, // Adjust line height based on font size
+          // fontWeight: "bold",
+          lineHeight: fontSize * 1.3, // Adjust line height based on font size
         },
         style,
       ]}

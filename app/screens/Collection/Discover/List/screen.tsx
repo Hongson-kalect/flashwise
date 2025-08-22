@@ -1,7 +1,10 @@
+import { AppContainer } from "@/components/AppContainer";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
+import DiscoverCollection from "./components/discover";
 import DiscoverListHeader from "./components/header";
+import DiscoverSuggesstion from "./components/suggesstion";
 
 const DiscoverList = () => {
   const { theme } = useTheme();
@@ -11,7 +14,14 @@ const DiscoverList = () => {
         <DiscoverListHeader mode="view" setMode={() => {}} />
       </View>
 
-      <AppText>DiscoverList</AppText>
+      <ScrollView>
+        <AppContainer className="flex-1">
+          <AppText>Suggestion</AppText>
+          <DiscoverSuggesstion />
+          <AppText>Discover</AppText>
+          <DiscoverCollection />
+        </AppContainer>
+      </ScrollView>
     </View>
   );
 };

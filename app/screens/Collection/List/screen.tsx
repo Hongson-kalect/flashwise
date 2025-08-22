@@ -1,7 +1,10 @@
+import AppButton from "@/components/AppButton";
 import { AppContainer } from "@/components/AppContainer";
 import { AppDivider } from "@/components/AppDivider";
 import AppIcon from "@/components/AppIcon";
+import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Animated,
@@ -36,7 +39,7 @@ const CollectionListScreen = () => {
   };
 
   return (
-    <View style={{ backgroundColor: theme.background2 }} className="flex-1">
+    <View style={{ backgroundColor: theme.background }} className="flex-1">
       <View className="px-2 pb-1" style={{ backgroundColor: theme.background }}>
         <CollectionListHeader />
       </View>
@@ -54,6 +57,24 @@ const CollectionListScreen = () => {
           <CollectionSumary />
         </View>
         <AppContainer>
+          <View className="flex-row justify-between items-center">
+            <AppText color="subText3">
+              <AppText size={28} weight="bold" color="primary">
+                14
+              </AppText>
+              {" Collection(s)"}
+            </AppText>
+
+            <AppButton
+              onPress={() => {
+                router.push("/screens/Collection/Create/screen");
+              }}
+              type="success"
+            >
+              <AppIcon name="plus" branch="fa6" size={16} color="white" />
+              <AppText color="white">Create</AppText>
+            </AppButton>
+          </View>
           <View className="mt-8">
             <ItemListHeader isSelecting={false} />
           </View>

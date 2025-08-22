@@ -11,7 +11,7 @@ export const AppWrapper = ({ children }: { children: React.ReactNode }) => {
   }, [theme]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background2 }}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       {/* View giả lập vùng status bar */}
       <View
         style={{

@@ -22,8 +22,8 @@ const AppLabel = ({ titles, colors }: Props) => {
             key={index}
             style={{
               color: color || "#000",
-              fontSize: 28,
-              fontWeight: "bold",
+              fontSize: 34,
+              fontFamily: "PoppinsSemiBold",
             }}
           >
             {text}

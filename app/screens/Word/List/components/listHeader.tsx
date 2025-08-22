@@ -1,6 +1,7 @@
 import AppCheckbox from "@/components/AppCheckbox";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import AppSearch from "@/components/input/AppSearch";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
@@ -67,7 +68,19 @@ type Props = {
   isSelecting: boolean;
 };
 const ItemListHeader = ({ isSelecting }: Props) => {
-  return <View>{isSelecting ? <Selecting /> : <ListOptions />}</View>;
+  return (
+    <View>
+      <AppText font="PoppinsMedium" size={"xl"} color="subText1">
+        Danh sách từ
+      </AppText>
+      <View className="mt-8">
+        <AppSearch />
+        <View className="mt-6">
+          {isSelecting ? <Selecting /> : <ListOptions />}
+        </View>
+      </View>
+    </View>
+  );
 };
 
 export default ItemListHeader;

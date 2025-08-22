@@ -1,28 +1,35 @@
-import React, { useState } from "react";
+import { FontFamily } from "@/configs/fonts";
+import { textSizes } from "@/configs/size";
+import { useTheme } from "@/providers/Theme";
+import { useEffect, useState } from "react";
 import {
+  StyleProp,
+  StyleSheet,
   TextInput,
   TextInputProps,
-  StyleSheet,
-  View,
-  StyleProp,
-  ViewStyle,
   TextStyle,
+  View,
+  ViewStyle,
 } from "react-native";
-import { useTheme } from "@/providers/Theme";
-import { textSizes } from "@/configs/size";
 import AppText from "./AppText";
 
 type Props = TextInputProps & {
   label?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl" | number;
   border?: boolean;
+  font?: FontFamily;
   focusedBorderColor?: keyof ReturnType<typeof useTheme>["theme"];
   containerStyle?: StyleProp<ViewStyle>;
   inputStyle?: StyleProp<TextStyle>;
+  multiline?: boolean;
+  numberOfLines?: number;
+  value?: string;
+  onValueChange?: (value: string) => void;
 };
 
 const AppInput = ({
   label,
+  font = "PoppinsRegular",
   size = "md",
   border = true,
   focusedBorderColor = "primary",
@@ -32,6 +39,8 @@ const AppInput = ({
 }: Props) => {
   const { theme } = useTheme();
   const [focused, setFocused] = useState(false);
+  const [value, setValue] = useState("");
+  useEffect(() => {});
 
   const fontSize = typeof size === "number" ? size : textSizes[size];
 
@@ -40,7 +49,12 @@ const AppInput = ({
   return (
     <View>
       {label && (
-        <AppText weight="bold" size={"sm"} color="subText2" className="mb-1">
+        <AppText
+          font="PoppinsBold"
+          size={"sm"}
+          color="subText2"
+          className="mb-1"
+        >
           {label}
         </AppText>
       )}
@@ -51,8 +65,24 @@ const AppInput = ({
           containerStyle,
         ]}
       >
+        <View
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "center",
+            // alignItems: "center",
+            opacity: focused || !!rest.value ? 0 : 1,
+          }}
+        >
+          <AppText color="primary" size={fontSize} font={font}>
+            {rest.placeholder}
+          </AppText>
+        </View>
         <TextInput
-          {...rest}
+          // {...rest}
           style={[
             {
               fontSize,
@@ -61,12 +91,13 @@ const AppInput = ({
               lineHeight: fontSize * 1.4,
               paddingVertical: 8,
               paddingHorizontal: 12,
+              verticalAlign: "top",
             },
             inputStyle,
           ]}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholderTextColor={theme.subText2}
+          // placeholderTextColor={theme.subText2}
           secureTextEntry={rest.secureTextEntry}
           keyboardType={
             rest.secureTextEntry

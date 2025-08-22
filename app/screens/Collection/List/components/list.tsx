@@ -1,6 +1,6 @@
 import { useWindowDimensions, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
-import CollectionItem from "./item";
+import CollectionItem from "../../components/item";
 
 const CollectionList = () => {
   const { width } = useWindowDimensions();

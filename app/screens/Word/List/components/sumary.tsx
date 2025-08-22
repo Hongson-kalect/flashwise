@@ -1,17 +1,48 @@
 import AppText from "@/components/AppText";
-import { View } from "react-native";
+import { BarChart } from "@/components/chart/bar";
+import { useWindowDimensions, View } from "react-native";
 
-const ListSumary = () => (
-  <View
-    style={{ height: 240, elevation: 2 }}
-    className="bg-white items-center rounded-lg p-4"
-  >
-    <AppText>Biểu đồ các từ đã học, tương tự như 4English</AppText>
-    {/* <AppText size={32} weight="bold">
-      8000 Thẻ
-    </AppText>
-    <AppText size={"lg"}>Hiển thị thông tin cơ bản của lô thẻ này.</AppText> */}
-  </View>
-);
+const ListSumary = () => {
+  const { height } = useWindowDimensions();
+  return (
+    <View
+      style={{ height: (height / 5) * 3, elevation: 6 }}
+      className="bg-white items-center p-4 rounded-lg"
+    >
+      <View className="flex-row w-full items-center justify-between">
+        <View>
+          <AppText color="subText1">Đã học</AppText>
+          <View className="flex-row gap-1 items-end">
+            <AppText color="primary" font="PoppinsMedium" size={48}>
+              0
+            </AppText>
+            <AppText
+              className="mb-3"
+              font="PoppinsMedium"
+              color="subText2"
+              size={24}
+            >
+              /123
+            </AppText>
+          </View>
+        </View>
+        <View>
+          <View className="h-24 w-24 bg-red-400 rounded-full p-4">
+            <View className="h-16 w-18 bg-white rounded-full p-4 items-center justify-center">
+              <AppText color="subText1">0%</AppText>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      <View className="mt-4 flex-1 w-full">
+        <AppText color="subText1" className="mb-4">
+          Tiến trình học
+        </AppText>
+        <BarChart />
+      </View>
+    </View>
+  );
+};
 
 export default ListSumary;

@@ -1,5 +1,11 @@
 import { View } from "react-native";
 
-export const AppContainer = ({ children }: { children: React.ReactNode }) => {
-  return <View className="flex-1 px-3">{children}</View>;
+export const AppContainer = ({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  return <View className={"px-3 " + className}>{children}</View>;
 };
