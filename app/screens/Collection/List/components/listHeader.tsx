@@ -1,6 +1,7 @@
 import AppCheckbox from "@/components/AppCheckbox";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import AppSearch from "@/components/input/AppSearch";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
@@ -35,40 +36,50 @@ const ListOptions = () => {
   const { theme } = useTheme();
   return (
     <View className="flex-row items-center justify-between">
-      <Pressable
-        className="flex-row gap-2"
-        hitSlop={10}
-        flex-row
-        items-center
-        gap-2
-      >
-        <AppIcon
-          branch="feather"
-          name={"filter"}
-          size={20}
-          color={filter ? theme["error"] : theme["disabled"]}
-        />
-        <AppText>200 card(s)</AppText>
-      </Pressable>
-      <AppIcon
-        onPress={() => {
-          alert("Bật cái model lên");
-        }}
-        branch="antd"
-        name={"appstore1"}
-        size={30}
-        color="primary"
-      />
+      <AppText size={"sm"}>200 card(s)</AppText>
+
+      <AppText color="subText2" size={"sm"}>
+        Sắp xếp:{" "}
+        <AppText
+          size={"sm"}
+          style={{ textDecorationLine: "underline" }}
+          color="link"
+          font="MulishMediumItalic"
+        >
+          Chữ cái
+        </AppText>
+      </AppText>
     </View>
   );
 };
-
 type Props = {
   isSelecting: boolean;
 };
 const ItemListHeader = ({ isSelecting }: Props) => {
   const { theme } = useTheme();
-  return <View>{isSelecting ? <Selecting /> : <ListOptions />}</View>;
+  return (
+    <View>
+      <AppText font="MulishMedium" size={"xl"} color="subText1">
+        Danh sách
+      </AppText>
+      <View className="">
+        <View className="flex-row items-center h-16">
+          <View
+            style={{ backgroundColor: theme.primary + "20" }}
+            className="px-2 py-1 rounded-lg"
+          >
+            <AppText color="subText1" size={"xs"}>
+              Tag 1
+            </AppText>
+          </View>
+        </View>
+        <AppSearch />
+        <View className="mt-6">
+          {isSelecting ? <Selecting /> : <ListOptions />}
+        </View>
+      </View>
+    </View>
+  );
 };
 
 export default ItemListHeader;

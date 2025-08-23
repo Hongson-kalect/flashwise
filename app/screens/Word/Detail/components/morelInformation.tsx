@@ -124,7 +124,7 @@ const WordMoreInformation = ({
       />
 
       <View>
-        <AppText color="title" weight="bold" size={"lg"}>
+        <AppText color="title" font="MulishBold" size={"lg"}>
           Tag 🏷️
         </AppText>
         <View className="flex-row gap-2 flex-wrap mt-2 px-2">

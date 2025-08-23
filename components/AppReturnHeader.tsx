@@ -16,7 +16,7 @@ const AppReturnHeader = ({ rightElement, title }: AppReturnHeaderProps) => {
       <TouchableOpacity onPress={routerBack} style={styles.leftElement}>
         <AppIcon branch="feather" name="chevron-left" size={24} />
         <View className="flex-1">
-          <AppText numberOfLines={1} weight="700" size={"xl"}>
+          <AppText numberOfLines={1} font="MulishSemiBold" size={"xl"}>
             {title || "Return"}
           </AppText>
         </View>

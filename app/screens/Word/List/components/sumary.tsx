@@ -13,12 +13,12 @@ const ListSumary = () => {
         <View>
           <AppText color="subText1">Đã học</AppText>
           <View className="flex-row gap-1 items-end">
-            <AppText color="primary" font="PoppinsMedium" size={48}>
+            <AppText color="primary" font="MulishBold" size={48}>
               0
             </AppText>
             <AppText
               className="mb-3"
-              font="PoppinsMedium"
+              font="MulishMedium"
               color="subText2"
               size={24}
             >

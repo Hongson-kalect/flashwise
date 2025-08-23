@@ -1,4 +1,3 @@
-import { AppDivider } from "@/components/AppDivider";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { router, useLocalSearchParams } from "expo-router";
@@ -11,7 +10,7 @@ const CollectionItem = () => {
     <TouchableOpacity
       onPress={() => router.push(`/screens/Collection/Detail/${id}`)}
       style={{
-        elevation: 4,
+        elevation: 6,
         // shadowOffset: {
         //   width: 3,
         //   height: 3,
@@ -28,63 +27,50 @@ const CollectionItem = () => {
         // borderRightColor: theme.primary,
         // borderBottomColor: theme.primary,
       }}
-      className="bg-white rounded-lg overflow-hidden"
+      className="bg-white rounded-lg overflow-hidden px-3 py-2 flex-row gap-4"
     >
       {/* <View
         style={{ elevation: 4 }}
         className="h-6 w-6 absolute top-1 right-1 rounded-full bg-blue-500 z-[1]"
       ></View> */}
-      <View className="h-32 bg-gray-100">
+      <View className="w-24 h-full min-h-24 rounded-lg items-center justify-center bg-gray-100">
         {/* <AppText>Colllecion Image / icon</AppText> */}
       </View>
-      <AppDivider />
-      <AppText className="mt-2 px-2" weight="700" size={"sm"}>
-        Giao tiếp cơ bản
-      </AppText>
-
-      {/* <View className="flex-row items-center justify-between">
-        <View className="flex">
-          <AppText>Số từ</AppText>
-          <AppText>320</AppText>
-        </View>
-
-      </View> */}
-      <View className="px-2">
-        <View className="mt-2 flex-row items-center justify-between">
-          <AppText size={10} color="subText2" weight="100">
-            Tiến độ
+      <View className="py-1 flex-1 px-2 justify-between">
+        <View>
+          <AppText font="MulishSemiBold" size={"xs"} color={"secondary"}>
+            English
           </AppText>
-          <View className="flex-row items-center">
-            <AppText size={10} color="primary" weight="bold">
-              151
+          <AppText font="MulishBold" numberOfLines={2}>
+            Giao tiếp cơ bản giao tiếp cơ bản giao tiếp cơ bản giao tiếp cơ bản
+          </AppText>
+        </View>
+        <View>
+          <View className="mt-2 flex-row items-center justify-between">
+            <AppText size={12} color="subText2" font="MulishLight">
+              Đã học
             </AppText>
-            <AppText size={10}>/</AppText>
-            <AppText size={10} color="subText3">
-              300
-            </AppText>
+            <View className="flex-row items-center">
+              <AppText size={10} color="primary" font="MulishBold">
+                151
+              </AppText>
+              <AppText size={10}>/</AppText>
+              <AppText size={10} color="subText3">
+                300
+              </AppText>
+            </View>
+          </View>
+          <View className="h-2 bg-gray-200  rounded-full">
+            <View
+              style={{
+                backgroundColor: theme.primary,
+                width: "50%",
+                borderRadius: 999,
+              }}
+              className="h-full"
+            ></View>
           </View>
         </View>
-        <View className="h-2 bg-gray-300  rounded-full">
-          <View
-            style={{
-              backgroundColor: theme.success,
-              width: "50%",
-              borderTopLeftRadius: 999,
-              borderBottomLeftRadius: 999,
-            }}
-            className="h-full"
-          ></View>
-        </View>
-        {/* <View
-          style={{
-            left: "50%",
-            marginLeft: -5,
-          }}
-        >
-          <AppText color="primary" size={10}>
-            50%
-          </AppText>
-        </View> */}
       </View>
     </TouchableOpacity>
   );

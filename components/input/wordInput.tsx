@@ -1,4 +1,5 @@
 import AppSuggestion from "@/components/AppSuggestion";
+import { fontFamily } from "@/configs/fonts";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { TextInput, View } from "react-native";
@@ -35,7 +36,7 @@ const WordInput = (props: Props) => {
             style={{
               fontSize: 36,
               lineHeight: 36 * 1.4,
-              fontWeight: 500,
+              fontFamily: fontFamily.MulishSemiBold,
               color: theme.primary,
               textAlign: "center",
               // width: 200,

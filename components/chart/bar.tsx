@@ -10,8 +10,8 @@ const DATA = Array.from({ length: 7 }, (_, i) => ({
 }));
 
 export function BarChart() {
-  const font = useFont(fonts.PoppinsRegular, 9);
-  const font2 = useFont(fonts.PoppinsMedium, 14);
+  const font = useFont(fonts.MulishRegular, 9);
+  const font2 = useFont(fonts.MulishMedium, 14);
   const { theme } = useTheme();
   const data = useMemo(() => [...DATA], []);
   console.log(data);

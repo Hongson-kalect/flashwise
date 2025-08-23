@@ -1,9 +1,9 @@
 import AppButton from "@/components/AppButton";
 import { AppContainer } from "@/components/AppContainer";
-import { AppDivider } from "@/components/AppDivider";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -17,7 +17,6 @@ import {
 import CollectionListHeader from "./components/header";
 import CollectionList from "./components/list";
 import ItemListHeader from "./components/listHeader";
-import CollectionSumary from "./components/sumary";
 
 const CollectionListScreen = () => {
   const { theme } = useTheme();
@@ -44,34 +43,55 @@ const CollectionListScreen = () => {
         <CollectionListHeader />
       </View>
 
-      <View>
+      {/* <View>
         <AppDivider />
-      </View>
+      </View> */}
 
       <ScrollView
         ref={scrollRef}
         onScroll={handleScroll}
         scrollEventThrottle={16}
       >
-        <View className="my-4">
+        {/* <View className="my-4 px-3">
           <CollectionSumary />
-        </View>
+        </View> */}
         <AppContainer>
-          <View className="flex-row justify-between items-center">
-            <AppText color="subText3">
-              <AppText size={28} weight="bold" color="primary">
-                14
-              </AppText>
-              {" Collection(s)"}
+          <View className="items-center mt-2">
+            <AppText font="MulishExtraBold" size={64} color="primary">
+              14
             </AppText>
 
+            <MaterialCommunityIcons
+              name="cards"
+              size={64}
+              color={theme.subText3}
+            />
+          </View>
+
+          <View className="flex-row justify-center gap-8 mt-2 items-center">
             <AppButton
               onPress={() => {
                 router.push("/screens/Collection/Create/screen");
               }}
+              type="primary"
+              size="lg"
+            >
+              <AppIcon
+                name="external-link"
+                branch="feather"
+                size={16}
+                color="white"
+              />
+              <AppText color="white">Discover</AppText>
+            </AppButton>
+            <AppButton
+              onPress={() => {
+                router.push("/screens/Collection/Create/screen");
+              }}
+              size="lg"
               type="success"
             >
-              <AppIcon name="plus" branch="fa6" size={16} color="white" />
+              <AppIcon name="plus" branch="antd" size={16} color="white" />
               <AppText color="white">Create</AppText>
             </AppButton>
           </View>

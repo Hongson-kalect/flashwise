@@ -13,7 +13,7 @@ const TabsModal = (modal: Props) => {
   return (
     <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
       {modal.title && (
-        <AppText className="text-2xl" weight="bold" size={"xl"}>
+        <AppText className="text-2xl" font="MulishBold" size={"xl"}>
           {modal.title}
         </AppText>
       )}

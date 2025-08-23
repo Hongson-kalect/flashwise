@@ -11,7 +11,7 @@ const WordItem = () => {
     >
       <View className="h-20 w-20 bg-red-400"></View>
       <View className="flex-1">
-        <AppText weight="bold" size={"md"}>
+        <AppText font="MulishBold" size={"md"}>
           Từ mới nè
         </AppText>
         <AppText size={"xs"} color="subText3">

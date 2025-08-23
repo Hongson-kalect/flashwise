@@ -14,7 +14,7 @@ const HightlightText = ({
     <AppText style={style}>
       {text.split(" ").map((part, index) =>
         part.toLowerCase() === highlight.toLowerCase() ? (
-          <AppText key={index} weight="bold" color="primary">
+          <AppText key={index} font="MulishBold" color="primary">
             {part + " "}
           </AppText>
         ) : (

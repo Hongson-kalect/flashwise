@@ -25,7 +25,7 @@ const PromptModal = (modal: Props) => {
   return (
     <View>
       {modal.title && (
-        <AppText className="text-2xl" weight="bold" size={"xl"}>
+        <AppText className="text-2xl" font="MulishBold" size={"xl"}>
           {modal.title}
         </AppText>
       )}

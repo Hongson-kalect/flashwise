@@ -12,7 +12,7 @@ const ConfirmModal = (modal: Props) => {
   return (
     <View>
       {modal.title && (
-        <AppText className="text-2xl mb-2" weight="bold" size={"xl"}>
+        <AppText className="text-2xl mb-2" font="MulishBold" size={"xl"}>
           {modal.title}
         </AppText>
       )}

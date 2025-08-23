@@ -28,7 +28,7 @@ const LabelInformation = ({
       className="gap-2"
     >
       <AppText
-        weight="100"
+        font="MulishLight"
         color="subText2"
         size={"sm"}
         style={
@@ -43,7 +43,7 @@ const LabelInformation = ({
         {label}:
       </AppText>
 
-      {/* <AppText weight="bold" color="subText2" size={"sm"}>
+      {/* <AppText font="MulishBold" color="subText2" size={"sm"}>
         :
       </AppText> */}
       <View className="ml-6 flex-row items-center">

@@ -243,7 +243,7 @@ const BottomSheetInstance = forwardRef<BottomSheetModal, BottomSheetProps>(
           {title && (
             <>
               <View className="items-center flex-row px-4 mb-2">
-                <AppText weight="bold" size={"2xl"}>
+                <AppText font="MulishBold" size={"2xl"}>
                   {title}
                 </AppText>
                 <TouchableOpacity

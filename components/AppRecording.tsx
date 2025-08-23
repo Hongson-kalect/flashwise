@@ -100,10 +100,10 @@ const AppRecording = () => {
             />
 
             <View className="flex-row items-center gap-2">
-              <AppText color="white" weight="bold" size={"xl"}>
+              <AppText color="white" font="MulishBold" size={"xl"}>
                 {recordTime}{" "}
               </AppText>
-              <AppText color="white" weight="bold" size={"xl"}>
+              <AppText color="white" font="MulishBold" size={"xl"}>
                 seconds
               </AppText>
             </View>
@@ -123,7 +123,7 @@ const AppRecording = () => {
                 color={theme.success}
                 size={32}
               />
-              <AppText color={"success"} weight="bold" size={"xl"}>
+              <AppText color={"success"} font="MulishBold" size={"xl"}>
                 OK
               </AppText>
             </AppButton>

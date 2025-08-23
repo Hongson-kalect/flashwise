@@ -1,7 +1,7 @@
 import { FontFamily } from "@/configs/fonts";
 import { textSizes } from "@/configs/size";
 import { useTheme } from "@/providers/Theme";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   StyleProp,
   StyleSheet,
@@ -23,24 +23,25 @@ type Props = TextInputProps & {
   inputStyle?: StyleProp<TextStyle>;
   multiline?: boolean;
   numberOfLines?: number;
-  value?: string;
-  onValueChange?: (value: string) => void;
+  value: string;
+  onChangeText: (value: string) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 };
 
 const AppInput = ({
   label,
-  font = "PoppinsRegular",
+  font = "MulishRegular",
   size = "md",
   border = true,
   focusedBorderColor = "primary",
   containerStyle,
   inputStyle,
+  placeholder,
   ...rest
 }: Props) => {
   const { theme } = useTheme();
   const [focused, setFocused] = useState(false);
-  const [value, setValue] = useState("");
-  useEffect(() => {});
 
   const fontSize = typeof size === "number" ? size : textSizes[size];
 
@@ -50,7 +51,7 @@ const AppInput = ({
     <View>
       {label && (
         <AppText
-          font="PoppinsBold"
+          font="MulishBold"
           size={"sm"}
           color="subText2"
           className="mb-1"
@@ -65,48 +66,45 @@ const AppInput = ({
           containerStyle,
         ]}
       >
-        <View
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            right: 0,
-            bottom: 0,
-            justifyContent: "center",
-            // alignItems: "center",
-            opacity: focused || !!rest.value ? 0 : 1,
-          }}
-        >
-          <AppText color="primary" size={fontSize} font={font}>
-            {rest.placeholder}
-          </AppText>
+        <View className="items-center justify-center">
+          <View
+            style={{
+              position: "absolute",
+              left: 4,
+              top: 0,
+              right: 0,
+              bottom: 0,
+              justifyContent: "center",
+              opacity: !!rest.value ? 0 : 1,
+            }}
+          >
+            <AppText color="subText3" size={fontSize} font={font}>
+              {placeholder}
+            </AppText>
+          </View>
+          <TextInput
+            {...rest}
+            style={[
+              {
+                fontSize,
+                color: theme.text,
+                verticalAlign: "middle",
+                paddingTop: 1,
+                paddingBottom: 0,
+                lineHeight: fontSize * 1.4,
+              },
+              inputStyle,
+            ]}
+            secureTextEntry={rest.secureTextEntry}
+            keyboardType={
+              rest.secureTextEntry
+                ? "default"
+                : rest.keyboardType || rest.autoComplete === "email"
+                ? "email-address"
+                : "default"
+            }
+          />
         </View>
-        <TextInput
-          // {...rest}
-          style={[
-            {
-              fontSize,
-              color: theme.text,
-              fontFamily: "SpaceMono, System",
-              lineHeight: fontSize * 1.4,
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              verticalAlign: "top",
-            },
-            inputStyle,
-          ]}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          // placeholderTextColor={theme.subText2}
-          secureTextEntry={rest.secureTextEntry}
-          keyboardType={
-            rest.secureTextEntry
-              ? "default"
-              : rest.keyboardType || rest.autoComplete === "email"
-              ? "email-address"
-              : "default"
-          }
-        />
       </View>
     </View>
   );

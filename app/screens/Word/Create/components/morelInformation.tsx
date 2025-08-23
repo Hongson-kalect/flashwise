@@ -1,14 +1,14 @@
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import EditIcon from "@/components/icons/editIcon";
-import { useTheme } from "@/providers/Theme";
-import { Entypo } from "@expo/vector-icons";
-import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
-import Information from "../../../../../components/output/information";
 import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
 } from "@/interfaces/word";
+import { useTheme } from "@/providers/Theme";
+import { Entypo } from "@expo/vector-icons";
+import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
+import Information from "../../../../../components/output/information";
 
 type Props = {
   mode?: "create" | "update" | "view";
@@ -54,7 +54,7 @@ const WordMoreInformation = ({
         icon={<Entypo name="gauge" size={12} color={theme.subText2} />}
         label="Độ khó"
         value={
-          <AppText weight="bold" color={"error"}>
+          <AppText font="MulishBold" color={"error"}>
             {/* success | warning | error */}
             A1
           </AppText>
@@ -137,7 +137,7 @@ const WordMoreInformation = ({
       />
 
       <View>
-        <AppText color="title" weight="bold" size={"lg"}>
+        <AppText color="title" font="MulishBold" size={"lg"}>
           Tag 🏷️
         </AppText>
         <View className="flex-row items-center gap-2">

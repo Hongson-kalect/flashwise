@@ -1,13 +1,18 @@
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
-import { View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 
 const CollectionSumary = () => {
   const { theme } = useTheme();
+  const { height } = useWindowDimensions();
   return (
     <View
-      style={{ elevation: 2, backgroundColor: theme.background, height: 380 }}
-      className="p-4"
+      style={{
+        elevation: 6,
+        backgroundColor: theme.background,
+        height: (height / 5) * 3,
+      }}
+      className="p-4 rounded-lg"
     >
       {/* Hiển thị thêm 1 vài thông tin thống kê như: Liệt kê theo ngôn ngữ, tỉ lệ từ đã học.  */}
       <AppText className="mt-2" size={"xs"} color="subText3">

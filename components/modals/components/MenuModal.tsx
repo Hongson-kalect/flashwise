@@ -14,7 +14,7 @@ const MenuModal = (modal: Props) => {
   return (
     <View>
       {modal.title && (
-        <AppText className="text-2xl mb-4" weight="bold" size={"xl"}>
+        <AppText className="text-2xl mb-4" font="MulishBold" size={"xl"}>
           {modal.title}
         </AppText>
       )}

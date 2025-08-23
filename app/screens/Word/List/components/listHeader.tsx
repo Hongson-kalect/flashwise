@@ -36,30 +36,19 @@ const ListOptions = () => {
   const { theme } = useTheme();
   return (
     <View className="flex-row items-center justify-between">
-      <Pressable
-        className="flex-row gap-2"
-        hitSlop={10}
-        flex-row
-        items-center
-        gap-2
-      >
-        <AppIcon
-          branch="feather"
-          name={"filter"}
-          size={20}
-          color={filter ? theme["error"] : theme["disabled"]}
-        />
-        <AppText color="subText2">200 card(s)</AppText>
-      </Pressable>
-      <AppIcon
-        onPress={() => {
-          alert("Bật cái model lên");
-        }}
-        branch="antd"
-        name={"appstore1"}
-        size={30}
-        color="#888"
-      />
+      <AppText size={"sm"}>200 card(s)</AppText>
+
+      <AppText color="subText2" size={"sm"}>
+        Sắp xếp:{" "}
+        <AppText
+          size={"sm"}
+          style={{ textDecorationLine: "underline" }}
+          color="link"
+          font="MulishMediumItalic"
+        >
+          Chữ cái
+        </AppText>
+      </AppText>
     </View>
   );
 };
@@ -68,12 +57,23 @@ type Props = {
   isSelecting: boolean;
 };
 const ItemListHeader = ({ isSelecting }: Props) => {
+  const { theme } = useTheme();
   return (
     <View>
-      <AppText font="PoppinsMedium" size={"xl"} color="subText1">
+      <AppText font="MulishMedium" size={"xl"} color="subText1">
         Danh sách từ
       </AppText>
-      <View className="mt-8">
+      <View className="">
+        <View className="flex-row items-center h-16">
+          <View
+            style={{ backgroundColor: theme.primary + "20" }}
+            className="px-2 py-1 rounded-lg"
+          >
+            <AppText color="subText1" size={"xs"}>
+              Tag 1
+            </AppText>
+          </View>
+        </View>
         <AppSearch />
         <View className="mt-6">
           {isSelecting ? <Selecting /> : <ListOptions />}

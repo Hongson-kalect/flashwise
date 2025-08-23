@@ -17,7 +17,7 @@ const ListHeader = () => {
         type="primary"
       >
         <AppIcon name="plus" branch="fa6" color="white" size={18} />
-        <AppText font="PoppinsMedium" color="white">
+        <AppText font="MulishMedium" color="white">
           Create
         </AppText>
       </AppButton>

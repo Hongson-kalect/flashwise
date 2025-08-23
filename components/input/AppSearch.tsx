@@ -10,49 +10,52 @@ const AppSearch = () => {
   const { theme } = useTheme();
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState("");
+
   return (
     <View
       style={{ borderRadius: 12 }}
       className={"flex-row items-center px-5 py-1 bg-gray-100 gap-2 h-14"}
     >
-      <AppIcon name="search" branch="feather" size={24} color="#888" />
+      <AppIcon name="search1" branch="antd" size={24} color="#888" />
       <View className="flex-1 justify-center ml-2">
         <AppInput
           style={{
-            fontFamily: fontFamily.PoppinsRegular,
+            fontFamily: fontFamily.MulishBold,
             alignItems: "center",
             flex: 1,
             fontSize: 16,
             justifyContent: "center",
             borderColor: "transparent",
           }}
+          inputStyle={{ fontFamily: fontFamily.MulishMedium }}
           containerStyle={{ borderColor: "transparent" }}
           value={value}
-          onChangeText={setValue}
+          onChangeText={(value) => setValue(value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder="Search..."
-          className="h-full w-full"
+          className="h-full w-full text-lg"
         />
       </View>
-      <View className="flex-row gap-4 items-center">
-        <View className="absolute right-10 -top-3 h-full items-center justify-center">
+      <View className="flex-row gap-1 items-center">
+        <View className="h-full items-center justify-center pr-2">
           {focused && value && (
             <Animated.View
               entering={FadeIn.duration(200)}
               exiting={FadeOut.duration(200)}
+              className={"h-full items-center justify-center"}
             >
               <AppIcon
                 name="closecircle"
                 branch="antd"
-                size={18}
+                size={16}
                 color="#888"
               />
             </Animated.View>
           )}
           {/* <AppIcon name="closecircle" branch="antd" size={16} color="#555" /> */}
         </View>
-        <AppIcon name={"filter"} branch="feather" size={24} color="#888" />
+        <AppIcon name={"filter"} branch="antd" size={24} color="#888" />
       </View>
     </View>
   );

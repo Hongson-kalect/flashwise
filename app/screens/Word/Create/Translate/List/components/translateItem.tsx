@@ -21,7 +21,7 @@ const TranslateItem = () => {
       <AppText size={"xs"}>
         {parts.map((part, index) =>
           part.toLowerCase() === word.toLowerCase() ? (
-            <AppText size={"xs"} key={index} weight="bold">
+            <AppText size={"xs"} key={index} font="MulishBold">
               {part}
             </AppText>
           ) : (
@@ -44,7 +44,7 @@ const TranslateItem = () => {
       >
         <View className="flex-row items-center justify-between">
           <View>
-            <AppText color="primary" weight="bold" size={"2xl"}>
+            <AppText color="primary" font="MulishBold" size={"2xl"}>
               Chạy
             </AppText>
           </View>
@@ -66,7 +66,7 @@ const TranslateItem = () => {
             style={{ width: labelWidth || "auto" }}
             onLayout={checkLabelWidth}
             size={"xs"}
-            weight="100"
+            font="MulishLight"
             color="subText1"
           >
             📚 Khác

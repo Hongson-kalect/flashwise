@@ -35,7 +35,7 @@ const AppText = ({
   children,
   style,
   color,
-  font = "PoppinsRegular",
+  font = "MulishRegular",
   ...props
 }: Props) => {
   const { theme } = useTheme();

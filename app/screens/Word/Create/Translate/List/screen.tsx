@@ -26,7 +26,7 @@ export default function TranslateList() {
           <AppText
             className="text-center"
             size={32}
-            weight="bold"
+            font="MulishBold"
             color="white"
           >
             Run

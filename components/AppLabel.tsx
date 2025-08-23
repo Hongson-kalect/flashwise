@@ -23,7 +23,7 @@ const AppLabel = ({ titles, colors }: Props) => {
             style={{
               color: color || "#000",
               fontSize: 34,
-              fontFamily: "PoppinsSemiBold",
+              fontFamily: "MulishSemiBold",
             }}
           >
             {text}

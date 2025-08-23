@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import ListHeader from "./components/header";
@@ -18,6 +19,7 @@ import ListSumary from "./components/sumary";
 
 export default function CardPage() {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const { height } = useWindowDimensions();
   const scrollRef = useRef<ScrollView>(null);
   const scrollY = new Animated.Value(0);
 
@@ -51,13 +53,16 @@ export default function CardPage() {
           <ListSumary />
         </View>
         <AppContainer>
-          <View className="mt-12">
+          <View className="mt-8">
             <ItemListHeader isSelecting={false} />
           </View>
 
-          <View className="mt-4">
+          <View className="mt-2">
             <CardList />
           </View>
+          {/* <View>
+            <AppText>Empty List Image</AppText>
+          </View> */}
         </AppContainer>
         <View className="h-10"></View>
       </ScrollView>

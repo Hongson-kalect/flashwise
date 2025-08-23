@@ -71,7 +71,7 @@ export const OptionsModal = (props: ListModalProps) => {
         }}
       >
         {props.title && (
-          <AppText className="text-2xl" weight="bold" size={"xl"}>
+          <AppText className="text-2xl" font="MulishBold" size={"xl"}>
             {props.title}
           </AppText>
         )}

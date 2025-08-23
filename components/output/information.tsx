@@ -43,7 +43,7 @@ const Information = ({
 
               {label && (
                 <AppText
-                  weight="100"
+                  font="MulishLight"
                   color="subText2"
                   size={"sm"}
                   style={
@@ -61,7 +61,7 @@ const Information = ({
             </View>
 
             {label && (
-              <AppText weight="bold" color="subText2" size={"sm"}>
+              <AppText font="MulishBold" color="subText2" size={"sm"}>
                 :
               </AppText>
             )}

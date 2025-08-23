@@ -49,7 +49,7 @@ const CreateCollection = () => {
               />
               <View>
                 <AppText
-                  weight="bold"
+                  font="MulishBold"
                   size={"md"}
                   color="subText2"
                   className="mb-1"
@@ -89,7 +89,7 @@ const CreateCollection = () => {
                 <View className="flex-row items-center justify-between mt-4">
                   <AppText>Total: 0</AppText>
                   <View className="flex-row gap-2 items-center">
-                    <AppText color="subText2" weight="600">
+                    <AppText color="subText2" font="MulishMedium">
                       Sắp xếp:
                     </AppText>
                     <AppText color="primary">Thời gian thêm</AppText>

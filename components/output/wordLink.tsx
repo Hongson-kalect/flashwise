@@ -40,7 +40,7 @@ const WordLink = ({
           {icon && <View style={{ width: 14 }}>{icon}</View>}
 
           <AppText
-            weight="100"
+            font="MulishLight"
             color="subText2"
             size={"sm"}
             style={
@@ -56,7 +56,7 @@ const WordLink = ({
           </AppText>
         </View>
 
-        <AppText weight="bold" color="subText2" size={"sm"}>
+        <AppText font="MulishBold" color="subText2" size={"sm"}>
           :
         </AppText>
         <View className="flex-1 flex-row flex-wrap gap-1">
