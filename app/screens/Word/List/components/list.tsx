@@ -2,7 +2,7 @@ import { useTheme } from "@/providers/Theme";
 import { View } from "react-native";
 import CardListItem from "./listItem";
 
-const CardList = () => {
+const WordList = () => {
   const { theme } = useTheme();
   return (
     <View
@@ -48,4 +48,4 @@ const CardList = () => {
   );
 };
 
-export default CardList;
+export default WordList;

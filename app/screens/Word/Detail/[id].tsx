@@ -10,15 +10,15 @@ import { useState } from "react";
 import { LayoutChangeEvent, ScrollView, View } from "react-native";
 import Animated, { SlideInDown, SlideOutDown } from "react-native-reanimated";
 import WordSelectForm from "../Create/components/wordSelectForm";
-import {
-  bottomSheetTitle,
-  CreateWordInputModalProps,
-  CreateWordRadioModalProps,
-} from "../Create/screen";
 import WordAdvanceInformation from "./components/advanceInfomation";
 import BasicInformation from "./components/basicInformation";
 import WordDetailHeader from "./components/header";
 import WordMoreInformation from "./components/morelInformation";
+import {
+  bottomSheetTitle,
+  CreateWordInputModalProps,
+  CreateWordRadioModalProps,
+} from "@/interfaces/word";
 
 const WordDetail = () => {
   const { theme } = useTheme();

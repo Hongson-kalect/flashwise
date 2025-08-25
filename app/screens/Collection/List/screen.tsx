@@ -3,7 +3,6 @@ import { AppContainer } from "@/components/AppContainer";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -59,13 +58,20 @@ const CollectionListScreen = () => {
           <View className="items-center mt-2">
             <AppText font="MulishExtraBold" size={64} color="primary">
               14
+              <AppText font="MulishExtraBold" size={48} color="primary">
+                {" "}
+                📚
+              </AppText>
+              {/* <AppText font="MulishExtraBold" size={32} color="primary">
+                {" Collection(s)"}
+              </AppText> */}
             </AppText>
 
-            <MaterialCommunityIcons
+            {/* <MaterialCommunityIcons
               name="cards"
               size={64}
               color={theme.subText3}
-            />
+            /> */}
           </View>
 
           <View className="flex-row justify-center gap-8 mt-2 items-center">
