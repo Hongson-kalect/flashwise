@@ -4,8 +4,13 @@ import EditIcon from "@/components/icons/editIcon";
 import WordInput from "@/components/input/wordInput";
 import PhatAm from "@/components/PhatAm";
 import PhienAm from "@/components/PhienAm";
+import {
+  CreateWordInputModalProps,
+  CreateWordRadioModalProps,
+} from "@/interfaces/word";
 import { useTheme } from "@/providers/Theme";
 import { AudioType } from "@/stores/recordingStore";
+import { pickImage } from "@/utils/pickImage";
 import { Entypo } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
@@ -21,10 +26,6 @@ import Animated, {
 import Information from "../../../../../components/output/information";
 import AudioPicker from "../../components/AudioPicker";
 import AudioRecoder from "../../components/AudioRecorder";
-import {
-  CreateWordInputModalProps,
-  CreateWordRadioModalProps,
-} from "@/interfaces/word";
 
 interface Props {
   mode?: "create" | "update" | "view";
@@ -47,6 +48,13 @@ const BasicInformation = ({
   );
   const sound = useState<Audio.Sound | null>(null);
   const { theme } = useTheme();
+
+  const handlePickImage = async () => {
+    const result = (await pickImage()) as ImageResult;
+    if (result) {
+      setImage(result);
+    }
+  };
 
   return (
     <View>
@@ -140,19 +148,23 @@ const BasicInformation = ({
 
       <View className="mt-6 items-center justify-center">
         {image?.uri ? (
-          <View
-            style={{ elevation: 4, overflow: "hidden" }}
+          <TouchableOpacity
+            onPress={handlePickImage}
+            style={{
+              elevation: 4,
+              overflow: "hidden",
+              backgroundColor: theme.background,
+            }}
             className="h-40 w-40  rounded-lg"
           >
             <Image
               source={{ uri: image?.uri }}
               style={{ width: "100%", height: "100%" }}
             />
-          </View>
+          </TouchableOpacity>
         ) : (
-          // <TouchableOpacity className="h-40 w-40 bg-gray-200 rounded-lg p-4">
           <TouchableOpacity
-            // onPress={handlePickImage}
+            onPress={handlePickImage}
             style={{
               borderColor: theme.secondary,
               backgroundColor: theme.secondary + "10",
@@ -160,7 +172,7 @@ const BasicInformation = ({
             className="h-40 w-40 border border-dashed  rounded-lg p-4"
           >
             <AppText color="subText2" size={"xs"}>
-              Hình minh hoạ
+              Hình minh họa
             </AppText>
           </TouchableOpacity>
           //  </TouchableOpacity>

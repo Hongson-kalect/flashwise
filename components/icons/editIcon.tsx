@@ -22,6 +22,7 @@ const OutAnimated = {
 };
 type Props = {
   opacity?: number;
+  color?: string;
   in?: keyof typeof InAnimated;
   out?: keyof typeof OutAnimated;
 };
@@ -34,7 +35,12 @@ const EditIcon = (props: Props) => {
       exiting={OutAnimated[props.out || "default"]}
     >
       <View style={{ opacity: props.opacity }}>
-        <AppIcon name="edit" branch="antd" size={16} color={theme.secondary} />
+        <AppIcon
+          name="edit"
+          branch="antd"
+          size={16}
+          color={props.color || theme.secondary}
+        />
       </View>
     </Animated.View>
   );

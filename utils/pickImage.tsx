@@ -23,10 +23,7 @@ export const pickImage = async () => {
   const compress = await compressImage(image);
 
   if (!result.canceled) {
-    return {
-      uri: compress.uri,
-      image: compress,
-    };
+    return image;
   }
 };
 export const compressImage = async (image: ImagePicker.ImagePickerAsset) => {
@@ -40,7 +37,12 @@ export const compressImage = async (image: ImagePicker.ImagePickerAsset) => {
 
 export const getFileSize = async (uri: string): Promise<number> => {
   try {
-    const fileInfo = await FileSystem.getInfoAsync(uri);
+    const fileInfo = (await FileSystem.getInfoAsync(uri)) as {
+      exists: false;
+      uri: string;
+      isDirectory: false;
+      size: number;
+    };
     return fileInfo.size || 0;
   } catch (error) {
     console.error("Error getting file size:", error);

@@ -96,10 +96,10 @@ const TagItem = () => {
   const { theme } = useTheme();
   return (
     <View
-      style={{ backgroundColor: theme.secondary + "10" }}
+      style={{ backgroundColor: theme.primary + "10" }}
       className="px-3 py-1 bg-blue-100 rounded-full h-8 items-center justify-center"
     >
-      <Text style={{ color: theme.secondary }} className="text-sm font-medium">
+      <Text style={{ color: theme.primary }} className="text-sm font-medium">
         Test tag
       </Text>
 
@@ -107,7 +107,7 @@ const TagItem = () => {
         <AppIcon
           branch="antd"
           name="closecircle"
-          color={theme.secondary + "80"}
+          color={theme.primary + "80"}
           size={14}
         />
       </View>

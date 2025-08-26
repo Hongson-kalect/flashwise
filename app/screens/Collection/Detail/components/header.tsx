@@ -20,8 +20,8 @@ const CollectionDetailHeader = ({ mode, setMode }: Props) => {
             {mode !== "view" && (
               <Animated.View
                 className=""
-                // entering={SlideInUp}
-                // exiting={SlideOutUp}
+                // entering={FadeInRight}
+                // exiting={FadeOutRight}
               >
                 <AppButton type="error" title="Delete" onPress={() => {}}>
                   <AppIcon

@@ -77,7 +77,7 @@ const CollectionListScreen = () => {
           <View className="flex-row justify-center gap-8 mt-2 items-center">
             <AppButton
               onPress={() => {
-                router.push("/screens/Collection/Create/screen");
+                router.push("/screens/Collection/Discover/List/screen");
               }}
               type="primary"
               size="lg"

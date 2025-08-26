@@ -78,15 +78,29 @@ const AppInput = ({
               opacity: !!rest.value ? 0 : 1,
             }}
           >
-            <AppText color="subText3" size={fontSize} font={font}>
+            <AppText
+              style={[inputStyle, { color: theme.subText3, fontFamily: font }]}
+              size={fontSize}
+              className="scale-90"
+            >
               {placeholder}
             </AppText>
           </View>
           <TextInput
+            onFocus={() => {
+              rest.onFocus && rest.onFocus();
+              setFocused(true);
+            }}
+            onBlur={() => {
+              rest.onBlur && rest.onBlur();
+              setFocused(false);
+            }}
             {...rest}
             style={[
               {
                 fontSize,
+                height: fontSize * 1.5,
+                width: "100%",
                 color: theme.text,
                 verticalAlign: "middle",
                 paddingTop: 1,
@@ -114,6 +128,7 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 8,
     justifyContent: "center",
+    padding: 8,
   },
 });
 

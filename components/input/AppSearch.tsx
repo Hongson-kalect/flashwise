@@ -14,10 +14,10 @@ const AppSearch = () => {
   return (
     <View
       style={{ borderRadius: 12 }}
-      className={"flex-row items-center px-5 py-1 bg-gray-100 gap-2 h-14"}
+      className={"flex-row items-center px-5 py-1 bg-gray-100 h-14"}
     >
       <AppIcon name="search1" branch="antd" size={24} color="#888" />
-      <View className="flex-1 justify-center ml-2">
+      <View className="flex-1 justify-center">
         <AppInput
           style={{
             fontFamily: fontFamily.MulishBold,
@@ -33,8 +33,8 @@ const AppSearch = () => {
           onChangeText={(value) => setValue(value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="Search..."
-          className="h-full w-full text-lg"
+          placeholder="Search......"
+          // className="h-full w-full text-lg"
         />
       </View>
       <View className="flex-row gap-1 items-center">

@@ -1,5 +1,6 @@
 import { AppContainer } from "@/components/AppContainer";
-import AppText from "@/components/AppText";
+import AppIcon from "@/components/AppIcon";
+import AppTitle from "@/components/AppTitle";
 import { useTheme } from "@/providers/Theme";
 import { ScrollView, View } from "react-native";
 import DiscoverCollection from "./components/discover";
@@ -16,9 +17,20 @@ const DiscoverList = () => {
 
       <ScrollView>
         <AppContainer className="flex-1">
-          <AppText>Suggestion</AppText>
+          <View className="flex-row items-center gap-2">
+            <AppTitle title="Trending" />
+            <AppIcon
+              branch="fa6"
+              name={"arrow-trend-up"}
+              size={20}
+              color="title"
+            />
+          </View>
           <DiscoverSuggesstion />
-          <AppText>Discover</AppText>
+          <View className="flex-row items-center gap-2">
+            <AppTitle title="Discover" />
+            <AppIcon branch="antd" name={"find"} size={20} color="title" />
+          </View>
           <DiscoverCollection />
         </AppContainer>
       </ScrollView>
