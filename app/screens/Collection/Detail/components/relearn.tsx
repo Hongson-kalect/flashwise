@@ -3,6 +3,7 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { View } from "react-native";
 
 const Relearn = () => {
@@ -39,7 +40,11 @@ const Relearn = () => {
           </View>
 
           <View className="mt-2 w-40">
-            <AppButton onPress={() => {}}>
+            <AppButton
+              onPress={() => {
+                router.push("/screens/Practice/screen");
+              }}
+            >
               <AppText font="MulishSemiBold" color="white">
                 Ôn tập ngay
               </AppText>

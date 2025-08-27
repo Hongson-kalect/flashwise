@@ -1,3 +1,4 @@
+import AppText from "@/components/AppText";
 import AppSearch from "@/components/input/AppSearch";
 import TagItem from "@/components/TagItem";
 import { FlatList, useWindowDimensions, View } from "react-native";
@@ -12,6 +13,25 @@ const DiscoverCollection = () => {
       </View>
       <View className="mt-3 mb-4">
         <AppSearch />
+      </View>
+
+      <View className="flex-row items-center justify-between mb-2">
+        <View className="flex-row items-center">
+          <AppText size={"sm"} className="ml-2">
+            123 collections
+          </AppText>
+        </View>
+        <View className="flex-row gap-1">
+          <AppText size={"sm"}>Sort:</AppText>
+          <AppText
+            font="MulishRegularItalic"
+            className="underline"
+            size={"sm"}
+            color="primary"
+          >
+            Mới nhất
+          </AppText>
+        </View>
       </View>
       <FlatList
         scrollEnabled={false}

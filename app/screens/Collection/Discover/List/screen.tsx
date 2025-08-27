@@ -27,7 +27,7 @@ const DiscoverList = () => {
             />
           </View>
           <DiscoverSuggesstion />
-          <View className="flex-row items-center gap-2">
+          <View className="flex-row items-center gap-2 mt-4">
             <AppTitle title="Discover" />
             <AppIcon branch="antd" name={"find"} size={20} color="title" />
           </View>
