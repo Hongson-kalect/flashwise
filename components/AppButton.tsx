@@ -64,7 +64,7 @@ const AppButton = ({
           transform: [{ scale }],
           width,
         },
-        style,
+        containerStyle,
       ]}
     >
       <Pressable

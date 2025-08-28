@@ -11,17 +11,17 @@ export const AppWrapper = ({ children }: { children: React.ReactNode }) => {
   }, [theme]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
+    <View style={{ flex: 1, backgroundColor: "transparent" }}>
       {/* View giả lập vùng status bar */}
       <View
         style={{
           height: Platform.OS === "android" ? StatusBar.currentHeight : 40,
-          backgroundColor: theme.background,
+          backgroundColor: "transparent",
         }}
       />
       <StatusBar
         translucent
-        backgroundColor={theme.background}
+        backgroundColor={"transparent"}
         barStyle={barStyle}
       />
       {children}

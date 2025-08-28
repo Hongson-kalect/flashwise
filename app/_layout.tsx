@@ -1,5 +1,4 @@
 import { SplashScreen, Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import "./globals.css";
 
@@ -65,7 +64,7 @@ export default function RootLayout() {
                 <ListModal />
                 <GlobalModal />
               </Portal>
-              <StatusBar style="auto" />
+              {/* <StatusBar style="auto" /> */}
             </LanguageProvider>
           </Provider>
         </GestureHandlerRootView>
