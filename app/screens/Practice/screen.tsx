@@ -1,24 +1,24 @@
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import { FlipCard } from "@/components/output/flipCard";
 import { fontFamily } from "@/configs/fonts";
 import { useTheme } from "@/providers/Theme";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
-  Image,
   Pressable,
-  StatusBar,
   StyleSheet,
   TextInput,
-  TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
-import FlipCard from "react-native-flip-card";
+// import FlipCard from "react-native-flip-card";
 import { ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Divider } from "react-native-paper";
-import ReAnimated from "react-native-reanimated";
+import ReAnimated, { useSharedValue } from "react-native-reanimated";
+import CardBackSide from "./components/backSide";
+import CardFrontSide from "./components/frontSide";
 
 const cc = [
   "Học từ mới: Hiện full, trừ nghĩa, người dùng bấm vào để hiển thị nghĩa (Đoán nghĩa), sau đó gõ lại nội dung gốc",
@@ -83,8 +83,8 @@ const methods = {
 export default function PracticePage() {
   const { theme } = useTheme();
   const { height, width } = useWindowDimensions();
-  const [cardHeight, setCardHeight] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
+  const cardHeight = useState(0);
+  const isFlipped = useSharedValue(false);
   const [isFlipping, setIsFlipping] = useState(false);
   const animatedValue = useRef(new Animated.Value(0)).current;
 
@@ -109,9 +109,15 @@ export default function PracticePage() {
       friction: 4,
       tension: 10,
     }).start(() => {
-      setIsFlipped(!isFlipped);
+      setIsFlipping(false);
     });
   };
+
+  useEffect(() => {
+    if (isFlipping) {
+      setIsFlipping(false);
+    }
+  }, [isFlipping]);
 
   return (
     <KeyboardAwareScrollView
@@ -169,159 +175,13 @@ export default function PracticePage() {
             <Divider />
 
             <View className="items-center mt-6">
+              {/* <TestFlipCard /> */}
               <FlipCard
-                friction={200}
-                flipHorizontal={true}
-                flip={false}
-                flipVertical={false}
-                useNativeDriver={true}
-              >
-                <View
-                  onLayout={(e) =>
-                    setCardHeight((prev) =>
-                      Math.max(prev, e.nativeEvent?.layout?.height || 0)
-                    )
-                  }
-                  // onPress={handleFlipCard}
-                  style={[
-                    {
-                      minHeight:
-                        ((height - (StatusBar.currentHeight || 0)) / 7) * 4,
-                      width: width - 48,
-                      backgroundColor: theme.background,
-                      elevation: 6,
-                      height: cardHeight || "auto",
-                    },
-                  ]}
-                  className="rounded-lg"
-                >
-                  <View className="flex-row items-center justify-between px-4 mt-4 mb-2">
-                    <TouchableOpacity
-                      style={{ backgroundColor: theme.primary }}
-                      onPress={() => alert("hello")}
-                      className="h-20 w-20 rounded-lg items-center justify-center"
-                    >
-                      <AppIcon
-                        branch="feather"
-                        color="white"
-                        size={16}
-                        name={"volume-2"}
-                      />
-                    </TouchableOpacity>
-
-                    <View className="flex-row gap-2 justify-end">
-                      <View className="bg-gray-200 h-8 w-8 rounded-lg items-center justify-center">
-                        <AppIcon
-                          color="subText3"
-                          branch="feather"
-                          size={16}
-                          name={"arrow-left"}
-                        />
-                      </View>
-                      <View className="bg-gray-200 h-8 w-8 rounded-lg items-center justify-center">
-                        <AppIcon
-                          color="subText3"
-                          branch="feather"
-                          size={16}
-                          name={"arrow-right"}
-                        />
-                      </View>
-                      <View className="bg-gray-200 h-8 w-8 rounded-lg items-center justify-center">
-                        <AppIcon
-                          color="subText3"
-                          branch="feather"
-                          size={16}
-                          name={"save"}
-                        />
-                      </View>
-                    </View>
-                  </View>
-                  <View className="mb-4 px-2">
-                    <View className="flex-row gap-2 items-center">
-                      <View>
-                        <AppText
-                          font="MulishBold"
-                          color="primary"
-                          className="text-center"
-                          size={24}
-                        >
-                          Strauberry cake
-                        </AppText>
-                        <View className="flex-row items-center">
-                          <AppText
-                            color="subText2"
-                            size={"xs"}
-                            font="MulishLightItalic"
-                          >
-                            {"/em'la:bupclmm/"}
-                          </AppText>
-                        </View>
-                      </View>
-                    </View>
-                  </View>
-
-                  <View className="w-full" style={{ height: 180 }}>
-                    <Image
-                      className="w-full h-full"
-                      source={{ uri: "https://picsum.photos/200/300" }}
-                      resizeMode="cover"
-                    />
-                  </View>
-                  <View className="px-4 py-2 justify-between">
-                    <View className="w-full">
-                      <AppText font="MulishRegular" size={"sm"}>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                        sed do eiusmod tempor incididunt.
-                      </AppText>
-                    </View>
-                  </View>
-                  <View className="mt-auto px-4 py-2">
-                    <AppText
-                      color="subText2"
-                      size={"xs"}
-                      font="MulishLightItalic"
-                    >
-                      Example: Lorem ipsum dolor sit amet, Example: Lorem ipsum
-                      dolor dolor sit amet,{" "}
-                      <AppText size={"xs"} font="MulishBoldItalic">
-                        strauberry cake
-                      </AppText>{" "}
-                      adipiscing elit.
-                    </AppText>
-                  </View>
-                </View>
-
-                {/* BACK SIDE */}
-
-                <View
-                  onLayout={(e) =>
-                    setCardHeight((prev) =>
-                      Math.max(prev, e.nativeEvent?.layout?.height || 0)
-                    )
-                  }
-                  // onPress={handleFlipCard}
-                  style={[
-                    {
-                      minHeight:
-                        ((height - (StatusBar.currentHeight || 0)) / 7) * 4,
-                      width: width - 48,
-                      backgroundColor: theme.background,
-                      elevation: 6,
-                      height: cardHeight || "auto",
-                    },
-                  ]}
-                  className="rounded-lg"
-                >
-                  {/* CONTENT BACK */}
-                  <AppText font="MulishBold" size={20} className="mb-2">
-                    Mặt sau
-                  </AppText>
-                  <AppText font="MulishRegular" size="sm">
-                    Đây là mặt sau của thẻ. Bạn có thể thêm định nghĩa, ghi chú,
-                    ví dụ chi tiết, hoặc bất cứ thứ gì ở đây.
-                  </AppText>
-                </View>
-              </FlipCard>
+                duration={2000}
+                isFlipped={isFlipped}
+                FrontSide={<CardFrontSide cardHeight={cardHeight} />}
+                BackSide={<CardBackSide cardHeight={cardHeight} />}
+              />
             </View>
             <View
               // style={{ marginTop: cardHeight + 28 }}
