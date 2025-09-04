@@ -17,16 +17,17 @@ const CardBackSide = ({ cardHeight }: Props) => {
 
   return (
     <View
-      onLayout={(e) =>
+      onLayout={(e) => {
+        e.persist();
         cardHeight[1]((prev) =>
           Math.max(prev, e.nativeEvent?.layout?.height || 0)
-        )
-      }
+        );
+      }}
       style={[
         {
           minHeight: ((height - (StatusBar.currentHeight || 0)) / 7) * 4,
           width: width - 48,
-          backgroundColor: theme.success,
+          backgroundColor: theme.background,
           elevation: 6,
           height: cardHeight[0] || "auto",
         },

@@ -3,16 +3,10 @@ import AppText from "@/components/AppText";
 import { FlipCard } from "@/components/output/flipCard";
 import { fontFamily } from "@/configs/fonts";
 import { useTheme } from "@/providers/Theme";
-import { useEffect, useRef, useState } from "react";
-import {
-  Animated,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 // import FlipCard from "react-native-flip-card";
+import useModalStore from "@/stores/modalStore";
 import { ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Divider } from "react-native-paper";
@@ -82,34 +76,18 @@ const methods = {
 };
 export default function PracticePage() {
   const { theme } = useTheme();
-  const { height, width } = useWindowDimensions();
   const cardHeight = useState(0);
   const isFlipped = useSharedValue(false);
   const [isFlipping, setIsFlipping] = useState(false);
-  const animatedValue = useRef(new Animated.Value(0)).current;
+  const [modalInput, setModalInput] = useState(true);
 
-  const frontInterpolate = animatedValue.interpolate({
-    inputRange: [0, 180],
-    outputRange: ["0deg", "180deg"],
-  });
-
-  const backInterpolate = animatedValue.interpolate({
-    inputRange: [0, 180],
-    outputRange: ["180deg", "360deg"],
-  });
-
-  const handleFlipCard = () => {
-    setIsFlipping(true);
-
-    const toValue = isFlipped ? 0 : 180;
-
-    Animated.spring(animatedValue, {
-      toValue,
-      useNativeDriver: true,
-      friction: 4,
-      tension: 10,
-    }).start(() => {
-      setIsFlipping(false);
+  const { setGlobalModal } = useModalStore();
+  const handleInputResult = () => {
+    setGlobalModal({
+      type: "input",
+      message: "Từ của cái của nợ này là?",
+      inAnimation: "slideInDown",
+      isShowCancelButton: false,
     });
   };
 
@@ -177,7 +155,8 @@ export default function PracticePage() {
             <View className="items-center mt-6">
               {/* <TestFlipCard /> */}
               <FlipCard
-                duration={2000}
+                disabled={false}
+                duration={500}
                 isFlipped={isFlipped}
                 FrontSide={<CardFrontSide cardHeight={cardHeight} />}
                 BackSide={<CardBackSide cardHeight={cardHeight} />}
@@ -197,6 +176,8 @@ export default function PracticePage() {
               </AppText>
               <View>
                 <Pressable
+                  disabled={!modalInput}
+                  onPress={handleInputResult}
                   style={{
                     borderRadius: 8,
                     borderWidth: 2,
@@ -206,6 +187,7 @@ export default function PracticePage() {
                   }}
                 >
                   <TextInput
+                    readOnly={modalInput} // Bật lên nếu dùng modalInput
                     style={{
                       // color: theme.primary,
                       fontFamily: fontFamily.MulishSemiBold,

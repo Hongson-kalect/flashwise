@@ -117,7 +117,13 @@ export type BasicModalOptions = {
   header?: React.ReactNode;
   footer?: React.ReactNode;
   middle?: React.ReactNode;
-  inAnimation?: "fadeIn" | "slideInDown" | "zoomIn" | "zoomInDown";
+  inAnimation?:
+    | "fadeIn"
+    | "slideInDown"
+    | "slideInUp"
+    | "slideInUp"
+    | "zoomIn"
+    | "zoomInDown";
   outAnimation?: "fadeOut" | "slideOutDown" | "zoomOut" | "zoomOutDown";
 };
 export type GlobalModalOptions = BasicModalOptions &

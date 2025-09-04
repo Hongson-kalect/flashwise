@@ -27,7 +27,7 @@ const CardFrontSide = ({ cardHeight }: Props) => {
         {
           minHeight: ((height - (StatusBar.currentHeight || 0)) / 7) * 4,
           width: width - 48,
-          backgroundColor: theme.warning,
+          backgroundColor: theme.background,
           elevation: 6,
           height: cardHeight[0] || "auto",
         },
@@ -79,7 +79,7 @@ const CardFrontSide = ({ cardHeight }: Props) => {
               className="text-center"
               size={24}
             >
-              Strauberry cake
+              Strauberry cakeee
             </AppText>
             <View className="flex-row items-center">
               <AppText color="subText2" size={"xs"} font="MulishLightItalic">

@@ -1,4 +1,5 @@
 import AppText from "@/components/AppText";
+import { fontFamily } from "@/configs/fonts";
 import { BasicModalOptions, InputModalOptions } from "@/providers/Modal";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
@@ -53,8 +54,9 @@ const InputModal = (modal: Props) => {
       >
         {modal.textInnerHeader}
         <TextInput
+          style={{ fontFamily: fontFamily.MulishMedium }}
           //   style={{ textAlignVertical: "top", height: 90 }}
-          className="text-gray-700 text-lg"
+          className="text-gray-700 text-xl h-14 px-2"
           ref={textRef}
           onSubmitEditing={submit}
           value={value}
@@ -85,7 +87,9 @@ const InputModal = (modal: Props) => {
         )}
         <TouchableOpacity
           className={`rounded-lg py-3 items-center justify-center ${
-            modal.isShowCancelButton === false ? "w-full" : ""
+            modal.isShowCancelButton === false
+              ? "min-w-36 rounded-full py-4"
+              : ""
           } min-w-28`}
           style={{
             backgroundColor: theme.primary,

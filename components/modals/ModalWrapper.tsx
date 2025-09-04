@@ -17,7 +17,12 @@ type Props = {
   title?: string | React.ReactNode;
   bottom?: React.ReactNode;
   titlePosition?: "center" | "left" | "right";
-  inAnimation?: "fadeIn" | "slideInDown" | "zoomIn" | "zoomInDown";
+  inAnimation?:
+    | "fadeIn"
+    | "slideInDown"
+    | "slideInUp"
+    | "zoomIn"
+    | "zoomInDown";
   outAnimation?: "fadeOut" | "slideOutDown" | "zoomOut" | "zoomOutDown";
   onCancel: () => void;
   rightContent?: React.ReactNode;

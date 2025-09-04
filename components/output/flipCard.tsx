@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   interpolate,
@@ -62,6 +62,7 @@ const flippedContentStyles = StyleSheet.create({
 
 type Props = {
   isFlipped: SharedValue<boolean>;
+  disabled?: boolean;
   style?: any;
   direction?: "x" | "y";
   duration?: number;
@@ -72,6 +73,7 @@ type Props = {
 
 export const FlipCard = ({
   isFlipped,
+  disabled,
   onChange,
   style,
   direction = "y",
@@ -88,17 +90,6 @@ export const FlipCard = ({
   }, [duration]);
   const isDirectionX = direction === "x";
   const [isFlip, setIsFlip] = useState(false);
-  const timeout = useRef<NodeJS.Timeout | number>(0);
-  const toggleCardSide = useCallback(
-    (state: boolean) => {
-      if (timeout.current) clearTimeout(timeout.current);
-      timeout.current = setTimeout(() => {
-        console.log("brah");
-        setIsFlip(state);
-      }, customDuration / 2);
-    },
-    [customDuration]
-  );
 
   const regularCardAnimatedStyle = useAnimatedStyle(() => {
     const spinValue = interpolate(Number(isFlipped.value), [0, 1], [0, 180]);
@@ -106,12 +97,11 @@ export const FlipCard = ({
       duration: customDuration,
     });
 
-    // if (isFlipped.value) {
-    console.log("isFlipped.value", isFlipped.value);
-    runOnJS(toggleCardSide)(!!isFlipped.value);
+    //Hàm chuyển trạng thái flip -> Thay đổi z-index của 2 mặt
+    //Tức là chuyển vùng bấm của 2 mặt
+    runOnJS(setIsFlip)(!!isFlipped.value);
 
     if (onChange) runOnJS(onChange)(!!isFlipped.value);
-    // }
 
     return {
       transform: [
@@ -133,19 +123,20 @@ export const FlipCard = ({
     };
   });
 
-  const handlePress = () => {
-    isFlipped.value = !isFlipped.value;
-  };
-
   return (
-    <Pressable onPress={handlePress}>
+    <Pressable
+      disabled={disabled}
+      style={{ backfaceVisibility: "hidden" }}
+      onPress={() => {
+        isFlipped.value = !isFlipped.value;
+      }}
+    >
       <Animated.View
         style={[
           flipCardStyles.regularCard,
           style,
           {
             zIndex: isFlip ? 1 : 2,
-            backgroundColor: !isFlip ? "red" : "blue",
           },
           regularCardAnimatedStyle,
         ]}
@@ -158,7 +149,6 @@ export const FlipCard = ({
           style,
           {
             zIndex: isFlip ? 2 : 1,
-            backgroundColor: isFlip ? "red" : "blue",
           },
           flippedCardAnimatedStyle,
         ]}
@@ -171,10 +161,12 @@ export const FlipCard = ({
 
 const flipCardStyles = StyleSheet.create({
   regularCard: {
+    backfaceVisibility: "hidden",
     position: "absolute",
     zIndex: 1,
   },
   flippedCard: {
+    backfaceVisibility: "hidden",
     zIndex: 2,
   },
 });
