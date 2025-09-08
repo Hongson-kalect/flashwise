@@ -1,11 +1,11 @@
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { FlipCard } from "@/components/output/flipCard";
-import { fontFamily } from "@/configs/fonts";
 import { useTheme } from "@/providers/Theme";
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, TextInput, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 // import FlipCard from "react-native-flip-card";
+import WordSelect from "@/components/card/ansers/WordSelect";
 import useModalStore from "@/stores/modalStore";
 import { ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -80,6 +80,15 @@ export default function PracticePage() {
   const isFlipped = useSharedValue(false);
   const [isFlipping, setIsFlipping] = useState(false);
   const [modalInput, setModalInput] = useState(true);
+
+  const resetCardHeight = () => {
+    cardHeight[1](0);
+  };
+
+  // Khi đổi câu hỏi or có cái vẹo gì đó
+  // useEffect(() => {
+  //   resetCardHeight();
+  // }, []);
 
   const { setGlobalModal } = useModalStore();
   const handleInputResult = () => {
@@ -174,100 +183,10 @@ export default function PracticePage() {
               >
                 Từ của cái của nợ thẻ này là?
               </AppText>
-              <View>
-                <Pressable
-                  disabled={!modalInput}
-                  onPress={handleInputResult}
-                  style={{
-                    borderRadius: 8,
-                    borderWidth: 2,
-                    borderColor: theme.primary,
-                    paddingVertical: 4,
-                    paddingHorizontal: 8,
-                  }}
-                >
-                  <TextInput
-                    readOnly={modalInput} // Bật lên nếu dùng modalInput
-                    style={{
-                      // color: theme.primary,
-                      fontFamily: fontFamily.MulishSemiBold,
-                      fontSize: 20,
-                    }}
-                    placeholder="Answer..."
-                  />
-                </Pressable>
-              </View>
-              {/* <View className="flex-row flex-wrap gap-y-4 mt-2">
-                <View className="w-1/2 pr-2">
-                  <AppButton
-                    size="xl"
-                    style={{
-                      ...borderStyle,
-                      borderRadius: 8,
-                      elevation: 2,
-                    }}
-                    type="white"
-                    onPress={() => {}}
-                  >
-                    <AppText
-                      size={"sm"}
-                      font="MulishBold"
-                      className="text-center"
-                    >
-                      Run
-                    </AppText>
-                  </AppButton>
-                </View>
-                <View className="w-1/2 pl-2">
-                  <AppButton
-                    size="xl"
-                    style={{ ...borderStyle, borderRadius: 8, elevation: 2 }}
-                    type="white"
-                    onPress={() => {}}
-                  >
-                    <AppText
-                      size={"sm"}
-                      font="MulishBold"
-                      className="text-center"
-                    >
-                      Walking
-                    </AppText>
-                  </AppButton>
-                </View>
-                <View className="w-1/2 pr-2">
-                  <AppButton
-                    size="xl"
-                    style={{ ...borderStyle, borderRadius: 8, elevation: 2 }}
-                    type="white"
-                    onPress={() => {}}
-                  >
-                    <AppText
-                      size={"sm"}
-                      font="MulishBold"
-                      className="text-center"
-                    >
-                      Punch
-                    </AppText>
-                  </AppButton>
-                </View>
-                <View className="w-1/2 pl-2">
-                  <AppButton
-                    size="xl"
-                    style={{ ...borderStyle, borderRadius: 8, elevation: 2 }}
-                    type="white"
-                    onPress={() => {}}
-                  >
-                    <AppText
-                      size={"sm"}
-                      font="MulishBold"
-                      className="text-center"
-                    >
-                      Drive
-                    </AppText>
-                  </AppButton>
-                </View>
-              </View> */}
+
+              <WordSelect />
             </View>
+
             <View className="h-8"></View>
           </View>
         </ScrollView>
