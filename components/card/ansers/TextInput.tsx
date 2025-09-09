@@ -5,7 +5,10 @@ import useModalStore from "@/stores/modalStore";
 import { useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 
-const CardTextInput = () => {
+type Props = {
+  onAnser: (anser: string) => void;
+};
+const CardTextInput = (props: Props) => {
   const { theme } = useTheme();
   const { setGlobalModal } = useModalStore();
   const [modalInput, setModalInput] = useState(true);
@@ -19,6 +22,7 @@ const CardTextInput = () => {
       isShowCancelButton: false,
       onOk(value) {
         setValue(value);
+        props.onAnser(value);
       },
     });
   };
@@ -41,6 +45,9 @@ const CardTextInput = () => {
           }}
         >
           <TextInput
+            submitBehavior="blurAndSubmit"
+            onSubmitEditing={() => props.onAnser(value)}
+            enterKeyHint="done"
             readOnly={modalInput} // Bật lên nếu dùng modalInput
             value={value}
             onChangeText={setValue}

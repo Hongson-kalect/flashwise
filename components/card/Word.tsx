@@ -4,6 +4,8 @@ import AppText from "../AppText";
 type Props = {
   wrapperStyle?: ViewStyle;
   textStyle?: TextStyle;
+  question: any;
+  questionIndex: number;
 };
 
 const CardWord = (props: Props) => {
@@ -17,7 +19,7 @@ const CardWord = (props: Props) => {
             className="text-center"
             size={24}
           >
-            Strauberry cakee
+            Strauberry cake {props.questionIndex}
           </AppText>
           <View className="flex-row items-center">
             <AppText color="subText2" size={"xs"} font="MulishLightItalic">

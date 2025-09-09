@@ -6,7 +6,11 @@ import { View } from "react-native";
 
 const borderStyle = {};
 
-const WordSelect = () => {
+type Props = {
+  onAnser: (anser: string) => void;
+};
+
+const WordSelect = ({ onAnser }: Props) => {
   const [answers] = useState([
     "Cek",
     "Walk",
@@ -25,7 +29,7 @@ const WordSelect = () => {
           buttonWidth === "w-1/2" ? (index % 2 === 0 ? "pr-2" : "pl-2") : "";
         return (
           <View key={anser} className={`${buttonWidth} ${padding}`}>
-            <AnserButton val={anser} />
+            <AnserButton onPress={() => onAnser(anser)} val={anser} />
           </View>
         );
       })}
@@ -33,7 +37,13 @@ const WordSelect = () => {
   );
 };
 
-const AnserButton = ({ val }: { val: string }) => {
+const AnserButton = ({
+  val,
+  onPress,
+}: {
+  val: string;
+  onPress: () => void;
+}) => {
   const { theme } = useTheme();
   return (
     <AppButton
@@ -50,7 +60,7 @@ const AnserButton = ({ val }: { val: string }) => {
         elevation: 2,
       }}
       type="white"
-      onPress={() => {}}
+      onPress={onPress}
     >
       <AppText size={16} font="MulishBold" className="text-center">
         {val}

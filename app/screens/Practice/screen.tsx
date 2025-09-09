@@ -2,15 +2,20 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { FlipCard } from "@/components/output/flipCard";
 import { useTheme } from "@/providers/Theme";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 // import FlipCard from "react-native-flip-card";
-import WordSelect from "@/components/card/ansers/WordSelect";
+import CardTextInput from "@/components/card/ansers/TextInput";
 import useModalStore from "@/stores/modalStore";
-import { ScrollView } from "react-native-gesture-handler";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Divider } from "react-native-paper";
-import ReAnimated, { useSharedValue } from "react-native-reanimated";
+import {
+  default as Animated,
+  default as ReAnimated,
+  SlideInRight,
+  SlideOutLeft,
+  useSharedValue,
+} from "react-native-reanimated";
 import CardBackSide from "./components/backSide";
 import CardFrontSide from "./components/frontSide";
 
@@ -74,12 +79,49 @@ const methods = {
     },
   },
 };
+const questions = [1, 2, 3, 4, 5];
 export default function PracticePage() {
   const { theme } = useTheme();
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const question = useMemo(
+    () => questions[currentQuestionIndex],
+    [currentQuestionIndex]
+  );
+
   const cardHeight = useState(0);
   const isFlipped = useSharedValue(false);
   const [isFlipping, setIsFlipping] = useState(false);
   const [modalInput, setModalInput] = useState(true);
+
+  const onAnswer = async (anser: string) => {
+    await checkResult(anser);
+  };
+
+  const checkResult = async (anser: string) => {
+    console.log(anser);
+
+    // Kiểm tra và hiển thị kết quả hoặc yêu cầu nhập lại
+
+    if (anser === "a")
+      setTimeout(() => {
+        if (currentQuestionIndex >= questions.length - 1) {
+          Finish();
+        } else {
+          nextQuestion();
+        }
+      }, 2000);
+    else alert("sai em ây");
+  };
+
+  const nextQuestion = () => {
+    isFlipped.value = false;
+    resetCardHeight();
+    setCurrentQuestionIndex(currentQuestionIndex + 1);
+  };
+
+  const Finish = () => {
+    alert("Mọe m chứ xong rồi");
+  };
 
   const resetCardHeight = () => {
     cardHeight[1](0);
@@ -107,68 +149,83 @@ export default function PracticePage() {
   }, [isFlipping]);
 
   return (
-    <KeyboardAwareScrollView
-      contentContainerStyle={{
-        flexGrow: 1,
-        justifyContent: "flex-end",
+    <View
+      className="flex-1"
+      style={{
+        backgroundColor: theme.background,
       }}
-      enableOnAndroid={true}
-      extraScrollHeight={100} // Đẩy thêm để không bị che
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
     >
-      <View
-        className="flex-1"
-        style={{
-          backgroundColor: theme.background,
-        }}
+      <View className="px-2">
+        <View className="h-10 flex-row items-center gap-4 mb-2">
+          <View
+            className="h-8 w-8 items-center justify-center rounded-full"
+            style={{ backgroundColor: theme.success }}
+          >
+            <View className="h-6 w-6 rounded-full bg-white"></View>
+          </View>
+          <ReAnimated.View
+            className="h-5 bg-gray-200 rounded-full"
+            style={{ flex: 1 }}
+          >
+            <View
+              className="h-full rounded-full"
+              style={{
+                width: "50%",
+                elevation: 4,
+                backgroundColor: theme.success,
+              }}
+            ></View>
+          </ReAnimated.View>
+
+          <View>
+            <AppIcon
+              onPress={() => setCurrentQuestionIndex(0)}
+              branch="antd"
+              name={"setting"}
+              size={28}
+              color="subText2"
+            />
+          </View>
+        </View>
+
+        <Divider />
+      </View>
+      <Animated.View
+        key={currentQuestionIndex}
+        entering={SlideInRight}
+        exiting={SlideOutLeft}
       >
-        <ScrollView
-          showsVerticalScrollIndicator={false}
+        <KeyboardAwareScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "flex-end",
+          }}
+          enableOnAndroid={true}
+          extraScrollHeight={140} // Đẩy thêm để không bị che
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <View className="px-2">
-            <View className="h-10 flex-row items-center gap-4 mb-2">
-              <View
-                className="h-8 w-8 items-center justify-center rounded-full"
-                style={{ backgroundColor: theme.success }}
-              >
-                <View className="h-6 w-6 rounded-full bg-white"></View>
-              </View>
-              <ReAnimated.View
-                className="h-5 bg-gray-200 rounded-full"
-                style={{ flex: 1 }}
-              >
-                <View
-                  className="h-full rounded-full"
-                  style={{
-                    width: "50%",
-                    elevation: 4,
-                    backgroundColor: theme.success,
-                  }}
-                ></View>
-              </ReAnimated.View>
-
-              <View>
-                <AppIcon
-                  branch="antd"
-                  name={"setting"}
-                  size={28}
-                  color="subText2"
-                />
-              </View>
-            </View>
-
-            <Divider />
-
+          <View className="flex-1 px-2">
             <View className="items-center mt-6">
               {/* <TestFlipCard /> */}
               <FlipCard
                 disabled={false}
                 duration={500}
                 isFlipped={isFlipped}
-                FrontSide={<CardFrontSide cardHeight={cardHeight} />}
-                BackSide={<CardBackSide cardHeight={cardHeight} />}
+                FrontSide={
+                  <CardFrontSide
+                    questionIndex={currentQuestionIndex}
+                    question={question}
+                    cardHeight={cardHeight}
+                  />
+                }
+                BackSide={
+                  <CardBackSide
+                    questionIndex={currentQuestionIndex}
+                    question={question}
+                    cardHeight={cardHeight}
+                  />
+                }
               />
             </View>
             <View
@@ -184,14 +241,15 @@ export default function PracticePage() {
                 Từ của cái của nợ thẻ này là?
               </AppText>
 
-              <WordSelect />
+              <CardTextInput onAnser={onAnswer} />
+              {/* <WordSelect onAnser={onAnswer} /> */}
             </View>
 
             <View className="h-8"></View>
           </View>
-        </ScrollView>
-      </View>
-    </KeyboardAwareScrollView>
+        </KeyboardAwareScrollView>
+      </Animated.View>
+    </View>
   );
 }
 

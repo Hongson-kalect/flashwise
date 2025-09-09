@@ -11,9 +11,10 @@ type Props = {
   audio: DocumentPickerAsset | AudioType | null;
   sound: [Audio.Sound | null, Dispatch<SetStateAction<Audio.Sound | null>>];
   disabled: boolean;
+  size?: "small" | "medium" | "large";
 };
 
-const PhatAm = ({ audio, disabled, sound }: Props) => {
+const PhatAm = ({ audio, disabled, sound, size = "medium" }: Props) => {
   const { theme } = useTheme();
 
   return (
@@ -22,6 +23,8 @@ const PhatAm = ({ audio, disabled, sound }: Props) => {
       disabled={!audio?.uri}
       style={{
         backgroundColor: audio?.uri ? theme.primary : theme.subText3,
+        width: size === "small" ? 32 : size === "medium" ? 56 : 80,
+        height: size === "small" ? 32 : size === "medium" ? 56 : 80,
       }}
       className=" border-gray-400 rounded-lg h-16 w-16 items-center justify-center"
     >

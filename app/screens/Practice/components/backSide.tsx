@@ -10,8 +10,10 @@ import {
 
 type Props = {
   cardHeight: [number, React.Dispatch<React.SetStateAction<number>>];
+  question: any;
+  questionIndex?: number;
 };
-const CardBackSide = ({ cardHeight }: Props) => {
+const CardBackSide = ({ cardHeight, question, questionIndex }: Props) => {
   const { theme } = useTheme();
   const { width, height } = useWindowDimensions();
 
