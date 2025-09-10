@@ -3,7 +3,7 @@ import AppText from "@/components/AppText";
 import { FlipCard } from "@/components/output/flipCard";
 import { useTheme } from "@/providers/Theme";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 // import FlipCard from "react-native-flip-card";
 import CardTextInput from "@/components/card/ansers/TextInput";
 import useModalStore from "@/stores/modalStore";
@@ -11,8 +11,11 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { Divider } from "react-native-paper";
 import {
   default as Animated,
+  FadeOut,
   default as ReAnimated,
+  SlideInDown,
   SlideInRight,
+  SlideInUp,
   SlideOutLeft,
   useSharedValue,
 } from "react-native-reanimated";
@@ -87,6 +90,8 @@ export default function PracticePage() {
     () => questions[currentQuestionIndex],
     [currentQuestionIndex]
   );
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [failedOnce, setFailedOnce] = useState(false);
 
   const cardHeight = useState(0);
   const isFlipped = useSharedValue(false);
@@ -98,25 +103,46 @@ export default function PracticePage() {
   };
 
   const checkResult = async (anser: string) => {
-    console.log(anser);
-
     // Kiểm tra và hiển thị kết quả hoặc yêu cầu nhập lại
 
-    if (anser === "a")
+    if (anser === "A") {
+      setIsCorrect(true);
+      setFailedOnce(false);
       setTimeout(() => {
-        if (currentQuestionIndex >= questions.length - 1) {
-          Finish();
-        } else {
-          nextQuestion();
-        }
-      }, 2000);
-    else alert("sai em ây");
+        nextQuestion();
+      }, 1500);
+    } else {
+      if (!failedOnce) {
+        // Cho phép sai 1 lần
+        setFailedOnce(true);
+        // setTimeout(() => {
+        //   setIsCorrect(null);
+        // }, 1000);
+      } else {
+        setIsCorrect(false);
+        // Chuyển câu hoặc kết thúc nếu sai lần 2
+        // Hoặc thêm câu hỏi cho nhớ, hoặc giảm gì gì đó
+        // setTimeout(() => {
+        //   if (currentQuestionIndex >= questions.length - 1) {
+        //     Finish();
+        //   } else {
+        //     nextQuestion();
+        //   }
+        // }, 1000);
+      }
+    }
   };
 
   const nextQuestion = () => {
-    isFlipped.value = false;
-    resetCardHeight();
-    setCurrentQuestionIndex(currentQuestionIndex + 1);
+    if (currentQuestionIndex >= questions.length - 1) {
+      Finish();
+    } else {
+      isFlipped.value = false;
+      setIsCorrect(null);
+      setFailedOnce(false);
+      resetCardHeight();
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
   };
 
   const Finish = () => {
@@ -232,15 +258,6 @@ export default function PracticePage() {
               // style={{ marginTop: cardHeight + 28 }}
               className=" mt-8 px-4 mb-6"
             >
-              <AppText
-                className="mb-2"
-                size={"sm"}
-                font="MulishSemiBold"
-                color="error"
-              >
-                Từ của cái của nợ thẻ này là?
-              </AppText>
-
               <CardTextInput onAnser={onAnswer} />
               {/* <WordSelect onAnser={onAnswer} /> */}
             </View>
@@ -249,6 +266,52 @@ export default function PracticePage() {
           </View>
         </KeyboardAwareScrollView>
       </Animated.View>
+
+      {isCorrect === true && (
+        <Animated.View
+          className={"absolute bottom-0 right-0 left-0 h-20"}
+          style={{ backgroundColor: theme.success }}
+          entering={SlideInDown}
+          exiting={SlideOutLeft}
+        >
+          <View>
+            <AppText color="white">Đúng roài em ây</AppText>
+          </View>
+        </Animated.View>
+      )}
+      {isCorrect === false && (
+        <Animated.View
+          key={"anser-" + currentQuestionIndex}
+          className={"absolute bottom-0 right-0 left-0 h-20"}
+          style={{ backgroundColor: theme.error }}
+          entering={SlideInDown}
+          exiting={SlideOutLeft}
+        >
+          <TouchableOpacity
+            className="h-full w-full"
+            onPress={() => nextQuestion()}
+          >
+            <View>
+              <AppText color="white">Sai em ây</AppText>
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {failedOnce ? (
+        <Animated.View
+          className={"absolute top-0 left-1/2  items-center justify-center"}
+          entering={SlideInUp}
+          exiting={FadeOut}
+        >
+          <View
+            style={{ backgroundColor: theme.error }}
+            className="px-4 py-2 rounded-full -translate-x-1/2"
+          >
+            <AppText color="white">1 nhát</AppText>
+          </View>
+        </Animated.View>
+      ) : null}
     </View>
   );
 }
