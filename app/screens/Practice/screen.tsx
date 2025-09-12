@@ -3,11 +3,10 @@ import AppText from "@/components/AppText";
 import { FlipCard } from "@/components/output/flipCard";
 import { useTheme } from "@/providers/Theme";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 // import FlipCard from "react-native-flip-card";
 import CardTextInput from "@/components/card/ansers/TextInput";
 import useModalStore from "@/stores/modalStore";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Divider } from "react-native-paper";
 import {
   default as Animated,
@@ -22,66 +21,6 @@ import {
 import CardBackSide from "./components/backSide";
 import CardFrontSide from "./components/frontSide";
 
-const cc = [
-  "Học từ mới: Hiện full, trừ nghĩa, người dùng bấm vào để hiển thị nghĩa (Đoán nghĩa), sau đó gõ lại nội dung gốc",
-  "Lượt 2: Hiện full, trừ từ gốc, người dùng gõ từ gốc",
-  "Lượt 3: Phát âm thanh, người dùng gõ từ",
-  "Lượt 4: Hiện mic, người dùng phát âm từ",
-  "Lượt 5: Lặp lại lượt 2, không hiện bản dịch",
-];
-
-const other = [
-  "Nhìn hình đoán từ: (Chỉ áp dụng cho từ có hình) Hiển thị hình và gõ từ hoặc chọn abcd",
-  "Hiện bản dịch: Chọn or nhập or đọc từ gốc",
-  "Điền từ vào chỗ trống trong ví dụ",
-  "Nối từ và nghĩa, nếu có full ảnh thì nối từ với ảnh",
-  "Cắt các từ trong câu và chọn như doulingo",
-
-  "Siêu tốc: hiển thị từ gốc, chọn bản dịch. Hiện bản dịch, chọn từ gốc... Túm lại là lặp đi lặp lại 1 phương pháp, trừ nghe",
-  "Câu hỏi đố với từ đó, dạng abcd, các dạng như bài tiếng anh cơ bản: Chọn từ sai trong câu, dạng đúng của từ, trọng âm, sắp xếp thứ tự từ",
-];
-
-const methods = {
-  newWord: {
-    1: "Hiển thị từ, nghĩa, ví dụ theo ngôn ngữ dựa vào cài đặt của người dùng",
-    2: "Hiển thị từ và chỉ cần nhấn next?",
-  },
-  input: {
-    // Thứ chương trình đưa ra cho người dùng
-    1: "Hiển thị từ gốc, nghĩa, hình ảnh, định nghĩa, ví dụ",
-    2: "Hiển thị hình ảnh, định nghĩa, ví dụ (lược bỏ từ gốc)",
-    3: "Hiển thị hình ảnh | Định nghĩa",
-    4: "Hiển thị từ gốc",
-    5: "Hiển thị bản dịch của từ đó",
-    6: "Phát âm thanh phát âm của từ đó",
-    7: "Phát âm thanh định nghĩa của từ đó",
-    8: "Hiển thị hình cái mic và từ gốc",
-  },
-  output: {
-    // cách người dùng cần làm để trả lời
-    1: {
-      1: "Viết lại từ đó",
-    },
-    2: {
-      1: "Viết lại từ đó",
-      2: "Chọn hình ảnh",
-      3: "Chọn từ đúng",
-    },
-    3: {
-      1: "Viết lại từ đó",
-      2: "Chọn hình ảnh",
-      3: "Chọn từ đúng",
-    },
-    4: {
-      1: "Chọn bản dịch",
-      2: "Phát âm từ",
-    },
-    5: {
-      1: "Chọn từ gốc",
-      2: "Ghi lại từ gốc",
-    },
-  },
-};
 const questions = [1, 2, 3, 4, 5];
 export default function PracticePage() {
   const { theme } = useTheme();
@@ -205,7 +144,11 @@ export default function PracticePage() {
 
           <View>
             <AppIcon
-              onPress={() => setCurrentQuestionIndex(0)}
+              onPress={() => {
+                setCurrentQuestionIndex(0);
+                setIsCorrect(null);
+                resetCardHeight();
+              }}
               branch="antd"
               name={"setting"}
               size={28}
@@ -217,17 +160,18 @@ export default function PracticePage() {
         <Divider />
       </View>
       <Animated.View
+        className="flex-1 justify-between"
         key={currentQuestionIndex}
         entering={SlideInRight}
         exiting={SlideOutLeft}
       >
-        <KeyboardAwareScrollView
+        <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
             justifyContent: "flex-end",
           }}
-          enableOnAndroid={true}
-          extraScrollHeight={140} // Đẩy thêm để không bị che
+          // enableOnAndroid={true}
+          // extraScrollHeight={140} // Đẩy thêm để không bị che
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -254,22 +198,22 @@ export default function PracticePage() {
                 }
               />
             </View>
-            <View
-              // style={{ marginTop: cardHeight + 28 }}
-              className=" mt-8 px-4 mb-6"
-            >
-              <CardTextInput onAnser={onAnswer} />
-              {/* <WordSelect onAnser={onAnswer} /> */}
-            </View>
 
             <View className="h-8"></View>
           </View>
-        </KeyboardAwareScrollView>
+        </ScrollView>
+        <View
+          // style={{ marginTop: cardHeight + 28 }}
+          className="bg-red-400"
+        >
+          <CardTextInput onAnser={onAnswer} />
+          {/* <WordSelect onAnser={onAnswer} /> */}
+        </View>
       </Animated.View>
 
       {isCorrect === true && (
         <Animated.View
-          className={"absolute bottom-0 right-0 left-0 h-20"}
+          className={"absolute bottom-0 right-0 left-0 h-28"}
           style={{ backgroundColor: theme.success }}
           entering={SlideInDown}
           exiting={SlideOutLeft}
@@ -282,7 +226,7 @@ export default function PracticePage() {
       {isCorrect === false && (
         <Animated.View
           key={"anser-" + currentQuestionIndex}
-          className={"absolute bottom-0 right-0 left-0 h-20"}
+          className={"absolute bottom-0 right-0 left-0 h-28"}
           style={{ backgroundColor: theme.error }}
           entering={SlideInDown}
           exiting={SlideOutLeft}

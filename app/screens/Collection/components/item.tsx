@@ -33,7 +33,7 @@ const CollectionItem = () => {
         style={{ elevation: 4 }}
         className="h-6 w-6 absolute top-1 right-1 rounded-full bg-blue-500 z-[1]"
       ></View> */}
-      <View className="w-24 h-full min-h-24 rounded-lg items-center justify-center bg-gray-100">
+      <View className="w-24 h-24 rounded-lg items-center justify-center bg-gray-100">
         {/* <AppText>Colllecion Image / icon</AppText> */}
       </View>
       <View className="py-1 flex-1 px-2 justify-between">

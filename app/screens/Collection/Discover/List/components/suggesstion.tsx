@@ -10,6 +10,7 @@ const DiscoverSuggesstion = () => {
     <View className="rounded-lg">
       <AppCarousel
         width={width - 21}
+        height={width - 21}
         renderItem={(value) => <SuggesstionItem item={value} />}
       />
 
@@ -22,26 +23,29 @@ type SuggesstionItemProps = {
   item: any;
 };
 const SuggesstionItem = ({ item }: SuggesstionItemProps) => {
+  const { width } = useWindowDimensions();
   return (
     <Pressable
       onPress={() => router.push("/screens/Collection/Discover/Detail/[id]")}
       style={{
         backgroundColor: "white",
-        borderWidth: 1,
         borderColor: "#ddd",
       }}
-      className="rounded-t-lg overflow-hidden"
+      className="rounded-lg overflow-hidden"
     >
       <Image
         className="h-full w-full"
-        source={{ uri: "https://picsum.photos/200/300" }}
-        style={{ resizeMode: "cover", backgroundColor: "white" }}
+        source={{ uri: "https://picsum.photos/200/200" }}
+        style={{
+          resizeMode: "cover",
+          backgroundColor: "white",
+        }}
       ></Image>
       <LinearGradient
         colors={["transparent", "rgba(0,0,0,0.5)", "rgba(0,0,0,0.9)"]}
         style={{
           position: "absolute",
-          height: 56,
+          height: 100,
           left: 0,
           padding: 4,
           // paddingHorizontal: 4,

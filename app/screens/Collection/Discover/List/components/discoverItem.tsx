@@ -11,7 +11,7 @@ const DiscoverItem = () => {
   const [imageHeight, setImageHeight] = useState(0);
 
   const onLayout = (e: LayoutChangeEvent) =>
-    setImageHeight((e.nativeEvent.layout.width / 16) * 9);
+    setImageHeight(e.nativeEvent.layout.width);
 
   return (
     <View className={"p-1"}>
@@ -27,7 +27,7 @@ const DiscoverItem = () => {
           style={{ elevation: 2, zIndex: 1 }}
         ></View>
         <Image
-          source={{ uri: "https://picsum.photos/200/300" }}
+          source={{ uri: "https://picsum.photos/200/200" }}
           resizeMode="cover"
           onLayout={onLayout}
           style={{ height: imageHeight || "auto" }}

@@ -17,7 +17,7 @@ type Props = {
 
   questionIndex?: number;
 };
-const type: FRONT_CARD_OPTIONS = "textAndImage";
+const type: FRONT_CARD_OPTIONS = "full";
 const CardFrontSide = ({ cardHeight, question, questionIndex }: Props) => {
   const { theme } = useTheme();
   const { width, height } = useWindowDimensions();
@@ -37,11 +37,13 @@ const CardFrontSide = ({ cardHeight, question, questionIndex }: Props) => {
 
   return (
     <View
-      onLayout={(e) =>
+      onLayout={(e) => {
+        e.persist();
+
         cardHeight[1]((prev) =>
           Math.max(prev, e.nativeEvent?.layout?.height || 0)
-        )
-      }
+        );
+      }}
       style={[
         {
           minHeight: ((height - (StatusBar.currentHeight || 0)) / 7) * 4,

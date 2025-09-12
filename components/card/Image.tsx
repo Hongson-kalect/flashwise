@@ -10,7 +10,7 @@ const CardImage = (props: Props) => {
     <View className="w-full" style={{ height: 180 }}>
       <Image
         className="w-full h-full"
-        source={{ uri: "https://picsum.photos/200/300" }}
+        source={{ uri: "https://picsum.photos/200/200" }}
         resizeMode="cover"
       />
     </View>

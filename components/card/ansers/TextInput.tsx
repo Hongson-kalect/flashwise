@@ -1,18 +1,50 @@
-import AppText from "@/components/AppText";
 import { fontFamily } from "@/configs/fonts";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { useState } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { useEffect, useState } from "react";
+import {
+  Animated,
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 
 type Props = {
   onAnser: (anser: string) => void;
 };
+
 const CardTextInput = (props: Props) => {
   const { theme } = useTheme();
   const { setGlobalModal } = useModalStore();
-  const [modalInput, setModalInput] = useState(true);
+  const [modalInput, setModalInput] = useState(false);
   const [value, setValue] = useState("");
+
+  const translateY = useState(new Animated.Value(0))[0];
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      Animated.timing(translateY, {
+        toValue: -e.endCoordinates.height, // Di chuyển lên
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      Animated.timing(translateY, {
+        toValue: 0, // Trở về vị trí ban đầu
+        duration: 100,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleInput = () => {
     setGlobalModal({
@@ -28,40 +60,55 @@ const CardTextInput = (props: Props) => {
   };
 
   return (
-    <>
-      <AppText className="mb-2" size={"sm"} font="MulishSemiBold" color="error">
-        Từ của cái của nợ thẻ này là?
-      </AppText>
-      <View>
+    <View style={{ flex: 1, backgroundColor: "red" }}>
+      <Animated.View
+        style={[
+          {
+            transform: [{ translateY }],
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            paddingHorizontal: 8,
+            paddingTop: 4,
+            paddingBottom: 16,
+            backgroundColor: theme.background,
+            borderColor: theme.primary,
+          },
+        ]}
+      >
         <Pressable
+          style={[styles.inputWrapper, { borderColor: theme.primary }]}
           disabled={!modalInput}
           onPress={handleInput}
-          style={{
-            borderRadius: 8,
-            borderWidth: 2,
-            borderColor: theme.primary,
-            paddingVertical: 4,
-            paddingHorizontal: 8,
-          }}
         >
           <TextInput
             submitBehavior="blurAndSubmit"
             onSubmitEditing={() => props.onAnser(value)}
             enterKeyHint="done"
-            readOnly={modalInput} // Bật lên nếu dùng modalInput
+            readOnly={modalInput}
             value={value}
             onChangeText={setValue}
             style={{
-              // color: theme.primary,
               fontFamily: fontFamily.MulishSemiBold,
               fontSize: 20,
             }}
-            placeholder="Answer..."
+            placeholder="Từ này là?"
           />
         </Pressable>
-      </View>
-    </>
+      </Animated.View>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  inputWrapper: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    backgroundColor: "#fff",
+  },
+});
 
 export default CardTextInput;
