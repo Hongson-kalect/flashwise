@@ -22,8 +22,8 @@ const CreateUploadHeader = () => {
             type={"primary"}
           >
             <AppIcon
-              name={"cloud-upload"}
-              branch="fa6"
+              name={"upload-cloud"}
+              branch="feather"
               size={18}
               color="white"
             />

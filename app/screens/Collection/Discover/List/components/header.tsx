@@ -5,7 +5,6 @@ import AppText from "@/components/AppText";
 import { router } from "expo-router";
 import { Dispatch, SetStateAction } from "react";
 import { View } from "react-native";
-import Animated from "react-native-reanimated";
 
 type Props = {
   mode?: "create" | "update" | "view";
@@ -49,7 +48,7 @@ const DiscoverListHeader = ({ mode, setMode }: Props) => {
                 size={18}
                 color="white"
               />
-              <AppText color="white">My collection</AppText>
+              <AppText color="white">My upload</AppText>
             </AppButton>
           </View>
         }

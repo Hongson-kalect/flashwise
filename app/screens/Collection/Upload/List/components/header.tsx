@@ -9,7 +9,7 @@ const UploadListHeader = () => {
   return (
     <View className="flex-row justify-between items-center h-14">
       <AppReturnHeader
-        title="My collections"
+        title="My uploads"
         rightElement={
           <AppButton
             onPress={() =>
@@ -19,7 +19,7 @@ const UploadListHeader = () => {
             title="Upload"
             type="primary"
           >
-            <AppIcon name="upload" branch="antd" color="white" size={18} />
+            <AppIcon name="plus" branch="antd" color="white" size={18} />
             <AppText color="white">Upload</AppText>
           </AppButton>
         }

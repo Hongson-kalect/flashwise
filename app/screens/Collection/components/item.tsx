@@ -1,7 +1,7 @@
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { router, useLocalSearchParams } from "expo-router";
-import { TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
 
 const CollectionItem = () => {
   const { theme } = useTheme();
@@ -33,8 +33,12 @@ const CollectionItem = () => {
         style={{ elevation: 4 }}
         className="h-6 w-6 absolute top-1 right-1 rounded-full bg-blue-500 z-[1]"
       ></View> */}
-      <View className="w-24 h-24 rounded-lg items-center justify-center bg-gray-100">
-        {/* <AppText>Colllecion Image / icon</AppText> */}
+      <View className="w-24 h-24 rounded overflow-hidden border border-gray-100 items-center justify-center bg-gray-100">
+        <Image
+          source={{ uri: "https://picsum.photos/200/200" }}
+          className="w-full h-full"
+          style={{ resizeMode: "cover" }}
+        />
       </View>
       <View className="py-1 flex-1 px-2 justify-between">
         <View>

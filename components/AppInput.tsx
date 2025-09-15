@@ -27,6 +27,8 @@ type Props = TextInputProps & {
   onChangeText: (value: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
+  required?: boolean;
+  disabled?: boolean;
 };
 
 const AppInput = ({
@@ -38,6 +40,8 @@ const AppInput = ({
   containerStyle,
   inputStyle,
   placeholder,
+  required,
+  disabled,
   ...rest
 }: Props) => {
   const { theme } = useTheme();
@@ -51,12 +55,12 @@ const AppInput = ({
     <View>
       {label && (
         <AppText
-          font="MulishBold"
+          // font="MulishBold"
           size={"sm"}
-          color="subText2"
+          color={focused ? "primary" : "subText2"}
           className="mb-1"
         >
-          {label}
+          {label} {required && <AppText style={{ color: "red" }}>*</AppText>}
         </AppText>
       )}
       <View
@@ -102,7 +106,7 @@ const AppInput = ({
                 height: fontSize * 1.5,
                 width: "100%",
                 color: theme.text,
-                verticalAlign: "middle",
+                verticalAlign: "top",
                 paddingTop: 1,
                 paddingBottom: 0,
                 lineHeight: fontSize * 1.4,
