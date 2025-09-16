@@ -3,7 +3,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { Alert } from "react-native";
 
-export const pickImage = async () => {
+export const pickImage = async (aspect: [number, number] = [1, 1]) => {
   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (status !== "granted") {
     Alert.alert("Permission denied", "We need access to your photos!");
@@ -13,7 +13,7 @@ export const pickImage = async () => {
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ["images"],
     allowsEditing: false,
-
+    aspect,
     quality: 1,
   });
 
@@ -23,7 +23,7 @@ export const pickImage = async () => {
   const compress = await compressImage(image);
 
   if (!result.canceled) {
-    return image;
+    return compress;
   }
 };
 export const compressImage = async (image: ImagePicker.ImagePickerAsset) => {

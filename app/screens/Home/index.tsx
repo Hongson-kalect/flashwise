@@ -4,6 +4,8 @@ import { useBottomSheet } from "@/providers/BottomSheet";
 import { useLanguage, useT } from "@/providers/Language";
 import { useTheme } from "@/providers/Theme";
 import { StyleSheet, View } from "react-native";
+import HomeHeader from "./components/header";
+import Relearn from "./components/relearn";
 
 export default function HomePage() {
   const { theme, setTheme } = useTheme();
@@ -20,10 +22,27 @@ export default function HomePage() {
   };
 
   return (
-    <View
-      className="p-2 gap-2"
-      style={{ backgroundColor: theme.background, flex: 1 }}
-    >
+    <View style={{ backgroundColor: theme.background, flex: 1 }}>
+      <View className="px-2 pb-1" style={{ backgroundColor: theme.background }}>
+        <HomeHeader />
+      </View>
+
+      <View className="px-3">
+        <Relearn />
+      </View>
+
+      {/* ảnh nhắc học lại | Học thêm từ mới => ưu tiên học lại. Học lại hết rồi thì mới học thêm từ mới  */}
+      {/* Streak đăng nhập  */}
+      {/* Mục tiêu trong ngày  */}
+      {/* Dashboard tiến độ  */}
+      {/* 🧩 6. Góc khám phá
+        “Từ thú vị hôm nay: ‘sonder’ – cảm giác nhận ra ai cũng có câu chuyện riêng”
+
+        “Từ được chia sẻ nhiều nhất tuần này: ‘resilience’”
+
+        → Tạo chiều sâu ngôn ngữ, không chỉ là học để nhớ.
+          */}
+
       <AppText style={{ color: theme.text }}>
         HomePage here {t("hello", { name: "John" })}
       </AppText>

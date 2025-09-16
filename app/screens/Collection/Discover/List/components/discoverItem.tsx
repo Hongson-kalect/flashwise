@@ -27,7 +27,7 @@ const DiscoverItem = () => {
           style={{ elevation: 2, zIndex: 1 }}
         ></View>
         <Image
-          source={{ uri: "https://picsum.photos/200/200" }}
+          source={{ uri: "https://picsum.photos/600/600" }}
           resizeMode="cover"
           onLayout={onLayout}
           style={{ height: imageHeight || "auto" }}

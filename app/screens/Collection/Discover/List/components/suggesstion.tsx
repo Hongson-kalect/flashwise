@@ -35,7 +35,7 @@ const SuggesstionItem = ({ item }: SuggesstionItemProps) => {
     >
       <Image
         className="h-full w-full"
-        source={{ uri: "https://picsum.photos/200/200" }}
+        source={{ uri: "https://picsum.photos/600/600" }}
         style={{
           resizeMode: "cover",
           backgroundColor: "white",

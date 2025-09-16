@@ -2,7 +2,7 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { useRouter } from "expo-router";
-import { TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
 
 type Props = {
   onLongPress?: () => void;
@@ -32,12 +32,23 @@ const WordListItem = (props: Props) => {
       onPress={() =>
         props.onPress?.() || router.push(`/screens/Word/Detail/${2}`)
       }
-      className="flex-row items-center gap-2 overflow-hidden px-3 py-2"
+      className="flex-row items-center gap-3 overflow-hidden p-3"
     >
-      <View className="w-20 h-20 items-center justify-center bg-gray-200 rounded"></View>
-      <View className="h-full flex-1 p-2">
-        <AppText font="MulishSemiBold" size={"lg"}>
-          Professtional
+      <View
+        style={{ height: 68, width: 110 }}
+        className="items-center justify-center bg-gray-200 rounded"
+      >
+        <Image
+          className="w-full h-full rounded"
+          source={{ uri: "https://picsum.photos/900/1200" }}
+          style={{ resizeMode: "cover" }}
+        />
+      </View>
+      <View className="h-full flex-1">
+        {/* <AppText font="MulishSemiBold" size={"lg"}>
+          Professional */}
+        <AppText numberOfLines={1} font="MulishSemiBold" size={"lg"}>
+          Parazicmonobenzen
         </AppText>
         <AppText
           numberOfLines={1}

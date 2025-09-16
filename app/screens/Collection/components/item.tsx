@@ -27,7 +27,7 @@ const CollectionItem = () => {
         // borderRightColor: theme.primary,
         // borderBottomColor: theme.primary,
       }}
-      className="bg-white rounded-lg overflow-hidden px-3 py-2 flex-row gap-4"
+      className="bg-white rounded-lg overflow-hidden p-3 flex-row gap-4"
     >
       {/* <View
         style={{ elevation: 4 }}
@@ -35,12 +35,12 @@ const CollectionItem = () => {
       ></View> */}
       <View className="w-24 h-24 rounded overflow-hidden border border-gray-100 items-center justify-center bg-gray-100">
         <Image
-          source={{ uri: "https://picsum.photos/200/200" }}
+          source={{ uri: "https://picsum.photos/600/600" }}
           className="w-full h-full"
           style={{ resizeMode: "cover" }}
         />
       </View>
-      <View className="py-1 flex-1 px-2 justify-between">
+      <View className=" flex-1 px-2 justify-between">
         <View>
           <AppText font="MulishSemiBold" size={"xs"} color={"secondary"}>
             English

@@ -50,7 +50,7 @@ const BasicInformation = ({
   const { theme } = useTheme();
 
   const handlePickImage = async () => {
-    const result = (await pickImage()) as ImageResult;
+    const result = (await pickImage([9, 16])) as ImageResult;
     if (result) {
       setImage(result);
     }
@@ -151,11 +151,13 @@ const BasicInformation = ({
           <TouchableOpacity
             onPress={handlePickImage}
             style={{
-              elevation: 4,
+              // elevation: 4,
               overflow: "hidden",
               backgroundColor: theme.background,
+              height: 135,
+              width: 240,
             }}
-            className="h-40 w-40  rounded-lg"
+            className="rounded-lg"
           >
             <Image
               source={{ uri: image?.uri }}
@@ -168,8 +170,10 @@ const BasicInformation = ({
             style={{
               borderColor: theme.secondary,
               backgroundColor: theme.secondary + "10",
+              height: 135,
+              width: 240,
             }}
-            className="h-40 w-40 border border-dashed  rounded-lg p-4"
+            className="border border-dashed  rounded-lg p-4"
           >
             <AppText color="subText2" size={"xs"}>
               Hình minh họa

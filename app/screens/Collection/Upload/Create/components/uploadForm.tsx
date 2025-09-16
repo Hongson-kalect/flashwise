@@ -13,7 +13,7 @@ const UploadForm = () => {
   const [formValue, setFormValue] = useState({
     title: "",
     description: "",
-    image: "https://picsum.photos/200/200",
+    image: "https://picsum.photos/600/600",
   });
   const openTagModal = () => {
     console.log("cek");

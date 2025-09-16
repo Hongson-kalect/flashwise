@@ -1,8 +1,9 @@
 import { FontFamily } from "@/configs/fonts";
 import { textSizes } from "@/configs/size";
 import { useTheme } from "@/providers/Theme";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
+  Pressable,
   StyleProp,
   StyleSheet,
   TextInput,
@@ -46,13 +47,14 @@ const AppInput = ({
 }: Props) => {
   const { theme } = useTheme();
   const [focused, setFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
 
   const fontSize = typeof size === "number" ? size : textSizes[size];
 
   const borderColor = focused ? theme[focusedBorderColor] : "#E0E0E0"; // Default border color when not focused
 
   return (
-    <View>
+    <Pressable onPress={() => inputRef.current?.focus()}>
       {label && (
         <AppText
           // font="MulishBold"
@@ -91,6 +93,7 @@ const AppInput = ({
             </AppText>
           </View>
           <TextInput
+            ref={inputRef}
             onFocus={() => {
               rest.onFocus && rest.onFocus();
               setFocused(true);
@@ -124,7 +127,7 @@ const AppInput = ({
           />
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 };
 

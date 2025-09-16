@@ -77,6 +77,11 @@ const CardTextInput = (props: Props) => {
           },
         ]}
       >
+        <View className="items-end w-full mb-1">
+          {/* <AppText size={"sm"} color="subText1" font="MulishLightItalic">
+            Nhập lại từ được hiển thị
+          </AppText> */}
+        </View>
         <Pressable
           style={[styles.inputWrapper, { borderColor: theme.primary }]}
           disabled={!modalInput}
@@ -93,7 +98,7 @@ const CardTextInput = (props: Props) => {
               fontFamily: fontFamily.MulishSemiBold,
               fontSize: 20,
             }}
-            placeholder="Từ này là?"
+            placeholder="Nhập lại từ này..."
           />
         </Pressable>
       </Animated.View>
@@ -106,7 +111,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 8,
-    borderWidth: 1,
+    borderWidth: 2,
     backgroundColor: "#fff",
   },
 });

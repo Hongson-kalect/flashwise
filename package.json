@@ -72,7 +72,8 @@
     "react-navigation": "^5.0.0",
     "uuid": "^11.1.0",
     "victory-native": "^41.17.4",
-    "zustand": "^5.0.6"
+    "zustand": "^5.0.6",
+    "@react-native-community/slider": "4.5.6"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

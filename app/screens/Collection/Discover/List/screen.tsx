@@ -2,7 +2,7 @@ import { AppContainer } from "@/components/AppContainer";
 import AppIcon from "@/components/AppIcon";
 import AppTitle from "@/components/AppTitle";
 import { useTheme } from "@/providers/Theme";
-import { ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, ScrollView, View } from "react-native";
 import DiscoverCollection from "./components/discover";
 import DiscoverListHeader from "./components/header";
 import DiscoverSuggesstion from "./components/suggesstion";
@@ -10,7 +10,10 @@ import DiscoverSuggesstion from "./components/suggesstion";
 const DiscoverList = () => {
   const { theme } = useTheme();
   return (
-    <View className="flex-1" style={{ backgroundColor: theme.background }}>
+    <KeyboardAvoidingView
+      className="flex-1"
+      style={{ backgroundColor: theme.background }}
+    >
       <View>
         <DiscoverListHeader mode="view" setMode={() => {}} />
       </View>
@@ -34,7 +37,7 @@ const DiscoverList = () => {
           <DiscoverCollection />
         </AppContainer>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
