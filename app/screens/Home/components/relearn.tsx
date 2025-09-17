@@ -12,38 +12,41 @@ const Relearn = () => {
   return (
     <View
       style={{
-        elevation: 6,
-        // shadowColor: theme.,
-        backgroundColor: theme.background,
+        backgroundColor: theme.primary + "ee",
       }}
-      className="p-4 rounded-lg"
+      className="p-4 rounded-xl"
     >
       <View>
         <View className="flex-row items-center gap-2">
           <AppIcon
             branch="antd"
             name={"infocirlce"}
-            color="subText3"
-            size={18}
+            color="#f5f5f5"
+            size={16}
           />
-          <AppText font="MulishBold" size={"lg"}>
-            Ôn tập các từ đã học
+          <AppText font="MulishMedium" color="white">
+            Ôn lại các từ đã học
           </AppText>
         </View>
         <View className="">
-          <View className="items-center flex-row gap-2 mt-2">
-            <MaterialCommunityIcons name="cards" size={24} color="#aaa" />
+          <View className="items-center flex-row gap-2 mt-6">
+            <MaterialCommunityIcons
+              name="cards"
+              size={28}
+              color={theme.secondary}
+            />
 
-            <AppText font="MulishBold" size={24} color="error">
+            <AppText font="MulishBold" size={28} color="white">
               25 từ
             </AppText>
           </View>
 
-          <View className="mt-2 w-40">
+          <View className="mt-2 mb-1 w-40">
             <AppButton
               onPress={() => {
                 router.push("/screens/Practice/screen");
               }}
+              type="success"
             >
               <AppText font="MulishSemiBold" color="white">
                 Ôn tập ngay

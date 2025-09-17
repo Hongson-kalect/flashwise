@@ -1,9 +1,12 @@
 import AppButton from "@/components/AppButton";
+import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import AppTitle from "@/components/AppTitle";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useLanguage, useT } from "@/providers/Language";
 import { useTheme } from "@/providers/Theme";
-import { StyleSheet, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { Image, ScrollView, StyleSheet, View } from "react-native";
 import HomeHeader from "./components/header";
 import Relearn from "./components/relearn";
 
@@ -23,71 +26,282 @@ export default function HomePage() {
 
   return (
     <View style={{ backgroundColor: theme.background, flex: 1 }}>
-      <View className="px-2 pb-1" style={{ backgroundColor: theme.background }}>
-        <HomeHeader />
-      </View>
+      <ScrollView>
+        <View
+          className="px-2 pb-1"
+          style={{ backgroundColor: theme.background }}
+        >
+          <HomeHeader />
+        </View>
 
-      <View className="px-3">
-        <Relearn />
-      </View>
+        <View className="px-3 mt-6">
+          <View
+            style={{
+              height: 1,
+              backgroundColor: theme.subText3,
+              marginBottom: -0.1,
+            }}
+          >
+            <View
+              style={{
+                height: 1,
+                backgroundColor: theme.success + "66",
+                width: "80%",
+              }}
+            ></View>
+          </View>
+          <LinearGradient
+            colors={[theme.success + "66", "transparent"]}
+            // Tôi muốn nó có 2 màu nhưng có thể kiểm soát được độ rộng của màu đầu tiên ví dụ 90% màu 1 và 10% màu 2
+            // The locations array is used to define the gradient stops.
+            // The first value is the starting point of the gradient (0 being the left side and 1 being the right side).
+            // The second value is the ending point of the gradient (0 being the left side and 1 being the right side).
+            // In this case, we are starting the gradient at 10% from the left side and ending it at 90% from the left side.
+            locations={[0.7, 0.9]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              backgroundColor: theme.background,
+              borderRightWidth: 1,
+              borderLeftWidth: 1,
+              borderLeftColor: theme.success + "66",
+              borderRightColor: theme.subText3,
+            }}
+            className="flex-row items-center gap-4 px-2 py-1 justify-between"
+          >
+            <View>
+              <AppText size={"xs"}>Mục tiêu 🎯</AppText>
 
-      {/* ảnh nhắc học lại | Học thêm từ mới => ưu tiên học lại. Học lại hết rồi thì mới học thêm từ mới  */}
-      {/* Streak đăng nhập  */}
-      {/* Mục tiêu trong ngày  */}
-      {/* Dashboard tiến độ  */}
-      {/* 🧩 6. Góc khám phá
+              <View className="p-1">
+                <AppText size={"sm"} font="MulishBold">
+                  10 từ vựng mới
+                </AppText>
+              </View>
+            </View>
+            <View className="pr-4 p-2 items-center justify-center">
+              <AppIcon branch="feather" size={20} name="refresh-ccw" />
+            </View>
+          </LinearGradient>
+          <View style={{ height: 1, backgroundColor: theme.subText3 }}>
+            <View
+              style={{
+                height: 1,
+                backgroundColor: theme.success + "66",
+                width: "80%",
+              }}
+            ></View>
+          </View>
+
+          {/* <View
+          className="p-4 rounded-xl mt-1"
+          style={{ backgroundColor: theme.text }}
+        >
+          <AppText
+            style={{ color: theme.background }}
+            font="MulishSemiBold"
+            size={"lg"}
+          >
+            Mục tiêu
+          </AppText>
+
+          <View className="mt-4">
+            <View className="flex-row justify-between items-center">
+              <AppText color="subText3" size={"sm"}>
+                Học từ mới
+              </AppText>
+              <AppText color="subText3" size={"sm"}>
+                2/10
+              </AppText>
+            </View>
+
+            <View>
+              <View className="bg-gray-200 h-2 rounded-full mt-1">
+                <View
+                  style={{ width: "20%", backgroundColor: theme.success }}
+                  className="h-full rounded-full"
+                ></View>
+              </View>
+            </View>
+          </View>
+
+          <View className="mt-4">
+            <View className="flex-row justify-between items-center">
+              <AppText color="subText3" size={"sm"}>
+                Online
+              </AppText>
+              <AppText color="subText3" size={"sm"}>
+                5/10 phút
+              </AppText>
+            </View>
+
+            <View>
+              <View className="bg-gray-200 h-2 rounded-full mt-1">
+                <View
+                  style={{ width: "50%", backgroundColor: theme.success }}
+                  className="h-full rounded-full"
+                ></View>
+              </View>
+            </View>
+          </View>
+
+          <View className="h-2"></View>
+        </View> */}
+        </View>
+
+        <View className="px-3 mt-8">
+          <Relearn />
+
+          <View className="mt-6">
+            <AppTitle title="Mini games" />
+
+            <View className="flex-row mt-3 items-center gap-4 flex-wrap">
+              <View className="h-16 w-16 bg-red-400 rounded">
+                <Image
+                  source={{ uri: "https://picsum.photos/600/600" }}
+                  className="h-full w-full"
+                  style={{ resizeMode: "cover" }}
+                />
+              </View>
+              <View className="h-16 w-16 bg-red-400 rounded overflow-hidden">
+                <Image
+                  source={{ uri: "https://picsum.photos/600/600" }}
+                  className="h-full w-full"
+                  style={{ resizeMode: "cover" }}
+                />
+              </View>
+              <View className="h-16 w-16 bg-red-400 rounded overflow-hidden">
+                <Image
+                  source={{ uri: "https://picsum.photos/600/600" }}
+                  className="h-full w-full"
+                  style={{ resizeMode: "cover" }}
+                />
+              </View>
+              <View className="h-16 w-16 bg-red-400 rounded overflow-hidden">
+                <Image
+                  source={{ uri: "https://picsum.photos/600/600" }}
+                  className="h-full w-full"
+                  style={{ resizeMode: "cover" }}
+                />
+              </View>
+              <View className="h-16 w-16 bg-red-400 rounded overflow-hidden">
+                <Image
+                  source={{ uri: "https://picsum.photos/600/600" }}
+                  className="h-full w-full"
+                  style={{ resizeMode: "cover" }}
+                />
+              </View>
+              <View className="h-16 w-16 bg-red-400 rounded overflow-hidden">
+                <Image
+                  source={{ uri: "https://picsum.photos/600/600" }}
+                  className="h-full w-full"
+                  style={{ resizeMode: "cover" }}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View className="mt-6">
+            <AppTitle title="Dashboard" />
+
+            <View
+              className="mt-3"
+              style={{ height: 400, backgroundColor: "red" }}
+            ></View>
+          </View>
+
+          <View className="mt-6">
+            <AppTitle title="Discover" />
+
+            <View className="mt-2 flex-row gap-2">
+              {["Mistake", "Favorite", "Popular"].map((item, index) => {
+                return (
+                  <View
+                    key={index}
+                    style={{
+                      backgroundColor: index !== 0 ? "#e5e7eb" : theme.primary,
+                    }}
+                    className="flex-row items-center px-3 py-1.5 bg-gray-200 rounded-lg"
+                  >
+                    <AppText
+                      color={index !== 0 ? "subText1" : "white"}
+                      size={"sm"}
+                    >
+                      {item}
+                    </AppText>
+                  </View>
+                );
+              })}
+            </View>
+
+            <View
+              className="mt-4"
+              style={{ height: 600, backgroundColor: "red" }}
+            ></View>
+          </View>
+        </View>
+        {/* header */}
+        {/* xin chào */}
+        {/* Panel mục tiêu học */}
+        {/* ảnh nhắc học lại | Học thêm từ mới => ưu tiên học lại. Học lại hết rồi thì mới học thêm từ mới  */}
+        {/* Dashboard tiến độ số từ đã học || số ngày đã học || streak đăng nhập*/}
+        {/* Các tiện ích khác nếu có (mini game), (news) song ngữ,... Nhưng hiện tại không có gì */}
+        {/* 🧩 6. Góc khám phá
         “Từ thú vị hôm nay: ‘sonder’ – cảm giác nhận ra ai cũng có câu chuyện riêng”
 
         “Từ được chia sẻ nhiều nhất tuần này: ‘resilience’”
+        “Từ Khó nhớ nhất tuần (lấy từ bị quên nhiều nhất trong 7 ngày gần nhất)
 
         → Tạo chiều sâu ngôn ngữ, không chỉ là học để nhớ.
           */}
 
-      <AppText style={{ color: theme.text }}>
-        HomePage here {t("hello", { name: "John" })}
-      </AppText>
+        {/* Footer, nhưng footer có gì? */}
 
-      <AppButton
-        title="To VN language"
-        onPress={() => setLanguage("vi")}
-        type="primary"
-        // disabled
-      ></AppButton>
-      <AppButton
-        title="To EN language"
-        onPress={() => setLanguage("en")}
-        type="secondary"
-      ></AppButton>
-      <AppButton
-        title="Dark mode"
-        onPress={() => setTheme("dark")}
-        type="error"
-      ></AppButton>
-      <AppButton
-        title="Light mode"
-        onPress={() => setTheme("light")}
-        type="success"
-      ></AppButton>
-      <AppButton
-        title="Test short sheet modal"
-        onPress={() => openSheet("short")}
-        type="success"
-      ></AppButton>
-      <AppButton
-        title="Test medium sheet modal"
-        onPress={() => openSheet("medium")}
-        type="success"
-      ></AppButton>
-      <AppButton
-        title="Test long sheet modal"
-        onPress={() => openSheet("long")}
-        type="success"
-      ></AppButton>
-      <AppButton
-        title="Test full sheet modal"
-        onPress={() => openSheet("full")}
-        type="success"
-      ></AppButton>
+        <AppText style={{ color: theme.text }}>
+          HomePage here {t("hello", { name: "John" })}
+        </AppText>
+
+        <AppButton
+          title="To VN language"
+          onPress={() => setLanguage("vi")}
+          type="primary"
+          // disabled
+        ></AppButton>
+        <AppButton
+          title="To EN language"
+          onPress={() => setLanguage("en")}
+          type="secondary"
+        ></AppButton>
+        <AppButton
+          title="Dark mode"
+          onPress={() => setTheme("dark")}
+          type="error"
+        ></AppButton>
+        <AppButton
+          title="Light mode"
+          onPress={() => setTheme("light")}
+          type="success"
+        ></AppButton>
+        <AppButton
+          title="Test short sheet modal"
+          onPress={() => openSheet("short")}
+          type="success"
+        ></AppButton>
+        <AppButton
+          title="Test medium sheet modal"
+          onPress={() => openSheet("medium")}
+          type="success"
+        ></AppButton>
+        <AppButton
+          title="Test long sheet modal"
+          onPress={() => openSheet("long")}
+          type="success"
+        ></AppButton>
+        <AppButton
+          title="Test full sheet modal"
+          onPress={() => openSheet("full")}
+          type="success"
+        ></AppButton>
+      </ScrollView>
     </View>
   );
 }
