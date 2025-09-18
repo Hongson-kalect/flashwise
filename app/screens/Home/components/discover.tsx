@@ -2,11 +2,15 @@ import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import AppCarousel from "@/components/output/carousel";
 import { FlipCard } from "@/components/output/flipCard";
+import { qq } from "@/configs/cardOptions";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { View } from "react-native";
 import CardBackSide from "../../Practice/components/backSide";
 import CardFrontSide from "../../Practice/components/frontSide";
+
+type CardType = keyof typeof qq;
+const cardTypes = Object.keys(qq);
 
 const Discover = () => {
   const cardHeight = useState(0);
@@ -40,27 +44,31 @@ const Discover = () => {
           mode="horizontal-stack"
           key={"discover-" + cardHeight.toString()}
           height={cardHeight[0] + 40}
-          renderItem={() => (
-            <View style={{ paddingVertical: 4 }}>
-              <FlipCard
-                initialFlipped={{ value: isFlipped }}
-                BackSide={
-                  <CardBackSide
-                    question={{}}
-                    questionIndex={1}
-                    cardHeight={cardHeight}
-                  />
-                }
-                FrontSide={
-                  <CardFrontSide
-                    question={{}}
-                    questionIndex={1}
-                    cardHeight={cardHeight}
-                  />
-                }
-              />
-            </View>
-          )}
+          renderItem={({ index }) => {
+            const type = cardTypes[index] as CardType;
+            return (
+              <View style={{ paddingVertical: 4 }}>
+                <FlipCard
+                  initialFlipped={{ value: isFlipped }}
+                  BackSide={
+                    <CardBackSide
+                      question={{}}
+                      questionIndex={1}
+                      cardHeight={cardHeight}
+                    />
+                  }
+                  FrontSide={
+                    <CardFrontSide
+                      type={type}
+                      question={{}}
+                      questionIndex={1}
+                      cardHeight={cardHeight}
+                    />
+                  }
+                />
+              </View>
+            );
+          }}
         ></AppCarousel>
       </View>
     </>

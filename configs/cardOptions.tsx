@@ -1,3 +1,5 @@
+import AppButton from "@/components/AppButton";
+import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import CardDefination from "@/components/card/Defination";
 import CardExample from "@/components/card/Example";
@@ -59,28 +61,196 @@ export type FRONT_CARD_OPTIONS =
 export const frontCardInfo: {
   [key in FRONT_CARD_OPTIONS]: FRONT_CARD_ELEMENT[];
 } = {
-  // Tổ hợp đầy đủ, dùng cho lần đầu (level 0)
+  // * Only Tổ hợp đầy đủ, dùng cho lần đầu (level 0)
   full: ["option_sound", "text", "image", "definition", "example"],
 
+  // level 1
+  hideText: ["image", "definition", "example"], // Ẩn từ gốc, chỉ để đoán
+  voiceOnly: ["voice"],
+
+  // level 2
+  textAndImage: ["text", "image"],
+  defineOnly: ["definition", "example"],
+
+  // level 3
+  question: ["question"], //easy
+  // level 4
+  textAndVoice: ["text", "voice"],
+  translation: ["translate"], // Dịch ngược
+  // level 5
+  // question: ["question"], //medium
+  imageOnly: ["image"], // Luyện phản xạ. Mặt sau phải có định nghĩa
+  minimal: ["keyword"], // Luyện phản xạ. Mặt sau phải có định nghĩa
+  // level 6
+  // level 7
+  //Câu hỏi khó, mở rộng, nâng cao
+
   // Dạng đơn giản nhất (chỉ từ khoá)
-  minimal: ["keyword"],
 
   // Các dạng 1 nội dung duy nhất
-  text: ["text"],
-  voiceOnly: ["voice"],
-  imageOnly: ["image"],
-  defineOnly: ["definition", "example"],
-  translation: ["translate"],
 
-  // Tổ hợp hiển thị phổ biến
-  hideText: ["image", "definition", "example"], // Ẩn từ gốc, chỉ để đoán
-  textAndImage: ["text", "image"],
-  textAndVoice: ["text", "voice"],
+  // Mấy cái này không biết hiển thị như thế nào
+  text: ["question"],
   textAndTranslation: ["text", "translate"],
+  completeSentences: ["voice"], // Cái này 1 sound, 2 là bản dịch, 3 là câu gốc
 
   // Dạng câu hỏi
-  question: ["question"],
-  completeSentences: ["voice"],
+};
+
+// số bằng level cho phép xuất hiện và là tỉ lệ xuất hiện
+export const qq: {
+  [key in FRONT_CARD_OPTIONS]?: {
+    elements: FRONT_CARD_ELEMENT[];
+    backside: { [key: number]: keyof typeof backCardInfo };
+    anserMethod: { [key: number]: keyof typeof answerMethod };
+  };
+} = {
+  // * Only Tổ hợp đầy đủ, dùng cho lần đầu (level 0)
+  full: {
+    elements: ["option_sound", "text", "image", "definition", "example"],
+    anserMethod: {
+      0: "write",
+    },
+    backside: {
+      0: "translation",
+    },
+  },
+
+  // level 1
+  hideText: {
+    elements: ["image", "definition", "example"], // Ẩn từ gốc, chỉ để đoán
+    anserMethod: {
+      1: "write",
+      2: "speak",
+      3: "chooseWord",
+      4: "chooseImage",
+    },
+    backside: {
+      0: "translation",
+      1: "translation",
+      2: "moreInfo", //hint
+      3: "usage", //culturalNote, GrammarNote
+      4: "proTip", //etymology
+      5: "collocations",
+    },
+  },
+  voiceOnly: {
+    elements: ["voice"],
+    anserMethod: {
+      1: "write",
+      2: "speak",
+    },
+    backside: {
+      1: "translation",
+      2: "translation",
+      3: "fullReveal",
+      4: "hint", // speak hint,
+    },
+  },
+
+  // level 2
+  textAndImage: {
+    elements: ["text", "image"],
+    anserMethod: {
+      // 1:'write',
+      2: "speak",
+      3: "chooseWord", // chọn bản dịch
+    },
+    backside: {
+      2: "translation",
+      3: "moreInfo", //hint
+      4: "usage", //culturalNote, GrammarNote
+      5: "proTip", //etymology
+      6: "collocations",
+    },
+  },
+  defineOnly: {
+    elements: ["definition", "example"],
+    anserMethod: {
+      2: "chooseWord", // chọn từ | bản dịch
+      3: "speak",
+    },
+    backside: {
+      2: "moreInfo", //hint
+      3: "translation",
+      4: "proTip", //etymology
+      5: "usage", //culturalNote, GrammarNote
+      6: "collocations",
+    },
+  },
+
+  // level 3
+  question: {
+    elements: ["question"], //easy, m ,h -> 3,5,6
+    anserMethod: {
+      3: "all", // Tùy câu hỏi. write / choose
+    },
+    backside: {
+      3: "explanation",
+    },
+  },
+  // level 4
+  textAndVoice: {
+    elements: ["text", "voice"],
+    anserMethod: {
+      4: "chooseWord", // Chọn bản dịch
+    },
+    backside: {
+      1: "translation",
+      2: "moreInfo",
+      3: "usage",
+      4: "collocations",
+    },
+  },
+  translation: {
+    elements: ["translate"], // Dịch ngược
+    anserMethod: {
+      4: "chooseWord", // Chọn bản dịch
+      5: "write",
+      6: "speak",
+    },
+
+    backside: {
+      1: "fullReveal", // original word
+    },
+  },
+  // level 5
+  // question: ["question"], //medium
+  imageOnly: {
+    elements: ["image"], // Luyện phản xạ. Mặt sau phải có định nghĩa
+    anserMethod: {
+      1: "chooseWord", // Chọn từ
+      2: "write",
+      3: "chooseWord", // Chọn bản nghe
+      4: "speak",
+    },
+    backside: {
+      1: "translation",
+      2: "fullReveal",
+      // 3:'collocations',
+    },
+  },
+  minimal: {
+    elements: ["keyword"],
+    anserMethod: {
+      1: "write",
+      2: "speak",
+      3: "chooseWord",
+      4: "chooseWord", // Chọn bản nghe
+    },
+    backside: {
+      4: "hint",
+      5: "combine",
+    },
+  },
+  text: {
+    elements: ["text"],
+    anserMethod: { 1: "speak", 2: "chooseWord" },
+    backside: {
+      1: "translation",
+      2: "fullReveal",
+    },
+  },
 };
 
 export const frontCardElementMapping: {
@@ -97,8 +267,22 @@ export const frontCardElementMapping: {
   ),
   text: (props) => <CardWord {...props} />,
   voice: (props) => (
-    <View>
-      <AppText>{JSON.stringify(props.voice)}</AppText>
+    <View style={{ alignItems: "center", flex: 1 }}>
+      <AppButton onPress={() => {}} style={{ borderRadius: 24 }}>
+        <View
+          // activeOpacity={0.8}
+          style={{
+            height: 200,
+            alignItems: "center",
+            justifyContent: "center",
+            width: 200,
+            borderRadius: 24,
+            padding: 8,
+          }}
+        >
+          <AppIcon branch="feather" name="volume-2" color="white" size={100} />
+        </View>
+      </AppButton>
     </View>
   ),
   translate: (props) => (
@@ -122,6 +306,10 @@ export const frontCardTitle: {
   [key in FRONT_CARD_OPTIONS]?: string;
 } = {
   defineOnly: "Định Nghĩa",
+  question: "Câu hỏi",
+  imageOnly: "Hình ảnh",
+  minimal: "Keywords",
+  completeSentences: "Hoàn thành câu",
 };
 
 export const frontCardStyle: {
@@ -181,6 +369,7 @@ const backCardInfo = {
   collocations: "common phrases with this word", // dùng cho trình độ cao
   culturalNote: "cultural context or usage caveats", // khi học từ theo ngữ cảnh văn hóa
   etymology: "word origin", // useful cho từ khó nhớ // Cách từ được tạo ra hay gì?
+  defination: "defination và example", // useful cho từ khó nhớ // Cách từ được tạo ra hay gì?
 };
 
 const flipCondition = {
@@ -203,6 +392,7 @@ const condition = {
   none: "none",
 };
 
+// speak => write => chooseWord | chooseImage
 const memoryLevelCardCases = {
   target_native: {
     0: [
@@ -221,8 +411,7 @@ const memoryLevelCardCases = {
         front: frontCardInfo.hideText,
         back: backCardInfo.translation,
         flip: flipCondition.afterAnswer,
-        answer: answerMethod.writeOrChooseWord,
-        condition: condition.none,
+        answer: answerMethod.write,
       },
       {
         id: "lv1-voice",
@@ -232,13 +421,6 @@ const memoryLevelCardCases = {
         answer: condition.speak,
         condition: condition.listen,
       },
-      {
-        id: "lv1-image-choice",
-        front: frontCardInfo.imageOnly,
-        back: backCardInfo.combine,
-        flip: flipCondition.afterAnswer,
-        answer: answerMethod.chooseWord,
-      },
     ],
 
     2: [
@@ -247,18 +429,13 @@ const memoryLevelCardCases = {
         front: frontCardInfo.textAndImage,
         back: backCardInfo.translation,
         flip: flipCondition.afterTimer,
-        answer: answerMethod.chooseWord, // Chọn bản dịch
+        answer: answerMethod.speak, // Chọn bản dịch
+        condition: condition.speak,
       },
-      {
-        id: "lv2-text-voice",
-        front: frontCardInfo.voiceOnly,
-        back: backCardInfo.usage,
-        flip: flipCondition.afterAnswer,
-        answer: answerMethod.speak,
-      },
+
       {
         id: "lv2-define-only",
-        front: frontCardInfo.hideText,
+        front: frontCardInfo.defineOnly,
         back: backCardInfo.translation,
         flip: flipCondition.lockedUntilCorrect,
         answer: answerMethod.write,
@@ -274,7 +451,14 @@ const memoryLevelCardCases = {
         answer: answerMethod.multipleChoice,
       },
       {
-        id: "lv3-context-usage",
+        id: "lv2-text-voice",
+        front: frontCardInfo.voiceOnly,
+        back: backCardInfo.usage,
+        flip: flipCondition.afterAnswer,
+        answer: answerMethod.speak,
+      },
+      {
+        id: "lv3-define-usage",
         front: frontCardInfo.defineOnly,
         back: backCardInfo.usage,
         flip: flipCondition.afterAnswer,
@@ -283,9 +467,9 @@ const memoryLevelCardCases = {
       {
         id: "lv3-translation-hint",
         front: frontCardInfo.translation,
-        back: backCardInfo.hint,
+        back: backCardInfo.hint, // define, example
         flip: flipCondition.lockedUntilCorrect,
-        answer: answerMethod.chooseWord,
+        answer: answerMethod.write,
       },
     ],
 

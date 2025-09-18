@@ -14,11 +14,15 @@ import { StatusBar, useWindowDimensions, View } from "react-native";
 type Props = {
   cardHeight: [number, React.Dispatch<React.SetStateAction<number>>];
   question: any;
-
+  type?: FRONT_CARD_OPTIONS;
   questionIndex?: number;
 };
-const type: FRONT_CARD_OPTIONS = "full";
-const CardFrontSide = ({ cardHeight, question, questionIndex }: Props) => {
+const CardFrontSide = ({
+  cardHeight,
+  question,
+  type = "full",
+  questionIndex,
+}: Props) => {
   const { theme } = useTheme();
   const { width, height } = useWindowDimensions();
   const cardTitle = useMemo(() => {
@@ -64,6 +68,8 @@ const CardFrontSide = ({ cardHeight, question, questionIndex }: Props) => {
           <AppTitle title={cardTitle} />
         </View>
       )}
+
+      {!frontCardType.includes("text") && <View className="h-4"></View>}
       {frontCardType.map((item, index) => {
         let wrapperStyle = undefined;
         let textStyle = undefined;

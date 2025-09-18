@@ -16,7 +16,13 @@ type Props = {
   loop?: boolean;
   mode?: "horizontal-stack" | "vertical-stack" | "parallax" | undefined;
   dots?: boolean;
-  renderItem: (data: any) => React.ReactNode;
+  renderItem: ({
+    data,
+    index,
+  }: {
+    data: any;
+    index: number;
+  }) => React.ReactNode;
 };
 
 function AppCarousel({
@@ -65,7 +71,7 @@ function AppCarousel({
                   justifyContent: "center",
                 }}
                 > */}
-              {props.renderItem?.(value)}
+              {props.renderItem?.({ data: value, index })}
               {/* <Text style={{ textAlign: "center", fontSize: 30 }}>{index}</Text> */}
               {/* </View> */}
             </View>
