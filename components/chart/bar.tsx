@@ -14,7 +14,6 @@ export function BarChart() {
   const font2 = useFont(fonts.MulishMedium, 14);
   const { theme } = useTheme();
   const data = useMemo(() => [...DATA], []);
-  console.log(data);
   return (
     <CartesianChart
       data={data}

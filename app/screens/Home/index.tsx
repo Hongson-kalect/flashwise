@@ -1,12 +1,13 @@
-import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
+import AppLineChart from "@/components/chart/line";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useLanguage, useT } from "@/providers/Language";
 import { useTheme } from "@/providers/Theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
+import Discover from "./components/discover";
 import HomeHeader from "./components/header";
 import Relearn from "./components/relearn";
 
@@ -45,13 +46,13 @@ export default function HomePage() {
             <View
               style={{
                 height: 1,
-                backgroundColor: theme.success + "66",
+                backgroundColor: theme.success,
                 width: "80%",
               }}
             ></View>
           </View>
           <LinearGradient
-            colors={[theme.success + "66", "transparent"]}
+            colors={[theme.success + "33", "transparent"]}
             // Tôi muốn nó có 2 màu nhưng có thể kiểm soát được độ rộng của màu đầu tiên ví dụ 90% màu 1 và 10% màu 2
             // The locations array is used to define the gradient stops.
             // The first value is the starting point of the gradient (0 being the left side and 1 being the right side).
@@ -64,13 +65,15 @@ export default function HomePage() {
               backgroundColor: theme.background,
               borderRightWidth: 1,
               borderLeftWidth: 1,
-              borderLeftColor: theme.success + "66",
+              borderLeftColor: theme.success,
               borderRightColor: theme.subText3,
             }}
             className="flex-row items-center gap-4 px-2 py-1 justify-between"
           >
             <View>
-              <AppText size={"xs"}>Mục tiêu 🎯</AppText>
+              <AppText size={"xs"} color="subText2">
+                Mục tiêu 🎯
+              </AppText>
 
               <View className="p-1">
                 <AppText size={"sm"} font="MulishBold">
@@ -86,7 +89,7 @@ export default function HomePage() {
             <View
               style={{
                 height: 1,
-                backgroundColor: theme.success + "66",
+                backgroundColor: theme.success,
                 width: "80%",
               }}
             ></View>
@@ -151,10 +154,10 @@ export default function HomePage() {
         <View className="px-3 mt-8">
           <Relearn />
 
-          <View className="mt-6">
+          <View className="mt-10">
             <AppTitle title="Mini games" />
 
-            <View className="flex-row mt-3 items-center gap-4 flex-wrap">
+            <View className="flex-row mt-4 items-center gap-4 flex-wrap">
               <View className="h-16 w-16 bg-red-400 rounded">
                 <Image
                   source={{ uri: "https://picsum.photos/600/600" }}
@@ -200,30 +203,21 @@ export default function HomePage() {
             </View>
           </View>
 
-          <View className="mt-6">
+          <View className="mt-10">
             <AppTitle title="Dashboard" />
 
-            <View
-              className="mt-3"
-              style={{ height: 400, backgroundColor: "red" }}
-            ></View>
-          </View>
-
-          <View className="mt-6">
-            <AppTitle title="Discover" />
-
-            <View className="mt-2 flex-row gap-2">
-              {["Mistake", "Favorite", "Popular"].map((item, index) => {
+            <View className="mt-4 flex-row gap-2">
+              {["Learned Words", "Learned Time"].map((item, index) => {
                 return (
                   <View
                     key={index}
                     style={{
                       backgroundColor: index !== 0 ? "#e5e7eb" : theme.primary,
                     }}
-                    className="flex-row items-center px-3 py-1.5 bg-gray-200 rounded-lg"
+                    className="flex-row items-center px-3 py-1.5 bg-gray-100 rounded-lg"
                   >
                     <AppText
-                      color={index !== 0 ? "subText1" : "white"}
+                      color={index !== 0 ? "subText2" : "white"}
                       size={"sm"}
                     >
                       {item}
@@ -234,9 +228,15 @@ export default function HomePage() {
             </View>
 
             <View
-              className="mt-4"
-              style={{ height: 600, backgroundColor: "red" }}
-            ></View>
+              className="mt-8"
+              style={{ height: 200, backgroundColor: "white" }}
+            >
+              <AppLineChart />
+            </View>
+          </View>
+
+          <View className="mt-10">
+            <Discover />
           </View>
         </View>
         {/* header */}
@@ -256,7 +256,7 @@ export default function HomePage() {
 
         {/* Footer, nhưng footer có gì? */}
 
-        <AppText style={{ color: theme.text }}>
+        {/* <AppText style={{ color: theme.text }}>
           HomePage here {t("hello", { name: "John" })}
         </AppText>
 
@@ -300,7 +300,9 @@ export default function HomePage() {
           title="Test full sheet modal"
           onPress={() => openSheet("full")}
           type="success"
-        ></AppButton>
+        ></AppButton> */}
+
+        <View className="h-10"></View>
       </ScrollView>
     </View>
   );

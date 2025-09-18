@@ -88,6 +88,9 @@ const CardTextInput = (props: Props) => {
           onPress={handleInput}
         >
           <TextInput
+            autoCorrect={false}
+            autoComplete="off"
+            autoCapitalize="none"
             submitBehavior="blurAndSubmit"
             onSubmitEditing={() => props.onAnser(value)}
             enterKeyHint="done"

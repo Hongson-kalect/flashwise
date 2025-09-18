@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   interpolate,
   runOnJS,
   SharedValue,
   useAnimatedStyle,
+  useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 import AppButton from "../AppButton";
@@ -61,7 +62,7 @@ const flippedContentStyles = StyleSheet.create({
 });
 
 type Props = {
-  isFlipped: SharedValue<boolean>;
+  initialFlipped?: { value: boolean; version?: number };
   disabled?: boolean;
   style?: any;
   direction?: "x" | "y";
@@ -72,7 +73,7 @@ type Props = {
 };
 
 export const FlipCard = ({
-  isFlipped,
+  initialFlipped,
   disabled,
   onChange,
   style,
@@ -81,6 +82,10 @@ export const FlipCard = ({
   FrontSide,
   BackSide,
 }: Props) => {
+  const isFlipped = useSharedValue(!!initialFlipped?.value);
+  useEffect(() => {
+    isFlipped.value = !!initialFlipped?.value;
+  }, [initialFlipped?.value || initialFlipped?.version]);
   const customDuration = useMemo(() => {
     const frame = Math.floor(duration / 14);
     if (frame % 2) {

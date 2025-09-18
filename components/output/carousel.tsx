@@ -42,7 +42,7 @@ function AppCarousel({
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, paddingVertical: 4 }}>
       <Carousel
         ref={ref}
         width={width}

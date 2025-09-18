@@ -181,7 +181,6 @@ export default function PracticePage() {
               <FlipCard
                 disabled={false}
                 duration={500}
-                isFlipped={isFlipped}
                 FrontSide={
                   <CardFrontSide
                     questionIndex={currentQuestionIndex}
