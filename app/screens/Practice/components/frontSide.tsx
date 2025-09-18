@@ -63,13 +63,13 @@ const CardFrontSide = ({
         <CardOption isOptionSound={isOptionSound} />
       </View>
 
-      {cardTitle && (
+      {cardTitle ? (
         <View className="p-2">
           <AppTitle title={cardTitle} />
         </View>
+      ) : (
+        !frontCardType.includes("text") && <View className="h-4"></View>
       )}
-
-      {!frontCardType.includes("text") && <View className="h-4"></View>}
       {frontCardType.map((item, index) => {
         let wrapperStyle = undefined;
         let textStyle = undefined;
