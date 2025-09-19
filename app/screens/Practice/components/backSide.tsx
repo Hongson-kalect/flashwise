@@ -1,21 +1,40 @@
-import AppIcon from "@/components/AppIcon";
-import AppText from "@/components/AppText";
-import { useTheme } from "@/providers/Theme";
+import AppTitle from "@/components/AppTitle";
+import CardOption from "@/components/card/CardOption";
 import {
-  StatusBar,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
+  backCardInfo,
+  cardElementMapping,
+  frontCardStyle,
+  frontCardTitle,
+  qq,
+} from "@/configs/cardOptions";
+import { useTheme } from "@/providers/Theme";
+import { useMemo } from "react";
+import { StatusBar, useWindowDimensions, View } from "react-native";
 
 type Props = {
   cardHeight: [number, React.Dispatch<React.SetStateAction<number>>];
   question: any;
+  type: keyof typeof qq;
   questionIndex?: number;
 };
-const CardBackSide = ({ cardHeight, question, questionIndex }: Props) => {
+const CardBackSide = ({ cardHeight, question, questionIndex, type }: Props) => {
   const { theme } = useTheme();
   const { width, height } = useWindowDimensions();
+  const cardTitle = useMemo(() => {
+    return frontCardTitle[type];
+  }, [type]);
+
+  const [isOptionSound, frontCardType, moreStyle] = useMemo(() => {
+    const options = qq[type];
+    const backType = options.backside?.[0];
+    const elements = backCardInfo[backType];
+
+    const headerSound = elements.includes("option_sound");
+    const newType = elements.filter((item) => item !== "option_sound");
+
+    const moreStyle = frontCardStyle[type];
+    return [headerSound, newType, moreStyle];
+  }, [type]);
 
   return (
     <View
@@ -36,80 +55,36 @@ const CardBackSide = ({ cardHeight, question, questionIndex }: Props) => {
       ]}
       className="rounded-lg"
     >
-      <View className="flex-row items-center justify-between px-4 mt-4 mb-2">
-        <TouchableOpacity
-          style={{ backgroundColor: theme.primary }}
-          onPress={() => alert("hello")}
-          className="h-12 w-12 rounded-lg items-center justify-center"
-        >
-          <AppIcon branch="feather" color="white" size={16} name={"volume-2"} />
-        </TouchableOpacity>
-
-        <View className="flex-row gap-2 justify-end">
-          <View className="bg-gray-200 h-8 w-8 rounded-lg items-center justify-center">
-            <AppIcon
-              color="subText3"
-              branch="feather"
-              size={16}
-              name={"arrow-left"}
-            />
-          </View>
-          <View className="bg-gray-200 h-8 w-8 rounded-lg items-center justify-center">
-            <AppIcon
-              color="subText3"
-              branch="feather"
-              size={16}
-              name={"arrow-right"}
-            />
-          </View>
-          <View className="bg-gray-200 h-8 w-8 rounded-lg items-center justify-center">
-            <AppIcon
-              color="subText3"
-              branch="feather"
-              size={16}
-              name={"save"}
-            />
-          </View>
-        </View>
-      </View>
-      <View className="mb-4 px-2">
-        <View className="flex-row gap-2 items-center">
-          <View>
-            <AppText
-              font="MulishBold"
-              color="primary"
-              className="text-center"
-              size={24}
-            >
-              Strauberry cake
-            </AppText>
-            <View className="flex-row items-center">
-              <AppText color="subText2" size={"xs"} font="MulishLightItalic">
-                {"/em'la:bupclmm/"}
-              </AppText>
-            </View>
-          </View>
-        </View>
+      <View className="mt-4 mb-2">
+        <CardOption isOptionSound={isOptionSound} />
       </View>
 
-      <View className="px-4 py-2 justify-between">
-        <View className="w-full">
-          <AppText font="MulishRegular" size={"sm"}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt.
-          </AppText>
+      {cardTitle ? (
+        <View className="p-2">
+          <AppTitle title={cardTitle} />
         </View>
-      </View>
-      <View className="mt-auto px-4 py-2">
-        <AppText color="subText2" size={"xs"} font="MulishLightItalic">
-          Example: Lorem ipsum dolor sit amet, Example: Lorem ipsum dolor dolor
-          sit amet,{" "}
-          <AppText size={"xs"} font="MulishBoldItalic">
-            strauberry cake
-          </AppText>{" "}
-          adipiscing elit.
-        </AppText>
-      </View>
+      ) : (
+        !frontCardType.includes("text") && <View className="h-4"></View>
+      )}
+      {frontCardType.map((item, index) => {
+        let wrapperStyle = undefined;
+        let textStyle = undefined;
+
+        if (moreStyle?.[item]) {
+          wrapperStyle = moreStyle[item].wrapper;
+          textStyle = moreStyle[item].text;
+        }
+        return (
+          <View key={index}>
+            {cardElementMapping[item]({
+              wrapperStyle,
+              textStyle,
+              question,
+              questionIndex,
+            })}
+          </View>
+        );
+      })}
     </View>
   );
 };

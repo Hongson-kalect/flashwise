@@ -5,5 +5,5 @@ type Props = {
   wrapperStyle?: ViewStyle;
   textStyle?: TextStyle;
 };
-const CardRelation = () => <View></View>;
-export default CardRelation;
+const CardQuestion = () => <View></View>;
+export default CardQuestion;

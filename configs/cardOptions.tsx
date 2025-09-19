@@ -1,10 +1,26 @@
-import AppButton from "@/components/AppButton";
-import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import CardCollaboration from "@/components/card/Collaboration";
+import CardCulturalNote from "@/components/card/CulturalNote";
 import CardDefination from "@/components/card/Defination";
+import CardEtymology from "@/components/card/Etymology";
 import CardExample from "@/components/card/Example";
+import CardExplanation from "@/components/card/Explain";
+import CardGrammarNote from "@/components/card/GrammarNote";
 import CardImage from "@/components/card/Image";
+import CardKeyword from "@/components/card/Keyword";
+import Markdown from "@/components/card/Markdown";
+import CardOtherTranslation from "@/components/card/otherTranslation";
+import CardProtip from "@/components/card/Protip";
+import CardQuestion from "@/components/card/Question";
+import CardTranslatedDefination from "@/components/card/tDefination";
+import CardTranslatedExample from "@/components/card/tExample";
+import CardTranslatedImage from "@/components/card/tImage";
+import CardTranslated from "@/components/card/translate";
+import CardUsage from "@/components/card/Usage";
+import CardVoice from "@/components/card/Voice";
+import CardVoiceNote from "@/components/card/VoiceNote";
 import CardWord from "@/components/card/Word";
+import CardWordAndTranslated from "@/components/card/WordAndTranslate";
 import { TextStyle, View, ViewStyle } from "react-native";
 
 // Về mặt sau: Có thể cân nhắc hiển thị định nghĩa hoặc không. Vì cơ bản thì ai người học biết ngôn ngữ gốc rồi. thì nó chỉ có tác dụng liên kết từ nước ngoài thay vì cần dữ liệu để học
@@ -32,16 +48,34 @@ const answerMethod = {
   reorder: "reorder words to form sentence", // ✅ thêm
 };
 
-type FRONT_CARD_ELEMENT =
-  | "keyword"
-  | "question"
-  | "text"
+// Do mặt trước và mặt sau có thể thay đổi vị trí cho nhau nên không nên phân biệt front và back. chỉ cần phân biệt theo từng element là được
+// Tất cả các phần tử mà một thẻ có thể có
+type CARD_ELEMENT =
   | "option_sound" // Options luôn hiển thị nhưng mà không có âm thanh. Nếu có options này thì sẽ phát âm thanh
-  | "voice"
+  | "text"
   | "image"
   | "definition"
   | "example"
-  | "translate";
+  | "voice"
+  | "question"
+  | "keyword" // tags
+
+  //Cài này là của bản dịch này
+  | "wordAndTranslate"
+  | "translate"
+  | "usage"
+  | "proTip"
+  | "grammarNote"
+  | "voiceNote"
+  | "culturalNote"
+  | "etymology"
+  | "collaborations"
+  | "explanation"
+  | "tImage"
+  | "tDefinition"
+  | "tExample"
+  | "otherTranslate" // Hiển thị như text là được
+  | "info"; // để hiển thị giải thích các thứ
 
 export type FRONT_CARD_OPTIONS =
   | "full"
@@ -54,12 +88,12 @@ export type FRONT_CARD_OPTIONS =
   | "hideText"
   | "textAndImage"
   | "textAndVoice"
-  | "textAndTranslation"
-  | "question"
-  | "completeSentences";
+  | "question";
+// | "textAndTranslation"
+// | "completeSentences";
 
 export const frontCardInfo: {
-  [key in FRONT_CARD_OPTIONS]: FRONT_CARD_ELEMENT[];
+  [key in FRONT_CARD_OPTIONS]: CARD_ELEMENT[];
 } = {
   // * Only Tổ hợp đầy đủ, dùng cho lần đầu (level 0)
   full: ["option_sound", "text", "image", "definition", "example"],
@@ -91,19 +125,20 @@ export const frontCardInfo: {
 
   // Mấy cái này không biết hiển thị như thế nào
   text: ["question"],
-  textAndTranslation: ["text", "translate"],
-  completeSentences: ["voice"], // Cái này 1 sound, 2 là bản dịch, 3 là câu gốc
+  // textAndTranslation: ["text", "translate"],
+  // completeSentences: ["voice"], // Cái này 1 sound, 2 là bản dịch, 3 là câu gốc
 
   // Dạng câu hỏi
 };
 
 // số bằng level cho phép xuất hiện và là tỉ lệ xuất hiện
+export type CardOptions = {
+  elements: CARD_ELEMENT[];
+  backside: { [key: number]: keyof typeof backCardInfo };
+  anserMethod: { [key: number]: keyof typeof answerMethod };
+};
 export const qq: {
-  [key in FRONT_CARD_OPTIONS]?: {
-    elements: FRONT_CARD_ELEMENT[];
-    backside: { [key: number]: keyof typeof backCardInfo };
-    anserMethod: { [key: number]: keyof typeof answerMethod };
-  };
+  [key in FRONT_CARD_OPTIONS]: CardOptions;
 } = {
   // * Only Tổ hợp đầy đủ, dùng cho lần đầu (level 0)
   full: {
@@ -134,6 +169,10 @@ export const qq: {
       5: "collocations",
     },
   },
+  // completeSentences: {
+
+  // },
+  // textAndTranslation
   voiceOnly: {
     elements: ["voice"],
     anserMethod: {
@@ -253,53 +292,38 @@ export const qq: {
   },
 };
 
-export const frontCardElementMapping: {
-  [key in FRONT_CARD_ELEMENT]: (props: any) => React.ReactNode;
+export const cardElementMapping: {
+  [key in CARD_ELEMENT]: (props: any) => React.ReactNode;
 } = {
   image: (props) => <CardImage {...props} />,
   definition: (props) => <CardDefination {...props} />,
   example: (props) => <CardExample {...props} />,
-  // keyword:(props) => <CardKeyword {...props}/>,
-  question: (props) => (
-    <View>
-      <AppText>{JSON.stringify(props.question)}</AppText>
-    </View>
-  ),
+  question: (props) => <CardQuestion {...props} />,
   text: (props) => <CardWord {...props} />,
-  voice: (props) => (
-    <View style={{ alignItems: "center", flex: 1 }}>
-      <AppButton onPress={() => {}} style={{ borderRadius: 24 }}>
-        <View
-          // activeOpacity={0.8}
-          style={{
-            height: 200,
-            alignItems: "center",
-            justifyContent: "center",
-            width: 200,
-            borderRadius: 24,
-            padding: 8,
-          }}
-        >
-          <AppIcon branch="feather" name="volume-2" color="white" size={100} />
-        </View>
-      </AppButton>
-    </View>
-  ),
-  translate: (props) => (
-    <View>
-      <AppText>{JSON.stringify(props.translate)}</AppText>
-    </View>
-  ),
-  keyword: (props) => (
-    <View>
-      <AppText>{JSON.stringify(props.keyword)}</AppText>
-    </View>
-  ),
+  voice: (props) => <CardVoice {...props} />,
+  otherTranslate: (props) => <CardOtherTranslation {...props} />,
+  keyword: (props) => <CardKeyword {...props} />,
+
+  wordAndTranslate: (props) => <CardWordAndTranslated {...props} />,
+  translate: (props) => <CardTranslated {...props} />,
+  tDefinition: (props) => <CardTranslatedDefination {...props} />,
+  tExample: (props) => <CardTranslatedExample {...props} />,
+  tImage: (props) => <CardTranslatedImage {...props} />,
+  explanation: (props) => <CardExplanation {...props} />,
+  collaborations: (props) => <CardCollaboration {...props} />,
+  culturalNote: (props) => <CardCulturalNote {...props} />,
+  etymology: (props) => <CardEtymology {...props} />,
+  grammarNote: (props) => <CardGrammarNote {...props} />,
+  proTip: (props) => <CardProtip {...props} />,
+  usage: (props) => <CardUsage {...props} />,
+  voiceNote: (props) => <CardVoiceNote {...props} />,
+
   option_sound: (props) => (
     <View>
-      <AppText>{JSON.stringify(props.option_sound)}</AppText>
+      <AppText>Bruh! Cái này không hiển thị</AppText>
     </View>
   ),
+  info: (props) => <Markdown {...props} />,
 };
 
 export const frontCardTitle: {
@@ -309,12 +333,21 @@ export const frontCardTitle: {
   question: "Câu hỏi",
   imageOnly: "Hình ảnh",
   minimal: "Keywords",
-  completeSentences: "Hoàn thành câu",
+  // completeSentences: "Hoàn thành câu",
+};
+export const backCardTitle: {
+  [key in FRONT_CARD_OPTIONS]?: string;
+} = {
+  defineOnly: "Định Nghĩa",
+  question: "Câu hỏi",
+  imageOnly: "Hình ảnh",
+  minimal: "Keywords",
+  // completeSentences: "Hoàn thành câu",
 };
 
 export const frontCardStyle: {
   [key in FRONT_CARD_OPTIONS]?: {
-    [key in FRONT_CARD_ELEMENT]?: {
+    [key in CARD_ELEMENT]?: {
       wrapper?: ViewStyle;
       text?: TextStyle;
       subText?: TextStyle;
@@ -333,7 +366,7 @@ export const frontCardStyle: {
 
 export const frontContentCardStyle: {
   [key in FRONT_CARD_OPTIONS]?: {
-    [key in FRONT_CARD_ELEMENT]?: ViewStyle | TextStyle;
+    [key in CARD_ELEMENT]?: ViewStyle | TextStyle;
   };
 } = {
   defineOnly: {
@@ -345,31 +378,30 @@ export const frontContentCardStyle: {
 
 const textAndTranslation = false; // Hiển thị nghĩa ngay bên dưới từ gốc
 
-const backCardInfo = {
+export const backCardInfo: { [key: string]: CARD_ELEMENT[] } = {
   // --- Nghĩa cơ bản ---
-  translation: "translation, other translations (target → native)",
-  combine: "Cả từ gốc lẫn bản dịch", // Dùng cho bài nghe, đọc
+  translation: ["translate", "tDefinition", "tExample", "otherTranslate"],
+  combine: ["wordAndTranslate", "tImage", "tDefinition", "tExample"], // Dùng cho bài nghe, đọc
 
   // --- Hỗ trợ trả lời ---
-  hint: "definition, example with hidden word (hint before answer)",
-  fullReveal:
-    "reveal full front card info (used after answer if front is limited)",
+  hint: ["image", "definition", "example"],
+  fullReveal: ["text", "image", "definition", "example"],
 
   // --- Giải thích chi tiết ---
-  explanation: "detailed explanation (why correct or incorrect)",
-  usage: "usage in sentence",
-  grammarNote: "grammar note",
+  explanation: ["text", "explanation"],
+  usage: ["text", "usage"],
+  grammarNote: ["text", "grammarNote"],
 
   // --- Nâng cao (từ → từ) ---
-  moreInfo: "synonyms, antonyms, collocations, variations (target → target)",
-  proTip: "advanced usage tips or uncommon insights",
+  moreInfo: ["text", "info"],
+  proTip: ["text", "proTip"],
 
   // --- Khác ---
-  none: "no back side (one-sided card)",
-  collocations: "common phrases with this word", // dùng cho trình độ cao
-  culturalNote: "cultural context or usage caveats", // khi học từ theo ngữ cảnh văn hóa
-  etymology: "word origin", // useful cho từ khó nhớ // Cách từ được tạo ra hay gì?
-  defination: "defination và example", // useful cho từ khó nhớ // Cách từ được tạo ra hay gì?
+  none: [],
+  collocations: ["text", "collaborations"], // dùng cho trình độ cao
+  culturalNote: ["text", "culturalNote"], // khi học từ theo ngữ cảnh văn hóa
+  etymology: ["text", "etymology"], // useful cho từ khó nhớ // Cách từ được tạo ra hay gì?
+  defination: ["definition", "example"], // useful cho từ khó nhớ // Cách từ được tạo ra hay gì?
 };
 
 const flipCondition = {
@@ -515,13 +547,13 @@ const memoryLevelCardCases = {
     ],
 
     6: [
-      {
-        id: "lv6-reorder-sentence",
-        front: frontCardInfo.completeSentences,
-        back: backCardInfo.grammarNote,
-        flip: flipCondition.afterAnswer,
-        answer: answerMethod.reorder,
-      },
+      // {
+      //   id: "lv6-reorder-sentence",
+      //   front: frontCardInfo.completeSentences,
+      //   back: backCardInfo.grammarNote,
+      //   flip: flipCondition.afterAnswer,
+      //   answer: answerMethod.reorder,
+      // },
       {
         id: "lv6-advanced-culture",
         front: frontCardInfo.text,

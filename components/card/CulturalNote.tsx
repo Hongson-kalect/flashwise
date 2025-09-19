@@ -8,12 +8,11 @@ type Props = {
   textStyle?: TextStyle;
 };
 
-const CardExample = (props: Props) => {
+const CardCulturalNote = (props: Props) => {
   return (
     <View className="mt-1 px-4 py-2">
       <AppText color="subText2" size={"xs"} font="MulishLightItalic">
-        Example: Lorem ipsum dolor sit amet, Example: Lorem ipsum dolor dolor
-        sit amet,{" "}
+        Lorem ipsum dolor sit amet, Lorem ipsum dolor dolor sit amet,{" "}
         <AppText size={"xs"} font="MulishBoldItalic">
           strauberry cake
         </AppText>{" "}
@@ -23,4 +22,4 @@ const CardExample = (props: Props) => {
   );
 };
 
-export default CardExample;
+export default CardCulturalNote;

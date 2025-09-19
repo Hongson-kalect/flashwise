@@ -45,13 +45,15 @@ const Discover = () => {
           key={"discover-" + cardHeight.toString()}
           height={cardHeight[0] + 40}
           renderItem={({ index }) => {
-            const type = cardTypes[index] as CardType;
+            const cardType = cardTypes[index] as CardType; // Bình thường sẽ là check level, check vòng lặp của từ
+            const backType = cardTypes[index] as CardType;
             return (
               <View style={{ paddingVertical: 4 }}>
                 <FlipCard
                   initialFlipped={{ value: isFlipped }}
                   BackSide={
                     <CardBackSide
+                      type={cardType}
                       question={{}}
                       questionIndex={1}
                       cardHeight={cardHeight}
@@ -59,7 +61,7 @@ const Discover = () => {
                   }
                   FrontSide={
                     <CardFrontSide
-                      type={type}
+                      type={cardType}
                       question={{}}
                       questionIndex={1}
                       cardHeight={cardHeight}

@@ -8,7 +8,7 @@ type Props = {
   questionIndex: number;
 };
 
-const CardWord = (props: Props) => {
+const CardTranslated = (props: Props) => {
   return (
     <View className="px-2 mb-4">
       <View className="flex-row gap-2 items-center">
@@ -19,7 +19,7 @@ const CardWord = (props: Props) => {
             className="text-center"
             size={24}
           >
-            Strauberry cake
+            Bánh dâu
           </AppText>
           <View className="flex-row items-center">
             <AppText color="subText2" size={"xs"} font="MulishLightItalic">
@@ -36,4 +36,4 @@ const CardWord = (props: Props) => {
   );
 };
 
-export default CardWord;
+export default CardTranslated;

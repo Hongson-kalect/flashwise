@@ -1,11 +1,10 @@
 import AppTitle from "@/components/AppTitle";
 import CardOption from "@/components/card/CardOption";
 import {
-  FRONT_CARD_OPTIONS,
-  frontCardElementMapping,
-  frontCardInfo,
+  cardElementMapping,
   frontCardStyle,
   frontCardTitle,
+  qq,
 } from "@/configs/cardOptions";
 import { useTheme } from "@/providers/Theme";
 import { useMemo } from "react";
@@ -14,14 +13,15 @@ import { StatusBar, useWindowDimensions, View } from "react-native";
 type Props = {
   cardHeight: [number, React.Dispatch<React.SetStateAction<number>>];
   question: any;
-  type?: FRONT_CARD_OPTIONS;
+  type: keyof typeof qq;
   questionIndex?: number;
 };
+
 const CardFrontSide = ({
   cardHeight,
   question,
-  type = "full",
   questionIndex,
+  type,
 }: Props) => {
   const { theme } = useTheme();
   const { width, height } = useWindowDimensions();
@@ -30,7 +30,8 @@ const CardFrontSide = ({
   }, [type]);
 
   const [isOptionSound, frontCardType, moreStyle] = useMemo(() => {
-    const frontType = frontCardInfo[type];
+    const options = qq[type];
+    const frontType = options.elements;
 
     const headerSound = frontType.includes("option_sound");
     const newType = frontType.filter((item) => item !== "option_sound");
@@ -80,7 +81,7 @@ const CardFrontSide = ({
         }
         return (
           <View key={index}>
-            {frontCardElementMapping[item]({
+            {cardElementMapping[item]({
               wrapperStyle,
               textStyle,
               question,
