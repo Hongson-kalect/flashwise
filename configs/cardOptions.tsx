@@ -1,4 +1,3 @@
-import AppText from "@/components/AppText";
 import CardCollaboration from "@/components/card/Collaboration";
 import CardCulturalNote from "@/components/card/CulturalNote";
 import CardDefination from "@/components/card/Defination";
@@ -30,7 +29,7 @@ const learningDirection = {
   enEn: "English to English",
 };
 
-const answerMethod = {
+export const answerMethod = {
   //Nếu có hình đủ hình ảnh thì 50% tỉ lệ là chooseImage thay vì chooseWord
   //condition.speak? answerMethod.speak:answerMethod.write?answerMethod.write:answerMethod.chooseWord
   //condition.write? answerMethod.write?answerMethod.write:answerMethod.chooseWord
@@ -50,7 +49,7 @@ const answerMethod = {
 
 // Do mặt trước và mặt sau có thể thay đổi vị trí cho nhau nên không nên phân biệt front và back. chỉ cần phân biệt theo từng element là được
 // Tất cả các phần tử mà một thẻ có thể có
-type CARD_ELEMENT =
+export type CARD_ELEMENT =
   | "option_sound" // Options luôn hiển thị nhưng mà không có âm thanh. Nếu có options này thì sẽ phát âm thanh
   | "text"
   | "image"
@@ -135,7 +134,31 @@ export const frontCardInfo: {
 export type CardOptions = {
   elements: CARD_ELEMENT[];
   backside: { [key: number]: keyof typeof backCardInfo };
-  anserMethod: { [key: number]: keyof typeof answerMethod };
+  answerMethod: { [key: number]: keyof typeof answerMethod };
+};
+
+export type CardElement = {
+  frontElements: CARD_ELEMENT[];
+  backElements: CARD_ELEMENT[];
+  answerMethod: keyof typeof answerMethod;
+  frontTitle?: string;
+  backTitle?: string;
+  frontOptionSound?: boolean;
+  backOptionSound?: boolean;
+  frontStyle?: {
+    [key in CARD_ELEMENT]?: {
+      wrapper?: ViewStyle;
+      text?: TextStyle;
+      subText?: TextStyle;
+    };
+  };
+  backStyle?: {
+    [key in CARD_ELEMENT]?: {
+      wrapper?: ViewStyle;
+      text?: TextStyle;
+      subText?: TextStyle;
+    };
+  };
 };
 export const qq: {
   [key in FRONT_CARD_OPTIONS]: CardOptions;
@@ -143,7 +166,7 @@ export const qq: {
   // * Only Tổ hợp đầy đủ, dùng cho lần đầu (level 0)
   full: {
     elements: ["option_sound", "text", "image", "definition", "example"],
-    anserMethod: {
+    answerMethod: {
       0: "write",
     },
     backside: {
@@ -154,7 +177,7 @@ export const qq: {
   // level 1
   hideText: {
     elements: ["image", "definition", "example"], // Ẩn từ gốc, chỉ để đoán
-    anserMethod: {
+    answerMethod: {
       1: "write",
       2: "speak",
       3: "chooseWord",
@@ -175,7 +198,7 @@ export const qq: {
   // textAndTranslation
   voiceOnly: {
     elements: ["voice"],
-    anserMethod: {
+    answerMethod: {
       1: "write",
       2: "speak",
     },
@@ -190,7 +213,7 @@ export const qq: {
   // level 2
   textAndImage: {
     elements: ["text", "image"],
-    anserMethod: {
+    answerMethod: {
       // 1:'write',
       2: "speak",
       3: "chooseWord", // chọn bản dịch
@@ -205,7 +228,7 @@ export const qq: {
   },
   defineOnly: {
     elements: ["definition", "example"],
-    anserMethod: {
+    answerMethod: {
       2: "chooseWord", // chọn từ | bản dịch
       3: "speak",
     },
@@ -221,7 +244,7 @@ export const qq: {
   // level 3
   question: {
     elements: ["question"], //easy, m ,h -> 3,5,6
-    anserMethod: {
+    answerMethod: {
       3: "all", // Tùy câu hỏi. write / choose
     },
     backside: {
@@ -231,7 +254,7 @@ export const qq: {
   // level 4
   textAndVoice: {
     elements: ["text", "voice"],
-    anserMethod: {
+    answerMethod: {
       4: "chooseWord", // Chọn bản dịch
     },
     backside: {
@@ -243,7 +266,7 @@ export const qq: {
   },
   translation: {
     elements: ["translate"], // Dịch ngược
-    anserMethod: {
+    answerMethod: {
       4: "chooseWord", // Chọn bản dịch
       5: "write",
       6: "speak",
@@ -257,7 +280,7 @@ export const qq: {
   // question: ["question"], //medium
   imageOnly: {
     elements: ["image"], // Luyện phản xạ. Mặt sau phải có định nghĩa
-    anserMethod: {
+    answerMethod: {
       1: "chooseWord", // Chọn từ
       2: "write",
       3: "chooseWord", // Chọn bản nghe
@@ -271,7 +294,7 @@ export const qq: {
   },
   minimal: {
     elements: ["keyword"],
-    anserMethod: {
+    answerMethod: {
       1: "write",
       2: "speak",
       3: "chooseWord",
@@ -284,7 +307,7 @@ export const qq: {
   },
   text: {
     elements: ["text"],
-    anserMethod: { 1: "speak", 2: "chooseWord" },
+    answerMethod: { 1: "speak", 2: "chooseWord" },
     backside: {
       1: "translation",
       2: "fullReveal",
@@ -319,9 +342,7 @@ export const cardElementMapping: {
   voiceNote: (props) => <CardVoiceNote {...props} />,
 
   option_sound: (props) => (
-    <View>
-      <AppText>Bruh! Cái này không hiển thị</AppText>
-    </View>
+    <View>{/* <AppText>Bruh! Cái này không hiển thị</AppText> */}</View>
   ),
   info: (props) => <Markdown {...props} />,
 };
@@ -336,7 +357,7 @@ export const frontCardTitle: {
   // completeSentences: "Hoàn thành câu",
 };
 export const backCardTitle: {
-  [key in FRONT_CARD_OPTIONS]?: string;
+  [key in keyof typeof backCardInfo]?: string;
 } = {
   defineOnly: "Định Nghĩa",
   question: "Câu hỏi",
@@ -346,6 +367,24 @@ export const backCardTitle: {
 };
 
 export const frontCardStyle: {
+  [key in FRONT_CARD_OPTIONS]?: {
+    [key in CARD_ELEMENT]?: {
+      wrapper?: ViewStyle;
+      text?: TextStyle;
+      subText?: TextStyle;
+    };
+  };
+} = {
+  defineOnly: {
+    definition: {
+      wrapper: {},
+      text: {
+        fontSize: 18,
+      },
+    },
+  },
+};
+export const backCardStyle: {
   [key in FRONT_CARD_OPTIONS]?: {
     [key in CARD_ELEMENT]?: {
       wrapper?: ViewStyle;

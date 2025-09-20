@@ -2,7 +2,7 @@ import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import AppCarousel from "@/components/output/carousel";
 import { FlipCard } from "@/components/output/flipCard";
-import { qq } from "@/configs/cardOptions";
+import { backCardInfo, CardElement, qq } from "@/configs/cardOptions";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { View } from "react-native";
@@ -45,6 +45,11 @@ const Discover = () => {
           key={"discover-" + cardHeight.toString()}
           height={cardHeight[0] + 40}
           renderItem={({ index }) => {
+            const cardElement: CardElement = {
+              frontElements: qq.full.elements,
+              backElements: backCardInfo.translation,
+              answerMethod: "none",
+            };
             const cardType = cardTypes[index] as CardType; // Bình thường sẽ là check level, check vòng lặp của từ
             const backType = cardTypes[index] as CardType;
             return (
@@ -53,7 +58,7 @@ const Discover = () => {
                   initialFlipped={{ value: isFlipped }}
                   BackSide={
                     <CardBackSide
-                      type={cardType}
+                      cardElements={cardElement}
                       question={{}}
                       questionIndex={1}
                       cardHeight={cardHeight}
@@ -61,7 +66,7 @@ const Discover = () => {
                   }
                   FrontSide={
                     <CardFrontSide
-                      type={cardType}
+                      cardElements={cardElement}
                       question={{}}
                       questionIndex={1}
                       cardHeight={cardHeight}

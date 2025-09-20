@@ -3,7 +3,6 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   interpolate,
   runOnJS,
-  SharedValue,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -136,6 +135,15 @@ export const FlipCard = ({
         isFlipped.value = !isFlipped.value;
       }}
     >
+      {/* <ImageBackground
+        source={require("../../assets/images/card-bg-2.png")}
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          zIndex: 2,
+        }}
+      /> */}
       <Animated.View
         style={[
           flipCardStyles.regularCard,

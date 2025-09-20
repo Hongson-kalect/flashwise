@@ -2,39 +2,35 @@ import AppTitle from "@/components/AppTitle";
 import CardOption from "@/components/card/CardOption";
 import {
   backCardInfo,
+  backCardTitle,
+  CardElement,
   cardElementMapping,
-  frontCardStyle,
-  frontCardTitle,
+  backCardStyle,
   qq,
 } from "@/configs/cardOptions";
 import { useTheme } from "@/providers/Theme";
 import { useMemo } from "react";
-import { StatusBar, useWindowDimensions, View } from "react-native";
+import {
+  ImageBackground,
+  StatusBar,
+  useWindowDimensions,
+  View,
+} from "react-native";
 
 type Props = {
   cardHeight: [number, React.Dispatch<React.SetStateAction<number>>];
   question: any;
-  type: keyof typeof qq;
+  cardElements: CardElement;
   questionIndex?: number;
 };
-const CardBackSide = ({ cardHeight, question, questionIndex, type }: Props) => {
+const CardBackSide = ({
+  cardHeight,
+  question,
+  questionIndex,
+  cardElements,
+}: Props) => {
   const { theme } = useTheme();
   const { width, height } = useWindowDimensions();
-  const cardTitle = useMemo(() => {
-    return frontCardTitle[type];
-  }, [type]);
-
-  const [isOptionSound, frontCardType, moreStyle] = useMemo(() => {
-    const options = qq[type];
-    const backType = options.backside?.[0];
-    const elements = backCardInfo[backType];
-
-    const headerSound = elements.includes("option_sound");
-    const newType = elements.filter((item) => item !== "option_sound");
-
-    const moreStyle = frontCardStyle[type];
-    return [headerSound, newType, moreStyle];
-  }, [type]);
 
   return (
     <View
@@ -55,24 +51,36 @@ const CardBackSide = ({ cardHeight, question, questionIndex, type }: Props) => {
       ]}
       className="rounded-lg"
     >
+      <ImageBackground
+        borderRadius={8}
+        source={require("@/assets/images/card-bg-2.png")}
+        style={{
+          width: "100%",
+          height: "100%",
+          zIndex: 0,
+          position: "absolute",
+        }}
+      />
       <View className="mt-4 mb-2">
-        <CardOption isOptionSound={isOptionSound} />
+        <CardOption isOptionSound={!!cardElements.backOptionSound} />
       </View>
 
-      {cardTitle ? (
+      {cardElements.backTitle ? (
         <View className="p-2">
-          <AppTitle title={cardTitle} />
+          <AppTitle title={cardElements.backTitle} />
         </View>
       ) : (
-        !frontCardType.includes("text") && <View className="h-4"></View>
+        !cardElements.backElements.includes("text") && (
+          <View className="h-4"></View>
+        )
       )}
-      {frontCardType.map((item, index) => {
+      {cardElements.backElements.map((item, index) => {
         let wrapperStyle = undefined;
         let textStyle = undefined;
 
-        if (moreStyle?.[item]) {
-          wrapperStyle = moreStyle[item].wrapper;
-          textStyle = moreStyle[item].text;
+        if (cardElements.backStyle?.[item]) {
+          wrapperStyle = cardElements.backStyle[item].wrapper;
+          textStyle = cardElements.backStyle[item].text;
         }
         return (
           <View key={index}>

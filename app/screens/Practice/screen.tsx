@@ -2,11 +2,16 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { FlipCard } from "@/components/output/flipCard";
 import { useTheme } from "@/providers/Theme";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 // import FlipCard from "react-native-flip-card";
+import AppButton from "@/components/AppButton";
 import CardTextInput from "@/components/card/ansers/TextInput";
+import { CardElement } from "@/configs/cardOptions";
 import useModalStore from "@/stores/modalStore";
+import { reorderArrayWithWeight } from "@/utils/arrayModifier";
+import { makeQuestion } from "@/utils/makeQuestion";
+import { router } from "expo-router";
 import { Divider } from "react-native-paper";
 import {
   default as Animated,
@@ -21,14 +26,85 @@ import {
 import CardBackSide from "./components/backSide";
 import CardFrontSide from "./components/frontSide";
 
-const questions = [1, 2, 3, 4, 5];
 export default function PracticePage() {
+  const [questions, setQuestions] = useState([1, 2, 3, 4, 5]);
   const { theme } = useTheme();
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  // const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [finalQuestion, setFinalQuestion] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const shuffleNumber = useRef(questions.length - 1);
+  const [questionOrder, setQuestionOrder] = useState([...questions]);
+  const [method] = useState([
+    "write",
+    "listen",
+    "write",
+    "speak",
+    "chooseWord",
+  ]);
+  const [questionState, setQuestionState] = useState(() => {
+    const state: { [key: number]: string[] } = {};
+    questions.forEach((question, index) => {
+      state[question] = [];
+    });
+    return state;
+  });
+
+  const [questionElements, setQuestionElements] = useState<CardElement>({
+    frontElements: [],
+    backElements: [],
+    answerMethod: "write",
+  });
+
+  const getQuestion = (id: number) => {
+    //Kiểm tra tất cả câu hỏi đã hoàn thành hay chưa
+    if (
+      Object.entries(questionState).some(
+        ([key, value]) => value.length < method.length
+      )
+    ) {
+      if (questionState[id].length < method.length) {
+        const currentMethod = method[questionState[id].length];
+
+        // Dựa vào currentMethod và question để tạo cấu hỏi. Tạm dùng ID
+        const question = makeQuestion(currentMethod, id);
+        setQuestionElements(question);
+        const newOrder = reorderArrayWithWeight(
+          questionOrder,
+          shuffleNumber.current
+        );
+        shuffleNumber.current -= 1;
+        if (shuffleNumber.current === 0) {
+          shuffleNumber.current = questions.length - 1;
+        }
+
+        setQuestionOrder(newOrder);
+        //Nếu câu hỏi hiện tại đã đủ thì chuyển sang cấu hỏi khác
+      } else {
+        let newOrder = [...questionOrder];
+
+        while (questionState[newOrder[0]].length >= method.length) {
+          newOrder = reorderArrayWithWeight(newOrder, shuffleNumber.current);
+          shuffleNumber.current -= 1;
+          if (shuffleNumber.current === 0) {
+            shuffleNumber.current = questions.length - 1;
+          }
+        }
+
+        setQuestionOrder(newOrder); // chỉ set 1 lần sau cùng
+        return getQuestion(newOrder[0]); // hoặc gọi callback gì đó nếu cần
+      }
+    } else setFinalQuestion(true);
+  };
+
+  useEffect(() => {
+    getQuestion(questionOrder[0]);
+  }, []);
+
   const question = useMemo(
-    () => questions[currentQuestionIndex],
-    [currentQuestionIndex]
+    () => questions[questionOrder[0]],
+    [questionOrder[0]]
   );
+  const [questionType, setQuestionType] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [failedOnce, setFailedOnce] = useState(false);
 
@@ -73,22 +149,31 @@ export default function PracticePage() {
   };
 
   const nextQuestion = () => {
-    if (currentQuestionIndex >= questions.length - 1) {
-      Finish();
-    } else {
-      isFlipped.value = false;
-      setIsCorrect(null);
-      setFailedOnce(false);
-      resetCardHeight();
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    resetCardState();
+
+    //Có 1 hàm để lấy kiểu của câu hỏi. Dựa vào cấp của từ, vòng lặp hiện tại. Điều kiện hiện tại của người dùng
+    const newOrder = reorderArrayWithWeight(
+      questionOrder,
+      shuffleNumber.current--
+    );
+    if (shuffleNumber.current === 0) {
+      shuffleNumber.current = questions.length - 1;
     }
+    getQuestion(newOrder[0]); // Chuyển sang cấu hỏi khác();
   };
 
   const Finish = () => {
     alert("Mọe m chứ xong rồi");
+    setTimeout(() => {
+      router.back();
+      //Chuyển sang bài nối từ => Hiển thị thông báo hoàn tất => Tiếp tục luyện tập | Từ mới | Về Home
+    }, 3000);
   };
 
-  const resetCardHeight = () => {
+  const resetCardState = () => {
+    isFlipped.value = false;
+    setIsCorrect(null);
+    setFailedOnce(false);
     cardHeight[1](0);
   };
 
@@ -96,6 +181,23 @@ export default function PracticePage() {
   // useEffect(() => {
   //   resetCardHeight();
   // }, []);
+
+  const handleLeaning = () => {
+    resetCardState();
+    const newQuestions = [1, 2, 3, 4, 5];
+    const newQuestionState: { [key: number]: string[] } = {};
+    newQuestions.map((question, index) => {
+      newQuestionState[question] = [];
+    });
+    setQuestions(newQuestions);
+    setQuestionOrder(newQuestions);
+    shuffleNumber.current = newQuestions.length - 1;
+    setFinalQuestion(false);
+    setCompleted(false);
+    setQuestionState(newQuestionState);
+
+    // api gọi câu hỏi mới
+  };
 
   const { setGlobalModal } = useModalStore();
   const handleInputResult = () => {
@@ -145,9 +247,7 @@ export default function PracticePage() {
           <View>
             <AppIcon
               onPress={() => {
-                setCurrentQuestionIndex(0);
                 setIsCorrect(null);
-                resetCardHeight();
               }}
               branch="antd"
               name={"setting"}
@@ -161,7 +261,7 @@ export default function PracticePage() {
       </View>
       <Animated.View
         className="flex-1 justify-between"
-        key={currentQuestionIndex}
+        key={question}
         entering={SlideInRight}
         exiting={SlideOutLeft}
       >
@@ -177,25 +277,51 @@ export default function PracticePage() {
         >
           <View className="flex-1 px-2">
             <View className="items-center mt-6">
+              {finalQuestion ? (
+                <View>
+                  <AppText>Chỗ này là cho nối từ này</AppText>
+                  <View className="flex-row gap-2 items-center justify-center">
+                    <AppButton
+                      onPress={() => {
+                        handleLeaning();
+                      }}
+                    >
+                      <AppText>Hoàn thành câu cuối</AppText>
+                    </AppButton>
+                    <AppButton
+                      onPress={() => {
+                        handleLeaning();
+                      }}
+                      type="success"
+                    >
+                      <AppText>Học tiếp</AppText>
+                    </AppButton>
+                    <AppButton type="primary" onPress={() => router.back()}>
+                      <AppText>Quay lại</AppText>
+                    </AppButton>
+                  </View>
+                </View>
+              ) : (
+                <FlipCard
+                  disabled={false}
+                  duration={500}
+                  FrontSide={
+                    <CardFrontSide
+                      question={question}
+                      cardHeight={cardHeight}
+                      cardElements={questionElements}
+                    />
+                  }
+                  BackSide={
+                    <CardBackSide
+                      question={question}
+                      cardHeight={cardHeight}
+                      cardElements={questionElements}
+                    />
+                  }
+                />
+              )}
               {/* <TestFlipCard /> */}
-              <FlipCard
-                disabled={false}
-                duration={500}
-                FrontSide={
-                  <CardFrontSide
-                    questionIndex={currentQuestionIndex}
-                    question={question}
-                    cardHeight={cardHeight}
-                  />
-                }
-                BackSide={
-                  <CardBackSide
-                    questionIndex={currentQuestionIndex}
-                    question={question}
-                    cardHeight={cardHeight}
-                  />
-                }
-              />
             </View>
 
             <View className="h-8"></View>
@@ -224,7 +350,7 @@ export default function PracticePage() {
       )}
       {isCorrect === false && (
         <Animated.View
-          key={"anser-" + currentQuestionIndex}
+          key={"anser-" + question} //question.id
           className={"absolute bottom-0 right-0 left-0 h-28"}
           style={{ backgroundColor: theme.error }}
           entering={SlideInDown}
