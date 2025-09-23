@@ -1,9 +1,10 @@
-export function reorderArrayWithWeight(array: number[], number: number) {
+export function reorderArrayWithWeight<T>(array: T[], number?: number): T[] {
   // Copy mảng đầu vào để tránh thay đổi mảng gốc
   const arrCopy = [...array];
+  const sortNumber = number || array.length;
 
   // Xác định số phần tử cần xáo trộn (không vượt quá độ dài mảng)
-  const n = Math.min(number, arrCopy.length);
+  const n = Math.min(sortNumber, arrCopy.length);
 
   // Lấy n phần tử đầu để xáo trộn
   const shuffledPart = arrCopy.slice(0, n);

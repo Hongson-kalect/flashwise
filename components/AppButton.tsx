@@ -87,9 +87,7 @@ const AppButton = ({
             justifyContent: "center",
             minWidth: 64,
             // height: height || 48,
-            backgroundColor: disabled
-              ? theme.disabled
-              : theme[type || "primary"],
+            backgroundColor: disabled ? "#d3d3d3" : theme[type || "primary"],
           },
           style,
         ]}
