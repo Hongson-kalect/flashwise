@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 // import FlipCard from "react-native-flip-card";
+import AppButton from "@/components/AppButton";
 import CardTextInput from "@/components/card/ansers/TextInput";
 import { CardElement } from "@/configs/cardOptions";
 import useModalStore from "@/stores/modalStore";
@@ -41,6 +42,7 @@ export default function PracticePage() {
   const [completed, setCompleted] = useState(false);
   const shuffleNumber = useRef(questions.length - 1);
   const [questionOrder, setQuestionOrder] = useState([...questions]);
+  const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(questions[0]);
   const [method] = useState(["write", "listen"]);
   const [currentMethod, setCurrentMethod] = useState(method[0]);
@@ -58,50 +60,70 @@ export default function PracticePage() {
     answerMethod: "write",
   });
 
-  const getQuestion = (id: number, reOrderQuestion: boolean = true) => {
-    //Kiểm tra tất cả câu hỏi đã hoàn thành hay chưa
+  const getQuestion = (reOrderQuestion: boolean = true) => {
     resetCardState();
-    console.log(questionState);
+
+    //Kiểm tra tất cả câu hỏi đã hoàn thành hay chưa
     if (
       Object.entries(questionState).some(
         ([key, value]) => value.length < method.length
       )
     ) {
-      let newOrder = reOrderQuestion
-        ? [...questionOrder.slice(1), questionOrder[0]]
-        : questionOrder;
-      console.log(1);
-      while (questionState[newOrder[0]].length >= method.length) {
-        console.log(2);
-        newOrder = [...newOrder.slice(1), newOrder[0]];
-        newOrder = reorderArrayWithWeight(newOrder, shuffleNumber.current);
-        shuffleNumber.current -= 1;
-        if (shuffleNumber.current === 0) {
-          shuffleNumber.current = questions.length - 1;
-        }
+      // let newOrder = reOrderQuestion
+      //   ? [...questionOrder.slice(1), questionOrder[0]]
+      //   : questionOrder;
+
+      let newOrder = questionOrder;
+      let newCompletedQuestion = completedQuestions;
+
+      // Nếu thay đổi order thì nó mới thay order, Chỉ có lúc mới ko đổi order vào nên auto hợp lệ
+      if (reOrderQuestion) {
+        // Lặp đến khi tìm được câu hợp lệ
+        do {
+          // Khi còn duy nhất 1 câu.
+          // if (newOrder.length === 1) {
+          //   break;
+          // }
+
+          // Đẩy câu hỏi trước đó (Vừa trả lời) về cuối và sắp xếp ngẫu nhiên 1 vài câu
+          newOrder = [...newOrder.slice(1), newOrder[0]];
+          newOrder = reorderArrayWithWeight(newOrder, shuffleNumber.current);
+
+          // Nếu câu hỏi đầu tiên sau khi sếp đã trả lời hết, loại bỏ nó và thêm vào mảng hoàn tất
+          if (questionState[newOrder[0]].length >= method.length) {
+            newCompletedQuestion = [...newCompletedQuestion, newOrder[0]];
+            newOrder = newOrder.slice(1);
+            shuffleNumber.current = newOrder.length;
+          } else {
+            shuffleNumber.current -= 1;
+            if (shuffleNumber.current === 0) {
+              shuffleNumber.current = questions.length - 1;
+            }
+          }
+        } while (questionState[newOrder[0]].length >= method.length);
       }
-      console.log(3);
+
+      // while (questionState[newOrder[0]].length >= method.length) {
+      //   newOrder = [...newOrder.slice(1), newOrder[0]];
+      //   newOrder = reorderArrayWithWeight(newOrder, shuffleNumber.current);
+      //   shuffleNumber.current -= 1;
+      //   if (shuffleNumber.current === 0) {
+      //     shuffleNumber.current = questions.length - 1;
+      //   }
+      // }
 
       // có order Hợp lệ
       setQuestionOrder(newOrder); // chỉ set 1 lần sau cùng
 
       const questionId = newOrder[0];
       const currentMethod = method[questionState[questionId].length];
-
       const question = makeQuestion(currentMethod, newOrder[0]);
       setCurrentQuestionId(newOrder[0]);
       setQuestionElements(question);
+      setCurrentMethod(currentMethod);
       // return getQuestion(newOrder[0]); // hoặc gọi callback gì đó nếu cần
     } else setFinalQuestion(true);
   };
-
-  useEffect(() => {
-    console.log(questionOrder, shuffleNumber.current);
-  }, [questionOrder]);
-
-  useEffect(() => {
-    getQuestion(questionOrder[0], false);
-  }, []);
 
   const question = useMemo(
     () => questions[questionOrder[0]],
@@ -181,15 +203,25 @@ export default function PracticePage() {
     // if (shuffleNumber.current === 0) {
     //   shuffleNumber.current = questions.length - 1;
     // }
-    getQuestion(questionOrder[0]); // Chuyển sang cấu hỏi khác();
+    getQuestion(); // Chuyển sang cấu hỏi khác();
   };
 
+  // const {setGlobalModal} =useModalStore()
+
   const Finish = () => {
-    alert("Xong, hiện pannel next, back");
-    setTimeout(() => {
-      router.back();
-      //Chuyển sang bài nối từ => Hiển thị thông báo hoàn tất => Tiếp tục luyện tập | Từ mới | Về Home
-    }, 3000);
+    // Gọi api gửi đã hoàn tất luyện tập với ids
+    setGlobalModal({
+      type: "confirm",
+      modalTitle: "Hoàn tất",
+      message: "Bạn có muốn tiếp tục luyện tập?",
+      okText: "Tiếp",
+      cancelText: "Không",
+      onOk: handleContinue,
+      onCancel: router.back,
+    });
+    // setTimeout(() => {
+    //   router.back();
+    // }, 3000);
   };
 
   const resetCardState = () => {
@@ -204,7 +236,7 @@ export default function PracticePage() {
   //   resetCardHeight();
   // }, []);
 
-  const handleLeaning = () => {
+  const handleContinue = () => {
     resetCardState();
     const newQuestions = [1, 2, 3, 4, 5];
     const newQuestionState: { [key: number]: string[] } = {};
@@ -212,14 +244,25 @@ export default function PracticePage() {
       newQuestionState[question] = [];
     });
     setQuestions(newQuestions);
-    setQuestionOrder(newQuestions);
-    shuffleNumber.current = newQuestions.length - 1;
-    setFinalQuestion(false);
-    setCompleted(false);
-    setQuestionState(newQuestionState);
 
     // api gọi câu hỏi mới
   };
+
+  useEffect(() => {
+    const newQuestionState: { [key: number]: string[] } = {};
+    questions.map((question, index) => {
+      newQuestionState[question] = [];
+    });
+
+    setQuestionOrder(questions);
+    shuffleNumber.current = questions.length - 1;
+    setFinalQuestion(false);
+    setCompleted(false);
+    setCompletedQuestions([]);
+    setQuestionState(newQuestionState);
+
+    getQuestion(false);
+  }, [questions]);
 
   const { setGlobalModal } = useModalStore();
   const handleInputResult = () => {
@@ -240,12 +283,10 @@ export default function PracticePage() {
   useEffect(() => {
     if (isCorrect) {
       setTimeout(() => {
-        getQuestion(questionOrder[0]);
+        getQuestion();
       }, 500);
     }
   }, [questionState]);
-
-  console.log(questionState);
 
   return (
     <View
@@ -262,9 +303,12 @@ export default function PracticePage() {
           >
             <View className="h-6 w-6 rounded-full bg-white"></View>
           </View>
-          <View className="h-5 bg-gray-200 rounded-full" style={{ flex: 1 }}>
+          <View
+            className="h-5 bg-gray-200 rounded-full overflow-hidden"
+            style={{ flex: 1 }}
+          >
             <ReAnimated.View
-              layout={LinearTransition.springify().mass(0.5)}
+              layout={LinearTransition.springify().mass(0.1)}
               className="h-full rounded-full"
               style={{
                 width: progressWidth,
@@ -291,7 +335,7 @@ export default function PracticePage() {
       </View>
       <Animated.View
         className="flex-1 justify-between"
-        key={question}
+        key={question + "-" + currentMethod}
         entering={SlideInRight}
         exiting={SlideOutLeft}
       >
@@ -307,9 +351,14 @@ export default function PracticePage() {
         >
           <View className="flex-1 px-2">
             <View className="items-center mt-6">
-              {/* <AppButton onPress={() => checkResult("A")}>
-                <AppText color="white">Next {currentQuestionId}</AppText>
-              </AppButton> */}
+              <View className="flex-row gap-2">
+                <AppButton onPress={() => checkResult("A")}>
+                  <AppText color="white">True {currentQuestionId}</AppText>
+                </AppButton>
+                <AppButton onPress={() => checkResult("B")} type="error">
+                  <AppText color="white">False {currentQuestionId}</AppText>
+                </AppButton>
+              </View>
               {finalQuestion ? (
                 <View>
                   {/* <AppText></AppText> */}
