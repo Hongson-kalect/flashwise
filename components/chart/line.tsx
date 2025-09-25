@@ -27,8 +27,16 @@ const AppLineChart = () => {
          * This will tell CartesianChart to render axis labels.
          */
         font: font,
-        labelColor: theme.subText2,
-        lineColor: "#e2e2e2",
+        labelColor: theme.subText1,
+        lineColor: {
+          grid: {
+            y: "#e2e2e2",
+            x: "transparent",
+          },
+          frame: "#e2e2e2",
+        },
+        // lineWidth:1,
+
         /**
          * 👇 We will also use the formatXLabel prop to format the month number
          * from a number to a month name.
@@ -52,7 +60,7 @@ const AppLineChart = () => {
             points={points.y}
             curveType="natural"
             color={theme.primary}
-            strokeWidth={3}
+            strokeWidth={2}
             animate={{ type: "timing", duration: 300 }}
           />
           <Area
@@ -67,7 +75,7 @@ const AppLineChart = () => {
               end={vec(0, 200)}
               colors={[
                 // 👈 The colors are an array of strings that represent the colors of the gradient.
-                theme.primary,
+                theme.primary + "dd",
                 theme.primary + "11", // 👈 The second color is the same as the first but with an alpha value of 50%.
               ]}
             />
@@ -78,8 +86,6 @@ const AppLineChart = () => {
             const showIndex = Array.from({ length: 4 }, (_, i) =>
               Math.ceil((length / 4) * (i + 1))
             );
-
-            console.log(showIndex);
 
             const uniqueShowIndex = [...new Set(showIndex)].sort(
               (a, b) => a - b

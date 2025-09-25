@@ -1,4 +1,6 @@
+import { QuestionType } from "@/app/screens/Practice/example";
 import {
+  answerMethod,
   backCardInfo,
   backCardStyle,
   backCardTitle,
@@ -8,7 +10,10 @@ import {
   qq,
 } from "@/configs/cardOptions";
 
-export function makeQuestion(method: string, question: number): CardElement {
+export function makeQuestion(
+  method: string,
+  question: QuestionType
+): CardElement {
   let questionType = qq.hideText;
   switch (method) {
     case "write": {
@@ -26,8 +31,12 @@ export function makeQuestion(method: string, question: number): CardElement {
       const answerMethod = Object.entries(questionType.answerMethod)[0][1];
       const frontOptionSound = frontElements.includes("option_sound");
       const backOptionSound = backElements.includes("option_sound");
+      const flipType = "manual";
+      const answer = getAnser(answerMethod, question);
 
       return {
+        flipType,
+        answer,
         frontElements: frontElements,
         backElements: backElements, // Dựa vào level để random xem ra cái nào
         answerMethod: answerMethod, // Dựa vào level để random xem ra cái nào
@@ -56,7 +65,12 @@ export function makeQuestion(method: string, question: number): CardElement {
       const frontOptionSound = frontElements.includes("option_sound");
       const backOptionSound = backElements.includes("option_sound");
 
+      const flipType = "manual";
+      const answer = getAnser(answerMethod, question);
+
       return {
+        flipType,
+        answer,
         frontElements: frontElements,
         backElements: backElements, // Dựa vào level để random xem ra cái nào
         answerMethod: answerMethod, // Dựa vào level để random xem ra cái nào
@@ -85,7 +99,12 @@ export function makeQuestion(method: string, question: number): CardElement {
       const frontOptionSound = frontElements.includes("option_sound");
       const backOptionSound = backElements.includes("option_sound");
 
+      const flipType = "answerAuto";
+      const answer = getAnser(answerMethod, question);
+
       return {
+        flipType,
+        answer,
         frontElements: frontElements,
         backElements: backElements, // Dựa vào level để random xem ra cái nào
         answerMethod: answerMethod, // Dựa vào level để random xem ra cái nào
@@ -114,7 +133,12 @@ export function makeQuestion(method: string, question: number): CardElement {
       const frontOptionSound = frontElements.includes("option_sound");
       const backOptionSound = backElements.includes("option_sound");
 
+      const flipType = "answerAuto";
+      const answer = getAnser(answerMethod, question);
+
       return {
+        flipType,
+        answer,
         frontElements: frontElements,
         backElements: backElements, // Dựa vào level để random xem ra cái nào
         answerMethod: answerMethod, // Dựa vào level để random xem ra cái nào
@@ -143,7 +167,12 @@ export function makeQuestion(method: string, question: number): CardElement {
       const frontOptionSound = frontElements.includes("option_sound");
       const backOptionSound = backElements.includes("option_sound");
 
+      const flipType = "answerAuto";
+      const answer = getAnser(answerMethod, question);
+
       return {
+        flipType,
+        answer,
         frontElements: frontElements,
         backElements: backElements, // Dựa vào level để random xem ra cái nào
         answerMethod: answerMethod, // Dựa vào level để random xem ra cái nào
@@ -157,3 +186,21 @@ export function makeQuestion(method: string, question: number): CardElement {
     }
   }
 }
+
+const getAnser = (
+  method: keyof typeof answerMethod,
+  question: QuestionType
+) => {
+  switch (method) {
+    case "write":
+      return question.word;
+    case "speak":
+      return question.word;
+    case "chooseWord":
+      return question.word;
+    case "chooseImage":
+      return question.word;
+    default:
+      return question.word;
+  }
+};

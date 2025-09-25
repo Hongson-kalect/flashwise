@@ -1,15 +1,7 @@
 import AppTitle from "@/components/AppTitle";
 import CardOption from "@/components/card/CardOption";
-import {
-  backCardInfo,
-  backCardTitle,
-  CardElement,
-  cardElementMapping,
-  backCardStyle,
-  qq,
-} from "@/configs/cardOptions";
+import { CardElement, cardElementMapping } from "@/configs/cardOptions";
 import { useTheme } from "@/providers/Theme";
-import { useMemo } from "react";
 import {
   ImageBackground,
   StatusBar,
@@ -22,8 +14,10 @@ type Props = {
   question: any;
   cardElements: CardElement;
   questionIndex?: number;
+  hideText?: boolean;
 };
 const CardBackSide = ({
+  hideText = false,
   cardHeight,
   question,
   questionIndex,
@@ -53,8 +47,9 @@ const CardBackSide = ({
     >
       <ImageBackground
         borderRadius={8}
-        source={require("@/assets/images/card-bg-2.png")}
+        source={require("@/assets/images/card-bg-blue.png")}
         style={{
+          opacity: 0.5,
           width: "100%",
           height: "100%",
           zIndex: 0,
@@ -62,7 +57,10 @@ const CardBackSide = ({
         }}
       />
       <View className="mt-4 mb-2">
-        <CardOption isOptionSound={!!cardElements.backOptionSound} />
+        <CardOption
+          question={question}
+          isOptionSound={!!cardElements.backOptionSound}
+        />
       </View>
 
       {cardElements.backTitle ? (
@@ -85,6 +83,7 @@ const CardBackSide = ({
         return (
           <View key={index}>
             {cardElementMapping[item]({
+              hideText,
               wrapperStyle,
               textStyle,
               question,

@@ -1,10 +1,11 @@
+import { QuestionType } from "@/app/screens/Practice/example";
 import { TextStyle, View, ViewStyle } from "react-native";
 import AppText from "../AppText";
 
 type Props = {
   wrapperStyle?: ViewStyle;
   textStyle?: TextStyle;
-  question: any;
+  question: QuestionType;
   questionIndex: number;
 };
 
@@ -16,14 +17,14 @@ const CardWord = (props: Props) => {
           <AppText
             font="MulishBold"
             color="primary"
-            className="text-center"
+            // className="text-center"
             size={24}
           >
-            Strauberry cake
+            {props.question.word}
           </AppText>
           <View className="flex-row items-center">
             <AppText color="subText2" size={"xs"} font="MulishLightItalic">
-              {"/em'la:bupclmm/"}
+              {props.question.spelling}
             </AppText>
           </View>
 

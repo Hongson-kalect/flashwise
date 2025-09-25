@@ -3,8 +3,6 @@ import { useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
 const Word = () => {
-  console.log(1112);
-
   const { id } = useLocalSearchParams();
   return (
     <View>

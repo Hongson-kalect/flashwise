@@ -3,6 +3,7 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { View } from "react-native";
 
@@ -10,9 +11,14 @@ const Relearn = () => {
   const { theme } = useTheme();
 
   return (
-    <View
+    <LinearGradient
+      colors={[theme.primary, "#000"]}
+      locations={[0.5, 0.9]}
+      start={[0, 0]}
+      end={[1, 1]}
       style={{
         backgroundColor: theme.primary + "ee",
+        borderRadius: 8,
       }}
       className="p-4 rounded-xl"
     >
@@ -69,7 +75,7 @@ const Relearn = () => {
           </View> */}
         </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 };
 

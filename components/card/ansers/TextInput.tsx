@@ -83,7 +83,15 @@ const CardTextInput = (props: Props) => {
           </AppText> */}
         </View>
         <Pressable
-          style={[styles.inputWrapper, { borderColor: theme.primary }]}
+          style={[
+            styles.inputWrapper,
+            {
+              borderColor: theme.primary,
+              borderWidth: 1.5,
+              borderRadius: 999,
+              paddingHorizontal: 16,
+            },
+          ]}
           disabled={!modalInput}
           onPress={handleInput}
         >
@@ -100,6 +108,7 @@ const CardTextInput = (props: Props) => {
             style={{
               fontFamily: fontFamily.MulishSemiBold,
               fontSize: 20,
+              borderRadius: 0,
             }}
             placeholder="Nhập lại từ này..."
           />
@@ -111,10 +120,10 @@ const CardTextInput = (props: Props) => {
 
 const styles = StyleSheet.create({
   inputWrapper: {
-    paddingVertical: 4,
     paddingHorizontal: 8,
+    paddingVertical: 0,
     borderRadius: 8,
-    borderWidth: 2,
+    // borderWidth: 2,
     backgroundColor: "#fff",
   },
 });

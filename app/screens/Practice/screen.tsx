@@ -33,32 +33,83 @@ import {
 import CardBackSide from "./components/backSide";
 import CardFrontSide from "./components/frontSide";
 import LastQuestion from "./components/lastQuestion";
+import { testData } from "./example";
 
 export default function PracticePage() {
-  const [questions, setQuestions] = useState([1, 2, 3, 4, 5]);
+  const [questions, setQuestions] = useState(testData);
   const { theme } = useTheme();
   // const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [finalQuestion, setFinalQuestion] = useState(false);
   const [completed, setCompleted] = useState(false);
   const shuffleNumber = useRef(questions.length - 1);
-  const [questionOrder, setQuestionOrder] = useState([...questions]);
+  const [questionOrder, setQuestionOrder] = useState<number[]>(() =>
+    questions.map((question) => question.id)
+  );
   const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
-  const [currentQuestionId, setCurrentQuestionId] = useState(questions[0]);
+  const [currentQuestionId, setCurrentQuestionId] = useState(questions[0].id);
   const [method] = useState(["write", "listen"]);
   const [currentMethod, setCurrentMethod] = useState(method[0]);
   const [questionState, setQuestionState] = useState(() => {
     const state: { [key: number]: string[] } = {};
     questions.forEach((question, index) => {
-      state[question] = [];
+      state[question.id] = [];
     });
     return state;
   });
+  const [question, setQuestion] = useState(questions[0]);
 
   const [questionElements, setQuestionElements] = useState<CardElement>({
+    answer: "qq",
     frontElements: [],
     backElements: [],
     answerMethod: "write",
   });
+  const [flipable, setFlippable] = useState(false);
+  const [flipCountdown, setFlipCountdown] = useState(-1);
+  const intervalRef = useRef<NodeJS.Timeout | number>(null);
+  const [autoFlip, setAutoFlip] = useState({
+    value: false,
+    version: 1,
+  });
+  const [isAnswered, setIsAnswered] = useState(false);
+
+  useEffect(() => {
+    if (questionElements.flipType === "manual") {
+      setFlippable(true);
+    } else if (questionElements.flipType === "answer" && isAnswered) {
+      setFlippable(true);
+    } else if (questionElements.flipType === "answerAuto" && isAnswered) {
+      setFlippable(true);
+      setAutoFlip((prev) => ({
+        value: true,
+        version: prev.version + 1,
+      }));
+    } else if (
+      typeof questionElements.flipType === "number" &&
+      questionElements.flipType > 0
+    ) {
+      setFlipCountdown(questionElements.flipType);
+    }
+  }, [questionElements, isAnswered]);
+
+  useEffect(() => {
+    if (flipCountdown > 0) {
+      intervalRef.current = setInterval(() => {
+        setFlipCountdown((prev) => {
+          if (prev <= 1) {
+            setFlippable(true);
+            intervalRef.current && clearInterval(intervalRef.current);
+            return -1;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [flipCountdown]);
 
   const getQuestion = (reOrderQuestion: boolean = true) => {
     resetCardState();
@@ -103,32 +154,23 @@ export default function PracticePage() {
         } while (questionState[newOrder[0]].length >= method.length);
       }
 
-      // while (questionState[newOrder[0]].length >= method.length) {
-      //   newOrder = [...newOrder.slice(1), newOrder[0]];
-      //   newOrder = reorderArrayWithWeight(newOrder, shuffleNumber.current);
-      //   shuffleNumber.current -= 1;
-      //   if (shuffleNumber.current === 0) {
-      //     shuffleNumber.current = questions.length - 1;
-      //   }
-      // }
-
       // có order Hợp lệ
       setQuestionOrder(newOrder); // chỉ set 1 lần sau cùng
+      console.log("newOrder", newOrder, questionState);
 
       const questionId = newOrder[0];
       const currentMethod = method[questionState[questionId].length];
-      const question = makeQuestion(currentMethod, newOrder[0]);
+      const wordInfo = questions.find((q) => q.id === questionId);
+      const question = makeQuestion(currentMethod, wordInfo!);
+      const questionInfo = questions.find((q) => q.id === newOrder[0]);
       setCurrentQuestionId(newOrder[0]);
+      questionInfo && setQuestion(questionInfo);
       setQuestionElements(question);
       setCurrentMethod(currentMethod);
       // return getQuestion(newOrder[0]); // hoặc gọi callback gì đó nếu cần
     } else setFinalQuestion(true);
   };
 
-  const question = useMemo(
-    () => questions[questionOrder[0]],
-    [questionOrder[0]]
-  );
   const [questionType, setQuestionType] = useState("");
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [failedOnce, setFailedOnce] = useState(false);
@@ -157,9 +199,12 @@ export default function PracticePage() {
   const checkResult = async (anser: string) => {
     // Kiểm tra và hiển thị kết quả hoặc yêu cầu nhập lại
 
-    if (anser.toLocaleLowerCase() === "a".toLocaleLowerCase()) {
+    if (
+      anser.toLocaleLowerCase() === questionElements.answer.toLocaleLowerCase()
+    ) {
       setIsCorrect(true);
       setFailedOnce(false);
+      setIsAnswered(true);
       const newState = [...questionState[currentQuestionId], currentMethod];
       setQuestionState((prev) => ({
         ...prev,
@@ -173,6 +218,7 @@ export default function PracticePage() {
         //   setIsCorrect(null);
         // }, 1000);
       } else {
+        setIsAnswered(true);
         setIsCorrect(false);
         const newState = questionState[currentQuestionId].slice(0, -1);
         setQuestionState((prev) => ({
@@ -226,6 +272,10 @@ export default function PracticePage() {
 
   const resetCardState = () => {
     isFlipped.value = false;
+    setFlippable(false);
+    setFlipCountdown(-1);
+    setAutoFlip({ value: false, version: 0 });
+    setIsAnswered(false);
     setIsCorrect(null);
     setFailedOnce(false);
     cardHeight[1](0);
@@ -238,10 +288,10 @@ export default function PracticePage() {
 
   const handleContinue = () => {
     resetCardState();
-    const newQuestions = [1, 2, 3, 4, 5];
+    const newQuestions = testData;
     const newQuestionState: { [key: number]: string[] } = {};
     newQuestions.map((question, index) => {
-      newQuestionState[question] = [];
+      newQuestionState[question.id] = [];
     });
     setQuestions(newQuestions);
 
@@ -251,10 +301,10 @@ export default function PracticePage() {
   useEffect(() => {
     const newQuestionState: { [key: number]: string[] } = {};
     questions.map((question, index) => {
-      newQuestionState[question] = [];
+      newQuestionState[question.id] = [];
     });
 
-    setQuestionOrder(questions);
+    setQuestionOrder(questions.map((question) => question.id));
     shuffleNumber.current = questions.length - 1;
     setFinalQuestion(false);
     setCompleted(false);
@@ -335,7 +385,7 @@ export default function PracticePage() {
       </View>
       <Animated.View
         className="flex-1 justify-between"
-        key={question + "-" + currentMethod}
+        key={currentQuestionId + "-" + currentMethod}
         entering={SlideInRight}
         exiting={SlideOutLeft}
       >
@@ -388,10 +438,12 @@ export default function PracticePage() {
                 </View>
               ) : (
                 <FlipCard
-                  disabled={false}
+                  initialFlipped={autoFlip}
+                  disabled={!flipable}
                   duration={500}
                   FrontSide={
                     <CardFrontSide
+                      hideText={!isAnswered}
                       question={question}
                       cardHeight={cardHeight}
                       cardElements={questionElements}
@@ -399,6 +451,7 @@ export default function PracticePage() {
                   }
                   BackSide={
                     <CardBackSide
+                      hideText={!isAnswered}
                       question={question}
                       cardHeight={cardHeight}
                       cardElements={questionElements}

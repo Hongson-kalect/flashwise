@@ -1,19 +1,26 @@
+import { QuestionType } from "@/app/screens/Practice/example";
 import { useTheme } from "@/providers/Theme";
+import { playAudio } from "@/utils/audioPlay";
+import { Audio } from "expo-av";
+import { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import AppIcon from "../AppIcon";
 
 type Props = {
   isOptionSound: boolean;
+  question: QuestionType;
 };
 const CardOption = (props: Props) => {
   const { theme } = useTheme();
+  const sound = useState<Audio.Sound | null>(null);
+
   return (
     <View className="flex-row items-center justify-between px-4 h-12">
       {props.isOptionSound ? (
         <TouchableOpacity
           style={{ backgroundColor: theme.primary }}
-          onPress={() => alert("hello")}
-          className="h-12 w-12 rounded-lg items-center justify-center"
+          onPress={() => playAudio(props.question.sound, sound)}
+          className="h-10 w-10 rounded-lg items-center justify-center"
         >
           <AppIcon branch="feather" color="white" size={16} name={"volume-2"} />
         </TouchableOpacity>

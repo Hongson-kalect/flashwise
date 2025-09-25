@@ -16,15 +16,18 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { QuestionType } from "../example";
 
 type Props = {
   cardHeight: [number, React.Dispatch<React.SetStateAction<number>>];
-  question: any;
+  question: QuestionType;
   questionIndex?: number;
   cardElements: CardElement;
+  hideText?: boolean;
 };
 
 const CardFrontSide = ({
+  hideText = false,
   cardHeight,
   question,
   questionIndex,
@@ -32,6 +35,10 @@ const CardFrontSide = ({
 }: Props) => {
   const { theme } = useTheme();
   const { width, height } = useWindowDimensions();
+  const [word, setWord] = useMemo(
+    () => [question.word, question.word],
+    [question.word]
+  );
 
   return (
     <View
@@ -65,7 +72,10 @@ const CardFrontSide = ({
         }}
       />
       <View className="mt-4 mb-2">
-        <CardOption isOptionSound={!!cardElements.frontOptionSound} />
+        <CardOption
+          question={question}
+          isOptionSound={!!cardElements.frontOptionSound}
+        />
       </View>
 
       {cardElements.frontTitle ? (
@@ -88,6 +98,7 @@ const CardFrontSide = ({
         return (
           <View key={index}>
             {cardElementMapping[item]({
+              hideText,
               wrapperStyle,
               textStyle,
               question,

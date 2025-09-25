@@ -138,6 +138,8 @@ export type CardOptions = {
 };
 
 export type CardElement = {
+  flipType?: "manual" | "lock" | "answer" | "answerAuto" | number;
+  answer: string;
   frontElements: CARD_ELEMENT[];
   backElements: CARD_ELEMENT[];
   answerMethod: keyof typeof answerMethod;

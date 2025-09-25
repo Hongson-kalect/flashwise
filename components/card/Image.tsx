@@ -1,9 +1,11 @@
+import { QuestionType } from "@/app/screens/Practice/example";
 import { useState } from "react";
 import { Image, TextStyle, View, ViewStyle } from "react-native";
 
 type Props = {
   wrapperStyle?: ViewStyle;
   textStyle?: TextStyle;
+  question: QuestionType;
 };
 
 const CardImage = (props: Props) => {
@@ -22,7 +24,7 @@ const CardImage = (props: Props) => {
       <View style={{ height: imageWidth || 180, width: "100%" }}>
         <Image
           className="w-full h-full"
-          source={{ uri: "https://picsum.photos/900/1600" }}
+          source={{ uri: props.question.image }}
           resizeMode="cover"
         />
       </View>

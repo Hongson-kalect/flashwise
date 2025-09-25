@@ -1,9 +1,10 @@
+import { QuestionType } from "@/app/screens/Practice/example";
 import { TextStyle, View, ViewStyle } from "react-native";
 import AppText from "../AppText";
 
 type Props = {
   hideText?: boolean;
-  question: any;
+  question: QuestionType;
   wrapperStyle?: ViewStyle;
   textStyle?: TextStyle;
 };
@@ -11,13 +12,25 @@ type Props = {
 const CardCollaboration = (props: Props) => {
   return (
     <View className="mt-1 px-4 py-2">
-      <AppText color="subText2" size={"xs"} font="MulishLightItalic">
-        Lorem ipsum dolor sit amet, Lorem ipsum dolor dolor sit amet,{" "}
-        <AppText size={"xs"} font="MulishBoldItalic">
-          strauberry cake
-        </AppText>{" "}
-        adipiscing elit.
-      </AppText>
+      {props.question.example.split(" ").map((text, index) => {
+        if (text === props.question.word)
+          return (
+            <AppText key={index} color="subText2" size={"xs"} font="MulishBold">
+              {text}{" "}
+            </AppText>
+          );
+        else
+          return (
+            <AppText
+              key={index}
+              color="subText2"
+              size={"xs"}
+              font="MulishLightItalic"
+            >
+              {text}{" "}
+            </AppText>
+          );
+      })}
     </View>
   );
 };

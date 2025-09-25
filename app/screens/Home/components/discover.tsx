@@ -8,6 +8,7 @@ import { useState } from "react";
 import { View } from "react-native";
 import CardBackSide from "../../Practice/components/backSide";
 import CardFrontSide from "../../Practice/components/frontSide";
+import { testData } from "../../Practice/example";
 
 type CardType = keyof typeof qq;
 const cardTypes = Object.keys(qq);
@@ -41,13 +42,16 @@ const Discover = () => {
 
       <View className="my-8 items-center ">
         <AppCarousel
+          data={testData}
           mode="horizontal-stack"
           key={"discover-" + cardHeight.toString()}
           height={cardHeight[0] + 40}
-          renderItem={({ index }) => {
+          renderItem={({ data, index }) => {
             const cardElement: CardElement = {
               frontElements: qq.full.elements,
               backElements: backCardInfo.translation,
+              frontOptionSound: true,
+              backOptionSound: true,
               answerMethod: "none",
             };
             const cardType = cardTypes[index] as CardType; // Bình thường sẽ là check level, check vòng lặp của từ
@@ -59,7 +63,7 @@ const Discover = () => {
                   BackSide={
                     <CardBackSide
                       cardElements={cardElement}
-                      question={{}}
+                      question={data}
                       questionIndex={1}
                       cardHeight={cardHeight}
                     />
@@ -67,7 +71,7 @@ const Discover = () => {
                   FrontSide={
                     <CardFrontSide
                       cardElements={cardElement}
-                      question={{}}
+                      question={data}
                       questionIndex={1}
                       cardHeight={cardHeight}
                     />

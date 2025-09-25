@@ -12,7 +12,7 @@ const deviceWidth = Dimensions.get("window").width;
 type Props = {
   width?: number;
   height?: number;
-  data?: number[];
+  data: any[];
   loop?: boolean;
   mode?: "horizontal-stack" | "vertical-stack" | "parallax" | undefined;
   dots?: boolean;
@@ -29,6 +29,7 @@ function AppCarousel({
   loop = true,
   mode = "parallax",
   dots = true,
+  data,
   ...props
 }: Props) {
   const ref = React.useRef<ICarouselInstance>(null);
