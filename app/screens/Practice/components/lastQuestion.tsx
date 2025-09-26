@@ -3,9 +3,10 @@ import AppText from "@/components/AppText";
 import { reorderArrayWithWeight } from "@/utils/arrayModifier";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
+import { QuestionType } from "../example";
 
 type Props = {
-  questions: any[];
+  questions: QuestionType[];
   onFinish: () => void;
 };
 const LastQuestion = ({ questions, onFinish }: Props) => {
@@ -21,11 +22,13 @@ const LastQuestion = ({ questions, onFinish }: Props) => {
   const [wrongCount, setWrongCount] = useState(0);
   const answerMap = useMemo(() => {
     const qq: { question: number; right: string; left: string }[] = [];
+
+    //Tùy loại có thẻ nối audio, nghĩa, hình ảnh,...
     questions.forEach((item) => {
       qq.push({
-        question: item,
-        right: item + " right",
-        left: item + " left",
+        question: item.id,
+        right: item.word,
+        left: item.translation,
       });
     });
 
@@ -169,7 +172,15 @@ const SelectItem = (props: ItemProps) => {
       //     width: "100%",
       //   }}
       onPress={props.onPress}
-      type={props.wrong ? "error" : props.selected ? "primary" : "white"}
+      type={
+        props.wrong
+          ? "error"
+          : props.disabled
+          ? "success"
+          : props.selected
+          ? "primary"
+          : "white"
+      }
     >
       <AppText
         color={

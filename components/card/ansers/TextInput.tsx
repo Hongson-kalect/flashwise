@@ -1,13 +1,15 @@
+import AppIcon from "@/components/AppIcon";
 import { fontFamily } from "@/configs/fonts";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Keyboard,
   Pressable,
   StyleSheet,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 
@@ -19,7 +21,9 @@ const CardTextInput = (props: Props) => {
   const { theme } = useTheme();
   const { setGlobalModal } = useModalStore();
   const [modalInput, setModalInput] = useState(false);
+  const inputRef = useRef<TextInput>(null);
   const [value, setValue] = useState("");
+  const [isFocusing, setIsFocusing] = useState(false);
 
   const translateY = useState(new Animated.Value(0))[0];
 
@@ -69,50 +73,72 @@ const CardTextInput = (props: Props) => {
             bottom: 0,
             left: 0,
             right: 0,
-            paddingHorizontal: 8,
             paddingTop: 4,
             paddingBottom: 16,
-            backgroundColor: theme.background,
             borderColor: theme.primary,
           },
         ]}
       >
         <View className="items-end w-full mb-1">
+          <TouchableOpacity
+            style={{
+              marginRight: 8,
+              backgroundColor: theme.primary,
+              padding: 10,
+              borderRadius: 999,
+            }}
+            onPress={() =>
+              isFocusing ? inputRef.current?.blur() : inputRef.current?.focus()
+            }
+          >
+            <AppIcon
+              branch="antd"
+              name={isFocusing ? "close" : "edit"}
+              size={20}
+              color={"white"}
+            />
+          </TouchableOpacity>
           {/* <AppText size={"sm"} color="subText1" font="MulishLightItalic">
             Nhập lại từ được hiển thị
           </AppText> */}
         </View>
-        <Pressable
-          style={[
-            styles.inputWrapper,
-            {
-              borderColor: theme.primary,
-              borderWidth: 1.5,
-              borderRadius: 999,
-              paddingHorizontal: 16,
-            },
-          ]}
-          disabled={!modalInput}
-          onPress={handleInput}
-        >
-          <TextInput
-            autoCorrect={false}
-            autoComplete="off"
-            autoCapitalize="none"
-            submitBehavior="blurAndSubmit"
-            onSubmitEditing={() => props.onAnser(value)}
-            enterKeyHint="done"
-            readOnly={modalInput}
-            value={value}
-            onChangeText={setValue}
-            style={{
-              fontFamily: fontFamily.MulishSemiBold,
-              fontSize: 20,
-              borderRadius: 0,
-            }}
-            placeholder="Nhập lại từ này..."
-          />
-        </Pressable>
+        <View style={{ paddingHorizontal: 8 }}>
+          <Pressable
+            style={[
+              styles.inputWrapper,
+              {
+                borderColor: theme.primary,
+                borderWidth: 1.5,
+                borderRadius: 999,
+                paddingHorizontal: 16,
+                backgroundColor: theme.background,
+              },
+            ]}
+            disabled={!modalInput}
+            onPress={handleInput}
+          >
+            <TextInput
+              ref={inputRef}
+              autoCorrect={false}
+              autoComplete="off"
+              autoCapitalize="none"
+              submitBehavior="blurAndSubmit"
+              onSubmitEditing={() => props.onAnser(value)}
+              onFocus={() => setIsFocusing(true)}
+              onBlur={() => setIsFocusing(false)}
+              enterKeyHint="done"
+              readOnly={modalInput}
+              value={value}
+              onChangeText={setValue}
+              style={{
+                fontFamily: fontFamily.MulishSemiBold,
+                fontSize: 20,
+                borderRadius: 0,
+              }}
+              placeholder="Nhập lại từ này..."
+            />
+          </Pressable>
+        </View>
       </Animated.View>
     </View>
   );

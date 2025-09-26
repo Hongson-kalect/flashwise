@@ -7,9 +7,11 @@ type Props = {
   textStyle?: TextStyle;
   question: QuestionType;
   questionIndex: number;
+  hideText?: boolean;
 };
 
 const CardTranslated = (props: Props) => {
+  if (props.hideText) return null;
   return (
     <View className="px-2 mb-4">
       <View className="flex-row gap-2 items-center">

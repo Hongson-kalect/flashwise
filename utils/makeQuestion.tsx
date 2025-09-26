@@ -9,13 +9,19 @@ import {
   frontCardTitle,
   qq,
 } from "@/configs/cardOptions";
+import userState from "@/stores/userStateStore";
 
 export function makeQuestion(
   method: string,
   question: QuestionType
 ): CardElement {
   let questionType = qq.hideText;
-  switch (method) {
+  const { hearable, talkable } = userState.getState();
+  let appliedMethod = method;
+  if (!talkable && appliedMethod === "speak") appliedMethod = "write";
+  if (!hearable && appliedMethod === "listen") appliedMethod = "write";
+
+  switch (appliedMethod) {
     case "write": {
       const type = "hideText"; // Có list 1 loạt, ramdom hoặc dựa vào gì đó
       questionType = qq[type]; // Có list 1 loạt, ramdom hoặc dựa vào gì đó

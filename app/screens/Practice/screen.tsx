@@ -11,10 +11,10 @@ import {
   View,
 } from "react-native";
 // import FlipCard from "react-native-flip-card";
-import AppButton from "@/components/AppButton";
 import CardTextInput from "@/components/card/ansers/TextInput";
 import { CardElement } from "@/configs/cardOptions";
 import useModalStore from "@/stores/modalStore";
+import useUserStateStore from "@/stores/userStateStore";
 import { reorderArrayWithWeight } from "@/utils/arrayModifier";
 import { makeQuestion } from "@/utils/makeQuestion";
 import { router } from "expo-router";
@@ -33,7 +33,7 @@ import {
 import CardBackSide from "./components/backSide";
 import CardFrontSide from "./components/frontSide";
 import LastQuestion from "./components/lastQuestion";
-import { testData } from "./example";
+import { QuestionType, testData } from "./example";
 
 export default function PracticePage() {
   const [questions, setQuestions] = useState(testData);
@@ -47,7 +47,8 @@ export default function PracticePage() {
   );
   const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(questions[0].id);
-  const [method] = useState(["write", "listen"]);
+  const [method] = useState(["write"]);
+  const { hearable, talkable } = useUserStateStore();
   const [currentMethod, setCurrentMethod] = useState(method[0]);
   const [questionState, setQuestionState] = useState(() => {
     const state: { [key: number]: string[] } = {};
@@ -111,6 +112,11 @@ export default function PracticePage() {
     };
   }, [flipCountdown]);
 
+  useEffect(() => {
+    if (!talkable && !hearable) return;
+    getQuestion(false); // Lấy câu hỏi và ko làm xáo trộn thứ tự
+  }, [talkable, hearable]);
+
   const getQuestion = (reOrderQuestion: boolean = true) => {
     resetCardState();
 
@@ -156,7 +162,6 @@ export default function PracticePage() {
 
       // có order Hợp lệ
       setQuestionOrder(newOrder); // chỉ set 1 lần sau cùng
-      console.log("newOrder", newOrder, questionState);
 
       const questionId = newOrder[0];
       const currentMethod = method[questionState[questionId].length];
@@ -288,29 +293,28 @@ export default function PracticePage() {
 
   const handleContinue = () => {
     resetCardState();
-    const newQuestions = testData;
-    const newQuestionState: { [key: number]: string[] } = {};
-    newQuestions.map((question, index) => {
-      newQuestionState[question.id] = [];
-    });
+    const newQuestions = [...testData];
+    initQuestionState(newQuestions);
     setQuestions(newQuestions);
 
     // api gọi câu hỏi mới
   };
 
-  useEffect(() => {
+  const initQuestionState = (questions: QuestionType[]) => {
+    setQuestionOrder(questions.map((question) => question.id));
     const newQuestionState: { [key: number]: string[] } = {};
     questions.map((question, index) => {
       newQuestionState[question.id] = [];
     });
 
-    setQuestionOrder(questions.map((question) => question.id));
     shuffleNumber.current = questions.length - 1;
     setFinalQuestion(false);
     setCompleted(false);
     setCompletedQuestions([]);
     setQuestionState(newQuestionState);
+  };
 
+  useEffect(() => {
     getQuestion(false);
   }, [questions]);
 
@@ -385,7 +389,7 @@ export default function PracticePage() {
       </View>
       <Animated.View
         className="flex-1 justify-between"
-        key={currentQuestionId + "-" + currentMethod}
+        key={currentQuestionId + "-" + hearable + "-" + talkable}
         entering={SlideInRight}
         exiting={SlideOutLeft}
       >
@@ -402,12 +406,17 @@ export default function PracticePage() {
           <View className="flex-1 px-2">
             <View className="items-center mt-6">
               <View className="flex-row gap-2">
-                <AppButton onPress={() => checkResult("A")}>
+                {/* <AppButton onPress={() => checkResult(questionElements.answer)}>
                   <AppText color="white">True {currentQuestionId}</AppText>
                 </AppButton>
-                <AppButton onPress={() => checkResult("B")} type="error">
+                <AppButton
+                  onPress={() =>
+                    checkResult(questionElements.answer + "-error")
+                  }
+                  type="error"
+                >
                   <AppText color="white">False {currentQuestionId}</AppText>
-                </AppButton>
+                </AppButton> */}
               </View>
               {finalQuestion ? (
                 <View>
