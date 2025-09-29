@@ -9,8 +9,9 @@ const DiscoverSuggesstion = () => {
   return (
     <View className="rounded-lg">
       <AppCarousel
+        data={[...new Array(6).keys()]}
         width={width - 21}
-        height={width - 21}
+        height={((width - 21) / 6) * 4}
         renderItem={(value) => <SuggesstionItem item={value} />}
       />
 

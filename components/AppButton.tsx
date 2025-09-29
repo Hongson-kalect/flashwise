@@ -10,7 +10,14 @@ type Props = {
   onPress: () => void;
   title?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl";
-  type?: "primary" | "secondary" | "success" | "error" | "warning" | "white";
+  type?:
+    | "primary"
+    | "secondary"
+    | "success"
+    | "error"
+    | "warning"
+    | "white"
+    | "disabled";
   style?: ViewStyle;
   containerStyle?: ViewStyle;
   children?: React.ReactNode;

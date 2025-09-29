@@ -9,6 +9,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
 import Discover from "./components/discover";
 import HomeHeader from "./components/header";
+import LearnNew from "./components/learnNew";
 import Relearn from "./components/relearn";
 
 export default function HomePage() {
@@ -36,7 +37,7 @@ export default function HomePage() {
         </View>
 
         <View className="px-3 mt-6">
-          <View
+          {/* <View
             style={{
               height: 1,
               backgroundColor: theme.subText3,
@@ -50,9 +51,9 @@ export default function HomePage() {
                 width: "80%",
               }}
             ></View>
-          </View>
+          </View> */}
           <LinearGradient
-            colors={[theme.success + "33", "transparent"]}
+            colors={[theme.success + "66", "transparent"]}
             // Tôi muốn nó có 2 màu nhưng có thể kiểm soát được độ rộng của màu đầu tiên ví dụ 90% màu 1 và 10% màu 2
             // The locations array is used to define the gradient stops.
             // The first value is the starting point of the gradient (0 being the left side and 1 being the right side).
@@ -63,12 +64,13 @@ export default function HomePage() {
             end={{ x: 1, y: 0 }}
             style={{
               backgroundColor: theme.background,
-              borderRightWidth: 1,
-              borderLeftWidth: 1,
-              borderLeftColor: theme.success,
-              borderRightColor: theme.subText3,
+              borderRadius: 10,
+              elevation: 5,
+              borderWidth: 0.5,
+              borderColor: theme.success,
+              shadowColor: theme.success,
             }}
-            className="flex-row items-center gap-4 px-2 py-1 justify-between"
+            className="flex-row items-center gap-4 px-4 py-2 justify-between"
           >
             <View>
               <AppText size={"xs"} color="subText2">
@@ -76,83 +78,19 @@ export default function HomePage() {
               </AppText>
 
               <View className="p-1">
-                <AppText size={"sm"} font="MulishBold">
-                  10 từ vựng mới
-                </AppText>
+                <AppText font="MulishBold">10 từ vựng mới</AppText>
               </View>
             </View>
             <View className="pr-4 p-2 items-center justify-center">
               <AppIcon branch="feather" size={20} name="refresh-ccw" />
             </View>
           </LinearGradient>
-          <View style={{ height: 1, backgroundColor: theme.subText3 }}>
-            <View
-              style={{
-                height: 1,
-                backgroundColor: theme.success,
-                width: "80%",
-              }}
-            ></View>
-          </View>
-
-          {/* <View
-          className="p-4 rounded-xl mt-1"
-          style={{ backgroundColor: theme.text }}
-        >
-          <AppText
-            style={{ color: theme.background }}
-            font="MulishSemiBold"
-            size={"lg"}
-          >
-            Mục tiêu
-          </AppText>
-
-          <View className="mt-4">
-            <View className="flex-row justify-between items-center">
-              <AppText color="subText3" size={"sm"}>
-                Học từ mới
-              </AppText>
-              <AppText color="subText3" size={"sm"}>
-                2/10
-              </AppText>
-            </View>
-
-            <View>
-              <View className="bg-gray-200 h-2 rounded-full mt-1">
-                <View
-                  style={{ width: "20%", backgroundColor: theme.success }}
-                  className="h-full rounded-full"
-                ></View>
-              </View>
-            </View>
-          </View>
-
-          <View className="mt-4">
-            <View className="flex-row justify-between items-center">
-              <AppText color="subText3" size={"sm"}>
-                Online
-              </AppText>
-              <AppText color="subText3" size={"sm"}>
-                5/10 phút
-              </AppText>
-            </View>
-
-            <View>
-              <View className="bg-gray-200 h-2 rounded-full mt-1">
-                <View
-                  style={{ width: "50%", backgroundColor: theme.success }}
-                  className="h-full rounded-full"
-                ></View>
-              </View>
-            </View>
-          </View>
-
-          <View className="h-2"></View>
-        </View> */}
         </View>
 
         <View className="px-3 mt-8">
           <Relearn />
+          <View className="h-4"></View>
+          <LearnNew />
 
           <View className="mt-10">
             <AppTitle title="Mini games" />

@@ -47,15 +47,20 @@ const Relearn = () => {
             </AppText>
           </View>
 
-          <View className="mt-2 mb-1 w-40">
+          <View className="mt-2 mb-1 w-44">
             <AppButton
               onPress={() => {
                 router.push("/screens/Practice/screen");
               }}
-              type="success"
+              // type="success"
+              type="disabled"
+              size="lg"
+              disabled
             >
-              <AppText font="MulishSemiBold" color="white">
-                Ôn tập ngay
+              {/* <AppText font={"MulishSemiBold"} color="white" size={"lg"}> */}
+              <AppText font={"MulishRegularItalic"} color="white" size={"lg"}>
+                1 Ngày 8 Giờ
+                {/* Ôn tập ngay */}
               </AppText>
             </AppButton>
           </View>
