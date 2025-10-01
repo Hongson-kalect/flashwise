@@ -33,7 +33,7 @@ const MenuModal = (modal: Props) => {
                   ? "transparent"
                   : "rgba(0, 0, 0, 0.1)",
             }}
-            className="py-3 px-2 rounded-lg"
+            className="py-3 px-2 rounded-lg gap-2"
             onPress={() => {
               menu.onPress?.();
               if (menu.isCloseAfterPress !== false) setGlobalModal(null);

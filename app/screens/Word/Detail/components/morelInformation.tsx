@@ -1,13 +1,13 @@
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import {
+  CreateWordInputModalProps,
+  CreateWordRadioModalProps,
+} from "@/interfaces/word";
 import { useTheme } from "@/providers/Theme";
 import { Entypo } from "@expo/vector-icons";
 import { LayoutChangeEvent, View } from "react-native";
 import Information from "../../../../../components/output/information";
-import {
-  CreateWordInputModalProps,
-  CreateWordRadioModalProps,
-} from "../../Create/screen";
 
 type Props = {
   mode?: "create" | "update" | "view";

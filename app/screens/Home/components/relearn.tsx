@@ -47,7 +47,7 @@ const Relearn = () => {
             </AppText>
           </View>
 
-          <View className="mt-2 mb-1 w-44">
+          <View className="mt-2 mb-1 w-full flex-row items-center gap-4">
             <AppButton
               onPress={() => {
                 router.push("/screens/Practice/screen");
@@ -59,10 +59,13 @@ const Relearn = () => {
             >
               {/* <AppText font={"MulishSemiBold"} color="white" size={"lg"}> */}
               <AppText font={"MulishRegularItalic"} color="white" size={"lg"}>
-                1 Ngày 8 Giờ
-                {/* Ôn tập ngay */}
+                {/* 1 Ngày 8 Giờ */}
+                Ôn tập sau
               </AppText>
             </AppButton>
+            <AppText font="MulishBoldItalic" color="error" size={"lg"}>
+              1 Ngày 8:40:32
+            </AppText>
           </View>
 
           {/* <View className="mt-2">

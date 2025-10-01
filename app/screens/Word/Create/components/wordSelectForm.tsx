@@ -2,9 +2,10 @@ import AppButton from "@/components/AppButton";
 import { AppDivider } from "@/components/AppDivider";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import AppSearch from "@/components/input/AppSearch";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
-import { FlatList, ScrollView, Text, TextInput, View } from "react-native";
+import { FlatList, ScrollView, Text, View } from "react-native";
 import WordSearchItem from "./wordSearchItem";
 
 const WordSelectForm = () => {
@@ -14,7 +15,7 @@ const WordSelectForm = () => {
       <View className="px-4 justify-center flex-row items-center gap-2">
         {/* <View className="h-8"> */}
         <FlatList
-          style={{ paddingVertical: 24, flex: 1, borderRadius: 8 }}
+          style={{ paddingTop: 24, paddingBottom: 8, flex: 1, borderRadius: 8 }}
           data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
           renderItem={({ item, index }) => <TagItem key={index} />}
           horizontal
@@ -37,10 +38,10 @@ const WordSelectForm = () => {
         </AppButton>
       </View>
 
-      <View className="px-4">
-        <View
+      <View className="px-4 mt-3">
+        {/* <View
           style={{ elevation: 5, shadowColor: "black" }}
-          className="rounded-full bg-gray-100 py-1 items-center gap-2 px-4 flex-row"
+          className="rounded-full bg-gray-100 py-1 items-center gap-2 px-4 flex-row mb-4"
         >
           <AppIcon branch="feather" name="search" />
           <TextInput
@@ -49,7 +50,8 @@ const WordSelectForm = () => {
             className="flex-1 text-lg"
             placeholder="Tìm kiếm"
           />
-        </View>
+        </View> */}
+        <AppSearch />
 
         {/* <View className="px-4">
           <AppSuggestion

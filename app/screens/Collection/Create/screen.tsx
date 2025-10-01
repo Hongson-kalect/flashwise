@@ -114,7 +114,7 @@ const CreateCollection = () => {
                         borderColor: theme.secondary,
                         backgroundColor: theme.secondary + "10",
                       }}
-                      className="h-40 w-40 border border-dashed  rounded-lg p-4"
+                      className="h-40 w-60 border border-dashed  rounded-lg p-4"
                     >
                       <AppText color="subText2" size={"xs"}>
                         Hình minh họa
@@ -167,6 +167,8 @@ const CreateCollection = () => {
                   </View>
                 </TouchableOpacity>
               </View>
+
+              {/* <CollectionCreateOptions /> */}
 
               {/* Word list */}
               {/* <AppDivider style={{ marginTop: 16 }} /> */}

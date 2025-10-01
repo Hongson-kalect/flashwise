@@ -13,6 +13,7 @@ type Props = {
   onLabelLayout?: (event: LayoutChangeEvent) => void;
   placeholder?: string;
   icon?: React.ReactNode;
+  alignItem?: "flex-start" | "flex-end" | "center";
 };
 const Information = ({
   label,
@@ -23,6 +24,7 @@ const Information = ({
   onLabelLayout,
   placeholder,
   icon,
+  alignItem = "flex-start",
 }: Props) => {
   const { theme } = useTheme();
 
@@ -68,7 +70,7 @@ const Information = ({
           </>
         )}
 
-        <View className="flex-1">
+        <View className="flex-1" style={{ alignItems: alignItem }}>
           {value ? (
             typeof value === "string" ? (
               <AppText>{value}</AppText>
