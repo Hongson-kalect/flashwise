@@ -63,7 +63,16 @@ const Relearn = () => {
                 Ôn tập sau
               </AppText>
             </AppButton>
-            <AppText font="MulishBoldItalic" color="error" size={"lg"}>
+            <AppText
+              style={{
+                textShadowColor: "#f2f2f2",
+                textShadowOffset: { width: 0, height: 0 },
+                textShadowRadius: 1,
+              }}
+              font="MulishMediumItalic"
+              color="error"
+              size={"lg"}
+            >
               1 Ngày 8:40:32
             </AppText>
           </View>
