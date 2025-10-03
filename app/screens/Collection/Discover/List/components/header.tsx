@@ -3,7 +3,7 @@ import AppIcon from "@/components/AppIcon";
 import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
 import { router } from "expo-router";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { View } from "react-native";
 
 type Props = {
@@ -50,6 +50,38 @@ const DiscoverListHeader = ({ mode, setMode }: Props) => {
               />
               <AppText color="white">My upload</AppText>
             </AppButton>
+
+            {/* <Menu
+              visible={menuVisible}
+              onDismiss={() => setMenuVisible(false)}
+              style={{
+                backgroundColor: "white",
+                borderRadius: 8,
+                elevation: 4,
+              }}
+              anchorPosition="bottom"
+              theme={{
+                colors: {
+                  primary: "#000",
+                  background: "white",
+                  backdrop: "white",
+                  accent: "white",
+                },
+              }}
+              anchor={
+                <AppIcon
+                  onPress={() => setMenuVisible(true)}
+                  branch="feather"
+                  name="menu"
+                  size={28}
+                  color="black"
+                />
+              }
+            >
+              <Menu.Item title="Delete" onPress={() => {}}></Menu.Item>
+              <Menu.Item title="Delete" onPress={() => {}}></Menu.Item>
+              <Menu.Item title="Delete" onPress={() => {}}></Menu.Item>
+            </Menu> */}
           </View>
         }
       />

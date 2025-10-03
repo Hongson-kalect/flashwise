@@ -58,7 +58,7 @@ const Relearn = () => {
               disabled
             >
               {/* <AppText font={"MulishSemiBold"} color="white" size={"lg"}> */}
-              <AppText font={"MulishRegularItalic"} color="white" size={"lg"}>
+              <AppText font={"MulishRegular"} color="white" size={"lg"}>
                 {/* 1 Ngày 8 Giờ */}
                 Ôn tập sau
               </AppText>
@@ -69,7 +69,7 @@ const Relearn = () => {
                 textShadowOffset: { width: 0, height: 0 },
                 textShadowRadius: 1,
               }}
-              font="MulishMediumItalic"
+              font="MulishLight"
               color="error"
               size={"lg"}
             >

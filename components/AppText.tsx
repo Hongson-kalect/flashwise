@@ -23,7 +23,8 @@ type Props = {
     | "subText1"
     | "subText2"
     | "subText3"
-    | "white";
+    | "white"
+    | "disabled";
 
   numberOfLines?: number;
   onLayout?: (event: LayoutChangeEvent) => void;

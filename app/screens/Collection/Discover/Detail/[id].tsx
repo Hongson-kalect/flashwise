@@ -1,9 +1,14 @@
+import AppButton from "@/components/AppButton";
+import AppIcon from "@/components/AppIcon";
+import AppText from "@/components/AppText";
+import AppTitle from "@/components/AppTitle";
+import TagItem from "@/components/TagItem";
 import { useTheme } from "@/providers/Theme";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { TextInput, View } from "react-native";
+import { ScrollView, TextInput, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import CollectionTags from "../../components/tags";
+import CollectionImage from "../../components/image";
 import CollectionWordList from "../../components/wordList";
 import DiscoverDetailHeader from "./components/header";
 
@@ -22,8 +27,16 @@ const DiscoverDetail = () => {
         <DiscoverDetailHeader mode={mode} setMode={(mode) => setMode(mode)} />
       </View>
 
-      <KeyboardAwareScrollView style={{ paddingHorizontal: 12 }}>
-        <View></View>
+      <KeyboardAwareScrollView style={{ paddingHorizontal: 8 }}>
+        <View className="flex-row items-center gap-2">
+          <View className="w-6 h-6 rounded-full bg-gray-200 items-center justify-center">
+            <AppIcon name="user" branch="feather" size={12} color="subText3" />
+          </View>
+          <AppText size={"xs"} color="subText2">
+            Hồng Sơn
+          </AppText>
+        </View>
+
         <TextInput
           value={"Bảng Cửu Chương"}
           multiline
@@ -40,18 +53,128 @@ const DiscoverDetail = () => {
           }}
           placeholderTextColor={"#C4C4C4"}
         />
-
-        <View className="mt-4">
-          <CollectionTags />
+        <View>
+          <CollectionImage source="https://picsum.photos/1200/800" />
         </View>
+
+        <View>
+          <View className="flex-row gap-2 items-center justify-between">
+            <View className="flex-row gap-2 flex-wrap mt-2 flex-1">
+              {[1, 2, 3, 4].map((item, index) => (
+                <TagItem key={index}>{"item " + item}</TagItem>
+              ))}
+            </View>
+
+            <View className="items-end mt-2 gap-2">
+              <View>
+                <AppButton
+                  size="xs"
+                  type="secondary"
+                  outline
+                  onPress={() => {}}
+                >
+                  <AppIcon
+                    branch="feather"
+                    name="star"
+                    size={12}
+                    color="secondary"
+                  />
+                  <AppText size={"xs"} font="MulishBold" color="secondary">
+                    12k4
+                  </AppText>
+                </AppButton>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View className="mt-8">
+          <AppText size={"sm"} color="subText2">
+            Lorem ipsum dolor sit amet consectetur adipiscing elit adipiscing
+            elit adipiscing elit. sit amet consectetur adipiscing elit
+            adipiscing elit adipiscing elit
+          </AppText>
+        </View>
+
+        {/* <View className="mt-4">
+          <CollectionTags />
+        </View> */}
 
         {/* <CollectionCreateOptions /> */}
 
         {/* Word list */}
         {/* <AppDivider style={{ marginTop: 16 }} /> */}
+
+        <View className="mt-8">
+          <AppTitle title="Word Sumary" />
+
+          <View
+            style={{ backgroundColor: theme.background2 }}
+            className="rounded-lg p-3 mt-3"
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center gap-2">
+                <AppText size={"lg"} font="MulishBold" color="subText1">
+                  123
+                </AppText>
+                <AppText size={"lg"} font="MulishBold" color="subText1">
+                  words
+                </AppText>
+              </View>
+            </View>
+            <ScrollView
+              horizontal
+              contentContainerStyle={{ gap: 8, padding: 4, marginTop: 8 }}
+            >
+              {[1, 2, 3, 4, 9, 5, 6, 7, 8].map((item, index) => {
+                return (
+                  <View key={index} className="flex-row items-center gap-2">
+                    <View className="h-8 w-8 rounded-full bg-gray-200"></View>
+                    <AppText size={"sm"} font="MulishBold" color="subText1">
+                      123
+                    </AppText>
+                    <AppText size={"sm"} font="MulishBold" color="subText1">
+                      words
+                    </AppText>
+                  </View>
+                );
+              })}
+            </ScrollView>
+            <View className="flex-row items-center justify-between mt-4">
+              <View className="flex-row items-center gap-2">
+                <AppText size={"lg"} font="MulishBold" color="subText1">
+                  123
+                </AppText>
+                <AppText size={"lg"} font="MulishBold" color="subText1">
+                  Translated
+                </AppText>
+              </View>
+            </View>
+            <ScrollView
+              horizontal
+              contentContainerStyle={{ gap: 8, padding: 4, marginTop: 8 }}
+            >
+              {[1, 2, 3, 4, 9, 5, 6, 7, 8].map((item, index) => {
+                return (
+                  <View key={index} className="flex-row items-center gap-2">
+                    <View className="h-8 w-8 rounded-full bg-gray-200"></View>
+                    <AppText size={"sm"} font="MulishBold" color="subText1">
+                      123
+                    </AppText>
+                    <AppText size={"sm"} font="MulishBold" color="subText1">
+                      words
+                    </AppText>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
         <View className="mt-8">
           <CollectionWordList />
         </View>
+
+        <View className="h-10"></View>
       </KeyboardAwareScrollView>
 
       {/* 

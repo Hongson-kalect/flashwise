@@ -12,7 +12,10 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 import WordSelectForm from "../../Word/Create/components/wordSelectForm";
 import WordListItem from "../../Word/List/components/listItem";
 
-const CollectionWordList = () => {
+type Props = {
+  readonly?: boolean;
+};
+const CollectionWordList = (props: Props) => {
   const [isSelectingWord, setIsSelectingWord] = useState(false);
   const [selectedWord, setSelectedWord] = useState<number[]>([]);
   const { theme } = useTheme();
@@ -45,29 +48,31 @@ const CollectionWordList = () => {
     <>
       <View className="flex-row items-center justify-between">
         <AppTitle title="Word list" />
-        {isSelectingWord ? (
-          <AppButton
-            onPress={() => {
-              handleOpenBottomSheet();
-            }}
-            type={"error"}
-            size="sm"
-          >
-            <AppIcon branch="antd" name="delete" color="white" size={18} />
-            <AppText color="white">Delete</AppText>
-          </AppButton>
-        ) : (
-          <AppButton
-            onPress={() => {
-              handleOpenBottomSheet();
-            }}
-            type={"primary"}
-            size="sm"
-          >
-            <AppIcon branch="antd" name="plus" color="white" size={18} />
-            <AppText color="white">Add</AppText>
-          </AppButton>
-        )}
+        {props.readonly ? (
+          isSelectingWord ? (
+            <AppButton
+              onPress={() => {
+                handleOpenBottomSheet();
+              }}
+              type={"error"}
+              size="sm"
+            >
+              <AppIcon branch="antd" name="delete" color="white" size={18} />
+              <AppText color="white">Delete</AppText>
+            </AppButton>
+          ) : (
+            <AppButton
+              onPress={() => {
+                handleOpenBottomSheet();
+              }}
+              type={"primary"}
+              size="sm"
+            >
+              <AppIcon branch="antd" name="plus" color="white" size={18} />
+              <AppText color="white">Add</AppText>
+            </AppButton>
+          )
+        ) : null}
       </View>
 
       {/* <View className="flex-row items-center h-16">
@@ -145,7 +150,9 @@ const CollectionWordList = () => {
             >
               <WordListItem
                 disabled={isSelectingWord}
-                onLongPress={() => setSelectedWord([1])}
+                onLongPress={
+                  props.readonly ? () => setSelectedWord([1]) : () => {}
+                }
                 key={index}
               />
             </Animated.View>

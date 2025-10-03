@@ -19,6 +19,7 @@ type Props = {
     | "white"
     | "disabled";
   style?: ViewStyle;
+  outline?: boolean;
   containerStyle?: ViewStyle;
   children?: React.ReactNode;
   height?: number;
@@ -36,6 +37,7 @@ const AppButton = ({
   type = "primary",
   children,
   height,
+  outline,
   width,
   disabled,
   isLoading,
@@ -84,7 +86,7 @@ const AppButton = ({
             shadowColor: "#000",
             shadowOffset: { width: 1, height: 3 },
             shadowOpacity: 0.2,
-            elevation: 6,
+            elevation: outline ? 0 : 6,
             paddingVertical: py,
             paddingHorizontal: px,
             borderRadius: 12,
@@ -94,7 +96,9 @@ const AppButton = ({
             justifyContent: "center",
             minWidth: 64,
             // height: height || 48,
-            backgroundColor: theme[type || "primary"],
+            backgroundColor: outline ? "transparent" : theme[type || "primary"],
+            borderWidth: outline ? 1 : 0,
+            borderColor: theme[type || "primary"],
           },
           style,
         ]}
