@@ -21,12 +21,12 @@ export default function TranslateList() {
             elevation: 4,
             shadowColor: theme.primary,
           }}
-          className="py-4 px-2 rounded-xl"
+          className="py-4 px-2 rounded"
         >
           <AppText
             className="text-center"
             size={32}
-            font="MulishBold"
+            font="MulishSemiBold"
             color="white"
           >
             Run

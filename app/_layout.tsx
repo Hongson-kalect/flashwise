@@ -17,6 +17,7 @@ import AppRecording from "@/components/AppRecording";
 import { fonts } from "@/configs/fonts";
 import { BottomSheetProvider } from "@/providers/BottomSheet";
 import { useEffect, useState } from "react";
+import { MenuProvider } from "react-native-popup-menu";
 
 const queryClient = new QueryClient();
 
@@ -44,30 +45,32 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Provider>
-            <LanguageProvider>
-              <BottomSheetProvider>
-                <AppWrapper>
-                  <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="tabs" />
-                    <Stack.Screen name="screens/Card/Create/screen" />
-                    <Stack.Screen name="+not-found" />
-                  </Stack>
-                </AppWrapper>
-              </BottomSheetProvider>
+        <MenuProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Provider>
+              <LanguageProvider>
+                <BottomSheetProvider>
+                  <AppWrapper>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="tabs" />
+                      <Stack.Screen name="screens/Card/Create/screen" />
+                      <Stack.Screen name="+not-found" />
+                    </Stack>
+                  </AppWrapper>
+                </BottomSheetProvider>
 
-              {/* <Toast /> */}
-              {/* <AppUsageTracker /> */}
-              <AppRecording />
-              <Portal>
-                <ListModal />
-                <GlobalModal />
-              </Portal>
-              {/* <StatusBar style="auto" /> */}
-            </LanguageProvider>
-          </Provider>
-        </GestureHandlerRootView>
+                {/* <Toast /> */}
+                {/* <AppUsageTracker /> */}
+                <AppRecording />
+                <Portal>
+                  <ListModal />
+                  <GlobalModal />
+                </Portal>
+                {/* <StatusBar style="auto" /> */}
+              </LanguageProvider>
+            </Provider>
+          </GestureHandlerRootView>
+        </MenuProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

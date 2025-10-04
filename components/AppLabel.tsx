@@ -22,7 +22,7 @@ const AppLabel = ({ titles, colors }: Props) => {
             key={index}
             style={{
               color: color || "#000",
-              fontSize: 34,
+              fontSize: 32,
               fontFamily: "MulishBold",
             }}
           >

@@ -21,7 +21,7 @@ const TranslateListHeader = () => {
             type="primary"
           >
             <AppIcon name="plus" branch="antd" size={18} color="white" />
-            <AppText color="white">Create</AppText>
+            <AppText color="white">Add</AppText>
           </AppButton>
         }
       />

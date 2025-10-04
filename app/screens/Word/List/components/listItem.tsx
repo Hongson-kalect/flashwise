@@ -47,13 +47,13 @@ const WordListItem = (props: Props) => {
       <View className="h-full flex-1">
         {/* <AppText font="MulishSemiBold" size={"lg"}>
           Professional */}
-        <AppText numberOfLines={1} font="MulishSemiBold" size={"lg"}>
+        <AppText numberOfLines={1} font="MulishSemiBold" color="text">
           Parazicmonobenzen
         </AppText>
         <AppText
           numberOfLines={1}
           size={"xs"}
-          // font={"MulishRegularItalic"}
+          font={"MulishRegularItalic"}
           color="subText2"
         >
           Chuyên nghiệp, chuyên môn, biểu diễn
@@ -80,9 +80,8 @@ const WordListItem = (props: Props) => {
             <AppText
               style={{ flexShrink: 1 }}
               numberOfLines={1}
-              size={"sm"}
+              size={"xs"}
               color="subText2"
-              font="MulishRegularItalic"
             >
               /las:jky/
             </AppText>
@@ -93,7 +92,7 @@ const WordListItem = (props: Props) => {
               <AppText
                 font="MulishSemiBold"
                 numberOfLines={1}
-                // size={"lg"}
+                size={"sm"}
                 color="primary"
               >
                 L2

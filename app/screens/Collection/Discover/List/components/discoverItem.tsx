@@ -23,7 +23,7 @@ const DiscoverItem = () => {
         className="rounded-lg overflow-hidden"
       >
         <View
-          className="absolute top-1 right-1 h-6 w-6 rounded-full bg-white"
+          className="absolute top-2 right-2 h-6 w-6 rounded-full bg-white"
           style={{ elevation: 2, zIndex: 1 }}
         ></View>
         <Image
@@ -34,17 +34,17 @@ const DiscoverItem = () => {
         ></Image>
 
         <View className="p-2">
-          <AppText font="MulishBold" size={"sm"} className="my-1">
+          <AppText font="MulishSemiBold" size={"sm"} className="my-1">
             Tiếng Anh mẫu giáo
           </AppText>
           <View className="flex-row justify-between mt-2">
             <View className="flex-row items-center justify-center">
-              <AppText size={"sm"} font="MulishBold" color="primary">
+              <AppText size={"xs"} font="MulishMedium" color="primary">
                 111
               </AppText>
               <MaterialCommunityIcons
                 name="cards"
-                size={18}
+                size={14}
                 color={theme.secondary}
               />
             </View>
@@ -53,7 +53,7 @@ const DiscoverItem = () => {
                 <AppIcon
                   branch="antd"
                   name="like1"
-                  size={12}
+                  size={14}
                   color={theme.subText3}
                 />
                 <AppText size={12} color="subText3">

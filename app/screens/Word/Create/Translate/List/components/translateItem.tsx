@@ -44,11 +44,11 @@ const TranslateItem = () => {
       >
         <View className="flex-row items-center justify-between">
           <View>
-            <AppText color="primary" font="MulishBold" size={"2xl"}>
+            <AppText color="primary" font="MulishBold" size={"xl"}>
               Chạy
             </AppText>
           </View>
-          <View className="rounded h-8 w-12 bg-red-400"></View>
+          <View className="rounded h-6 w-10  bg-red-400"></View>
         </View>
         <View className="flex-row">
           <View

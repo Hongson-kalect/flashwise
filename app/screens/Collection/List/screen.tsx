@@ -56,9 +56,9 @@ const CollectionListScreen = () => {
         </View> */}
         <AppContainer>
           <View className="items-center mt-2">
-            <AppText font="MulishExtraBold" size={64} color="primary">
+            <AppText font="MulishExtraBold" size={56} color="primary">
               14
-              <AppText font="MulishExtraBold" size={48} color="primary">
+              <AppText font="MulishExtraBold" size={42} color="primary">
                 {" "}
                 📚
               </AppText>
@@ -80,7 +80,6 @@ const CollectionListScreen = () => {
                 router.push("/screens/Collection/Discover/List/screen");
               }}
               type="primary"
-              size="lg"
             >
               <AppIcon
                 name="external-link"
@@ -94,7 +93,6 @@ const CollectionListScreen = () => {
               onPress={() => {
                 router.push("/screens/Collection/Create/screen");
               }}
-              size="lg"
               type="success"
             >
               <AppIcon name="plus" branch="antd" size={16} color="white" />

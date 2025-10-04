@@ -1,6 +1,7 @@
 import AppCheckbox from "@/components/AppCheckbox";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import AppTitle from "@/components/AppTitle";
 import AppSearch from "@/components/input/AppSearch";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
@@ -59,9 +60,7 @@ const ItemListHeader = ({ isSelecting }: Props) => {
   const { theme } = useTheme();
   return (
     <View>
-      <AppText font="MulishMedium" size={"xl"} color="subText1">
-        Danh sách
-      </AppText>
+      <AppTitle title="List" />
       <View className="">
         <View className="flex-row items-center h-16">
           <View

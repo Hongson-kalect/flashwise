@@ -13,7 +13,7 @@ const HomeHeader = () => {
         <AppText color="white">Discover</AppText>
       </AppButton> */}
 
-      <AppText font="MulishSemiBold" size={36}>
+      <AppText font="MulishSemiBold" size={32}>
         Hi, JOIN
       </AppText>
 

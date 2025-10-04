@@ -15,16 +15,18 @@ const DiscoverCollection = () => {
         <AppSearch />
       </View>
 
-      <View className="flex-row items-center justify-between mb-2">
+      <View className="flex-row items-center justify-between mb-2 mt-4">
         <View className="flex-row items-center">
           <AppText size={"sm"} className="ml-2">
             123 collections
           </AppText>
         </View>
-        <View className="flex-row gap-1">
-          <AppText size={"sm"}>Sort:</AppText>
+        <View className="flex-row gap-2">
+          <AppText size={"sm"} font="MulishRegularItalic" color="subText2">
+            Sort:
+          </AppText>
           <AppText
-            font="MulishRegularItalic"
+            font="MulishRegular"
             className="underline"
             size={"sm"}
             color="primary"

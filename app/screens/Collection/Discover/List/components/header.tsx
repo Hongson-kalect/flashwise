@@ -3,7 +3,7 @@ import AppIcon from "@/components/AppIcon";
 import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
 import { router } from "expo-router";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { View } from "react-native";
 
 type Props = {
@@ -43,7 +43,7 @@ const DiscoverListHeader = ({ mode, setMode }: Props) => {
               type={mode === "view" ? "primary" : "success"}
             >
               <AppIcon
-                name={mode === "view" ? "link" : "check"}
+                name={mode === "view" ? "upload" : "check"}
                 branch="fa6"
                 size={18}
                 color="white"

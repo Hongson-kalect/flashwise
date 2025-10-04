@@ -12,8 +12,8 @@ const DATA = Array.from({ length: 20 }, (_, i) => ({
 const AppLineChart = () => {
   //Còn handle hover thì sẽ dựa vào daily routine chart để config
   const font = useFont(fonts.MulishRegular, 9);
-  const font2 = useFont(fonts.MulishBold, 14);
-  const font3 = useFont(fonts.MulishBold, 20);
+  const font2 = useFont(fonts.MulishBold, 12);
+  const font3 = useFont(fonts.MulishBold, 18);
   const { theme } = useTheme();
   const data = useMemo(() => [...DATA], []);
   return (

@@ -28,9 +28,9 @@ const Relearn = () => {
             branch="antd"
             name={"infocirlce"}
             color="#f5f5f5"
-            size={16}
+            size={14}
           />
-          <AppText font="MulishMedium" color="white">
+          <AppText size={"sm"} font="MulishMedium" color="white">
             Ôn lại các từ đã học
           </AppText>
         </View>
@@ -38,11 +38,11 @@ const Relearn = () => {
           <View className="items-center flex-row gap-2 mt-6">
             <MaterialCommunityIcons
               name="cards"
-              size={28}
+              size={22}
               color={theme.secondary}
             />
 
-            <AppText font="MulishBold" size={28} color="white">
+            <AppText font="MulishBold" size={22} color="white">
               25 từ
             </AppText>
           </View>
@@ -54,11 +54,10 @@ const Relearn = () => {
               }}
               // type="success"
               type="disabled"
-              size="lg"
               disabled
             >
               {/* <AppText font={"MulishSemiBold"} color="white" size={"lg"}> */}
-              <AppText font={"MulishRegular"} color="white" size={"lg"}>
+              <AppText font={"MulishRegular"} color="white">
                 {/* 1 Ngày 8 Giờ */}
                 Ôn tập sau
               </AppText>
@@ -67,11 +66,10 @@ const Relearn = () => {
               style={{
                 textShadowColor: "#f2f2f2",
                 textShadowOffset: { width: 0, height: 0 },
-                textShadowRadius: 1,
+                textShadowRadius: 2,
               }}
               font="MulishLight"
               color="error"
-              size={"lg"}
             >
               1 Ngày 8:40:32
             </AppText>

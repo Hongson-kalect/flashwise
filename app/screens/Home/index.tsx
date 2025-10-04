@@ -52,7 +52,7 @@ export default function HomePage() {
             ></View>
           </View> */}
           <LinearGradient
-            colors={[theme.success + "88", "transparent"]}
+            colors={[theme.success + "66", "transparent"]}
             // Tôi muốn nó có 2 màu nhưng có thể kiểm soát được độ rộng của màu đầu tiên ví dụ 90% màu 1 và 10% màu 2
             // The locations array is used to define the gradient stops.
             // The first value is the starting point of the gradient (0 being the left side and 1 being the right side).
@@ -68,17 +68,27 @@ export default function HomePage() {
               borderColor: theme.success,
               shadowColor: theme.success,
             }}
-            className="flex-row items-center gap-4 px-4 py-2 justify-between"
+            className="flex-row items-center gap-2 p-2 justify-between"
           >
-            <View>
-              <AppText size={"xs"} color="subText2">
-                Mục tiêu 🎯
-              </AppText>
-
-              <View className="p-1">
-                <AppText font="MulishBold" color="primary">
-                  10 từ vựng mới
+            <View className="flex-row gap-4 items-center ml-2">
+              <View>
+                <AppIcon
+                  branch="feather"
+                  name="book-open"
+                  size={28}
+                  color="secondary"
+                />
+              </View>
+              <View>
+                <AppText size={"xs"} color="subText2">
+                  Mục tiêu 🎯
                 </AppText>
+
+                <View className="">
+                  <AppText font="MulishMedium" color="primary">
+                    10 từ vựng mới
+                  </AppText>
+                </View>
               </View>
             </View>
             <View className="pr-4 p-2 items-center justify-center">
@@ -95,43 +105,43 @@ export default function HomePage() {
           <View className="mt-10">
             <AppTitle title="Mini games" />
 
-            <View className="flex-row mt-4 items-center gap-4 flex-wrap">
-              <View className="h-16 w-16 bg-red-400 rounded">
+            <View className="flex-row mt-4 items-center gap-6 flex-wrap">
+              <View className="h-14 w-14 bg-red-400 rounded  overflow-hidden">
                 <Image
                   source={{ uri: "https://picsum.photos/600/600" }}
                   className="h-full w-full"
                   style={{ resizeMode: "cover" }}
                 />
               </View>
-              <View className="h-16 w-16 bg-red-400 rounded overflow-hidden">
+              <View className="h-14 w-14 bg-red-400 rounded overflow-hidden">
                 <Image
                   source={{ uri: "https://picsum.photos/600/600" }}
                   className="h-full w-full"
                   style={{ resizeMode: "cover" }}
                 />
               </View>
-              <View className="h-16 w-16 bg-red-400 rounded overflow-hidden">
+              <View className="h-14 w-14 bg-red-400 rounded overflow-hidden">
                 <Image
                   source={{ uri: "https://picsum.photos/600/600" }}
                   className="h-full w-full"
                   style={{ resizeMode: "cover" }}
                 />
               </View>
-              <View className="h-16 w-16 bg-red-400 rounded overflow-hidden">
+              <View className="h-14 w-14 bg-red-400 rounded overflow-hidden">
                 <Image
                   source={{ uri: "https://picsum.photos/600/600" }}
                   className="h-full w-full"
                   style={{ resizeMode: "cover" }}
                 />
               </View>
-              <View className="h-16 w-16 bg-red-400 rounded overflow-hidden">
+              <View className="h-14 w-14 bg-red-400 rounded overflow-hidden">
                 <Image
                   source={{ uri: "https://picsum.photos/600/600" }}
                   className="h-full w-full"
                   style={{ resizeMode: "cover" }}
                 />
               </View>
-              <View className="h-16 w-16 bg-red-400 rounded overflow-hidden">
+              <View className="h-14 w-14 bg-red-400 rounded overflow-hidden">
                 <Image
                   source={{ uri: "https://picsum.photos/600/600" }}
                   className="h-full w-full"

@@ -4,6 +4,7 @@ import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import TagItem from "@/components/TagItem";
 import { useTheme } from "@/providers/Theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { ScrollView, TextInput, View } from "react-native";
@@ -27,7 +28,7 @@ const DiscoverDetail = () => {
         <DiscoverDetailHeader mode={mode} setMode={(mode) => setMode(mode)} />
       </View>
 
-      <KeyboardAwareScrollView style={{ paddingHorizontal: 8 }}>
+      <KeyboardAwareScrollView style={{ paddingHorizontal: 12 }}>
         <View className="flex-row items-center gap-2">
           <View className="w-6 h-6 rounded-full bg-gray-200 items-center justify-center">
             <AppIcon name="user" branch="feather" size={12} color="subText3" />
@@ -46,7 +47,7 @@ const DiscoverDetail = () => {
           placeholder="Collection Name"
           onChangeText={(name) => {}}
           style={{
-            fontSize: 32,
+            fontSize: 28,
             fontFamily: "MulishBold",
             color: theme.primary,
             textAlign: "center",
@@ -57,38 +58,47 @@ const DiscoverDetail = () => {
           <CollectionImage source="https://picsum.photos/1200/800" />
         </View>
 
-        <View>
-          <View className="flex-row gap-2 items-center justify-between">
-            <View className="flex-row gap-2 flex-wrap mt-2 flex-1">
-              {[1, 2, 3, 4].map((item, index) => (
-                <TagItem key={index}>{"item " + item}</TagItem>
-              ))}
-            </View>
+        <View className="flex-row gap-2 items-center justify-between mt-2">
+          <ScrollView
+            showsHorizontalScrollIndicator={false}
+            horizontal
+            contentContainerStyle={{
+              gap: 8,
+              alignItems: "center",
+            }}
+            className=" flex-1"
+          >
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item, index) => (
+              <TagItem key={index}>{"item " + item}</TagItem>
+            ))}
+          </ScrollView>
 
-            <View className="items-end mt-2 gap-2">
-              <View>
-                <AppButton
-                  size="xs"
-                  type="secondary"
-                  outline
-                  onPress={() => {}}
-                >
-                  <AppIcon
-                    branch="feather"
-                    name="star"
-                    size={12}
-                    color="secondary"
-                  />
-                  <AppText size={"xs"} font="MulishBold" color="secondary">
-                    12k4
-                  </AppText>
-                </AppButton>
-              </View>
-            </View>
+          <View
+            style={{
+              backgroundColor: "red",
+              borderRightWidth: 0.5,
+              borderColor: theme.subText3,
+            }}
+            className="h-full  border-r border-gray-200"
+          ></View>
+
+          <View>
+            <AppButton size="xs" type="secondary" outline onPress={() => {}}>
+              <AppIcon
+                branch="feather"
+                name="star"
+                size={12}
+                color="secondary"
+              />
+              <AppText size={"xs"} font="MulishBold" color="secondary">
+                12k4
+              </AppText>
+            </AppButton>
           </View>
         </View>
 
         <View className="mt-8">
+          <AppTitle title="Detail" />
           <AppText size={"sm"} color="subText2">
             Lorem ipsum dolor sit amet consectetur adipiscing elit adipiscing
             elit adipiscing elit. sit amet consectetur adipiscing elit
@@ -108,11 +118,8 @@ const DiscoverDetail = () => {
         <View className="mt-8">
           <AppTitle title="Word Sumary" />
 
-          <View
-            style={{ backgroundColor: theme.background2 }}
-            className="rounded-lg p-3 mt-3"
-          >
-            <View className="flex-row items-center justify-between">
+          <View className="rounded-lg mt-3">
+            {/* <View className="flex-row items-center justify-between">
               <View className="flex-row items-center gap-2">
                 <AppText size={"lg"} font="MulishBold" color="subText1">
                   123
@@ -121,26 +128,39 @@ const DiscoverDetail = () => {
                   words
                 </AppText>
               </View>
-            </View>
+            </View> */}
             <ScrollView
               horizontal
-              contentContainerStyle={{ gap: 8, padding: 4, marginTop: 8 }}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 12 }}
             >
               {[1, 2, 3, 4, 9, 5, 6, 7, 8].map((item, index) => {
                 return (
-                  <View key={index} className="flex-row items-center gap-2">
-                    <View className="h-8 w-8 rounded-full bg-gray-200"></View>
-                    <AppText size={"sm"} font="MulishBold" color="subText1">
+                  <View
+                    key={index}
+                    className="flex-row items-center gap-2"
+                    style={{
+                      backgroundColor: theme.primary + "22",
+                      borderRadius: 999,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                    }}
+                  >
+                    <View className="h-7 w-7 rounded-full bg-white"></View>
+                    <AppText size={"xs"} font="MulishBold" color="subText1">
                       123
                     </AppText>
-                    <AppText size={"sm"} font="MulishBold" color="subText1">
-                      words
-                    </AppText>
+
+                    <MaterialCommunityIcons
+                      name="cards"
+                      size={14}
+                      color={theme.subText2}
+                    />
                   </View>
                 );
               })}
             </ScrollView>
-            <View className="flex-row items-center justify-between mt-4">
+            {/* <View className="flex-row items-center justify-between mt-4">
               <View className="flex-row items-center gap-2">
                 <AppText size={"lg"} font="MulishBold" color="subText1">
                   123
@@ -149,21 +169,42 @@ const DiscoverDetail = () => {
                   Translated
                 </AppText>
               </View>
-            </View>
+            </View> */}
+            <AppText
+              size={"xs"}
+              className="mt-4"
+              font="MulishBold"
+              color="subText1"
+            >
+              Translate
+            </AppText>
             <ScrollView
               horizontal
+              showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 8, padding: 4, marginTop: 8 }}
             >
               {[1, 2, 3, 4, 9, 5, 6, 7, 8].map((item, index) => {
                 return (
-                  <View key={index} className="flex-row items-center gap-2">
-                    <View className="h-8 w-8 rounded-full bg-gray-200"></View>
-                    <AppText size={"sm"} font="MulishBold" color="subText1">
+                  <View
+                    key={index}
+                    className="flex-row items-center gap-2"
+                    style={{
+                      backgroundColor: theme.secondary + "22",
+                      borderRadius: 999,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                    }}
+                  >
+                    <View className="h-7 w-7 rounded-full bg-white"></View>
+                    <AppText size={"xs"} font="MulishBold" color="subText1">
                       123
                     </AppText>
-                    <AppText size={"sm"} font="MulishBold" color="subText1">
-                      words
-                    </AppText>
+
+                    <MaterialCommunityIcons
+                      name="cards"
+                      size={14}
+                      color={theme.subText2}
+                    />
                   </View>
                 );
               })}

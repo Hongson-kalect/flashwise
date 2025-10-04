@@ -21,7 +21,7 @@ const CollectionItem = () => {
         // borderRightWidth: 0.5,
         // borderBottomWidth: 0.5,
         // borderColor: "#ddd",
-        paddingBottom: 12,
+        // paddingBottom: 12,
         // borderTopColor: theme.primary + "44",
         // borderLeftColor: theme.primary + "44",
         // borderRightColor: theme.primary,
@@ -33,7 +33,7 @@ const CollectionItem = () => {
         style={{ elevation: 4 }}
         className="h-6 w-6 absolute top-1 right-1 rounded-full bg-blue-500 z-[1]"
       ></View> */}
-      <View className="w-24 h-16 rounded overflow-hidden border border-gray-100 items-center justify-center bg-gray-100">
+      <View className="w-24 h-16 rounded overflow-hidden border border-gray-100 items-center justify-center">
         <Image
           source={{ uri: "https://picsum.photos/600/400" }}
           className="w-full h-full"
@@ -45,13 +45,18 @@ const CollectionItem = () => {
           <AppText font="MulishSemiBold" size={"xs"} color={"secondary"}>
             English
           </AppText>
-          <AppText font="MulishBold" numberOfLines={2}>
+          <AppText
+            font="MulishSemiBold"
+            size={"sm"}
+            color="text"
+            numberOfLines={2}
+          >
             Giao tiếp cơ bản giao tiếp cơ bản giao tiếp cơ bản giao tiếp cơ bản
           </AppText>
         </View>
         <View>
           <View className="mt-2 flex-row items-center justify-between">
-            <AppText size={12} color="subText2" font="MulishLight">
+            <AppText size={"xs"} color="subText3" font="MulishLightItalic">
               Đã học
             </AppText>
             <View className="flex-row items-center">
