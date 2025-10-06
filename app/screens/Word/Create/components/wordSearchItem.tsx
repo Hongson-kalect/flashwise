@@ -5,10 +5,8 @@ import { TouchableOpacity } from "react-native";
 const WordSearchItem = () => {
   return (
     <TouchableOpacity className="flex flex-row items-center gap-6 py-4 pl-2">
-      <AppCheckbox scale={1.2} checked={true} />
-      <AppText font="MulishMedium" size={"lg"}>
-        Từ mẫu ê
-      </AppText>
+      <AppCheckbox scale={1} checked={true} />
+      <AppText font="MulishMedium">Từ mẫu ê</AppText>
     </TouchableOpacity>
   );
 };

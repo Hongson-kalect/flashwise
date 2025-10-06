@@ -20,7 +20,7 @@ const WordDetailHeader = ({}: Props) => {
               // setMode((prev) => (prev === "view" ? "update" : "view"));
             }}
             disabled={!submitable}
-            type={"primary"}
+            type={submitable ? "primary" : "disabled"}
           >
             <AppIcon name={"plus"} branch="fa6" size={18} color="white" />
             <AppText color="white">{"Create"}</AppText>

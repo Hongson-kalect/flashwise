@@ -6,7 +6,7 @@ type Props = {
 };
 const TagItem = ({ children }: Props) => {
   return (
-    <View className="px-2 py-1 rounded-lg bg-gray-100">
+    <View className="px-2 py-1 rounded-lg bg-gray-200">
       <AppText color="subText2" size="xs">
         {children}
       </AppText>

@@ -1,11 +1,15 @@
+import AppButton from "@/components/AppButton";
+import AppCheckbox from "@/components/AppCheckbox";
 import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
+import AppTitle from "@/components/AppTitle";
 import EditIcon from "@/components/icons/editIcon";
 import TagItem from "@/components/TagItem";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { Image, TouchableOpacity, View } from "react-native";
+import { Divider } from "react-native-paper";
 
 const UploadForm = () => {
   const { theme } = useTheme();
@@ -13,7 +17,7 @@ const UploadForm = () => {
   const [formValue, setFormValue] = useState({
     title: "",
     description: "",
-    image: "https://picsum.photos/600/600",
+    image: "https://picsum.photos/600/400",
   });
   const openTagModal = () => {
     console.log("cek");
@@ -32,7 +36,7 @@ const UploadForm = () => {
               overflow: "hidden",
               backgroundColor: theme.background,
             }}
-            className="h-40 w-40  rounded-lg"
+            className="h-40 w-60  rounded-lg"
           >
             <Image
               source={{ uri: formValue.image }}
@@ -60,7 +64,9 @@ const UploadForm = () => {
         <AppInput
           required
           value={formValue.title}
+          // size={"xl"}
           label="Tên upload"
+          // placeholder="Tieu de"
           onChangeText={(val) => setFormValue({ ...formValue, title: val })}
         />
 
@@ -72,15 +78,41 @@ const UploadForm = () => {
           label="Mô tả"
           onChangeText={(val) => setFormValue({ ...formValue, title: val })}
         />
+
+        <View className="flex-row items-center justify-between mt-4">
+          <AppText font="MulishMedium" size={16 * 0.9}>
+            Tự động cập nhật
+          </AppText>
+          <View>
+            <AppCheckbox checked={true} scale={1.1} onChange={() => {}} />
+          </View>
+        </View>
+
+        <View className="flex-row items-center justify-between">
+          <AppText font="MulishMedium" size={16 * 0.9} color={"text"}>
+            Cho phép chỉnh sửa
+          </AppText>
+          <View>
+            <AppButton outline type="disabled" onPress={() => {}} size={"sm"}>
+              <AppText color="subText2" size={"sm"}>
+                Không
+              </AppText>
+            </AppButton>
+          </View>
+        </View>
+
+        <Divider />
+
         <View>
-          <AppText
+          {/* <AppText
             // font="MulishBold"
             size={"sm"}
             color={"subText2"}
             className="mb-1"
           >
             Tags
-          </AppText>
+          </AppText> */}
+          <AppTitle title="Tags" />
           <TouchableOpacity
             onPress={openTagModal}
             className="flex-row gap-2 items-center mt-2"

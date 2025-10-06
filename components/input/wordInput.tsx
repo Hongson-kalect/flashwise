@@ -34,8 +34,8 @@ const WordInput = (props: Props) => {
             multiline
             scrollEnabled={false}
             style={{
-              fontSize: 36,
-              lineHeight: 36 * 1.4,
+              fontSize: 32,
+              lineHeight: 32 * 1.4,
               fontFamily: fontFamily.MulishSemiBold,
               color: theme.primary,
               textAlign: "center",

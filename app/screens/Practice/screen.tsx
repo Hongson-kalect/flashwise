@@ -47,7 +47,10 @@ export default function PracticePage() {
   );
   const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(questions[0].id);
-  const [method] = useState(["write"]);
+  const [method] = useState<("write" | "speak" | "listen" | "question")[]>([
+    "write",
+    "listen",
+  ]);
   const { hearable, talkable } = useUserStateStore();
   const [currentMethod, setCurrentMethod] = useState(method[0]);
   const [questionState, setQuestionState] = useState(() => {

@@ -57,9 +57,9 @@ const AppInput = ({
     <Pressable onPress={() => inputRef.current?.focus()}>
       {label && (
         <AppText
-          // font="MulishBold"
-          size={"sm"}
-          color={focused ? "primary" : "subText2"}
+          font="MulishMedium"
+          size={fontSize * 0.9}
+          color={focused ? "primary" : "text"}
           className="mb-1"
         >
           {label} {required && <AppText style={{ color: "red" }}>*</AppText>}
@@ -76,7 +76,7 @@ const AppInput = ({
           <View
             style={{
               position: "absolute",
-              left: 4,
+              left: -6,
               top: 0,
               right: 0,
               bottom: 0,

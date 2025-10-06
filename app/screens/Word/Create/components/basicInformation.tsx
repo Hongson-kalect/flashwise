@@ -60,13 +60,14 @@ const BasicInformation = ({
     <View>
       <View className="items-center mb-6">
         <TouchableOpacity
+          hitSlop={10}
           onPress={() => alert("Đổi Ngôn ngữ em ây")}
           className=" w-full mr-4 flex-row gap-2 items-center justify-end"
         >
           <View className="-scale-x-100">
             <EditIcon />
           </View>
-          <View className="rounded bg-red-400 h-10 w-16"></View>
+          <View className="rounded bg-red-400 h-8 w-14"></View>
         </TouchableOpacity>
 
         {/* <WordTitle>Run</WordTitle> */}

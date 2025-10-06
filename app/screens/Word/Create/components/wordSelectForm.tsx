@@ -5,7 +5,7 @@ import AppText from "@/components/AppText";
 import AppSearch from "@/components/input/AppSearch";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
-import { FlatList, ScrollView, Text, View } from "react-native";
+import { FlatList, ScrollView, View } from "react-native";
 import WordSearchItem from "./wordSearchItem";
 
 const WordSelectForm = () => {
@@ -15,12 +15,22 @@ const WordSelectForm = () => {
       <View className="px-4 justify-center flex-row items-center gap-2">
         {/* <View className="h-8"> */}
         <FlatList
-          style={{ paddingTop: 24, paddingBottom: 8, flex: 1, borderRadius: 8 }}
+          style={{
+            paddingVertical: 12,
+            flex: 1,
+            borderRadius: 8,
+          }}
           data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
           renderItem={({ item, index }) => <TagItem key={index} />}
           horizontal
           // showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ gap: 8, paddingRight: 8 }}
+          contentContainerStyle={{
+            gap: 8,
+            paddingRight: 8,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "white",
+          }}
         />
         {/* <ScrollView horizontal className="gap-2 bg-red-400">
             {Array.from({ length: 5 }).map((_, index) => (
@@ -99,17 +109,15 @@ const TagItem = () => {
   return (
     <View
       style={{ backgroundColor: theme.primary + "10" }}
-      className="px-3 py-1 bg-blue-100 rounded-full h-8 items-center justify-center"
+      className="px-3 py-1 rounded-full h-8 items-center justify-center"
     >
-      <Text style={{ color: theme.primary }} className="text-sm font-medium">
-        Test tag
-      </Text>
+      <AppText size={"xs"}>Test tag</AppText>
 
       <View className="absolute -top-1 -right-1">
         <AppIcon
           branch="antd"
           name="closecircle"
-          color={theme.primary + "80"}
+          color={theme.error + "80"}
           size={14}
         />
       </View>

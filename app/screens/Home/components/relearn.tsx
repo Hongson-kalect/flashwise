@@ -52,17 +52,16 @@ const Relearn = () => {
               onPress={() => {
                 router.push("/screens/Practice/screen");
               }}
-              // type="success"
-              type="disabled"
-              disabled
+              type="success"
+              // type="disabled"
+              // disabled
             >
-              {/* <AppText font={"MulishSemiBold"} color="white" size={"lg"}> */}
               <AppText font={"MulishRegular"} color="white">
-                {/* 1 Ngày 8 Giờ */}
-                Ôn tập sau
+                Ôn tập ngay
+                {/* Ôn tập sau */}
               </AppText>
             </AppButton>
-            <AppText
+            {/* <AppText
               style={{
                 textShadowColor: "#f2f2f2",
                 textShadowOffset: { width: 0, height: 0 },
@@ -72,22 +71,8 @@ const Relearn = () => {
               color="error"
             >
               1 Ngày 8:40:32
-            </AppText>
+            </AppText> */}
           </View>
-
-          {/* <View className="mt-2">
-            <AppText font="MulishRegularItalic" size={"xs"} color="subText3">
-              Cần được ôn tập sau{" "}
-              <AppText font="MulishRegularItalic" size={"xs"} color="warning">
-                19
-              </AppText>{" "}
-              giờ{" "}
-              <AppText font="MulishRegularItalic" size={"xs"} color="warning">
-                12
-              </AppText>{" "}
-              phút nữa
-            </AppText>
-          </View> */}
         </View>
       </View>
     </LinearGradient>

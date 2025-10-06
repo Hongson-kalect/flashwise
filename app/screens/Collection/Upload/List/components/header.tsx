@@ -20,7 +20,7 @@ const UploadListHeader = () => {
             type="primary"
           >
             <AppIcon name="plus" branch="antd" color="white" size={18} />
-            <AppText color="white">Upload</AppText>
+            <AppText color="white">Add</AppText>
           </AppButton>
         }
       />
