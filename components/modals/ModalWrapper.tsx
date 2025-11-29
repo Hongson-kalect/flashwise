@@ -23,7 +23,12 @@ type Props = {
     | "slideInUp"
     | "zoomIn"
     | "zoomInDown";
-  outAnimation?: "fadeOut" | "slideOutDown" | "zoomOut" | "zoomOutDown";
+  outAnimation?:
+    | "fadeOut"
+    | "slideOutDown"
+    | "slideOutUp"
+    | "zoomOut"
+    | "zoomOutDown";
   onCancel: () => void;
   rightContent?: React.ReactNode;
   leftContent?: React.ReactNode;
@@ -40,7 +45,7 @@ export default function ModalWrapper(props: Props) {
     <ReactNativeModal
       onBackButtonPress={props.onCancel}
       animationIn={props.inAnimation || "zoomIn"}
-      animationOut={props.outAnimation || "slideOutDown"}
+      animationOut={props.outAnimation || "slideOutUp"}
       isVisible={props.show}
       backdropTransitionOutTiming={1}
       backdropColor="black"

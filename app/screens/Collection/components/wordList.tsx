@@ -18,6 +18,7 @@ type Props = {
 const CollectionWordList = (props: Props) => {
   const [isSelectingWord, setIsSelectingWord] = useState(false);
   const [selectedWord, setSelectedWord] = useState<number[]>([]);
+  const [search, setSearch] = useState("");
   const { theme } = useTheme();
   const { present } = useBottomSheet();
 
@@ -86,7 +87,7 @@ const CollectionWordList = (props: Props) => {
                   </View>
                 </View> */}
       <View className="mt-4">
-        <AppSearch />
+        <AppSearch value={search} onChangeText={setSearch} />
       </View>
 
       <View className="flex-row items-center justify-between mt-8 ml-1 h-10">

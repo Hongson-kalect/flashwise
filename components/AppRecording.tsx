@@ -22,9 +22,9 @@ const AppRecording = () => {
   const { theme } = useTheme();
   const [recordTime, setRecordTime] = useState(0);
   const { width } = useWindowDimensions();
-  const [recordInterval, setRecordInterval] = useState<NodeJS.Timeout | null>(
-    null
-  );
+  const [recordInterval, setRecordInterval] = useState<
+    NodeJS.Timeout | number | null
+  >(null);
 
   const startInterval = () => {
     const interval = setInterval(() => {

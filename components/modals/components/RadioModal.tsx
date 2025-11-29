@@ -68,7 +68,7 @@ export const OptionsModal = (props: ListModalProps) => {
     <ReactNativeModal
       onBackButtonPress={props.onCancel}
       animationIn={"slideInUp"}
-      animationOut={"slideOutDown"}
+      animationOut={"slideOutUp"}
       isVisible={props.show}
       backdropTransitionOutTiming={1}
       backdropColor={theme.text}

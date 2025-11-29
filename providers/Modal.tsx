@@ -124,7 +124,12 @@ export type BasicModalOptions = {
     | "slideInUp"
     | "zoomIn"
     | "zoomInDown";
-  outAnimation?: "fadeOut" | "slideOutDown" | "zoomOut" | "zoomOutDown";
+  outAnimation?:
+    | "fadeOut"
+    | "slideOutDown"
+    | "slideOutUp"
+    | "zoomOut"
+    | "zoomOutDown";
 };
 export type GlobalModalOptions = BasicModalOptions &
   (

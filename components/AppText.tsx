@@ -7,6 +7,7 @@ type Props = {
   children: React.ReactNode;
   font?: FontFamily;
   style?: StyleProp<TextStyle>;
+  onPress?: () => void;
   className?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | number;
   color?:
@@ -36,6 +37,7 @@ const AppText = ({
   children,
   style,
   color,
+  onPress,
   font = "MulishRegular",
   ...props
 }: Props) => {
@@ -45,6 +47,7 @@ const AppText = ({
 
   return (
     <Text
+      onPress={onPress}
       className={props.className}
       style={[
         {

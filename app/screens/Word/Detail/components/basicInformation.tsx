@@ -2,9 +2,12 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import EditIcon from "@/components/icons/editIcon";
-import WordInput from "@/components/input/wordInput";
 import PhatAm from "@/components/PhatAm";
 import PhienAm from "@/components/PhienAm";
+import {
+  CreateWordInputModalProps,
+  CreateWordRadioModalProps,
+} from "@/interfaces/word";
 import { useTheme } from "@/providers/Theme";
 import { AudioType } from "@/stores/recordingStore";
 import { Entypo } from "@expo/vector-icons";
@@ -22,10 +25,6 @@ import Animated, {
 import Information from "../../../../../components/output/information";
 import AudioPicker from "../../components/AudioPicker";
 import AudioRecoder from "../../components/AudioRecorder";
-import {
-  CreateWordInputModalProps,
-  CreateWordRadioModalProps,
-} from "@/interfaces/word";
 
 interface Props {
   mode?: "create" | "update" | "view";
@@ -53,7 +52,7 @@ const BasicInformation = ({
     <View>
       <View className="items-center mb-6">
         {/* <WordTitle>Run</WordTitle> */}
-        <WordInput editable={mode !== "view"} />
+
         <View className="flex-row gap-2 items-center mt-2">
           <TouchableOpacity
             onPress={() =>

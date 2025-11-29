@@ -16,7 +16,7 @@ const CollectionUploadList = () => {
           <UploadListHeader />
         </View>
         <View className="px-3">
-          <View className="mt-8 px-3">
+          <View className="mt-8">
             <UploadPanel />
           </View>
           <View className="mt-8 gap-4">

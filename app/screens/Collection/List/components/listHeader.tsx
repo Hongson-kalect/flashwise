@@ -1,7 +1,6 @@
 import AppCheckbox from "@/components/AppCheckbox";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
-import AppTitle from "@/components/AppTitle";
 import AppSearch from "@/components/input/AppSearch";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
@@ -58,9 +57,10 @@ type Props = {
 };
 const ItemListHeader = ({ isSelecting }: Props) => {
   const { theme } = useTheme();
+  const [search, setSearch] = useState("");
   return (
     <View>
-      <AppTitle title="List" />
+      {/* <AppTitle title="List" /> */}
       <View className="">
         <View className="flex-row items-center h-16">
           <View
@@ -72,7 +72,7 @@ const ItemListHeader = ({ isSelecting }: Props) => {
             </AppText>
           </View>
         </View>
-        <AppSearch />
+        <AppSearch value={search} onChangeText={setSearch} />
         <View className="mt-6">
           {isSelecting ? <Selecting /> : <ListOptions />}
         </View>

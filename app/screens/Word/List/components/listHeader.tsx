@@ -59,6 +59,8 @@ type Props = {
 };
 const ItemListHeader = ({ isSelecting }: Props) => {
   const { theme } = useTheme();
+  const [search, setSearch] = useState("");
+
   return (
     <View>
       <AppTitle title="Word List" />
@@ -73,7 +75,7 @@ const ItemListHeader = ({ isSelecting }: Props) => {
             </AppText>
           </View>
         </View>
-        <AppSearch />
+        <AppSearch value={search} onChangeText={setSearch} />
         <View className="mt-6">
           {isSelecting ? <Selecting /> : <ListOptions />}
         </View>

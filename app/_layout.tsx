@@ -16,28 +16,47 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import AppRecording from "@/components/AppRecording";
 import { fonts } from "@/configs/fonts";
 import { BottomSheetProvider } from "@/providers/BottomSheet";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { MenuProvider } from "react-native-popup-menu";
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
+  const [isReady, setIsReady] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [hasSeenStart, setHasSeenStart] = useState<boolean | null>(null);
 
   SplashScreen.preventAutoHideAsync();
 
   useEffect(() => {
     async function loadFonts() {
-      console.log("loading font...");
-      await Font.loadAsync(fonts);
-      setFontsLoaded(true);
-      await SplashScreen.hideAsync();
+      try {
+        console.log("loading font...");
+        await Font.loadAsync(fonts);
+        setFontsLoaded(true);
+        const seen = await AsyncStorage.getItem("hasSeenStartPage");
+        setHasSeenStart(seen === "true");
+        console.log(seen);
+        // if (seen === "true") router.replace("/screens/Start/screen");
+      } catch (err) {
+        console.log(err);
+        setHasSeenStart(false);
+      } finally {
+        setIsReady(true);
+      }
     }
 
     loadFonts();
   }, []);
 
-  if (!fontsLoaded) {
+  useEffect(() => {
+    if (isReady && hasSeenStart !== null) {
+      SplashScreen.hideAsync();
+    }
+  }, [isReady, hasSeenStart]);
+
+  if (!isReady) {
     // Async font loading only occurs in development.
     return null;
   }
@@ -51,8 +70,14 @@ export default function RootLayout() {
               <LanguageProvider>
                 <BottomSheetProvider>
                   <AppWrapper>
-                    <Stack screenOptions={{ headerShown: false }}>
+                    <Stack
+                      screenOptions={{ headerShown: false }}
+                      initialRouteName={
+                        hasSeenStart ? "tabs" : "screens/Start/screen"
+                      }
+                    >
                       <Stack.Screen name="tabs" />
+                      <Stack.Screen name="screens/Start/screen" />
                       <Stack.Screen name="screens/Card/Create/screen" />
                       <Stack.Screen name="+not-found" />
                     </Stack>

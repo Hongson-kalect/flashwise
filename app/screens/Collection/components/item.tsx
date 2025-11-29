@@ -56,7 +56,7 @@ const CollectionItem = () => {
         </View>
         <View>
           <View className="mt-2 flex-row items-center justify-between">
-            <AppText size={"xs"} color="subText3" font="MulishLightItalic">
+            <AppText size={11} color="subText2" font="MulishLight">
               Đã học
             </AppText>
             <View className="flex-row items-center">

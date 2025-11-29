@@ -10,7 +10,24 @@ import AppIcon from "../AppIcon";
 import AppInput from "../AppInput";
 import AppText from "../AppText";
 
-const AppSearch = () => {
+type Props = {
+  placeholder?: string;
+  value: string;
+  onChangeText: (val: string) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
+  onSearch?: (val: string) => void;
+  style?: any;
+  classsName?: string;
+  isClearable?: boolean;
+  isFilterable?: boolean;
+  filterModal?: React.ReactNode;
+};
+const AppSearch = ({
+  isClearable = true,
+  isFilterable = true,
+  ...props
+}: Props) => {
   const { theme } = useTheme();
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState("");
@@ -121,40 +138,43 @@ const AppSearch = () => {
               fontFamily: fontFamily.MulishMedium,
             }}
             containerStyle={{ borderColor: "transparent" }}
-            value={value}
-            onChangeText={(value) => setValue(value)}
+            value={props.value}
+            onChangeText={(value) => props.onChangeText(value)}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
-            placeholder="Search......"
+            placeholder={props.placeholder}
             // className="h-full w-full text-lg"
           />
         </View>
       </View>
       <View className="flex-row gap-1 items-center">
         <View className="h-full items-center justify-center pr-2">
-          {focused && value && (
+          {props.value && isClearable && (
             <Animated.View
               entering={FadeIn.duration(200)}
               exiting={FadeOut.duration(200)}
               className={"h-full items-center justify-center"}
             >
               <AppIcon
+                onPress={() => props.onChangeText("")}
                 name="closecircle"
                 branch="antd"
-                size={16}
+                size={20}
                 color="#888"
               />
             </Animated.View>
           )}
           {/* <AppIcon name="closecircle" branch="antd" size={16} color="#555" /> */}
         </View>
-        <AppIcon
-          onPress={showFilterModal}
-          name={"filter"}
-          branch="antd"
-          size={24}
-          color="#888"
-        />
+        {isFilterable && (
+          <AppIcon
+            onPress={showFilterModal}
+            name={"filter"}
+            branch="antd"
+            size={24}
+            color="#888"
+          />
+        )}
       </View>
     </View>
   );

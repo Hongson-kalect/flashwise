@@ -1,14 +1,13 @@
-import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import AppLineChart from "@/components/chart/line";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useLanguage, useT } from "@/providers/Language";
 import { useTheme } from "@/providers/Theme";
-import { LinearGradient } from "expo-linear-gradient";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
 import Discover from "./components/discover";
 import HomeHeader from "./components/header";
+import HomeSearch from "./components/homeSearch";
 import Relearn from "./components/relearn";
 
 export default function HomePage() {
@@ -36,66 +35,12 @@ export default function HomePage() {
         </View>
 
         <View className="px-3 mt-6">
-          {/* <View
-            style={{
-              height: 1,
-              backgroundColor: theme.subText3,
-              marginBottom: -0.1,
-            }}
-          >
-            <View
-              style={{
-                height: 1,
-                backgroundColor: theme.success,
-                width: "80%",
-              }}
-            ></View>
-          </View> */}
-          <LinearGradient
-            colors={[theme.success + "66", "transparent"]}
-            // Tôi muốn nó có 2 màu nhưng có thể kiểm soát được độ rộng của màu đầu tiên ví dụ 90% màu 1 và 10% màu 2
-            // The locations array is used to define the gradient stops.
-            // The first value is the starting point of the gradient (0 being the left side and 1 being the right side).
-            // The second value is the ending point of the gradient (0 being the left side and 1 being the right side).
-            // In this case, we are starting the gradient at 10% from the left side and ending it at 90% from the left side.
-            locations={[0.7, 0.9]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              backgroundColor: theme.background,
-              borderRadius: 10,
-              elevation: 5,
-              borderColor: theme.success,
-              shadowColor: theme.success,
-            }}
-            className="flex-row items-center gap-2 p-2 justify-between"
-          >
-            <View className="flex-row gap-4 items-center ml-2">
-              <View>
-                <AppIcon
-                  branch="feather"
-                  name="book-open"
-                  size={28}
-                  color="secondary"
-                />
-              </View>
-              <View>
-                <AppText size={"xs"} color="subText2">
-                  Mục tiêu 🎯
-                </AppText>
-
-                <View className="">
-                  <AppText font="MulishMedium" color="primary">
-                    10 từ vựng mới
-                  </AppText>
-                </View>
-              </View>
-            </View>
-            <View className="pr-4 p-2 items-center justify-center">
-              <AppIcon branch="feather" size={20} name="refresh-ccw" />
-            </View>
-          </LinearGradient>
+          <HomeSearch />
         </View>
+
+        {/* <View className="px-3 mt-6">
+          <HomeTarget />
+        </View> */}
 
         <View className="px-3 mt-8">
           <Relearn />
