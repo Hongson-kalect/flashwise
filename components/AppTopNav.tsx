@@ -3,6 +3,7 @@ import { useTheme } from "@/providers/Theme";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { ReactElement } from "react";
 import { ScrollView, useWindowDimensions, View } from "react-native";
+import { Divider } from "react-native-paper";
 import AppButton from "./AppButton";
 
 const Tab = createBottomTabNavigator();
@@ -33,6 +34,17 @@ export function AppTopNav({ tabs, header }: Props) {
         screenOptions={{
           headerShown: false,
           tabBarPosition: "top",
+          animation: "shift",
+          tabBarVisibilityAnimationConfig: {
+            hide: {
+              animation: "timing",
+              config: {
+                duration: 200,
+              },
+            },
+          },
+          tabBarAccessibilityLabel: "Tab navigation",
+          tabBarHideOnKeyboard: true,
         }}
         tabBar={(props) => <CustomNavBar header={header} {...props} />}
       >
@@ -58,7 +70,7 @@ const CustomNavBar = ({ header, state, descriptors, navigation }) => {
   return (
     <View>
       {header}
-      <View className="px-2">
+      <View style={{ paddingTop: 0 }} className="p-2">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -103,6 +115,7 @@ const CustomNavBar = ({ header, state, descriptors, navigation }) => {
           })}
         </ScrollView>
       </View>
+      <Divider />
     </View>
   );
 };

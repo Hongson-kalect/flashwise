@@ -23,12 +23,17 @@ const PhatAm = ({ audio, disabled, sound, size = "medium" }: Props) => {
       disabled={!audio?.uri}
       style={{
         backgroundColor: audio?.uri ? theme.primary : theme.subText3,
-        width: size === "small" ? 32 : size === "medium" ? 56 : 80,
-        height: size === "small" ? 32 : size === "medium" ? 56 : 80,
+        width: size === "small" ? 40 : size === "medium" ? 56 : 80,
+        height: size === "small" ? 40 : size === "medium" ? 56 : 80,
       }}
       className=" border-gray-400 rounded-lg h-16 w-16 items-center justify-center"
     >
-      <AppIcon name={"volume-2"} branch="feather" color="white" size={32} />
+      <AppIcon
+        name={"volume-2"}
+        branch="feather"
+        color="white"
+        size={size === "small" ? 24 : size === "medium" ? 32 : 40}
+      />
     </TouchableOpacity>
   );
 };
