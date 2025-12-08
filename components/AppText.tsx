@@ -9,7 +9,7 @@ type Props = {
   style?: StyleProp<TextStyle>;
   onPress?: () => void;
   className?: string;
-  size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | number;
+  size?: keyof typeof textSizes | number;
   color?:
     | "title"
     | "constract"

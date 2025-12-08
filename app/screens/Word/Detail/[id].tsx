@@ -11,7 +11,7 @@ import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   LayoutChangeEvent,
   ListRenderItem,
@@ -21,10 +21,10 @@ import {
 import { MaterialTabBar, Tabs } from "react-native-collapsible-tab-view";
 import WordSelectForm from "../Create/components/wordSelectForm";
 import { testData, WordType } from "../data";
+import { basicWordMapping } from "../utils/utils";
 import WordAdvanceInformation from "./components/advanceInfomation";
 import BasicInformation from "./components/basicInformation";
 import WordDetailHeader from "./components/header";
-import WordMoreInformation from "./components/morelInformation";
 
 const HEADER_HEIGHT = 250;
 
@@ -36,11 +36,19 @@ const WordDetail = () => {
   const [pageMode, setPageMode] = useState<"view" | "update">("view");
   const [mode, setMode] = useState<"view" | "update">("view");
   const [tabIndex, setTabIndex] = useState(0);
+  const [languageMode, setLanguageMode] = useState<1 | 2>(1); // hiển thị single lang or 2 lang
+
+  const data = useMemo(() => basicWordMapping(DATA), [DATA]);
 
   const renderItem: ListRenderItem<number> = React.useCallback(({ index }) => {
     return (
       <View style={[styles.box, index % 2 === 0 ? styles.boxB : styles.boxA]} />
     );
+  }, []);
+
+  const [word, setWord] = useState(() => {
+    const val = data[0].value || "";
+    return val[0].toUpperCase() + val.slice(1);
   }, []);
 
   return (
@@ -76,7 +84,7 @@ const WordDetail = () => {
       renderHeader={() => (
         <View className="mb-4">
           <WordDetailHeader mode={pageMode} setMode={setPageMode} />
-          <WordInput editable={mode !== "view"} value="Date" />
+          <WordInput editable={mode !== "view"} value={word} />
           {/* <AppText>{tabName}</AppText> */}
           {/* <AppDivider /> */}
         </View>
@@ -85,7 +93,7 @@ const WordDetail = () => {
       // allowHeaderOverscroll={true}
       headerHeight={HEADER_HEIGHT} // optional
     >
-      {DATA.map((item, index) => {
+      {data.map((item, index) => {
         const isActive = index === tabIndex;
         return (
           <Tabs.Tab
@@ -103,7 +111,14 @@ const WordDetail = () => {
             name={item.id}
           >
             <Tabs.ScrollView>
-              <WordInfo data={item} mode={pageMode} />
+              <WordInfo
+                languageMode={languageMode}
+                toggleLanguageMode={() =>
+                  setLanguageMode((prev) => (prev === 1 ? 2 : 1))
+                }
+                data={item}
+                mode={pageMode}
+              />
             </Tabs.ScrollView>
           </Tabs.Tab>
         );
@@ -115,6 +130,8 @@ const WordDetail = () => {
 type WordInfoType = {
   data: WordType;
   mode?: "create" | "update" | "view";
+  languageMode: 1 | 2;
+  toggleLanguageMode: () => void;
 };
 const WordInfo = (props: WordInfoType) => {
   const { theme } = useTheme();
@@ -172,6 +189,9 @@ const WordInfo = (props: WordInfoType) => {
             definations={props.data.definations}
             data={props.data.wordInfo}
             mode={props.mode}
+            languageMode={props.languageMode}
+            toggleLanguageMode={props.toggleLanguageMode}
+            translates={props.data.translates}
             labelWidth={labelWidth}
             onLabelLayout={onLabelLayout}
             openInputModal={openInputModal}
@@ -179,7 +199,7 @@ const WordInfo = (props: WordInfoType) => {
           />
         </View>
 
-        <View className="mt-6">
+        {/* <View className="mt-6">
           <WordMoreInformation
             mode={props.mode}
             labelWidth={labelWidth}
@@ -187,12 +207,16 @@ const WordInfo = (props: WordInfoType) => {
             openInputModal={openInputModal}
             openRadioModal={openRadioModal}
           />
-        </View>
+        </View> */}
 
-        <AppDivider style={{ marginTop: 16, marginBottom: 12 }} />
+        {/* <AppDivider style={{ marginTop: 8, marginBottom: 12 }} /> */}
 
-        <View>
+        <View className="mt-4">
           <WordAdvanceInformation
+            related={props.data.relateds}
+            synonym={props.data.synonyms}
+            antonym={props.data.antonyms}
+            form={props.data.forms}
             mode={props.mode}
             labelWidth={labelWidth}
             onLabelLayout={onLabelLayout}
