@@ -29,13 +29,13 @@ const AudioRecoder = ({ onAudioChange }: Props) => {
         elevation: 4,
         shadowColor: theme.secondary,
       }}
-      className="h-16 w-16 rounded-lg items-center justify-center"
+      className="h-12 w-12 rounded-lg items-center justify-center"
     >
       <AppIcon
         name={"microphone"}
         branch="fa6"
         color={theme.secondary}
-        size={32}
+        size={28}
       />
     </TouchableOpacity>
   );

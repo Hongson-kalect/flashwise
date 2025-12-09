@@ -1,16 +1,15 @@
+import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
-import EditIcon from "@/components/icons/editIcon";
-import { BoldText } from "@/components/output/BoldText";
 import PhatAm from "@/components/PhatAm";
 import PhienAm from "@/components/PhienAm";
 import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
 } from "@/interfaces/word";
+import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
-import { FontAwesome } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
@@ -27,14 +26,12 @@ import { Divider } from "react-native-paper";
 import Animated, {
   FadeInUp,
   LinearTransition,
-  SlideInLeft,
   SlideInRight,
-  SlideOutLeft,
-  SlideOutRight,
 } from "react-native-reanimated";
 import AudioPicker from "../../components/AudioPicker";
 import AudioRecoder from "../../components/AudioRecorder";
 import { WordInfoType, WordType } from "../../data";
+import WordDefinations from "./definations";
 
 interface Props {
   definations: WordType["definations"];
@@ -42,7 +39,6 @@ interface Props {
   translates: WordType["translates"];
   mode?: "create" | "update" | "view";
   languageMode: 1 | 2;
-  toggleLanguageMode: () => void;
   labelWidth: number;
   onLabelLayout: (event: LayoutChangeEvent) => void;
   openInputModal: (props: CreateWordInputModalProps) => void;
@@ -88,30 +84,32 @@ const BasicInformation = ({
   };
 
   const { width } = useWindowDimensions();
+  const { present } = useBottomSheet();
+
+  const onShowMoreDefinations = () => {
+    present({
+      size: "full",
+      render: () => (
+        <MoreDefinations
+          items={definations.slice(2)}
+          languageMode={props.languageMode}
+        />
+      ),
+      title: "Other definations",
+    });
+  };
 
   return (
     <View>
       <View className="flex-row items-center gap-2">
-        <View className="flex-row items-center gap-2 mt-2 flex-1">
+        <View className="flex-row items-center gap-2 flex-1">
           <View className="flex-row items-center justify-center gap-2">
-            {/* <AppText></AppText> */}
-            {mode !== "view" && (
-              <Animated.View entering={SlideInLeft} exiting={SlideOutLeft}>
-                <AudioPicker onAudioChange={setSelectedAudio} />
-              </Animated.View>
-            )}
             <PhatAm
               size="small"
               audio={selectedAudio}
               sound={sound}
               disabled={!selectedAudio?.uri}
             />
-
-            {mode !== "view" && (
-              <Animated.View entering={SlideInRight} exiting={SlideOutRight}>
-                <AudioRecoder onAudioChange={setSelectedAudio} />
-              </Animated.View>
-            )}
           </View>
 
           <TouchableOpacity
@@ -121,23 +119,41 @@ const BasicInformation = ({
             disabled={mode === "view"}
             className="flex-1 flex-row"
           >
-            {mode !== "view" && (
-              // Do scale ngược nên hiệu ứng animation cũng bị ngược
-              // Thực tế nó sẽ ra vào bên trái
-              <View className="-scale-x-100 mr-2">
-                <EditIcon in="slideInRight" out="slideOutRight" />
-              </View>
-            )}
             <PhienAm> {ipas?.[0]?.value}</PhienAm>
           </TouchableOpacity>
         </View>
 
-        <Pressable
+        <View className="flex-row items-center gap-2">
+          <Pressable
+            hitSlop={10}
+            style={{ backgroundColor: theme.secondary }}
+            className="h-10 w-10 rounded-lg items-center justify-center"
+            onPress={() => alert("Nhảy sense")}
+          >
+            <AppIcon color="white" branch="antd" name={"left"} size={20} />
+          </Pressable>
+          <View className="items-center justify-center">
+            <AppText color="subText1" font="MulishBold">
+              Sense 1/6
+            </AppText>
+          </View>
+          <Pressable
+            className="h-10 w-10 rounded-lg  items-center justify-center"
+            hitSlop={10}
+            style={{ backgroundColor: theme.secondary }}
+            onPress={() => alert("Nhảy sense")}
+          >
+            <AppIcon branch="antd" color="white" name={"right"} size={20} />
+          </Pressable>
+        </View>
+
+        {/* Edit Line */}
+
+        {/* <Pressable
           hitSlop={10}
           onPress={swapLang}
           className="items-center flex-row gap-2"
         >
-          {/* <AppIcon branch="antd" size={20} color="primary" name={"eye"} /> */}
           <Animated.View
             layout={LinearTransition.springify()}
             style={
@@ -162,8 +178,31 @@ const BasicInformation = ({
               source={require("@/assets/images/flags/en.png")}
             />
           </Animated.View>
-        </Pressable>
+        </Pressable> */}
       </View>
+
+      {mode !== "view" && (
+        <Animated.View
+          entering={SlideInRight}
+          className="flex-row items-center justify-between mt-2"
+        >
+          <View className="gap-2 flex-row items-center">
+            <View>
+              <AudioPicker onAudioChange={setSelectedAudio} />
+            </View>
+
+            <View>
+              <AudioRecoder onAudioChange={setSelectedAudio} />
+            </View>
+          </View>
+          <View>
+            <AppButton onPress={() => {}} outline>
+              <AppIcon name="external-link" branch="feather" />
+              <AppText>Manage sense</AppText>
+            </AppButton>
+          </View>
+        </Animated.View>
+      )}
 
       {props.languageMode === 2 && (
         <Animated.View
@@ -197,7 +236,7 @@ const BasicInformation = ({
 
       <Animated.View
         layout={LinearTransition}
-        className="my-8 items-center justify-center"
+        className="my-10 items-center justify-center"
       >
         {true ? (
           // {image?.uri ? (
@@ -235,7 +274,16 @@ const BasicInformation = ({
           <AppTitle title="Định nghĩa 📖" />
           {definations.length > 2 && (
             <View className="flex-row items-center gap-1">
-              <AppText size="xs" color="primary" font="MulishLightItalic">
+              <AppText
+                style={{
+                  height: "100%",
+                  paddingVertical: 8,
+                }}
+                onPress={onShowMoreDefinations}
+                size="xs"
+                color="primary"
+                font="MulishLightItalic"
+              >
                 {definations.length - 2} Nghĩa khác
               </AppText>
 
@@ -251,116 +299,14 @@ const BasicInformation = ({
         <Divider />
         <View className="py-2">
           <View>
-            {definations.slice(0, 2).map((item, index) => {
-              const examples = item.examples;
-              const mainDefinition = item.value[0];
-              const subDefinitions = item.value.slice(1);
-
-              return (
-                <View key={index}>
-                  {index !== 0 && <Divider style={{ marginVertical: 14 }} />}
-                  <AppText color="subText1">
-                    <AppIcon
-                      name={"star"}
-                      size={12}
-                      style={{ marginRight: 4 }}
-                      color="secondary"
-                      branch="antd"
-                    />
-                    {mainDefinition[0].toUpperCase()}
-                    {mainDefinition.slice(1)}
-                  </AppText>
-
-                  <View className="mt-1.5">
-                    {subDefinitions.map((subDefinition, index2) => {
-                      return (
-                        <View key={"sub-" + index2}>
-                          <AppText
-                            key={index2}
-                            size={"sm"}
-                            font="MulishLight"
-                            color="subText1"
-                          >
-                            {subDefinition[0].toUpperCase()}
-                            {subDefinition.slice(1)}
-                          </AppText>
-                        </View>
-                      );
-                    })}
-                  </View>
-
-                  <View className="mt-4 pl-2 gap-4">
-                    {/* <AppText>Example</AppText> */}
-                    {examples.map((example, index2) => {
-                      const origins = example.exampleTranslate;
-                      const upperCase =
-                        example.value[0].toUpperCase() + example.value.slice(1);
-                      return (
-                        <View key={"a" + index2}>
-                          <View></View>
-                          <AppText
-                            key={index2}
-                            size={"sm"}
-                            font="MulishLightItalic"
-                            color="primary"
-                          >
-                            <AppText
-                              size={"sm"}
-                              font="MulishRegularItalic"
-                              color="primary"
-                            >
-                              <AppIcon
-                                style={{ transform: [{ scaleX: -1 }] }}
-                                color="primary"
-                                branch="antd"
-                                name={"edit"}
-                                size={12}
-                              />
-                              :
-                            </AppText>{" "}
-                            <BoldText
-                              size={"sm"}
-                              color="subText1"
-                              boldColor="primary"
-                              font="MulishRegularItalic"
-                              boldFont="MulishBoldItalic"
-                              text={upperCase}
-                              bold={example.bold}
-                            />
-                          </AppText>
-                          {props.languageMode === 2 ? (
-                            <View className="mt-1">
-                              {[1].map((origin, index3) => {
-                                return (
-                                  <View
-                                    key={"b" + index3}
-                                    className="flex-row items-center gap-1"
-                                  >
-                                    <FontAwesome
-                                      name="hand-o-right"
-                                      size={12}
-                                      // color={"subText1"}
-                                    />
-                                    <AppText
-                                      key={index3}
-                                      size={"sm"}
-                                      font="MulishLightItalic"
-                                      color="subText1"
-                                    >
-                                      {"Test translate"}
-                                    </AppText>
-                                  </View>
-                                );
-                              })}
-                            </View>
-                          ) : null}
-                        </View>
-                      );
-                    })}
-                  </View>
-                </View>
-              );
-            })}
+            {definations.slice(0, 2).map((item, index) => (
+              <WordDefinations
+                key={index}
+                item={item}
+                index={index}
+                languageMode={props.languageMode}
+              />
+            ))}
           </View>
           {/* <Information
           mode={mode}
@@ -374,16 +320,21 @@ const BasicInformation = ({
 
 export default BasicInformation;
 
-const backFlagPosition = {
-  position: "absolute",
-  left: -6,
-  top: -6,
-  // zIndex: 1,
+type MoreDefinationsProps = {
+  items: WordType["definations"];
+  languageMode: 1 | 2;
 };
-
-const frontFlagPosition = {
-  position: "relative",
-  right: 0,
-  zIndex: 1,
-  top: 0,
+const MoreDefinations = ({ items, languageMode }: MoreDefinationsProps) => {
+  return (
+    <View className="px-3 mt-4">
+      {items.map((item, index) => (
+        <WordDefinations
+          key={index}
+          item={item}
+          index={index}
+          languageMode={languageMode}
+        />
+      ))}
+    </View>
+  );
 };

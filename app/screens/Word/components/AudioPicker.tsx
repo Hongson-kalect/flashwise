@@ -20,10 +20,11 @@ const AudioPicker = ({ onAudioChange }: Props) => {
   return (
     <TouchableOpacity
       onPress={handlePickAudio}
+      hitSlop={10}
       style={{ backgroundColor: theme.secondary }}
-      className="h-16 w-16 rounded-lg items-center justify-center"
+      className="h-12 w-12 rounded-lg items-center justify-center"
     >
-      <AppIcon name={"folder1"} branch="antd" color="white" size={32} />
+      <AppIcon name={"folder1"} branch="antd" color="white" size={24} />
     </TouchableOpacity>
   );
 };

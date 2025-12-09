@@ -11,13 +11,8 @@ import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useMemo, useState } from "react";
-import {
-  LayoutChangeEvent,
-  ListRenderItem,
-  StyleSheet,
-  View,
-} from "react-native";
+import { useMemo, useState } from "react";
+import { LayoutChangeEvent, StyleSheet, View } from "react-native";
 import { MaterialTabBar, Tabs } from "react-native-collapsible-tab-view";
 import WordSelectForm from "../Create/components/wordSelectForm";
 import { testData, WordType } from "../data";
@@ -25,8 +20,6 @@ import { basicWordMapping } from "../utils/utils";
 import WordAdvanceInformation from "./components/advanceInfomation";
 import BasicInformation from "./components/basicInformation";
 import WordDetailHeader from "./components/header";
-
-const HEADER_HEIGHT = 250;
 
 const DATA: WordType[] = testData;
 
@@ -40,58 +33,31 @@ const WordDetail = () => {
 
   const data = useMemo(() => basicWordMapping(DATA), [DATA]);
 
-  const renderItem: ListRenderItem<number> = React.useCallback(({ index }) => {
-    return (
-      <View style={[styles.box, index % 2 === 0 ? styles.boxB : styles.boxA]} />
-    );
-  }, []);
-
   const [word, setWord] = useState(() => {
     const val = data[0].value || "";
     return val[0].toUpperCase() + val.slice(1);
   }, []);
 
+  const toggleLanguageMode = () =>
+    setLanguageMode((prev) => (prev === 1 ? 2 : 1));
+
   return (
-    // <View style={{ backgroundColor: theme.background }} className="flex-1">
-    // <Tabs.Container
-    //   renderHeader={() => (
-    //     <View className="mb-4">
-    //       <WordDetailHeader mode={pageMode} setMode={setPageMode} />
-    //       <WordInput editable={mode !== "view"} value="Free" />
-    //       {/* <AppDivider /> */}
-    //     </View>
-    //   )}
-    //   // headerHeight={HEADER_HEIGHT} // optional
-    // >
-    //   <Tabs.Tab name="A">
-    //     <Tabs.FlatList
-    //       data={[1, 2, 3]}
-    //       renderItem={WordInfo}
-    //       keyExtractor={(item, index) => index.toString()}
-    //     />
-    //   </Tabs.Tab>
-    //   <Tabs.Tab name="B">
-    //     <Tabs.ScrollView>
-    //       <View style={[styles.box, styles.boxA]} />
-    //       <View style={[styles.box, styles.boxB]} />
-    //     </Tabs.ScrollView>
-    //   </Tabs.Tab>
-    // </Tabs.Container>
     <Tabs.Container
       onTabChange={(props) => {
         setTabIndex(props.index);
       }}
       renderHeader={() => (
         <View className="mb-4">
-          <WordDetailHeader mode={pageMode} setMode={setPageMode} />
+          <WordDetailHeader
+            languageMode={languageMode}
+            toggleLanguageMode={toggleLanguageMode}
+            mode={pageMode}
+            setMode={setPageMode}
+          />
           <WordInput editable={mode !== "view"} value={word} />
-          {/* <AppText>{tabName}</AppText> */}
-          {/* <AppDivider /> */}
         </View>
       )}
       renderTabBar={(props) => <MaterialTabBar {...props} scrollEnabled />}
-      // allowHeaderOverscroll={true}
-      headerHeight={HEADER_HEIGHT} // optional
     >
       {data.map((item, index) => {
         const isActive = index === tabIndex;
@@ -113,9 +79,6 @@ const WordDetail = () => {
             <Tabs.ScrollView>
               <WordInfo
                 languageMode={languageMode}
-                toggleLanguageMode={() =>
-                  setLanguageMode((prev) => (prev === 1 ? 2 : 1))
-                }
                 data={item}
                 mode={pageMode}
               />
@@ -131,7 +94,6 @@ type WordInfoType = {
   data: WordType;
   mode?: "create" | "update" | "view";
   languageMode: 1 | 2;
-  toggleLanguageMode: () => void;
 };
 const WordInfo = (props: WordInfoType) => {
   const { theme } = useTheme();
@@ -190,7 +152,6 @@ const WordInfo = (props: WordInfoType) => {
             data={props.data.wordInfo}
             mode={props.mode}
             languageMode={props.languageMode}
-            toggleLanguageMode={props.toggleLanguageMode}
             translates={props.data.translates}
             labelWidth={labelWidth}
             onLabelLayout={onLabelLayout}
