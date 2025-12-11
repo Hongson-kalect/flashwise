@@ -3,31 +3,33 @@ import AppText from "@/components/AppText";
 import { BoldText } from "@/components/output/BoldText";
 import { FontAwesome } from "@expo/vector-icons";
 import { View } from "react-native";
-import { Divider } from "react-native-paper";
 import { WordType } from "../../data";
 
 type Props = {
   item: WordType["definations"][0];
   languageMode: 1 | 2;
   index: number;
+  isSimple?: boolean;
 };
 
-const WordDefinations = ({ item, languageMode, index }: Props) => {
+const WordDefinations = ({ item, languageMode, index, isSimple }: Props) => {
   const examples = item.examples;
   const mainDefinition = item.value[0];
   const subDefinitions = item.value.slice(1);
 
   return (
-    <View>
-      {index !== 0 && <Divider style={{ marginVertical: 16 }} />}
+    <View className="py-4">
+      {/* {index !== 0 && <Divider style={{ marginVertical: 16 }} />} */}
       <AppText color="subText1">
-        <AppIcon
-          name={"star"}
-          size={12}
-          style={{ marginRight: 4 }}
-          color="disabled" // "secondary" if choose
-          branch="antd"
-        />
+        {!isSimple && (
+          <AppIcon
+            name={"star"}
+            size={12}
+            style={{ marginRight: 4 }}
+            color="disabled" // "secondary" if choose
+            branch="antd"
+          />
+        )}
         {mainDefinition[0].toUpperCase()}
         {mainDefinition.slice(1)}
       </AppText>
@@ -52,7 +54,7 @@ const WordDefinations = ({ item, languageMode, index }: Props) => {
         </View>
       ) : null}
 
-      {examples.length > 0 ? (
+      {!isSimple && examples.length > 0 ? (
         <View className="mt-4 pl-2 gap-4">
           {/* <AppText>Example</AppText> */}
           {examples.map((example, index2) => {

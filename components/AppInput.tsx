@@ -76,7 +76,7 @@ const AppInput = ({
           <View
             style={{
               position: "absolute",
-              left: -6,
+              left: 6,
               top: 0,
               right: 0,
               bottom: 0,
@@ -87,7 +87,6 @@ const AppInput = ({
             <AppText
               style={[inputStyle, { color: theme.subText3, fontFamily: font }]}
               size={fontSize}
-              className="scale-90"
             >
               {placeholder}
             </AppText>

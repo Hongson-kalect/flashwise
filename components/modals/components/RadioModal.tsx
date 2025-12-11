@@ -1,6 +1,8 @@
 import { AppDivider } from "@/components/AppDivider";
 import AppText from "@/components/AppText";
+import { useDebounce } from "@/hooks/useDebouce";
 import { useTheme } from "@/providers/Theme";
+import useModalStore from "@/stores/modalStore";
 import { useEffect, useMemo, useState } from "react";
 import {
   ScrollView,
@@ -20,12 +22,27 @@ type ListModalProps = {
   type?: "checkbox" | "radio";
   title?: string;
   show?: boolean;
+  inAnimation?:
+    | "fadeIn"
+    | "slideInDown"
+    | "slideInUp"
+    | "zoomIn"
+    | "zoomInDown";
+  outAnimation?:
+    | "fadeOut"
+    | "slideOutDown"
+    | "slideOutUp"
+    | "zoomOut"
+    | "zoomOutDown";
 };
 
 export const OptionsModal = (props: ListModalProps) => {
   // Modal sẽ ẩn khi props = null => Dữ liệu bị mất ngay lập tức
   // Animation out sẽ thực hiện với màn trắng => dùng cái này để cache dữ liệu trước đó
   const [placeholder, setPlaceholder] = useState(props);
+  const { listModal } = useModalStore();
+  const outAnimation = useDebounce(listModal?.outAnimation, 200); // when close all modal will be null, include outAnimation, so keep this to close it correctly
+
   useEffect(() => {
     props.show && setPlaceholder(props);
   }, [props]);
@@ -67,8 +84,8 @@ export const OptionsModal = (props: ListModalProps) => {
   return (
     <ReactNativeModal
       onBackButtonPress={props.onCancel}
-      animationIn={"slideInUp"}
-      animationOut={"slideOutUp"}
+      animationIn={props.inAnimation || "slideInUp"}
+      animationOut={outAnimation || "slideOutUp"}
       isVisible={props.show}
       backdropTransitionOutTiming={1}
       backdropColor={theme.text}
@@ -78,19 +95,19 @@ export const OptionsModal = (props: ListModalProps) => {
       avoidKeyboard
     >
       <Animated.View
-        className="p-4 rounded-xl"
+        className="py-4 rounded-xl"
         style={{
           maxHeight: (height / 4) * 3,
           backgroundColor: theme.background,
         }}
       >
         {showValue.title && (
-          <AppText className="text-2xl mb-4" font="MulishBold" size={"xl"}>
+          <AppText className="text-2xl mb-4 px-4" font="MulishBold" size={"xl"}>
             {showValue.title}
           </AppText>
         )}
 
-        <ScrollView>
+        <ScrollView className="px-4">
           {showValue.options.map((option, index) => (
             <View key={option.value || "null value"}>
               <SelectItem

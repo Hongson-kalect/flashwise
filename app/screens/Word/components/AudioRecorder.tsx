@@ -28,6 +28,8 @@ const AudioRecoder = ({ onAudioChange }: Props) => {
         backgroundColor: theme.white,
         elevation: 4,
         shadowColor: theme.secondary,
+        borderWidth: 0.5,
+        borderColor: theme.secondary,
       }}
       className="h-12 w-12 rounded-lg items-center justify-center"
     >

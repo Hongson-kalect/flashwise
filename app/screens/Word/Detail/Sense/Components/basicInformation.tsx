@@ -1,4 +1,3 @@
-import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
@@ -17,25 +16,18 @@ import { useMemo, useState } from "react";
 import {
   Image,
   LayoutChangeEvent,
-  Pressable,
   TouchableOpacity,
   useWindowDimensions,
   View,
 } from "react-native";
 import { Divider } from "react-native-paper";
-import Animated, {
-  FadeInUp,
-  LinearTransition,
-  SlideInRight,
-} from "react-native-reanimated";
-import AudioPicker from "../../components/AudioPicker";
-import AudioRecoder from "../../components/AudioRecorder";
-import { WordInfoType, WordType } from "../../data";
-import WordDefinations from "./definations";
+import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
+import { WordType } from "../../../data";
+import WordDefinations from "../../components/definations";
 
 interface Props {
   definations: WordType["definations"];
-  data: WordInfoType;
+  data: WordType["wordInfo"];
   translates: WordType["translates"];
   mode?: "create" | "update" | "view";
   languageMode: 1 | 2;
@@ -120,7 +112,7 @@ const BasicInformation = ({
           </TouchableOpacity>
         </View>
 
-        <View className="flex-row items-center gap-2">
+        {/* <View className="flex-row items-center gap-2">
           <Pressable
             hitSlop={10}
             style={{ backgroundColor: theme.primary }}
@@ -142,7 +134,7 @@ const BasicInformation = ({
           >
             <AppIcon branch="antd" color="white" name={"right"} size={20} />
           </Pressable>
-        </View>
+        </View> */}
 
         {/* Edit Line */}
 
@@ -178,7 +170,7 @@ const BasicInformation = ({
         </Pressable> */}
       </View>
 
-      {mode !== "view" && (
+      {/* {mode !== "view" && (
         <Animated.View
           entering={SlideInRight}
           className="flex-row items-center justify-between mt-2"
@@ -199,7 +191,7 @@ const BasicInformation = ({
             </AppButton>
           </View>
         </Animated.View>
-      )}
+      )} */}
 
       {props.languageMode === 2 && (
         <Animated.View

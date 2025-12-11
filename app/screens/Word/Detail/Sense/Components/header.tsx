@@ -10,7 +10,7 @@ type Props = {
   mode?: "create" | "update" | "view";
   setMode: Dispatch<SetStateAction<"update" | "view">>;
 };
-const CreateSenseHeader = ({ mode, setMode }: Props) => {
+const SenseHeader = ({ mode, setMode }: Props) => {
   return (
     <View className="flex-row justify-between items-center">
       <AppReturnHeader
@@ -59,4 +59,4 @@ const CreateSenseHeader = ({ mode, setMode }: Props) => {
   );
 };
 
-export default CreateSenseHeader;
+export default SenseHeader;

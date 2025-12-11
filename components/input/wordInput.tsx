@@ -15,16 +15,19 @@ const WordInput = (props: Props) => {
     <View className="flex-row gap-4 items-center">
       <View
         className="flex-1  px-2 justify-end relative"
-        style={{
-          borderBottomWidth: 2,
-          borderBottomColor: props.editable
-            ? focusing
-              ? theme.primary
-              : theme.disabled
-            : "transparent",
-        }}
+        style={
+          {
+            // borderBottomWidth: 2,
+            // borderBottomColor: props.editable
+            // ? focusing
+            //   ? theme.primary
+            //   : theme.disabled
+            // : "transparent",
+          }
+        }
       >
         <View>
+          {/* Create thì sẽ là TextInput, hiển thị bình thường sẽ dùng text, nếu edit thì mở form */}
           <TextInput
             autoFocus={!props.value} // Không có dữ liệu thì sẽ auto focus
             onFocus={() => setFocusing(true)}
@@ -32,6 +35,7 @@ const WordInput = (props: Props) => {
             className="py-0"
             readOnly={!props.editable}
             multiline
+            enterKeyHint="done"
             scrollEnabled={false}
             style={{
               // fontSize: 32,

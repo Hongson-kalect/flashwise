@@ -1,7 +1,9 @@
+import Accordion from "@/components/AppArccodion";
 import AppButton from "@/components/AppButton";
+import CollapseSection from "@/components/AppCollapsable";
 import { AppDivider } from "@/components/AppDivider";
+import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
-import WordInput from "@/components/input/wordInput";
 import {
   bottomSheetTitle,
   CreateWordInputModalProps,
@@ -20,6 +22,7 @@ import { basicWordMapping } from "../utils/utils";
 import WordAdvanceInformation from "./components/advanceInfomation";
 import BasicInformation from "./components/basicInformation";
 import WordDetailHeader from "./components/header";
+import SenseItem from "./Sense/Components/senseItem";
 
 const DATA: WordType[] = testData;
 
@@ -27,7 +30,6 @@ const WordDetail = () => {
   const { theme } = useTheme();
   const { id } = useLocalSearchParams();
   const [pageMode, setPageMode] = useState<"view" | "update">("view");
-  const [mode, setMode] = useState<"view" | "update">("view");
   const [tabIndex, setTabIndex] = useState(0);
   const [languageMode, setLanguageMode] = useState<1 | 2>(1); // hiển thị single lang or 2 lang
 
@@ -54,7 +56,12 @@ const WordDetail = () => {
             mode={pageMode}
             setMode={setPageMode}
           />
-          <WordInput editable={mode !== "view"} value={word} />
+          {/* <WordInput editable={mode !== "view"} value={word} /> */}
+          <View className="items-center py-2">
+            <AppText color="primary" size={40} font="MulishSemiBold">
+              {word}
+            </AppText>
+          </View>
         </View>
       )}
       renderTabBar={(props) => <MaterialTabBar {...props} scrollEnabled />}
@@ -77,11 +84,19 @@ const WordDetail = () => {
             name={item.id}
           >
             <Tabs.ScrollView>
-              <WordInfo
-                languageMode={languageMode}
-                data={item}
-                mode={pageMode}
-              />
+              {pageMode === "view" ? (
+                <WordInfo
+                  languageMode={languageMode}
+                  data={item}
+                  mode={pageMode}
+                />
+              ) : (
+                <SenseEdit
+                  languageMode={languageMode}
+                  data={item}
+                  mode={pageMode}
+                />
+              )}
             </Tabs.ScrollView>
           </Tabs.Tab>
         );
@@ -144,7 +159,7 @@ const WordInfo = (props: WordInfoType) => {
   };
 
   return (
-    <View className="bg-gray-50">
+    <View className="bg-white">
       <View className="px-2">
         <View className="mt-2">
           <BasicInformation
@@ -201,6 +216,53 @@ const WordInfo = (props: WordInfoType) => {
         />
       </View>
       <View className="h-10"></View>
+    </View>
+  );
+};
+
+type SenseProps = {
+  languageMode: 1 | 2;
+  data: WordType;
+  mode?: "create" | "update" | "view";
+};
+const SenseEdit = (props: SenseProps) => {
+  const isActive = true;
+
+  return (
+    <View className="py-4">
+      <View className="mb-4 flex-row items-center justify-end px-2">
+        <AppButton
+          onPress={() => {
+            router.push({
+              pathname: "/screens/Word/Detail/Sense/Create/screen",
+              params: {
+                wordId: props.data.id,
+                languageMode: props.languageMode,
+                pos: props.data.wordInfo.pos,
+              },
+            });
+          }}
+        >
+          <AppIcon branch="antd" name="plus" size={16} color="white" />
+          <AppText color="white" size="sm" font="MulishBold">
+            Add sense
+          </AppText>
+        </AppButton>
+      </View>
+      <CollapseSection title="Sense 1: Dumamu">
+        <SenseItem
+          languageMode={props.languageMode}
+          data={props.data}
+          mode={props.mode}
+        />
+      </CollapseSection>
+      <Accordion active={isActive} title={"Sense 1: Dumamu"}>
+        <WordInfo
+          languageMode={props.languageMode}
+          data={props.data}
+          mode={props.mode}
+        />
+      </Accordion>
     </View>
   );
 };

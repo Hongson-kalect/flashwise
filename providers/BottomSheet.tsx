@@ -233,24 +233,26 @@ const BottomSheetInstance = forwardRef<BottomSheetModal, BottomSheetProps>(
         onDismiss={() => (content = () => null)}
       >
         <BottomSheetView>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={backAction}
             style={{ right: 16, top: 0 }}
             className=" absolute"
           >
             <AntDesign name="closecircle" size={24} color="#aaa" />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           {title && (
             <>
               <View className="items-center flex-row px-4 mb-2">
-                <AppText font="MulishBold" size={"2xl"}>
+                <AppText
+                  numberOfLines={1}
+                  className="flex-1"
+                  // style={{ marginRight: 16 }}
+                  font="MulishBold"
+                  size={"2xl"}
+                >
                   {title}
                 </AppText>
-                <TouchableOpacity
-                  onPress={backAction}
-                  style={{ right: 16, top: 0 }}
-                  className=" absolute"
-                >
+                <TouchableOpacity onPress={backAction}>
                   <AntDesign name="closecircle" size={24} color="#aaa" />
                 </TouchableOpacity>
               </View>

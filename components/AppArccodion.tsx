@@ -1,23 +1,28 @@
 import { useTheme } from "@/providers/Theme";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Easing,
+  Pressable,
   StyleSheet,
   TouchableOpacity,
   View,
   ViewStyle,
 } from "react-native";
+import { Divider } from "react-native-paper";
 import AppIcon from "./AppIcon";
+import AppText from "./AppText";
 import AppTitle from "./AppTitle";
 
 type AccordionSize = "sm" | "md" | "lg";
 
 interface IAccordion {
-  title: string;
+  title: string | React.ReactNode;
+  // style?: ViewStyle;
   children: React.ReactNode;
   style?: ViewStyle;
   size?: AccordionSize;
+  onToggle?: (state: boolean) => void;
 }
 
 const fontSizeMap: Record<AccordionSize, number> = {
@@ -26,7 +31,13 @@ const fontSizeMap: Record<AccordionSize, number> = {
   lg: 24,
 };
 
-const Accordion = ({ title, children, style, size = "md" }: IAccordion) => {
+const Accordion = ({
+  title,
+  children,
+  style,
+  size = "md",
+  onToggle,
+}: IAccordion) => {
   const { theme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const animationController = useRef(new Animated.Value(0)).current;
@@ -46,7 +57,7 @@ const Accordion = ({ title, children, style, size = "md" }: IAccordion) => {
     outputRange: [0, 500], // Đặt một giá trị lớn, ví dụ 500
   });
 
-  const onToggle = () => {
+  const toggle = () => {
     const toValue = isOpen ? 0 : 1;
     setIsOpen(!isOpen);
 
@@ -58,40 +69,86 @@ const Accordion = ({ title, children, style, size = "md" }: IAccordion) => {
     }).start();
   };
 
+  useEffect(() => {
+    onToggle?.(isOpen);
+  }, [isOpen]);
+
   return (
-    <View style={[styles.accordion, style]}>
+    <View
+      style={[
+        styles.accordion,
+        {
+          borderWidth: 0.5,
+          // elevation: 1,
+          // paddingBottom: 8,
+          backgroundColor: theme.background,
+          borderRadius: 8,
+          overflow: "hidden",
+          borderColor: isOpen ? theme.primary : theme.background,
+        },
+        style,
+      ]}
+    >
       {/* Header */}
-      <TouchableOpacity
-        onPress={onToggle}
-        activeOpacity={0.8}
-        style={[
-          styles.header,
-          {
-            borderColor: theme.title + (isOpen ? "ff" : "66"),
-            backgroundColor: theme.background,
-            borderBottomWidth: fontSizeMap[size] / 8,
-          },
-        ]}
-      >
-        <AppTitle
-          title={title}
+      {typeof title === "string" ? (
+        <Pressable
+          onPress={toggle}
           style={{
-            fontSize: fontSizeMap[size],
-            color: theme.title,
+            paddingHorizontal: 12,
+            paddingVertical: 12,
+            // backgroundColor: theme.primary,
+            // elevation: 2,
           }}
-        />
-        <Animated.View style={{ transform: [{ rotateZ: arrowTransform }] }}>
-          <AppIcon
-            name="chevron-right"
-            branch="feather"
-            size={fontSizeMap[size] + 4}
-            color={theme.title}
+          className="flex-row items-center justify-between"
+        >
+          <View className="flex-1">
+            <AppText size={"lg"} font="MulishSemiBold" color={"title"}>
+              {title}
+            </AppText>
+          </View>
+          <Animated.View style={{ transform: [{ rotateZ: arrowTransform }] }}>
+            <AppIcon
+              name="chevron-right"
+              branch="feather"
+              size={fontSizeMap[size] + 4}
+              color={theme.title}
+            />
+          </Animated.View>
+        </Pressable>
+      ) : (
+        <TouchableOpacity
+          onPress={toggle}
+          activeOpacity={0.8}
+          style={[
+            styles.header,
+            {
+              borderColor: theme.title + (isOpen ? "ff" : "66"),
+              backgroundColor: theme.background,
+              borderBottomWidth: fontSizeMap[size] / 8,
+            },
+          ]}
+        >
+          <AppTitle
+            title={title}
+            style={{
+              fontSize: fontSizeMap[size],
+              color: theme.title,
+            }}
           />
-        </Animated.View>
-      </TouchableOpacity>
+          <Animated.View style={{ transform: [{ rotateZ: arrowTransform }] }}>
+            <AppIcon
+              name="chevron-right"
+              branch="feather"
+              size={fontSizeMap[size] + 4}
+              color={theme.title}
+            />
+          </Animated.View>
+        </TouchableOpacity>
+      )}
 
       {/* Content */}
       <Animated.View style={{ maxHeight: maxHeightAnim, overflow: "hidden" }}>
+        {isOpen && <Divider style={{ marginBottom: 12 }} />}
         <View style={styles.contentContainer}>{children}</View>
       </Animated.View>
     </View>

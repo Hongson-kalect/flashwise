@@ -1,5 +1,12 @@
+import { View } from "react-native";
+import SenseHeader from "./Components/header";
+
 const WordSenseView = () => {
-  return <div>WordSenseView</div>;
+  return (
+    <View>
+      <SenseHeader />
+    </View>
+  );
 };
 
 export default WordSenseView;

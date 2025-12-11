@@ -149,6 +149,19 @@ export type ListModalOptions = {
   options: { label: string; value: number | string }[];
   onDismiss?: () => void;
   onSubmit: (val: number | string) => void;
+  inAnimation?:
+    | "fadeIn"
+    | "slideInDown"
+    | "slideInUp"
+    | "slideInUp"
+    | "zoomIn"
+    | "zoomInDown";
+  outAnimation?:
+    | "fadeOut"
+    | "slideOutDown"
+    | "slideOutUp"
+    | "zoomOut"
+    | "zoomOutDown";
 };
 
 const GlobalModalComponent = () => {

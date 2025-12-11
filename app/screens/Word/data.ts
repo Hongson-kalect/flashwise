@@ -1042,7 +1042,7 @@ export type WordType = {
       value: string;
       languageCode: string;
       bold: number[][];
-      score: number;
+      score?: number;
       defination: string;
       exampleTranslate: never[];
     }[];
