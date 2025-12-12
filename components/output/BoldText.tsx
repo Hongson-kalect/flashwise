@@ -7,7 +7,7 @@ import AppText from "../AppText";
 
 type BoldTextProps = {
   text: string;
-  bold: number[][];
+  bold: number[][] | string;
   color?: keyof ReturnType<typeof useTheme>["theme"];
   boldColor?: keyof ReturnType<typeof useTheme>["theme"];
   size?: keyof typeof textSizes | number;
@@ -40,17 +40,57 @@ export const BoldText = (props: BoldTextProps) => {
   );
 };
 
-const getTextArray = (text: string, bold: number[][]) => {
-  const result = [];
+const getTextArray = (text: string, bold: number[][] | string) => {
   if (!bold.length) return [{ text, bold: false }];
 
+  // Xác định vị trí bold nếu truyền vào là string
+  if (typeof bold === "string") {
+    const customBold = extractBoldIndex(text, bold);
+    return getBoldText(text, customBold);
+    // return result
+  } else {
+    return getBoldText(text, bold);
+  }
+};
+
+const extractBoldIndex = (text: string, bold: string) => {
+  const result: number[][] = [];
+  const lowercase = text.toLowerCase();
+  const boldLowercase = bold.toLowerCase();
+
+  const parts = lowercase.split(boldLowercase);
+
+  let currentIndex = 0;
+  const boldLength = boldLowercase.length;
+
+  parts.forEach((part, index) => {
+    if (index) {
+      result.push([currentIndex, currentIndex + boldLength]);
+      currentIndex += boldLength;
+    }
+
+    currentIndex += part.length;
+
+    // result.push({ text: part, bold:false });
+    // if(index !== parts.length - 1) result.push({ text: bold, bold: true });
+  });
+
+  return result;
+};
+
+const getBoldText = (text: string, bold: number[][]) => {
+  if (!bold.length) return [{ text, bold: false }];
+  let cursor = 0;
+
+  const result: { text: string; bold: boolean }[] = [];
   for (let i = 0; i < bold.length; i++) {
     const [start, end] = bold[i];
 
     if (start === end) continue;
 
-    const prevText = text.slice(0, start);
+    const prevText = text.slice(cursor, start);
     const boldText = text.slice(start, end);
+    cursor = end;
 
     result.push(
       { text: prevText, bold: false },
@@ -59,5 +99,6 @@ const getTextArray = (text: string, bold: number[][]) => {
 
     if (!bold[i + 1]) result.push({ text: text.slice(end), bold: false });
   }
+
   return result;
 };

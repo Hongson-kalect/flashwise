@@ -26,7 +26,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { Divider } from "react-native-paper";
 
 type SheetSize = "short" | "medium" | "long" | "full";
@@ -261,13 +261,16 @@ const BottomSheetInstance = forwardRef<BottomSheetModal, BottomSheetProps>(
           )}
           <View style={{ height: contentHeight, width: "100%" }}>
             {scrollable ? (
-              <ScrollView
+              <KeyboardAwareScrollView
+                extraScrollHeight={80}
+                contentContainerStyle={{ flexGrow: 1 }}
+                enableOnAndroid
                 keyboardShouldPersistTaps="handled"
-                showsVerticalScrollIndicator={false}
+                style={{ backgroundColor: "white" }}
               >
                 {content?.()}
                 <View style={{ height: 80 }}></View>
-              </ScrollView>
+              </KeyboardAwareScrollView>
             ) : (
               <View className="h-full">{content?.()}</View>
             )}
