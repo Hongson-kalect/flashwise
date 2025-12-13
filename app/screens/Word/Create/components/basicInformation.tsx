@@ -120,14 +120,14 @@ const BasicInformation = ({
             {/* <AppText></AppText> */}
             {mode !== "view" && (
               <Animated.View entering={SlideInLeft} exiting={SlideOutLeft}>
-                <AudioPicker onAudioChange={setAudio} />
+                <AudioPicker size="small" onAudioChange={setAudio} />
               </Animated.View>
             )}
             <PhatAm audio={audio} sound={sound} disabled={!audio?.uri} />
 
             {mode !== "view" && (
               <Animated.View entering={SlideInRight} exiting={SlideOutRight}>
-                <AudioRecoder onAudioChange={setAudio} />
+                <AudioRecoder size="small" onAudioChange={setAudio} />
               </Animated.View>
             )}
           </View>

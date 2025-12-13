@@ -27,7 +27,7 @@ export default function ProfilePage() {
         backgroundColor: theme.background,
       }}
     >
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView className="px-2" showsVerticalScrollIndicator={false}>
         <View style={{ marginTop: 24 }} className="">
           <View className="w-full items-center">
             {/* <View
@@ -36,29 +36,40 @@ export default function ProfilePage() {
             ></View> */}
             <AppText
               font="MulishBold"
-              size={"xl"}
-              color="warning"
-              style={{ paddingVertical: 16 }}
+              size={"2xl"}
+              color="error"
+              style={{ paddingVertical: 32 }}
             >
-              Bạn chưa đăng nhập
+              You are not logged in
             </AppText>
           </View>
 
           <View className="flex-row justify-between items-center px-2 gap-2">
             <View className="flex-row gap-2 flex-1 my-4">
-              <View className="h-14 w-14 rounded-full bg-gray-100"></View>
+              <View
+                style={{ elevation: 2, borderWidth: 1, borderColor: "#ddd" }}
+                className="h-14 w-14 rounded-full bg-gray-200"
+              ></View>
               <View>
-                <AppText font="MulishLight" size={10} color="primary">
+                <AppText font="MulishSemiBold" size={10} color="primary">
                   Guess
                 </AppText>
                 <AppText font="MulishBold">Guess#1042011</AppText>
-                <AppText size={"xs"} color="subText3">
+                <AppText font="MulishLightItalic" size={"xs"} color="subText2">
                   Login to keep your progress
                 </AppText>
               </View>
             </View>
             <View>
-              <AppButton title="Login" type="primary" onPress={() => {}} />
+              <AppButton title="Login" type="primary" onPress={() => {}}>
+                <AppIcon
+                  branch="feather"
+                  name="log-in"
+                  size={16}
+                  color="white"
+                />
+                <AppText color="white">Login</AppText>
+              </AppButton>
             </View>
           </View>
         </View>

@@ -84,14 +84,14 @@ export default function TranslateCreate() {
               {/* <AppText></AppText> */}
               {pageMode !== "view" && (
                 <Animated.View entering={SlideInLeft} exiting={SlideOutLeft}>
-                  <AudioPicker onAudioChange={setAudio} />
+                  <AudioPicker size="small" onAudioChange={setAudio} />
                 </Animated.View>
               )}
               <PhatAm audio={audio} sound={sound} disabled={!audio?.uri} />
 
               {pageMode !== "view" && (
                 <Animated.View entering={SlideInRight} exiting={SlideOutRight}>
-                  <AudioRecoder onAudioChange={setAudio} />
+                  <AudioRecoder size="small" onAudioChange={setAudio} />
                 </Animated.View>
               )}
             </View>

@@ -1,14 +1,17 @@
 import AppIcon from "@/components/AppIcon";
+import { scaleSize } from "@/components/PhatAm";
 import { useTheme } from "@/providers/Theme";
 import { AudioType } from "@/stores/recordingStore";
 import { startRecording } from "@/utils/audioRecord";
 import { TouchableOpacity } from "react-native";
 
 type Props = {
+  size: "tiny" | "small" | "medium" | "large";
   onAudioChange: (audio: AudioType | null) => void;
 };
-const AudioRecoder = ({ onAudioChange }: Props) => {
+const AudioRecoder = ({ onAudioChange, size = "small" }: Props) => {
   const { theme } = useTheme();
+  const { width, icon } = scaleSize[size];
 
   const handleRecording = () => {
     startRecording(handleRecordAudio);
@@ -30,14 +33,16 @@ const AudioRecoder = ({ onAudioChange }: Props) => {
         shadowColor: theme.secondary,
         borderWidth: 0.5,
         borderColor: theme.secondary,
+        width: width,
+        height: width,
       }}
-      className="h-12 w-12 rounded-lg items-center justify-center"
+      className="rounded-lg items-center justify-center"
     >
       <AppIcon
         name={"microphone"}
         branch="fa6"
         color={theme.secondary}
-        size={28}
+        size={icon}
       />
     </TouchableOpacity>
   );

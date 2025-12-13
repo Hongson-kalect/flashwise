@@ -10,6 +10,7 @@ import {
 } from "@/interfaces/word";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
+import { AudioType } from "@/stores/recordingStore";
 import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
@@ -66,15 +67,16 @@ const BasicInformation = ({
     });
     return aus;
   });
-  const [selectedAudio, setSelectedAudio] =
-    useState<DocumentPickerAsset | null>(() => {
-      if (audios[0])
-        return {
-          name: "default",
-          uri: audios[0].uri,
-        };
-      return null;
-    });
+  const [selectedAudio, setSelectedAudio] = useState<
+    DocumentPickerAsset | AudioType | null
+  >(() => {
+    if (audios[0])
+      return {
+        name: "default",
+        uri: audios[0].uri,
+      };
+    return null;
+  });
 
   const sound = useState<Audio.Sound | null>(null);
   const { theme } = useTheme();
@@ -185,11 +187,11 @@ const BasicInformation = ({
         >
           <View className="gap-2 flex-row items-center">
             <View>
-              <AudioPicker onAudioChange={setSelectedAudio} />
+              <AudioPicker size="small" onAudioChange={setSelectedAudio} />
             </View>
 
             <View>
-              <AudioRecoder onAudioChange={setSelectedAudio} />
+              <AudioRecoder size="small" onAudioChange={setSelectedAudio} />
             </View>
           </View>
           <View>
@@ -201,74 +203,62 @@ const BasicInformation = ({
         </Animated.View>
       )}
 
-      {props.languageMode === 2 && (
-        <Animated.View
-          entering={FadeInUp}
-          // exiting={FadeOutUp}
-          className="items-center justify-center mt-6"
-        >
-          <AppText size={40} font="MulishSemiBold" color="primary">
-            {translates[0]?.value || (
-              <AppText color="subText3" font="MulishSemiBoldItalic" size={28}>
-                Chưa có bản dịch
-              </AppText>
-            )}
-          </AppText>
-
-          <View className="flex-row items-center justify-center px-4">
-            <AppText
-              numberOfLines={1}
-              color="subText2"
-              // font="MulishLight"
-              size={"sm"}
-            >
-              {translates
-                .slice(1)
-                .map((item) => item.value)
-                .join(", ")}
-            </AppText>
-          </View>
-        </Animated.View>
-      )}
-
-      <Animated.View
-        layout={LinearTransition}
-        className="my-10 items-center justify-center"
-      >
-        {true ? (
-          // {image?.uri ? (
-          <View
-            style={{
-              elevation: 4,
-              overflow: "hidden",
-              width: width - 28,
-              height: ((width - 28) / 16) * 9,
-            }}
-            className="rounded-lg"
+      <View className="my-10 items-center justify-center">
+        {props.languageMode === 2 && (
+          <Animated.View
+            entering={FadeInUp}
+            // exiting={FadeOutUp}
+            className="mb-2 w-full"
           >
-            <Image
-              // source={{ uri: image?.uri }}
-
-              source={{
-                uri: "https://cdn-web.onlive.vn/onlive/image-news/%C4%91i%20date%20thumb.jpg",
-              }}
-              style={{ width: "100%", height: "100%" }}
-            />
-          </View>
-        ) : (
-          // <TouchableOpacity className="h-40 w-40 bg-gray-200 rounded-lg p-4">
-          <AppIcon
-            name={"image"}
-            branch="feather"
-            size={140}
-            color="subText3"
-          />
-          //  </TouchableOpacity>
+            <View className="flex-row items-center px-2">
+              <AppText
+                numberOfLines={1}
+                color="subText1"
+                // font="MulishLight"
+                size={"sm"}
+              >
+                {translates.map((item) => item.value).join(", ")}
+              </AppText>
+            </View>
+          </Animated.View>
         )}
-      </Animated.View>
+
+        <Animated.View layout={LinearTransition}>
+          {true ? (
+            // {image?.uri ? (
+            <View
+              style={{
+                elevation: 4,
+                overflow: "hidden",
+                width: width - 28,
+                height: ((width - 28) / 16) * 9,
+              }}
+              className="rounded-lg"
+            >
+              <Image
+                // source={{ uri: image?.uri }}
+
+                source={{
+                  uri: "https://cdn-web.onlive.vn/onlive/image-news/%C4%91i%20date%20thumb.jpg",
+                }}
+                style={{ width: "100%", height: "100%" }}
+              />
+            </View>
+          ) : (
+            // <TouchableOpacity className="h-40 w-40 bg-gray-200 rounded-lg p-4">
+            <AppIcon
+              name={"image"}
+              branch="feather"
+              size={140}
+              color="subText3"
+            />
+            //  </TouchableOpacity>
+          )}
+        </Animated.View>
+      </View>
       <Animated.View layout={LinearTransition}>
         <View className="flex-row justify-between items-center">
-          <AppTitle title="Định nghĩa 📖" />
+          <AppTitle title="Defination 📖" />
           {definations.length > 2 && (
             <View className="flex-row items-center gap-1">
               <AppText
@@ -281,7 +271,7 @@ const BasicInformation = ({
                 color="primary"
                 font="MulishLightItalic"
               >
-                {definations.length - 2} Nghĩa khác
+                {definations.length - 2} More
               </AppText>
 
               <AppIcon
@@ -298,6 +288,7 @@ const BasicInformation = ({
           <View>
             {definations.slice(0, 2).map((item, index) => (
               <WordDefinations
+                word="tip"
                 key={index}
                 item={item}
                 index={index}
@@ -326,6 +317,7 @@ const MoreDefinations = ({ items, languageMode }: MoreDefinationsProps) => {
     <View className="px-3 mt-4">
       {items.map((item, index) => (
         <WordDefinations
+          word=""
           key={index}
           item={item}
           index={index}

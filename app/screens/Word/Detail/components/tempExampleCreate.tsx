@@ -3,55 +3,22 @@ import AppIcon from "@/components/AppIcon";
 import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
+import { useState } from "react";
 import { View } from "react-native";
+import { SenseExample } from "./createSenseSheet";
 
 type Props = {
-  exampleMode: "add" | "edit";
-  example: {
-    id: string;
-    value: string;
-    translate: string;
-  };
   languageMode: 1 | 2;
-  setExample: React.Dispatch<
-    React.SetStateAction<{
-      id: string;
-      value: string;
-      translate: string;
-    }>
-  >;
-  onAddExample: () => void;
-  onMakeExample: () => void;
-  onCancelChange: () => void;
+  onAddExample: (example: SenseExample) => void;
 };
 
-const TempExampleCreate = ({
-  example,
-  exampleMode,
-  languageMode,
-  onAddExample,
-  onMakeExample,
-  setExample,
-  onCancelChange,
-}: Props) => {
+const TempExampleCreate = ({ languageMode, onAddExample }: Props) => {
   const { theme } = useTheme();
-  //   if (!example)
-  //     return (
-  //       <View className="py-4 items-start">
-  //         <AppButton
-  //           type="primary"
-  //           //   outline
-  //           //   style={{ backgroundColor: theme.background }}
-  //           onPress={onMakeExample}
-  //           size="sm"
-  //         >
-  //           <AppIcon name="plus" size={14} color="white" branch="antd" />
-  //           <AppText size={"sm"} color="white">
-  //             Make example
-  //           </AppText>
-  //         </AppButton>
-  //       </View>
-  //     );
+  const [example, setExample] = useState<SenseExample>({
+    id: new Date().getTime().toString(),
+    value: "",
+    translate: "",
+  });
 
   return (
     <View
@@ -92,32 +59,24 @@ const TempExampleCreate = ({
           </View>
         </View>
       )}
-
-      {exampleMode === "add" ? (
-        <View className="flex-row justify-start mt-4">
-          <AppButton type="success" onPress={onAddExample}>
-            <AppIcon name="plus" size={14} color="white" branch="antd" />
-            <AppText size={"sm"} color="white">
-              Add
-            </AppText>
-          </AppButton>
-        </View>
-      ) : (
-        <View className="flex-row justify-start mt-4 gap-2">
-          <AppButton onPress={onAddExample}>
-            <AppIcon name="save" size={14} color="white" branch="antd" />
-            <AppText size={"sm"} color="white">
-              OK
-            </AppText>
-          </AppButton>
-          <AppButton type="error" onPress={onCancelChange}>
-            <AppIcon name="reload1" size={14} color="white" branch="antd" />
-            <AppText size={"sm"} color="white">
-              Cancel
-            </AppText>
-          </AppButton>
-        </View>
-      )}
+      <View className="flex-row justify-start mt-4">
+        <AppButton
+          type="success"
+          onPress={() => {
+            onAddExample(example);
+            setExample({
+              id: new Date().getTime().toString(),
+              value: "",
+              translate: "",
+            });
+          }}
+        >
+          <AppIcon name="plus" size={14} color="white" branch="antd" />
+          <AppText size={"sm"} color="white">
+            Add
+          </AppText>
+        </AppButton>
+      </View>
     </View>
   );
 };
