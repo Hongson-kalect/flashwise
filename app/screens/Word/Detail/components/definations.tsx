@@ -1,6 +1,5 @@
-import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
-import { View } from "react-native";
+import { View, ViewStyle } from "react-native";
 import { WordType } from "../../data";
 import WordExample from "./example";
 
@@ -10,6 +9,7 @@ type Props = {
   index: number;
   isSimple?: boolean;
   word: string;
+  style?: ViewStyle;
 };
 
 const WordDefinations = ({
@@ -18,16 +18,17 @@ const WordDefinations = ({
   index,
   isSimple,
   word,
+  style,
 }: Props) => {
   const examples = item.examples;
   const mainDefinition = item.value[0];
   const subDefinitions = item.value.slice(1);
 
   return (
-    <View className="py-4">
+    <View className="py-3" style={style}>
       {/* {index !== 0 && <Divider style={{ marginVertical: 16 }} />} */}
       <AppText color="subText1">
-        {!isSimple && (
+        {/* {!isSimple && (
           <AppIcon
             name={"star"}
             size={12}
@@ -35,7 +36,7 @@ const WordDefinations = ({
             color="disabled" // "secondary" if choose
             branch="antd"
           />
-        )}
+        )} */}
         {mainDefinition[0].toUpperCase()}
         {mainDefinition.slice(1)}
       </AppText>

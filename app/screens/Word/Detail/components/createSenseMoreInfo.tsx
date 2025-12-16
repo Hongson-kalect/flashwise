@@ -57,11 +57,22 @@ const CreateSenseMoreInfo = ({ senseValue, setSenseValue }: Props) => {
       <View className="px-1 py-4">
         <LineInput
           onPreset={() => {}}
+          label="Usage"
+          value={senseValue.usage || ""}
+          setValue={(text) => setSenseValue({ ...senseValue, usage: text })}
+          size="xs"
+          placeholder="When, where, or how this sense is typically used"
+        />
+      </View>
+
+      <View className="px-1 py-4">
+        <LineInput
+          onPreset={() => {}}
           label="IPA"
           value={senseValue.ipa || ""}
           setValue={(text) => setSenseValue({ ...senseValue, ipa: text })}
           size="xs"
-          placeholder="Type your ipa"
+          placeholder="Pronunciation in IPA"
         />
       </View>
 
@@ -92,7 +103,7 @@ const CreateSenseMoreInfo = ({ senseValue, setSenseValue }: Props) => {
                 setAudio((prev) => ({ ...prev, label: val }))
               }
               size={"sm"}
-              placeholder="Audio label"
+              placeholder="Label (US / UK / etc.)"
             />
           </View>
           <View className="options flex-row items-center gap-2">

@@ -1,4 +1,5 @@
 import CollapseSection from "@/components/AppCollapsable";
+import AppText from "@/components/AppText";
 import { AudioType as AppAudioType } from "@/stores/recordingStore";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
@@ -12,10 +13,12 @@ import CreateSenseHeader from "./createSenseHeader";
 import CreateSenseMoreInfo from "./createSenseMoreInfo";
 
 export type SenseType = {
+  word?: string;
   defination: string;
   traslatedDefination: string;
   translations: string[];
   examples: SenseExample[];
+  usage?: string;
   ipa?: string;
   audios?: {
     url: DocumentPickerAsset | AppAudioType | null;
@@ -37,7 +40,7 @@ type AddSenseSheetProps = {
   senseValue: SenseType;
   setSenseValue: React.Dispatch<React.SetStateAction<SenseType>>;
   handleAddSense: () => void;
-  toggleLanguageMode: () => void;
+  setLanguageMode: React.Dispatch<React.SetStateAction<1 | 2>>;
   languageMode: 1 | 2;
   word: string;
 };
@@ -60,7 +63,6 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
 
       <CreateSenseBasicInfo
         languageMode={languageMode}
-        setLanguageMode={setLanguageMode}
         senseValue={senseValue}
         setSenseValue={setSenseValue}
       />
@@ -84,6 +86,11 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
 
         <View className="mt-8 bg-gray-100 -mx-3 px-2">
           <CollapseSection title="Related word">
+            <View className="items-end mt-2">
+              <AppText size={"xs"} color="primary" font="MulishLightItalic">
+                {'Each word separated by ","'}
+              </AppText>
+            </View>
             <View className="px-1 py-4">
               <LineInput
                 onPreset={() => Alert.alert("show ipa preset")}
@@ -93,7 +100,7 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
                   setSenseValue({ ...senseValue, relateds: text })
                 }
                 size="xs"
-                placeholder='Liệt kê cách nhau bởi dấu ","'
+                placeholder="Closely related words or expressions"
               />
             </View>
             <View className="px-1 py-4">
@@ -105,7 +112,7 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
                   setSenseValue({ ...senseValue, synonyms: text })
                 }
                 size="xs"
-                placeholder='Liệt kê cách nhau bởi dấu ","'
+                placeholder="Words with similar meaning"
               />
             </View>
             <View className="px-1 py-4">
@@ -117,7 +124,7 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
                   setSenseValue({ ...senseValue, antonyms: text })
                 }
                 size="xs"
-                placeholder='Liệt kê cách nhau bởi dấu ","'
+                placeholder="Words with opposite meaning"
               />
             </View>
             <View className="h-4">{/* bottom padding */}</View>

@@ -55,11 +55,12 @@ export default function ModalWrapper(props: Props) {
       avoidKeyboard
     >
       <Animated.View
-        layout={
-          ["prompt", "input"].includes(props?.type)
-            ? LinearTransition.mass(0.6)
-            : undefined
-        }
+        // layout={
+        //   ["prompt", "input"].includes(props?.type)
+        //     ? LinearTransition.mass(0.6)
+        //     : undefined
+        // }
+        layout={LinearTransition.mass(0.6)}
       >
         <Card
           style={{ backgroundColor: theme.background }}

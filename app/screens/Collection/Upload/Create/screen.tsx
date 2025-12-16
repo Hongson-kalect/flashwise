@@ -9,7 +9,7 @@ const CreateUploadCollection = () => {
   return (
     <View style={{ flex: 1 }}>
       <KeyboardAwareScrollView
-        extraScrollHeight={40}
+        extraScrollHeight={80}
         contentContainerStyle={{ flexGrow: 1 }}
         enableOnAndroid
         keyboardShouldPersistTaps="handled"

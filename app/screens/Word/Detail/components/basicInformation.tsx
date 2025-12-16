@@ -16,6 +16,7 @@ import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
 import { useMemo, useState } from "react";
 import {
+  Alert,
   Image,
   LayoutChangeEvent,
   Pressable,
@@ -24,13 +25,7 @@ import {
   View,
 } from "react-native";
 import { Divider } from "react-native-paper";
-import Animated, {
-  FadeInUp,
-  LinearTransition,
-  SlideInRight,
-} from "react-native-reanimated";
-import AudioPicker from "../../components/AudioPicker";
-import AudioRecoder from "../../components/AudioRecorder";
+import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
 import { WordInfoType, WordType } from "../../data";
 import WordDefinations from "./definations";
 
@@ -90,7 +85,7 @@ const BasicInformation = ({
       size: "full",
       render: () => (
         <MoreDefinations
-          items={definations.slice(2)}
+          items={definations.slice(1)}
           languageMode={props.languageMode}
         />
       ),
@@ -125,24 +120,28 @@ const BasicInformation = ({
         <View className="flex-row items-center gap-2">
           <Pressable
             hitSlop={10}
-            style={{ backgroundColor: theme.primary }}
             className="h-10 w-10 rounded-lg items-center justify-center"
             onPress={() => alert("Nhảy sense")}
           >
-            <AppIcon color="white" branch="antd" name={"left"} size={20} />
+            <AppIcon color="primary" branch="antd" name={"left"} size={20} />
           </Pressable>
           <View className="items-center justify-center">
-            <AppText color="subText1" font="MulishBold">
-              Sense 1/6
+            <AppText color="primary" font="MulishBold" size={"lg"}>
+              <AppText color="subText2" size={"sm"}>
+                sense
+              </AppText>{" "}
+              1{" "}
+              <AppText color="subText2" size={"sm"}>
+                /6
+              </AppText>
             </AppText>
           </View>
           <Pressable
             className="h-10 w-10 rounded-lg  items-center justify-center"
             hitSlop={10}
-            style={{ backgroundColor: theme.primary }}
             onPress={() => alert("Nhảy sense")}
           >
-            <AppIcon branch="antd" color="white" name={"right"} size={20} />
+            <AppIcon branch="antd" color="primary" name={"right"} size={20} />
           </Pressable>
         </View>
 
@@ -180,7 +179,7 @@ const BasicInformation = ({
         </Pressable> */}
       </View>
 
-      {mode !== "view" && (
+      {/* {mode !== "view" && (
         <Animated.View
           entering={SlideInRight}
           className="flex-row items-center justify-between mt-2"
@@ -201,7 +200,7 @@ const BasicInformation = ({
             </AppButton>
           </View>
         </Animated.View>
-      )}
+      )} */}
 
       <View className="my-10 items-center justify-center">
         {props.languageMode === 2 && (
@@ -211,14 +210,32 @@ const BasicInformation = ({
             className="mb-2 w-full"
           >
             <View className="flex-row items-center px-2">
-              <AppText
-                numberOfLines={1}
-                color="subText1"
-                // font="MulishLight"
-                size={"sm"}
-              >
-                {translates.map((item) => item.value).join(", ")}
-              </AppText>
+              {!translates.length ? (
+                <AppText
+                  numberOfLines={1}
+                  color="subText1"
+                  // font="MulishLight"
+                  size={"sm"}
+                >
+                  {translates.map((item) => item.value).join(", ")}
+                </AppText>
+              ) : (
+                <AppText
+                  color="subText3"
+                  font="MulishRegularItalic"
+                  size={"sm"}
+                >
+                  No translations{" "}
+                  <AppText
+                    onPress={() => Alert.alert("DMM")}
+                    color="success"
+                    size={"sm"}
+                    font="MulishSemiBoldItalic"
+                  >
+                    + Add translations.
+                  </AppText>
+                </AppText>
+              )}
             </View>
           </Animated.View>
         )}
@@ -259,7 +276,7 @@ const BasicInformation = ({
       <Animated.View layout={LinearTransition}>
         <View className="flex-row justify-between items-center">
           <AppTitle title="Defination 📖" />
-          {definations.length > 2 && (
+          {definations.length > 1 && (
             <View className="flex-row items-center gap-1">
               <AppText
                 style={{
@@ -271,7 +288,7 @@ const BasicInformation = ({
                 color="primary"
                 font="MulishLightItalic"
               >
-                {definations.length - 2} More
+                {definations.length - 1} More
               </AppText>
 
               <AppIcon
@@ -285,8 +302,8 @@ const BasicInformation = ({
         </View>
         <Divider />
         <View className="py-2">
-          <View>
-            {definations.slice(0, 2).map((item, index) => (
+          <View style={{ marginTop: -10 }}>
+            {definations.slice(0, 1).map((item, index) => (
               <WordDefinations
                 word="tip"
                 key={index}
@@ -296,11 +313,143 @@ const BasicInformation = ({
               />
             ))}
           </View>
-          {/* <Information
-          mode={mode}
-          value={"Cái này là mô phỏng của chức năng định nghĩa"}
-        /> */}
+
+          {props.languageMode === 2 && (
+            <View
+              style={{
+                marginHorizontal: -8,
+                marginVertical: 8,
+                backgroundColor: theme.secondary + "15",
+                padding: 8,
+              }}
+            >
+              <View className="py-2">
+                <AppText
+                  color="subText2"
+                  font="MulishRegularItalic"
+                  size={"sm"}
+                >
+                  Not have Vietnamese defination
+                </AppText>
+
+                <View className="mt-2 flex-row justify-start">
+                  <AppButton size="sm" onPress={() => {}} type="success">
+                    <AppIcon
+                      name="external-link"
+                      color="white"
+                      size={16}
+                      branch="feather"
+                    />
+                    <AppText color="white" size={"sm"}>
+                      Add
+                    </AppText>
+                  </AppButton>
+                </View>
+              </View>
+              {/* {definations.slice(0, 1).map((item, index) => (
+                <WordDefinations
+                  word="tip"
+                  key={index}
+                  item={item}
+                  index={index}
+                  languageMode={props.languageMode}
+                />
+              ))} */}
+            </View>
+          )}
         </View>
+      </Animated.View>
+
+      <Animated.View layout={LinearTransition}>
+        <View className="flex-row justify-between items-center mt-4">
+          <AppTitle title="Usage 🔎" />
+        </View>
+        <Divider />
+        <View className="py-2">
+          <View>
+            {definations.slice(1, 2).map((item, index) => (
+              <AppText color="subText1" key={index}>
+                {item.value}
+              </AppText>
+            ))}
+          </View>
+        </View>
+
+        {props.languageMode === 2 && (
+          <View
+            style={{
+              marginHorizontal: -8,
+              marginVertical: 8,
+              backgroundColor: theme.secondary + "15",
+              padding: 8,
+            }}
+          >
+            <View className="py-2">
+              <AppText color="subText2" font="MulishRegularItalic" size={"sm"}>
+                Not have usage in Vietnamese
+              </AppText>
+
+              <View className="mt-2 flex-row justify-start">
+                <AppButton size="sm" onPress={() => {}} type="success">
+                  <AppIcon
+                    name="external-link"
+                    color="white"
+                    size={16}
+                    branch="feather"
+                  />
+                  <AppText color="white" size={"sm"}>
+                    Add
+                  </AppText>
+                </AppButton>
+              </View>
+            </View>
+            {/* {definations.slice(1, 2).map((item, index) => (
+              <AppText color="subText1" key={index}>
+                {item.value}
+              </AppText>
+            ))} */}
+          </View>
+        )}
+      </Animated.View>
+
+      <Animated.View layout={LinearTransition}>
+        <View className="mt-4 rounded-lg py-2">
+          <AppText color="subText3" font="MulishLightItalic" size={"sm"}>
+            Chưa có ghi chú{" "}
+            <AppText
+              onPress={() => Alert.alert("DMM")}
+              color="success"
+              size={"sm"}
+              font="MulishSemiBoldItalic"
+            >
+              + Add note.
+            </AppText>
+          </AppText>
+        </View>
+
+        {/* <View
+          style={{ marginHorizontal: -8, paddingHorizontal: 12 }}
+          className="mt-4 bg-gray-100 rounded-lg p-3"
+        >
+          <AppText color="title" size={"md"} font="MulishSemiBoldItalic">
+            Note 📝
+          </AppText>
+          <Divider />
+          <View className="py-2">
+            <View>
+              {definations.slice(2, 3).map((item, index) => (
+                <AppText
+                  key={index}
+                  size={"sm"}
+                  color="subText2"
+                  font="MulishRegularItalic"
+                >
+                  {item.value}
+                </AppText>
+              ))}
+            </View>
+          </View>
+        </View> */}
       </Animated.View>
     </View>
   );
@@ -316,13 +465,18 @@ const MoreDefinations = ({ items, languageMode }: MoreDefinationsProps) => {
   return (
     <View className="px-3 mt-4">
       {items.map((item, index) => (
-        <WordDefinations
-          word=""
-          key={index}
-          item={item}
-          index={index}
-          languageMode={languageMode}
-        />
+        <View key={index}>
+          <WordDefinations
+            word=""
+            key={index}
+            item={item}
+            index={index}
+            languageMode={languageMode}
+          />
+          {index !== items.length - 1 && (
+            <Divider style={{ marginVertical: 8 }} />
+          )}
+        </View>
       ))}
     </View>
   );

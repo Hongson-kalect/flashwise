@@ -2,36 +2,29 @@ import AppSuggestion from "@/components/AppSuggestion";
 import { fontFamily } from "@/configs/fonts";
 import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
-import { TextInput, View } from "react-native";
+import { Keyboard, TextInput, View } from "react-native";
 
 type Props = {
   editable?: boolean;
-  value?: string;
+  value: string;
+  onChangeText: (val: string) => void;
 };
 const WordInput = (props: Props) => {
   const { theme } = useTheme();
   const [focusing, setFocusing] = useState(false);
+  const [value, setValue] = useState<string>(props.value);
   return (
     <View className="flex-row gap-4 items-center">
-      <View
-        className="flex-1  px-2 justify-end relative"
-        style={
-          {
-            // borderBottomWidth: 2,
-            // borderBottomColor: props.editable
-            // ? focusing
-            //   ? theme.primary
-            //   : theme.disabled
-            // : "transparent",
-          }
-        }
-      >
+      <View className="flex-1  px-2 justify-end relative">
         <View>
           {/* Create thì sẽ là TextInput, hiển thị bình thường sẽ dùng text, nếu edit thì mở form */}
           <TextInput
             autoFocus={!props.value} // Không có dữ liệu thì sẽ auto focus
             onFocus={() => setFocusing(true)}
-            onBlur={() => setFocusing(false)}
+            onBlur={() => {
+              setFocusing(false);
+              props.onChangeText(value);
+            }}
             className="py-0"
             readOnly={!props.editable}
             multiline
@@ -48,7 +41,8 @@ const WordInput = (props: Props) => {
               paddingHorizontal: 10,
             }}
             placeholder="Word..."
-            value={props.value}
+            value={value}
+            onChangeText={setValue}
             placeholderTextColor={theme.disabled}
           />
         </View>
@@ -57,16 +51,13 @@ const WordInput = (props: Props) => {
           show={focusing}
           options={[{ label: "test", value: "test" }]}
           onSelect={(val) => {
-            alert("Bạn vừa chọn " + val);
+            // alert("Bạn vừa chọn " + val);
+            Keyboard.dismiss();
+            setValue(val);
+            props.onChangeText(val);
           }}
         />
       </View>
-
-      {/* <View className="w-24 h-14 items-center justify-center">
-        <View
-          className="h-12 w-20 bg-red-500"
-        ></View>
-      </View> */}
     </View>
   );
 };

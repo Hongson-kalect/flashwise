@@ -1,8 +1,9 @@
 import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
-import { useState } from "react";
-import { View } from "react-native";
+import { useTheme } from "@/providers/Theme";
+import { useEffect, useRef, useState } from "react";
+import { TextInput, View } from "react-native";
 import { LineInput } from "../../Create/components/lineInput";
 
 type Example = {
@@ -18,6 +19,15 @@ type Props = {
 };
 const EditExampleForm = (props: Props) => {
   const [example, setExample] = useState(props.example);
+  const textRef = useRef<TextInput>(null);
+  const textFocus = () => textRef.current?.focus();
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    setTimeout(() => textFocus(), 300);
+    // textFocus();
+  }, []);
+
   return (
     <View className="pb-8">
       <View className="flex-row items-center justify-between">
@@ -37,6 +47,8 @@ const EditExampleForm = (props: Props) => {
         </View>
       </View>
       <LineInput
+        ref={textRef}
+        key={"edit-example"}
         label="Example"
         isRequired
         size="sm"
@@ -47,6 +59,7 @@ const EditExampleForm = (props: Props) => {
       {props.languageMode === 2 && (
         <View className="mt-3">
           <LineInput
+            key={"edit-translate"}
             size="sm"
             label="Translate"
             value={example.translate}

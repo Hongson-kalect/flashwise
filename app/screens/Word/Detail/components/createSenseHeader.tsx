@@ -7,10 +7,11 @@ import { Dispatch, SetStateAction } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SenseType } from "./createSenseSheet";
+import ToggleWordDisplayMode from "./toggleWordDisplayMode";
 
 type Props = {
   languageMode: 1 | 2;
-  setLanguageMode: (val: 1 | 2) => void;
+  setLanguageMode: Dispatch<SetStateAction<1 | 2>>;
   setSenseValue: Dispatch<SetStateAction<SenseType>>;
 };
 const CreateSenseHeader = ({
@@ -20,11 +21,6 @@ const CreateSenseHeader = ({
 }: Props) => {
   const { theme } = useTheme();
   const { setGlobalModal } = useModalStore();
-  const [targetLang, motherLang] = ["EN", "VI"];
-
-  const toggleLanguageMode = () => {
-    setLanguageMode(languageMode === 1 ? 2 : 1);
-  };
 
   const clearSense = () => {
     setGlobalModal({
@@ -54,44 +50,10 @@ const CreateSenseHeader = ({
       </View>
       <View className="flex-row items-center justify-end gap-2">
         <View>
-          <Pressable onPress={toggleLanguageMode}>
-            <Animated.View
-              className="items-center justify-center"
-              layout={LinearTransition}
-              style={[
-                {
-                  backgroundColor: theme.background,
-                  borderWidth: 0.5,
-                  borderRadius: 5,
-                  height: 36,
-                  width: 36,
-                },
-                languageMode === 2
-                  ? styles.frontFlagPosition
-                  : styles.backFlagPosition,
-              ]}
-            >
-              <AppText>{motherLang}</AppText>
-            </Animated.View>
-            <Animated.View
-              className={"h-8 w-8 items-center justify-center"}
-              layout={LinearTransition}
-              style={[
-                {
-                  backgroundColor: theme.background,
-                  borderWidth: 0.5,
-                  borderRadius: 5,
-                  height: 36,
-                  width: 36,
-                },
-                languageMode !== 2
-                  ? styles.frontFlagPosition
-                  : styles.backFlagPosition,
-              ]}
-            >
-              <AppText>{targetLang}</AppText>
-            </Animated.View>
-          </Pressable>
+          <ToggleWordDisplayMode
+            languageMode={languageMode}
+            setLanguageMode={setLanguageMode}
+          />
         </View>
         {/* Header */}
         <View>

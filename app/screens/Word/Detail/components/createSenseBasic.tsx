@@ -13,11 +13,9 @@ type Props = {
   senseValue: SenseType;
   setSenseValue: React.Dispatch<React.SetStateAction<SenseType>>;
   languageMode: 1 | 2;
-  setLanguageMode: React.Dispatch<React.SetStateAction<1 | 2>>;
 };
 const CreateSenseBasicInfo = ({
   languageMode,
-  setLanguageMode,
   senseValue,
   setSenseValue,
 }: Props) => {
@@ -92,7 +90,7 @@ const CreateSenseBasicInfo = ({
         <View className="flex-row gap-2">
           <View className="flex-1">
             <AppInput
-              placeholder="Enter your defination"
+              placeholder="What does this word mean?"
               numberOfLines={3}
               multiline
               containerStyle={{ backgroundColor: theme.background }}
@@ -141,7 +139,7 @@ const CreateSenseBasicInfo = ({
             <View className="flex-row gap-2">
               <View className="flex-1">
                 <AppInput
-                  placeholder="Enter your defination"
+                  placeholder="Describe this sense in Vietnamese"
                   numberOfLines={3}
                   multiline
                   containerStyle={{ backgroundColor: theme.background }}
@@ -184,7 +182,7 @@ const CreateSenseBasicInfo = ({
             <View className="flex-1">
               <AppInput
                 containerStyle={{ backgroundColor: theme.background }}
-                placeholder="Enter your translation"
+                placeholder={`${"Vietnamese"} translations`}
                 value={translation}
                 onSubmitEditing={addTranslations}
                 onChangeText={(val) => setTranslation(val)}

@@ -4,7 +4,7 @@ import AppIcon from "./AppIcon";
 import AppText from "./AppText";
 
 interface AppReturnHeaderProps {
-  title?: string;
+  title?: string | React.ReactElement;
   rightElement?: React.ReactElement;
 }
 
@@ -16,9 +16,13 @@ const AppReturnHeader = ({ rightElement, title }: AppReturnHeaderProps) => {
       <TouchableOpacity onPress={routerBack} style={styles.leftElement}>
         <AppIcon branch="feather" name="chevron-left" size={24} />
         <View className="flex-1">
-          <AppText numberOfLines={1} font="MulishSemiBold" size={"xl"}>
-            {title || "Return"}
-          </AppText>
+          {title && typeof title !== "string" ? (
+            title
+          ) : (
+            <AppText numberOfLines={1} font="MulishSemiBold" size={"xl"}>
+              {title || "Return"}
+            </AppText>
+          )}
         </View>
       </TouchableOpacity>
       {rightElement && rightElement}

@@ -61,18 +61,20 @@ const BasicInformation = ({
       <View className="items-center mb-6">
         <TouchableOpacity
           hitSlop={10}
-          onPress={() => alert("Đổi Ngôn ngữ em ây")}
+          onPress={() =>
+            alert("Đổi Ngôn ngữ em ây, CC, chỉ được tạo cho ngôn ngữ đích")
+          }
           className=" w-full mr-4 flex-row gap-2 items-center justify-end"
         >
-          <View className="-scale-x-100">
+          {/* <View className="-scale-x-100">
             <EditIcon />
-          </View>
+          </View> */}
           <View className="rounded bg-red-400 h-8 w-14"></View>
         </TouchableOpacity>
 
         {/* <WordTitle>Run</WordTitle> */}
         <View className="py-2 w-full">
-          <WordInput editable={true} />
+          <WordInput />
         </View>
         <View className="flex-row gap-2 items-center mt-2">
           <TouchableOpacity

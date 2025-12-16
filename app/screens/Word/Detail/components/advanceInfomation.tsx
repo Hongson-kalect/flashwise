@@ -9,8 +9,6 @@ import {
 } from "@/interfaces/word";
 import { LayoutChangeEvent, View } from "react-native";
 import { Divider } from "react-native-paper";
-import Information from "../../../../../components/output/information";
-import WordLink from "../../../../../components/output/wordLink";
 
 type Props = {
   mode?: "create" | "update" | "view";
@@ -66,25 +64,25 @@ const WordAdvanceInformation = ({
             branch="feather"
             name={"external-link"}
             size={12}
-            color="primary"
+            color="title"
           />
         }
         title="Từ liên quan"
-        values={[{ value: "day" }, { value: "month" }, { value: "đũy mọe m" }]}
+        values={[{ value: "day" }, { value: "month" }, { value: "abc, def" }]}
       />
       <Related
         icon={
-          <AppIcon branch="feather" name={"copy"} size={12} color="primary" />
+          <AppIcon branch="feather" name={"copy"} size={12} color="title" />
         }
         title="Từ đồng nghĩa"
-        values={[{ value: "day" }, { value: "month" }, { value: "đũy mọe m" }]}
+        values={[{ value: "day" }, { value: "month" }, { value: "abc, def" }]}
       />
       <Related
         icon={
-          <AppIcon branch="antd" name={"retweet"} size={12} color="primary" />
+          <AppIcon branch="antd" name={"retweet"} size={12} color="title" />
         }
         title="Từ trái nghĩa"
-        values={[{ value: "day" }, { value: "month" }, { value: "đũy mọe m" }]}
+        values={[{ value: "day" }, { value: "month" }, { value: "abc, def" }]}
       />
       <Related
         icon={
@@ -92,25 +90,23 @@ const WordAdvanceInformation = ({
             branch="feather"
             name={"git-branch"}
             size={12}
-            color="primary"
+            color="title"
           />
         }
         title="Biến thể"
         values={[
           { value: "day" },
           { value: "month" },
-          { value: "đũy mọe m", id: "cc" },
+          { value: "abc, def", id: "cc" },
         ]}
       />
       <Related
-        icon={
-          <AppIcon branch="feather" name={"tag"} size={12} color="primary" />
-        }
+        icon={<AppIcon branch="feather" name={"tag"} size={12} color="title" />}
         title="Tags"
-        values={[{ value: "day" }, { value: "month" }, { value: "đũy mọe m" }]}
+        values={[{ value: "day" }, { value: "month" }, { value: "abc, def" }]}
       />
 
-      <WordLink
+      {/* <WordLink
         labelWidth={labelWidth}
         onLabelLayout={onLabelLayout}
         mode={mode}
@@ -218,7 +214,7 @@ const WordAdvanceInformation = ({
             options: [],
           })
         }
-      />
+      /> */}
     </View>
   );
 };
@@ -238,10 +234,10 @@ const Related = (props: RelatedProp) => {
       <View className="flex-row items-center gap-1">
         <View className="w-4">
           {props.icon || (
-            <AppIcon branch="antd" name={"star"} size={12} color="primary" />
+            <AppIcon branch="antd" name={"star"} size={12} color="title" />
           )}
         </View>
-        <AppText color="primary" font="MulishMedium">
+        <AppText color="title" font="MulishMedium">
           {props.title}
         </AppText>
       </View>
@@ -250,7 +246,7 @@ const Related = (props: RelatedProp) => {
         <View className="flex-row items-center gap-1 mt-2 ml-5">
           {props.values.map((item, index) => (
             <AppText
-              color={item.id ? "secondary" : "subText2"}
+              color={item.id ? "primary" : "subText2"}
               key={index}
               className={item.id && "underline"}
             >

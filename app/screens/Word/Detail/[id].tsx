@@ -52,16 +52,16 @@ const WordDetail = () => {
         <View className="mb-4">
           <WordDetailHeader
             languageMode={languageMode}
-            toggleLanguageMode={toggleLanguageMode}
+            setLanguageMode={setLanguageMode}
             mode={pageMode}
             setMode={setPageMode}
           />
           {/* <WordInput editable={mode !== "view"} value={word} /> */}
-          <View className="items-center py-2">
+          {/* <View className="items-center py-2">
             <AppText color="primary" size={40} font="MulishSemiBold">
               {word}
             </AppText>
-          </View>
+          </View> */}
         </View>
       )}
       renderTabBar={(props) => <MaterialTabBar {...props} scrollEnabled />}
@@ -205,7 +205,7 @@ const WordInfo = (props: WordInfoType) => {
 
       <AppDivider style={{ marginTop: 16, marginBottom: 8 }} />
 
-      <View className="mt-8 px-4">
+      {/* <View className="mt-8 px-4">
         <AppButton
           title="Xem bản dịch"
           type="primary"
@@ -214,7 +214,7 @@ const WordInfo = (props: WordInfoType) => {
             router.push("/screens/Word/Create/Translate/List/screen")
           }
         />
-      </View>
+      </View> */}
       <View className="h-10"></View>
     </View>
   );

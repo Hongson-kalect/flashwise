@@ -38,7 +38,7 @@ const TempExampleCreate = ({ languageMode, onAddExample }: Props) => {
             size={"sm"}
             value={example.value}
             onChangeText={(text) => setExample({ ...example, value: text })}
-            placeholder="Type your example"
+            placeholder="Write a natural example sentence"
           />
         </View>
       </View>
@@ -54,7 +54,7 @@ const TempExampleCreate = ({ languageMode, onAddExample }: Props) => {
               onChangeText={(text) =>
                 setExample({ ...example, translate: text })
               }
-              placeholder="Type your translate"
+              placeholder="Translate the example sentence"
             />
           </View>
         </View>

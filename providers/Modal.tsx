@@ -1,6 +1,6 @@
-import AppText from "@/components/AppText";
 import AlertModal from "@/components/modals/components/AlertModal";
 import ConfirmModal from "@/components/modals/components/ConfirmModal";
+import CustomModal from "@/components/modals/components/CustomModal";
 import InputModal from "@/components/modals/components/InputModal";
 import MenuModal from "@/components/modals/components/MenuModal";
 import PromptModal from "@/components/modals/components/PromptModal";
@@ -209,13 +209,7 @@ const GlobalModalComponent = () => {
         return <TabsModal {...modal} />;
 
       case "custom":
-        return (
-          modal.render || (
-            <View>
-              <AppText>{'Add "render" props to custom your modal'}</AppText>
-            </View>
-          )
-        );
+        return <CustomModal {...modal} />;
     }
   };
 

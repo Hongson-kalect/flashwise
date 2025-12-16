@@ -1,13 +1,13 @@
 import AppIcon from "@/components/AppIcon";
 import AppTitle from "@/components/AppTitle";
-import { LayoutChangeEvent, View } from "react-native";
-import Information from "../../../../../components/output/information";
-import WordLink from "../../../../../components/output/wordLink";
 import {
   bottomSheetTitle,
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
 } from "@/interfaces/word";
+import { LayoutChangeEvent, View } from "react-native";
+import Information from "../../../../../components/output/information";
+import WordLink from "../../../../../components/output/wordLink";
 
 type Props = {
   mode?: "create" | "update" | "view";

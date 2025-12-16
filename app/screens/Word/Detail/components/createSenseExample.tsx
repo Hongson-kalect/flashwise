@@ -29,10 +29,11 @@ const CreateSenseExample = ({
   const showEditExampleModel = (example: SenseExample) => {
     setGlobalModal({
       type: "custom",
+      // defaultValue: "cc",
       render: (
         <EditExampleForm
           example={example}
-          languageMode={languageMode}
+          languageMode={2}
           onChange={(val) => {
             editExample(val);
             setGlobalModal(null);
