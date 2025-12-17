@@ -12,12 +12,12 @@ import { Divider } from "react-native-paper";
 import { testData, WordType } from "../../../data";
 import { getList } from "../../../utils/getWordData";
 import { basicWordMapping } from "../../../utils/utils";
-import WordDefinations from "../../components/definations";
+import WordDefinitions from "../../components/definitions";
 import CreateSenseHeader from "../Components/header";
 
 const DATA = testData;
 const tabs = [
-  "definations",
+  "definitions",
   "translates",
   "images",
   "ipas",
@@ -29,15 +29,15 @@ const tabs = [
 ];
 
 const tabsMapping = {
-  definations: (props: DefinationTabsProps) => <DefinationTabs {...props} />,
+  definitions: (props: DefinitionTabsProps) => <DefinitionTabs {...props} />,
   translates: (props: TranslateTabsProps) => <TranslateTabs {...props} />,
-  images: (props: DefinationTabsProps) => <AppText>image</AppText>,
-  ipas: (props: DefinationTabsProps) => <AppText>ipas</AppText>,
-  audios: (props: DefinationTabsProps) => <AppText>audios</AppText>,
-  forms: (props: DefinationTabsProps) => <AppText>forms</AppText>,
-  synonyms: (props: DefinationTabsProps) => <AppText>synonyms</AppText>,
-  antonyms: (props: DefinationTabsProps) => <AppText>antonyms</AppText>,
-  relateds: (props: DefinationTabsProps) => <AppText>relateds</AppText>,
+  images: (props: DefinitionTabsProps) => <AppText>image</AppText>,
+  ipas: (props: DefinitionTabsProps) => <AppText>ipas</AppText>,
+  audios: (props: DefinitionTabsProps) => <AppText>audios</AppText>,
+  forms: (props: DefinitionTabsProps) => <AppText>forms</AppText>,
+  synonyms: (props: DefinitionTabsProps) => <AppText>synonyms</AppText>,
+  antonyms: (props: DefinitionTabsProps) => <AppText>antonyms</AppText>,
+  relateds: (props: DefinitionTabsProps) => <AppText>relateds</AppText>,
 };
 
 const WordSenseCreate = () => {
@@ -54,7 +54,7 @@ const WordSenseCreate = () => {
   const [languageMode, setLanguageMode] = useState<1 | 2>(defaultLanguageMode);
 
   const [senseInfo, setSenseInfo] = useState<{ [k: string]: string[] }>({
-    definations: [],
+    definitions: [],
     translates: [],
     images: [],
     ipas: [],
@@ -161,7 +161,7 @@ const WordSenseCreate = () => {
                   onSelect={onSelect}
                   items={data?.[tab] || []}
                 />
-                {/* <DefinationTabs items={data.definations} /> */}
+                {/* <DefinitionTabs items={data.definitions} /> */}
               </View>
             </Tabs.ScrollView>
           </Tabs.Tab>
@@ -173,17 +173,17 @@ const WordSenseCreate = () => {
 
 export default WordSenseCreate;
 
-type DefinationTabsProps = {
+type DefinitionTabsProps = {
   list: any[];
-  items: WordType["definations"];
+  items: WordType["definitions"];
   onSelect: (id: string, state: boolean) => void;
   onSelectAll: (state: boolean) => void;
 };
-const DefinationTabs = ({
+const DefinitionTabs = ({
   items,
   onSelect,
   onSelectAll,
-}: DefinationTabsProps) => {
+}: DefinitionTabsProps) => {
   const [isSimple, setIsSimple] = useState(true);
   const { theme } = useTheme();
   const [selected, setSelected] = useState<string[]>([]);
@@ -245,7 +245,7 @@ const DefinationTabs = ({
               onSelect={(state) => handleSelect(item.id || item.value, state)}
               key={index}
             >
-              <WordDefinations
+              <WordDefinitions
                 key={index}
                 item={item}
                 index={index}

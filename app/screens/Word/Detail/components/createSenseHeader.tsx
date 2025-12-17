@@ -4,8 +4,7 @@ import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { Dispatch, SetStateAction } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import { StyleSheet, View } from "react-native";
 import { SenseType } from "./createSenseSheet";
 import ToggleWordDisplayMode from "./toggleWordDisplayMode";
 
@@ -29,10 +28,10 @@ const CreateSenseHeader = ({
       onOk: () => {
         setSenseValue({
           id: new Date().getTime().toString(),
-          defination: "",
+          definition: "",
           examples: [],
           translations: [],
-          traslatedDefination: "",
+          traslatedDefinition: "",
         });
       },
     });

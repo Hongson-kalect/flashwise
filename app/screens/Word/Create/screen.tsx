@@ -78,11 +78,11 @@ const WordDetail = () => {
 
   const [languageMode, setLanguageMode] = useState<1 | 2>(2);
   const [senseValue, setSenseValue] = useState<SenseType>({
-    defination: "",
+    definition: "",
     examples: [],
     id: new Date().getTime().toString(),
     translations: [],
-    traslatedDefination: "",
+    traslatedDefinition: "",
     word: "",
   });
 

@@ -25,7 +25,7 @@ const CreateSenseBasicInfo = ({
   const [translation, setTranslation] = useState("");
 
   const { setListModal } = useModalStore();
-  const showExistingDefination = () => {
+  const showExistingDefinition = () => {
     setListModal({
       onSubmit: () => {},
       // type: "checkbox"
@@ -34,7 +34,7 @@ const CreateSenseBasicInfo = ({
         { label: "Test", value: "1" },
         { label: "Test", value: "2" },
       ],
-      title: "Definations",
+      title: "Definitions",
       value: "1",
     });
   };
@@ -72,12 +72,12 @@ const CreateSenseBasicInfo = ({
             ) : (
               ""
             )}
-            Defination
+            Definition
             <AppText color="error"> *</AppText>
           </AppText>
 
           <TouchableOpacity
-            onPress={showExistingDefination}
+            onPress={showExistingDefinition}
             hitSlop={10}
             className="gap-1 items-center flex-row"
           >
@@ -99,9 +99,9 @@ const CreateSenseBasicInfo = ({
                 textAlignVertical: "top",
                 height: 75,
               }}
-              value={senseValue.defination}
+              value={senseValue.definition}
               onChangeText={(val) =>
-                setSenseValue({ ...senseValue, defination: val })
+                setSenseValue({ ...senseValue, definition: val })
               }
             />
           </View>
@@ -116,12 +116,12 @@ const CreateSenseBasicInfo = ({
                 <AppText color="primary" font="MulishBold" size={"sm"}>
                   {motherLang}
                 </AppText>{" "}
-                Defination
+                Definition
                 {/* <AppText color="error"> *</AppText> */}
               </AppText>
 
               <TouchableOpacity
-                onPress={showExistingDefination}
+                onPress={showExistingDefinition}
                 hitSlop={10}
                 className="gap-1 items-center flex-row"
               >
@@ -148,9 +148,9 @@ const CreateSenseBasicInfo = ({
                     textAlignVertical: "top",
                     height: 75,
                   }}
-                  value={senseValue.traslatedDefination}
+                  value={senseValue.traslatedDefinition}
                   onChangeText={(val) =>
-                    setSenseValue({ ...senseValue, traslatedDefination: val })
+                    setSenseValue({ ...senseValue, traslatedDefinition: val })
                   }
                 />
               </View>
@@ -163,7 +163,7 @@ const CreateSenseBasicInfo = ({
             </AppText>
 
             <TouchableOpacity
-              onPress={showExistingDefination}
+              onPress={showExistingDefinition}
               hitSlop={10}
               className="gap-1 items-center flex-row"
             >

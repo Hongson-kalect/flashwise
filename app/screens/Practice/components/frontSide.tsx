@@ -1,13 +1,6 @@
 import AppTitle from "@/components/AppTitle";
 import CardOption from "@/components/card/CardOption";
-import {
-  CARD_ELEMENT,
-  CardElement,
-  cardElementMapping,
-  frontCardStyle,
-  frontCardTitle,
-  qq,
-} from "@/configs/cardOptions";
+import { CardElement, cardElementMapping } from "@/configs/cardOptions";
 import { useTheme } from "@/providers/Theme";
 import { useMemo } from "react";
 import {
@@ -111,7 +104,7 @@ const CardFrontSide = ({
       {/* <CardWord />
 
       <CardImage />
-      <CardDefination />
+      <CardDefinition />
       <CardExample /> */}
     </View>
   );

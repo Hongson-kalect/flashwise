@@ -1,6 +1,6 @@
 import CardCollaboration from "@/components/card/Collaboration";
 import CardCulturalNote from "@/components/card/CulturalNote";
-import CardDefination from "@/components/card/Defination";
+import CardDefinition from "@/components/card/Definition";
 import CardEtymology from "@/components/card/Etymology";
 import CardExample from "@/components/card/Example";
 import CardExplanation from "@/components/card/Explain";
@@ -11,7 +11,7 @@ import Markdown from "@/components/card/Markdown";
 import CardOtherTranslation from "@/components/card/otherTranslation";
 import CardProtip from "@/components/card/Protip";
 import CardQuestion from "@/components/card/Question";
-import CardTranslatedDefination from "@/components/card/tDefination";
+import CardTranslatedDefinition from "@/components/card/tDefinition";
 import CardTranslatedExample from "@/components/card/tExample";
 import CardTranslatedImage from "@/components/card/tImage";
 import CardTranslated from "@/components/card/translate";
@@ -321,7 +321,7 @@ export const cardElementMapping: {
   [key in CARD_ELEMENT]: (props: any) => React.ReactNode;
 } = {
   image: (props) => <CardImage {...props} />,
-  definition: (props) => <CardDefination {...props} />,
+  definition: (props) => <CardDefinition {...props} />,
   example: (props) => <CardExample {...props} />,
   question: (props) => <CardQuestion {...props} />,
   text: (props) => <CardWord {...props} />,
@@ -331,7 +331,7 @@ export const cardElementMapping: {
 
   wordAndTranslate: (props) => <CardWordAndTranslated {...props} />,
   translate: (props) => <CardTranslated {...props} />,
-  tDefinition: (props) => <CardTranslatedDefination {...props} />,
+  tDefinition: (props) => <CardTranslatedDefinition {...props} />,
   tExample: (props) => <CardTranslatedExample {...props} />,
   tImage: (props) => <CardTranslatedImage {...props} />,
   explanation: (props) => <CardExplanation {...props} />,
@@ -442,7 +442,7 @@ export const backCardInfo: { [key: string]: CARD_ELEMENT[] } = {
   collocations: ["text", "collaborations"], // dùng cho trình độ cao
   culturalNote: ["text", "culturalNote"], // khi học từ theo ngữ cảnh văn hóa
   etymology: ["text", "etymology"], // useful cho từ khó nhớ // Cách từ được tạo ra hay gì?
-  defination: ["definition", "example"], // useful cho từ khó nhớ // Cách từ được tạo ra hay gì?
+  definition: ["definition", "example"], // useful cho từ khó nhớ // Cách từ được tạo ra hay gì?
 };
 
 const flipCondition = {

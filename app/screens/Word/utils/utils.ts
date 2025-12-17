@@ -15,7 +15,7 @@ export const basicWordMapping = (sense: WordType[]) => {
   const result: WordType[] = [];
   sortedSenses.map((sortedSense: WordType) => {
     const pos = sortedSense.wordInfo.pos;
-    const defiantions = sortedSense.definations;
+    const defiantions = sortedSense.definitions;
     const translates = sortedSense.translates;
     const forms = sortedSense.forms;
 
@@ -29,7 +29,7 @@ export const basicWordMapping = (sense: WordType[]) => {
       });
 
       defiantions.forEach((defiantion) => {
-        addIfValueNotExist(currentPos.definations, defiantion);
+        addIfValueNotExist(currentPos.definitions, defiantion);
       });
       translates.forEach((translate) => {
         addIfValueNotExist(currentPos.translates, translate);
@@ -37,7 +37,7 @@ export const basicWordMapping = (sense: WordType[]) => {
     } else {
       result.push({
         ...sortedSense,
-        definations: [...defiantions],
+        definitions: [...defiantions],
         translates: [...translates],
         forms: [...forms],
       });
@@ -62,9 +62,9 @@ const addIfValueNotExist = (
 
 const basicScoreAccount = (word: WordType) => {
   let score = 0;
-  word.definations.forEach((defination) => {
-    defination.value.map((item) => (score += item.length));
-    const examples = defination.examples;
+  word.definitions.forEach((definition) => {
+    definition.value.map((item) => (score += item.length));
+    const examples = definition.examples;
     examples.forEach((example) => {
       score += example.value.length;
       const trans = example.exampleTranslate;

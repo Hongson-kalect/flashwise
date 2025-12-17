@@ -1,4 +1,4 @@
-import AppButton from "@/components/AppButton";
+import AppAddIcon from "@/components/AppAddIcon";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
@@ -27,10 +27,10 @@ import {
 import { Divider } from "react-native-paper";
 import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
 import { WordInfoType, WordType } from "../../data";
-import WordDefinations from "./definations";
+import WordDefinitions from "./definitions";
 
 interface Props {
-  definations: WordType["definations"];
+  definitions: WordType["definitions"];
   data: WordInfoType;
   translates: WordType["translates"];
   mode?: "create" | "update" | "view";
@@ -45,7 +45,7 @@ const BasicInformation = ({
   data,
   mode,
   translates,
-  definations,
+  definitions,
   labelWidth,
   onLabelLayout,
   openInputModal,
@@ -80,16 +80,16 @@ const BasicInformation = ({
   const { width } = useWindowDimensions();
   const { present } = useBottomSheet();
 
-  const onShowMoreDefinations = () => {
+  const onShowMoreDefinitions = () => {
     present({
       size: "full",
       render: () => (
-        <MoreDefinations
-          items={definations.slice(1)}
+        <MoreDefinitions
+          items={definitions.slice(1)}
           languageMode={props.languageMode}
         />
       ),
-      title: "Other definations",
+      title: "Other definitions",
     });
   };
 
@@ -119,7 +119,7 @@ const BasicInformation = ({
 
         <View className="flex-row items-center gap-2">
           <Pressable
-            hitSlop={10}
+            hitSlop={20}
             className="h-10 w-10 rounded-lg items-center justify-center"
             onPress={() => alert("Nhảy sense")}
           >
@@ -138,7 +138,7 @@ const BasicInformation = ({
           </View>
           <Pressable
             className="h-10 w-10 rounded-lg  items-center justify-center"
-            hitSlop={10}
+            hitSlop={20}
             onPress={() => alert("Nhảy sense")}
           >
             <AppIcon branch="antd" color="primary" name={"right"} size={20} />
@@ -209,32 +209,30 @@ const BasicInformation = ({
             // exiting={FadeOutUp}
             className="mb-2 w-full"
           >
-            <View className="flex-row items-center px-2">
-              {!translates.length ? (
-                <AppText
-                  numberOfLines={1}
-                  color="subText1"
-                  // font="MulishLight"
-                  size={"sm"}
-                >
-                  {translates.map((item) => item.value).join(", ")}
-                </AppText>
-              ) : (
-                <AppText
-                  color="subText3"
-                  font="MulishRegularItalic"
-                  size={"sm"}
-                >
-                  No translations{" "}
+            <View>
+              {translates.length ? (
+                <View className="flex-row items-center py-0.5">
                   <AppText
-                    onPress={() => Alert.alert("DMM")}
-                    color="success"
+                    numberOfLines={1}
+                    color="subText1"
+                    // font="MulishLight"
                     size={"sm"}
-                    font="MulishSemiBoldItalic"
                   >
-                    + Add translations.
+                    {translates.map((item) => item.value).join(", ")}
                   </AppText>
-                </AppText>
+                </View>
+              ) : (
+                <View className="flex-row items-center justify-between">
+                  <AppText
+                    color="subText3"
+                    font="MulishRegularItalic"
+                    size={"sm"}
+                  >
+                    No translations
+                  </AppText>
+
+                  <AppAddIcon size="sm" />
+                </View>
               )}
             </View>
           </Animated.View>
@@ -242,19 +240,16 @@ const BasicInformation = ({
 
         <Animated.View layout={LinearTransition}>
           {true ? (
-            // {image?.uri ? (
             <View
               style={{
                 elevation: 4,
                 overflow: "hidden",
-                width: width - 28,
-                height: ((width - 28) / 16) * 9,
+                width: width - 14,
+                height: ((width - 14) / 16) * 9,
               }}
               className="rounded-lg"
             >
               <Image
-                // source={{ uri: image?.uri }}
-
                 source={{
                   uri: "https://cdn-web.onlive.vn/onlive/image-news/%C4%91i%20date%20thumb.jpg",
                 }}
@@ -262,33 +257,31 @@ const BasicInformation = ({
               />
             </View>
           ) : (
-            // <TouchableOpacity className="h-40 w-40 bg-gray-200 rounded-lg p-4">
             <AppIcon
               name={"image"}
               branch="feather"
               size={140}
               color="subText3"
             />
-            //  </TouchableOpacity>
           )}
         </Animated.View>
       </View>
       <Animated.View layout={LinearTransition}>
         <View className="flex-row justify-between items-center">
-          <AppTitle title="Defination 📖" />
-          {definations.length > 1 && (
+          <AppTitle title="Definition 📖" />
+          {definitions.length > 1 && (
             <View className="flex-row items-center gap-1">
               <AppText
                 style={{
                   height: "100%",
                   paddingVertical: 8,
                 }}
-                onPress={onShowMoreDefinations}
+                onPress={onShowMoreDefinitions}
                 size="xs"
                 color="primary"
                 font="MulishLightItalic"
               >
-                {definations.length - 1} More
+                {definitions.length - 1} More
               </AppText>
 
               <AppIcon
@@ -303,15 +296,31 @@ const BasicInformation = ({
         <Divider />
         <View className="py-2">
           <View style={{ marginTop: -10 }}>
-            {definations.slice(0, 1).map((item, index) => (
-              <WordDefinations
-                word="tip"
-                key={index}
-                item={item}
-                index={index}
-                languageMode={props.languageMode}
-              />
-            ))}
+            {definitions.slice(0, 1).length ? (
+              definitions
+                .slice(0, 1)
+                .map((item, index) => (
+                  <WordDefinitions
+                    word="tip"
+                    key={index}
+                    item={item}
+                    index={index}
+                    languageMode={props.languageMode}
+                  />
+                ))
+            ) : (
+              <View className="flex-row py-3 items-center justify-between">
+                <AppText
+                  color="subText2"
+                  font="MulishRegularItalic"
+                  size={"sm"}
+                >
+                  Not have English definition
+                </AppText>
+
+                <AppAddIcon onPress={() => Alert.alert("dmm")} size="sm" />
+              </View>
+            )}
           </View>
 
           {props.languageMode === 2 && (
@@ -323,31 +332,19 @@ const BasicInformation = ({
                 padding: 8,
               }}
             >
-              <View className="py-2">
+              <View className="py-2 flex-row justify-between items-center">
                 <AppText
                   color="subText2"
                   font="MulishRegularItalic"
                   size={"sm"}
                 >
-                  Not have Vietnamese defination
+                  Not have Vietnamese definition
                 </AppText>
 
-                <View className="mt-2 flex-row justify-start">
-                  <AppButton size="sm" onPress={() => {}} type="success">
-                    <AppIcon
-                      name="external-link"
-                      color="white"
-                      size={16}
-                      branch="feather"
-                    />
-                    <AppText color="white" size={"sm"}>
-                      Add
-                    </AppText>
-                  </AppButton>
-                </View>
+                <AppAddIcon size="sm" />
               </View>
-              {/* {definations.slice(0, 1).map((item, index) => (
-                <WordDefinations
+              {/* {definitions.slice(0, 1).map((item, index) => (
+                <WordDefinitions
                   word="tip"
                   key={index}
                   item={item}
@@ -367,7 +364,7 @@ const BasicInformation = ({
         <Divider />
         <View className="py-2">
           <View>
-            {definations.slice(1, 2).map((item, index) => (
+            {definitions.slice(1, 2).map((item, index) => (
               <AppText color="subText1" key={index}>
                 {item.value}
               </AppText>
@@ -384,26 +381,28 @@ const BasicInformation = ({
               padding: 8,
             }}
           >
-            <View className="py-2">
+            <View className="py-2 flex-row items-center justify-between">
               <AppText color="subText2" font="MulishRegularItalic" size={"sm"}>
                 Not have usage in Vietnamese
               </AppText>
 
-              <View className="mt-2 flex-row justify-start">
+              <AppAddIcon size="sm" />
+
+              {/* <View className="mt-2 flex-row justify-start">
                 <AppButton size="sm" onPress={() => {}} type="success">
                   <AppIcon
-                    name="external-link"
+                    name="plus"
                     color="white"
                     size={16}
                     branch="feather"
                   />
                   <AppText color="white" size={"sm"}>
-                    Add
+                    Add usage
                   </AppText>
                 </AppButton>
-              </View>
+              </View> */}
             </View>
-            {/* {definations.slice(1, 2).map((item, index) => (
+            {/* {definitions.slice(1, 2).map((item, index) => (
               <AppText color="subText1" key={index}>
                 {item.value}
               </AppText>
@@ -413,43 +412,41 @@ const BasicInformation = ({
       </Animated.View>
 
       <Animated.View layout={LinearTransition}>
-        <View className="mt-4 rounded-lg py-2">
-          <AppText color="subText3" font="MulishLightItalic" size={"sm"}>
-            Chưa có ghi chú{" "}
-            <AppText
-              onPress={() => Alert.alert("DMM")}
-              color="success"
-              size={"sm"}
-              font="MulishSemiBoldItalic"
-            >
-              + Add note.
-            </AppText>
-          </AppText>
-        </View>
-
-        {/* <View
-          style={{ marginHorizontal: -8, paddingHorizontal: 12 }}
-          className="mt-4 bg-gray-100 rounded-lg p-3"
+        <View
+          style={{ marginHorizontal: -8, paddingHorizontal: 8 }}
+          className="mt-4 bg-gray-100 rounded-lg py-4"
         >
-          <AppText color="title" size={"md"} font="MulishSemiBoldItalic">
-            Note 📝
-          </AppText>
-          <Divider />
-          <View className="py-2">
-            <View>
-              {definations.slice(2, 3).map((item, index) => (
-                <AppText
-                  key={index}
-                  size={"sm"}
-                  color="subText2"
-                  font="MulishRegularItalic"
-                >
-                  {item.value}
-                </AppText>
-              ))}
+          {true ? (
+            <View className="flex-row items-center justify-between">
+              <AppText color="subText2" font="MulishLightItalic" size={"sm"}>
+                No note for now{" "}
+              </AppText>
+
+              <AppAddIcon size="sm" />
             </View>
-          </View>
-        </View> */}
+          ) : (
+            <View>
+              <AppText color="title" size={"md"} font="MulishSemiBoldItalic">
+                Note 📝
+              </AppText>
+              <Divider />
+              <View className="py-2">
+                <View>
+                  {definitions.slice(2, 3).map((item, index) => (
+                    <AppText
+                      key={index}
+                      size={"sm"}
+                      color="subText2"
+                      font="MulishRegularItalic"
+                    >
+                      {item.value}
+                    </AppText>
+                  ))}
+                </View>
+              </View>
+            </View>
+          )}
+        </View>
       </Animated.View>
     </View>
   );
@@ -457,16 +454,16 @@ const BasicInformation = ({
 
 export default BasicInformation;
 
-type MoreDefinationsProps = {
-  items: WordType["definations"];
+type MoreDefinitionsProps = {
+  items: WordType["definitions"];
   languageMode: 1 | 2;
 };
-const MoreDefinations = ({ items, languageMode }: MoreDefinationsProps) => {
+const MoreDefinitions = ({ items, languageMode }: MoreDefinitionsProps) => {
   return (
     <View className="px-3 mt-4">
       {items.map((item, index) => (
         <View key={index}>
-          <WordDefinations
+          <WordDefinitions
             word=""
             key={index}
             item={item}

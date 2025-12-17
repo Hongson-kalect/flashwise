@@ -14,8 +14,8 @@ import CreateSenseMoreInfo from "./createSenseMoreInfo";
 
 export type SenseType = {
   word?: string;
-  defination: string;
-  traslatedDefination: string;
+  definition: string;
+  traslatedDefinition: string;
   translations: string[];
   examples: SenseExample[];
   usage?: string;

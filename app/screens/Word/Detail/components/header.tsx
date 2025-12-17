@@ -30,8 +30,8 @@ const WordDetailHeader = ({
   // just use temp. buttom sheet will change this value while editing
   const [tempSenseValue, setTempSenseValue] = useState<SenseType>({
     id: new Date().getTime().toString(),
-    defination: "",
-    traslatedDefination: "",
+    definition: "",
+    traslatedDefinition: "",
     translations: [],
     examples: [],
   });

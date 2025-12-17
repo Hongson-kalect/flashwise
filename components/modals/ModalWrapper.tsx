@@ -43,6 +43,7 @@ export default function ModalWrapper(props: Props) {
   return (
     // <Modal visible={props.show}>
     <ReactNativeModal
+      // key={props.type || "none"}
       onBackButtonPress={props.onCancel}
       animationIn={props.inAnimation || "zoomIn"}
       animationOut={props.outAnimation || "slideOutUp"}

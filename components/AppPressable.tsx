@@ -3,24 +3,39 @@ import { Pressable, StyleSheet } from "react-native";
 
 interface AppPressableProps {
   children: React.ReactNode;
+  className?: string;
   onPress?: () => void;
+  onLongPress?: () => void;
+  isVibration?: boolean;
+  touchColor?: string | null;
+  isDisabled?: boolean;
   style?: any;
 }
 
 export const AppPressable = ({
   children,
   onPress,
+  onLongPress,
+  isVibration,
   style,
+  className,
+  ...props
 }: AppPressableProps) => {
+  const handleLongPress = () => {
+    // TODO: Vibration
+    // isVibration && Vibration.vibrate([100, 50, 100]);
+
+    onLongPress && onLongPress();
+  };
   return (
     <Pressable
+      className={className}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.default,
-        style,
-        pressed && styles.pressed,
-      ]}
-      android_ripple={{ color: "#ddd" }}
+      onLongPress={handleLongPress}
+      style={style}
+      android_ripple={{
+        color: props.touchColor === null ? null : props.touchColor || "#eee",
+      }}
     >
       {children}
     </Pressable>

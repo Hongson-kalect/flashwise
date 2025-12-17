@@ -1,6 +1,6 @@
+import { QuestionType } from "@/app/screens/Practice/example";
 import { TextStyle, View, ViewStyle } from "react-native";
 import AppText from "../AppText";
-import { QuestionType } from "@/app/screens/Practice/example";
 
 type Props = {
   wrapperStyle?: ViewStyle;
@@ -8,7 +8,7 @@ type Props = {
   question: QuestionType;
 };
 
-const CardDefination = (props: Props) => {
+const CardDefinition = (props: Props) => {
   return (
     <View className="w-full px-4 mt-1">
       <AppText style={props.textStyle} font="MulishRegular" size={"sm"}>
@@ -18,4 +18,4 @@ const CardDefination = (props: Props) => {
   );
 };
 
-export default CardDefination;
+export default CardDefinition;

@@ -44,7 +44,7 @@ const AppButton = ({
 }: Props) => {
   const { theme } = useTheme();
   const scale = useRef(new Animated.Value(1)).current;
-  const { fontSize, px, py } = useMemo(() => {
+  const { px, py } = useMemo(() => {
     return buttonSizes[size];
   }, [size]);
 
@@ -81,6 +81,7 @@ const AppButton = ({
         onPressIn={onPressIn}
         onPressOut={onPressOut}
         disabled={disabled || isLoading}
+        android_ripple={{ color: "#ffffff44" }}
         style={[
           {
             shadowColor: "#000",

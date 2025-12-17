@@ -23,10 +23,10 @@ import {
 import { Divider } from "react-native-paper";
 import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
 import { WordType } from "../../../data";
-import WordDefinations from "../../components/definations";
+import WordDefinitions from "../../components/definitions";
 
 interface Props {
-  definations: WordType["definations"];
+  definitions: WordType["definitions"];
   data: WordType["wordInfo"];
   translates: WordType["translates"];
   mode?: "create" | "update" | "view";
@@ -41,7 +41,7 @@ const BasicInformation = ({
   data,
   mode,
   translates,
-  definations,
+  definitions,
   labelWidth,
   onLabelLayout,
   openInputModal,
@@ -75,16 +75,16 @@ const BasicInformation = ({
   const { width } = useWindowDimensions();
   const { present } = useBottomSheet();
 
-  const onShowMoreDefinations = () => {
+  const onShowMoreDefinitions = () => {
     present({
       size: "full",
       render: () => (
-        <MoreDefinations
-          items={definations.slice(2)}
+        <MoreDefinitions
+          items={definitions.slice(2)}
           languageMode={props.languageMode}
         />
       ),
-      title: "Other definations",
+      title: "Other definitions",
     });
   };
 
@@ -261,19 +261,19 @@ const BasicInformation = ({
       <Animated.View layout={LinearTransition}>
         <View className="flex-row justify-between items-center">
           <AppTitle title="Định nghĩa 📖" />
-          {definations.length > 2 && (
+          {definitions.length > 2 && (
             <View className="flex-row items-center gap-1">
               <AppText
                 style={{
                   height: "100%",
                   paddingVertical: 8,
                 }}
-                onPress={onShowMoreDefinations}
+                onPress={onShowMoreDefinitions}
                 size="xs"
                 color="primary"
                 font="MulishLightItalic"
               >
-                {definations.length - 2} Nghĩa khác
+                {definitions.length - 2} Nghĩa khác
               </AppText>
 
               <AppIcon
@@ -288,8 +288,8 @@ const BasicInformation = ({
         <Divider />
         <View className="py-2">
           <View>
-            {definations.slice(0, 2).map((item, index) => (
-              <WordDefinations
+            {definitions.slice(0, 2).map((item, index) => (
+              <WordDefinitions
                 key={index}
                 item={item}
                 index={index}
@@ -309,15 +309,15 @@ const BasicInformation = ({
 
 export default BasicInformation;
 
-type MoreDefinationsProps = {
-  items: WordType["definations"];
+type MoreDefinitionsProps = {
+  items: WordType["definitions"];
   languageMode: 1 | 2;
 };
-const MoreDefinations = ({ items, languageMode }: MoreDefinationsProps) => {
+const MoreDefinitions = ({ items, languageMode }: MoreDefinitionsProps) => {
   return (
     <View className="px-3 mt-4">
       {items.map((item, index) => (
-        <WordDefinations
+        <WordDefinitions
           key={index}
           item={item}
           index={index}

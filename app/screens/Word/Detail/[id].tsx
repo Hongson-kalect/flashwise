@@ -163,7 +163,7 @@ const WordInfo = (props: WordInfoType) => {
       <View className="px-2">
         <View className="mt-2">
           <BasicInformation
-            definations={props.data.definations}
+            definitions={props.data.definitions}
             data={props.data.wordInfo}
             mode={props.mode}
             languageMode={props.languageMode}

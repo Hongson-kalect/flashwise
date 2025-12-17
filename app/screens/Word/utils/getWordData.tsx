@@ -2,8 +2,8 @@ import { WordType } from "../data";
 
 export const getList = (tab: string, data: WordType) => {
   switch (tab) {
-    case "definations": {
-      return data.definations;
+    case "definitions": {
+      return data.definitions;
     }
 
     case "translates": {

@@ -1,5 +1,7 @@
+import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
 import { BasicModalOptions, MenuModalOptions } from "@/providers/Modal";
+import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 
@@ -20,36 +22,24 @@ const MenuModal = (modal: Props) => {
       )}
       <ScrollView>
         {modal.menuOptions.map((menu, idx) => (
-          <TouchableOpacity
+          <AppMenu
             key={idx}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: menuType,
-              borderBottomWidth: 0.5,
-              backgroundColor: menu.backgroundColor || "transparent",
-              borderColor:
-                idx === modal.menuOptions.length - 1
-                  ? "transparent"
-                  : "rgba(0, 0, 0, 0.1)",
-            }}
-            className="py-3 px-2 rounded-lg gap-2"
+            justifyContent={menuType}
+            color={menu.color}
+            backgroundColor={menu.backgroundColor}
+            borderColor={
+              idx === modal.menuOptions.length - 1
+                ? "transparent"
+                : "rgba(0, 0, 0, 0.1)"
+            }
             onPress={() => {
               menu.onPress?.();
               if (menu.isCloseAfterPress !== false) setGlobalModal(null);
             }}
-          >
-            <View className="flex-row items-center justify-center gap-2">
-              {menu.icon}
-              <AppText
-                style={{ color: menu.color || "#333" }}
-                className="text-center text-lg"
-              >
-                {menu.label}
-              </AppText>
-            </View>
-            {menu.rightContent}
-          </TouchableOpacity>
+            icon={menu.icon}
+            label={menu.label}
+            rightContent={menu.rightContent}
+          />
         ))}
       </ScrollView>
       {modal.cancelText && (
@@ -65,6 +55,51 @@ const MenuModal = (modal: Props) => {
         </TouchableOpacity>
       )}
     </View>
+  );
+};
+
+type AppMenuType = {
+  justifyContent?: "center" | "space-between";
+  color?: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  onPress?: () => void;
+  icon?: React.ReactNode;
+  label?: string | React.ReactNode;
+  rightContent?: React.ReactNode;
+};
+export const AppMenu = (props: AppMenuType) => {
+  const { theme } = useTheme();
+  return (
+    <AppPressable
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: props.justifyContent || "space-between",
+        borderBottomWidth: 0.5,
+        backgroundColor: props.backgroundColor || "transparent",
+        borderColor: props.borderColor,
+      }}
+      className="py-4 px-2 rounded-lg gap-4"
+      onPress={() => {
+        props.onPress?.();
+      }}
+    >
+      <View className="flex-row items-center justify-center gap-4">
+        {props.icon}
+        {typeof props.label === "string" ? (
+          <AppText
+            style={{ color: props.color || theme.text }}
+            className="text-center text-lg"
+          >
+            {props.label}
+          </AppText>
+        ) : (
+          props.label
+        )}
+      </View>
+      {props.rightContent}
+    </AppPressable>
   );
 };
 

@@ -42,7 +42,7 @@ export const testData = [
     ],
     ruby: [],
     translates: [],
-    definations: [],
+    definitions: [],
   },
   {
     id: "019aa56e-9c32-7464-80c8-6b6b3e7ac766",
@@ -99,7 +99,7 @@ export const testData = [
     ],
     ruby: [],
     translates: [],
-    definations: [
+    definitions: [
       {
         id: "019ace1e-47c4-78b2-9773-33025ac557bb",
         subId: "019ace1e-47c4-78b2-9773-33025ac557bb",
@@ -185,7 +185,7 @@ export const testData = [
             languageCode: "en",
             bold: [[107, 110]],
             score: 100,
-            defination: "019ace1e-47e6-7f1b-b09f-5c8b2a2eb588",
+            definition: "019ace1e-47e6-7f1b-b09f-5c8b2a2eb588",
             exampleTranslate: [],
           },
           {
@@ -196,7 +196,7 @@ export const testData = [
             languageCode: "en",
             bold: [[18, 21]],
             score: 100,
-            defination: "019ace1e-47e6-7f1b-b09f-5c8b2a2eb588",
+            definition: "019ace1e-47e6-7f1b-b09f-5c8b2a2eb588",
             exampleTranslate: [],
           },
         ],
@@ -317,7 +317,7 @@ export const testData = [
     ],
     ruby: [],
     translates: [],
-    definations: [],
+    definitions: [],
   },
   {
     id: "019aa56e-9c69-7037-ae33-8a37ebc72184",
@@ -362,7 +362,7 @@ export const testData = [
     ],
     ruby: [],
     translates: [],
-    definations: [],
+    definitions: [],
   },
   {
     id: "019aa56e-9c8a-7c7f-9d72-82a9c8a1a703",
@@ -419,7 +419,7 @@ export const testData = [
     ],
     ruby: [],
     translates: [],
-    definations: [],
+    definitions: [],
   },
   {
     id: "019aa56e-9c96-7e30-a2b6-67e4f444ac0a",
@@ -476,7 +476,7 @@ export const testData = [
     ],
     ruby: [],
     translates: [],
-    definations: [],
+    definitions: [],
   },
   {
     id: "019aa56e-9cc1-729d-9ca6-a4d5881e1006",
@@ -537,7 +537,7 @@ export const testData = [
         detail: null,
       },
     ],
-    definations: [],
+    definitions: [],
   },
   {
     id: "019aa56e-9d39-7af4-88a0-70827fcc3c8b",
@@ -582,7 +582,7 @@ export const testData = [
     ],
     ruby: [],
     translates: [],
-    definations: [],
+    definitions: [],
   },
   {
     id: "019aa56e-9d8a-7c07-9e1e-206675da8d7c",
@@ -639,7 +639,7 @@ export const testData = [
     ],
     ruby: [],
     translates: [],
-    definations: [],
+    definitions: [],
   },
   {
     id: "019aa56e-9d9b-7bb0-9655-b4770da6d570",
@@ -684,7 +684,7 @@ export const testData = [
     ],
     ruby: [],
     translates: [],
-    definations: [],
+    definitions: [],
   },
   {
     id: "019aa56e-9bd2-76b2-a697-520b2ce578fa",
@@ -740,7 +740,7 @@ export const testData = [
         detail: null,
       },
     ],
-    definations: [
+    definitions: [
       {
         id: "019ace1e-47b6-7c60-a484-889264f98688",
         subId: "019ace1e-47b6-7c60-a484-889264f98688",
@@ -756,7 +756,7 @@ export const testData = [
             languageCode: "en",
             bold: [[4, 7]],
             score: 100,
-            defination: "019ace1e-47b6-7c60-a484-889264f98688",
+            definition: "019ace1e-47b6-7c60-a484-889264f98688",
             exampleTranslate: [],
           },
           {
@@ -767,7 +767,7 @@ export const testData = [
             languageCode: "en",
             bold: [[115, 118]],
             score: 100,
-            defination: "019ace1e-47b6-7c60-a484-889264f98688",
+            definition: "019ace1e-47b6-7c60-a484-889264f98688",
             exampleTranslate: [],
           },
         ],
@@ -1031,7 +1031,7 @@ export type WordType = {
     languageCode: string;
     detail: null;
   }[];
-  definations: {
+  definitions: {
     id: string;
     subId: string;
     languageCode: string;
@@ -1043,7 +1043,7 @@ export type WordType = {
       languageCode: string;
       bold: number[][];
       score?: number;
-      defination: string;
+      definition: string;
       exampleTranslate: never[];
     }[];
   }[];
