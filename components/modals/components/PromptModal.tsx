@@ -30,12 +30,17 @@ const PromptModal = (modal: Props) => {
         </AppText>
       )}
       {modal.message && (
-        <AppText className="mt-2" color="subText1">
+        <AppText className="mt-2" color="subText1" numberOfLines={2}>
           {modal.message}
         </AppText>
       )}
       {modal.subMessage && (
-        <AppText size={"sm"} className="mt-1.5" color="subText2">
+        <AppText
+          size={"sm"}
+          className="mt-1.5"
+          color="subText2"
+          numberOfLines={3}
+        >
           {modal.subMessage}
         </AppText>
       )}

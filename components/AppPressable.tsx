@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, ViewStyle } from "react-native";
 
 interface AppPressableProps {
   children: React.ReactNode;
@@ -9,7 +9,10 @@ interface AppPressableProps {
   isVibration?: boolean;
   touchColor?: string | null;
   isDisabled?: boolean;
-  style?: any;
+  style?: ViewStyle;
+  hitSlop?:
+    | number
+    | { top?: number; bottom?: number; left?: number; right?: number };
 }
 
 export const AppPressable = ({
@@ -19,6 +22,7 @@ export const AppPressable = ({
   isVibration,
   style,
   className,
+  hitSlop,
   ...props
 }: AppPressableProps) => {
   const handleLongPress = () => {
@@ -33,6 +37,7 @@ export const AppPressable = ({
       onPress={onPress}
       onLongPress={handleLongPress}
       style={style}
+      hitSlop={hitSlop}
       android_ripple={{
         color: props.touchColor === null ? null : props.touchColor || "#eee",
       }}

@@ -32,8 +32,6 @@ export type ConfirmModalOptions = {
 };
 export type InputModalOptions = {
   type: "input";
-  title?: string;
-
   defaultValue?: string;
   placeholder?: string;
   isShowCancelButton?: boolean;
@@ -41,8 +39,6 @@ export type InputModalOptions = {
   textOuterHeader?: React.ReactNode;
   textInnerFooter?: React.ReactNode;
   textOuterFooter?: React.ReactNode;
-  message?: string;
-  subMessage?: string;
   okText?: string;
   cancelText?: string;
   onOk?: (value: string) => void;
@@ -51,8 +47,6 @@ export type InputModalOptions = {
 
 export type PromptModalOptions = {
   type: "prompt";
-  title?: string;
-
   defaultValue?: string;
   placeholder?: string;
   isShowCancelButton?: boolean;
@@ -60,8 +54,6 @@ export type PromptModalOptions = {
   textOuterHeader?: React.ReactNode;
   textInnerFooter?: React.ReactNode;
   textOuterFooter?: React.ReactNode;
-  message?: string;
-  subMessage?: string;
   okText?: string;
   cancelText?: string;
   onOk?: (value: string) => void;
@@ -83,9 +75,6 @@ export type MenuOption = {
 
 export type MenuModalOptions = {
   type: "menu";
-  title?: string;
-  message?: string;
-  subMessage?: string;
   menuOptions: MenuOption[];
   okText?: string;
   cancelText?: string;
@@ -95,9 +84,6 @@ export type MenuModalOptions = {
 
 export type TabsModalOptions = {
   type: "tabs";
-  title?: string;
-  message?: string;
-  subMessage?: string;
   tabs: React.ReactNode[];
   okText?: string;
   cancelText?: string;
@@ -111,6 +97,9 @@ export type CustomModalOptions = {
 };
 
 export type BasicModalOptions = {
+  title?: string;
+  message?: string;
+  subMessage?: string;
   modalTitle?: string;
   render?: React.ReactNode;
   onDismiss?: () => void; // lúc đóng modal
@@ -224,7 +213,7 @@ const GlobalModalComponent = () => {
     >
       <View className="px-3 rounded-lg">
         {globalModal?.header}
-        <RenderContent modal={showValue} />
+        {globalModal && <RenderContent modal={globalModal} />}
         {globalModal?.footer}
       </View>
     </ModalWrapper>

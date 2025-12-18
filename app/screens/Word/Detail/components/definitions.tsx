@@ -6,8 +6,9 @@ import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { useState } from "react";
-import { View, ViewStyle } from "react-native";
+import { Alert, View, ViewStyle } from "react-native";
 import { WordType } from "../../data";
+import CreateExampleForm from "./createExampleForm";
 import WordExample from "./example";
 
 type Props = {
@@ -43,7 +44,7 @@ const WordDefinitions = ({
 
     setGlobalModal({
       type: "menu",
-      title: "Options",
+      title: "Definition options",
       menuOptions: [
         {
           icon: (
@@ -88,7 +89,7 @@ const WordDefinitions = ({
             />
           ),
           label: "Delete custom defination",
-          onPress: addExampleModal,
+          onPress: deleteDefinitionModal,
         },
       ],
     });
@@ -97,6 +98,7 @@ const WordDefinitions = ({
   const showEditModal = () => {
     setTimeout(() => {
       setGlobalModal({
+        title: "Edit definition",
         type: "prompt",
         defaultValue: item.value[0],
       });
@@ -106,10 +108,38 @@ const WordDefinitions = ({
   const addExampleModal = () => {
     setTimeout(() => {
       setGlobalModal({
-        type: "prompt",
-        defaultValue: item.value[0],
+        type: "custom",
+        // title: "Add example",
+        render: (
+          <CreateExampleForm
+            onAddExample={(example) => handleAddExample(example)}
+            languageMode={languageMode}
+          />
+        ),
       });
     }, 500);
+  };
+
+  const deleteDefinitionModal = () => {
+    setTimeout(() => {
+      setGlobalModal({
+        type: "confirm",
+        message: "Do you want to delete this example?",
+        onOk: () => handleDeleteDefinition(),
+      });
+    }, 500);
+  };
+
+  const handleAddExample = (example: { value: string; translate: string }) => {
+    Alert.alert("Example added");
+    // Thêm sense vào local db. Thành công, add to current sense
+    // push to server
+  };
+
+  const handleDeleteDefinition = () => {
+    // Chỉ khi definition này được tạo bởi người dùng thì mới có options này, và check lại khi lên server
+    // Chỉ xóa ô definition trong userword
+    Alert.alert("Deleted");
   };
 
   return (
@@ -140,7 +170,7 @@ const WordDefinitions = ({
       ) : null}
 
       {!isSimple && examples.length > 0 ? (
-        <View className="mt-4 pl-2 gap-4">
+        <View className="gap-2 mt-2">
           {/* <AppText>Example</AppText> */}
           {examples.map((example, index2) => {
             const translates = example.exampleTranslate;
