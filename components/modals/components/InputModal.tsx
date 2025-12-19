@@ -9,7 +9,7 @@ import { Pressable, TextInput, TouchableOpacity, View } from "react-native";
 type Props = InputModalOptions & BasicModalOptions;
 
 const InputModal = (modal: Props) => {
-  const { setGlobalModal } = useModalStore();
+  const { setGlobalModal, globalModal } = useModalStore();
   const [value, setValue] = useState("");
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
@@ -21,8 +21,7 @@ const InputModal = (modal: Props) => {
   };
 
   useEffect(() => {
-    setTimeout(() => textFocus(), 300);
-    // textFocus();
+    globalModal && setTimeout(() => textFocus(), 300);
   }, []);
 
   useEffect(() => {

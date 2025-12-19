@@ -163,6 +163,8 @@ const GlobalModalComponent = () => {
     globalModal && setPlaceholder(globalModal);
   }, [globalModal]);
 
+  // Khi hủy global để ẩn model thì cái đang hiển thị sẽ biến mất => cache lại dữ liệu trước đó
+  // hoặc chỉ set globalModal.show = null. Mà thôi 3 dòng này ngắn hơn
   const showValue = useMemo(
     () => (globalModal ? globalModal : placeholder),
     [placeholder, globalModal]
@@ -204,17 +206,17 @@ const GlobalModalComponent = () => {
 
   return (
     <ModalWrapper
-      title={globalModal?.modalTitle}
+      title={showValue?.modalTitle}
       show={!!globalModal}
       onCancel={closeModal}
-      inAnimation={globalModal?.inAnimation}
+      inAnimation={showValue?.inAnimation}
       outAnimation={outAnimation}
-      type={globalModal?.type}
+      type={showValue?.type}
     >
       <View className="px-3 rounded-lg">
-        {globalModal?.header}
-        {globalModal && <RenderContent modal={globalModal} />}
-        {globalModal?.footer}
+        {showValue?.header}
+        {showValue && <RenderContent modal={showValue} />}
+        {showValue?.footer}
       </View>
     </ModalWrapper>
   );

@@ -34,6 +34,7 @@ const AppAddIcon = (props: Props) => {
         right: 20,
       }}
       onPress={props.onPress}
+      disabled={!props.onPress}
     >
       <View
         className="items-center justify-center rounded-full"

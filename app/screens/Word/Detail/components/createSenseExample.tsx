@@ -6,7 +6,7 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import useModalStore from "@/stores/modalStore";
 import { Dispatch, SetStateAction } from "react";
-import { View } from "react-native";
+import { Keyboard, View } from "react-native";
 import { Divider } from "react-native-paper";
 import { SenseExample, SenseType } from "./createSenseSheet";
 import EditExampleForm from "./editExampleForm";
@@ -27,6 +27,7 @@ const CreateSenseExample = ({
 }: Props) => {
   const { setGlobalModal } = useModalStore();
   const showEditExampleModel = (example: SenseExample) => {
+    Keyboard.dismiss();
     setGlobalModal({
       type: "custom",
       // defaultValue: "cc",

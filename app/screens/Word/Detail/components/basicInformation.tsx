@@ -1,5 +1,6 @@
 import AppAddIcon from "@/components/AppAddIcon";
 import AppIcon from "@/components/AppIcon";
+import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import PhatAm from "@/components/PhatAm";
@@ -10,6 +11,7 @@ import {
 } from "@/interfaces/word";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
+import useModalStore from "@/stores/modalStore";
 import { AudioType } from "@/stores/recordingStore";
 import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
@@ -28,8 +30,11 @@ import { Divider } from "react-native-paper";
 import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
 import { WordInfoType, WordType } from "../../data";
 import WordDefinitions from "./definitions";
+import SenseNote from "./senseNote";
+import SenseUsage from "./senseUsage";
 
 interface Props {
+  word: string;
   definitions: WordType["definitions"];
   data: WordInfoType;
   translates: WordType["translates"];
@@ -79,6 +84,7 @@ const BasicInformation = ({
 
   const { width } = useWindowDimensions();
   const { present } = useBottomSheet();
+  const { setGlobalModal } = useModalStore();
 
   const onShowMoreDefinitions = () => {
     present({
@@ -90,6 +96,22 @@ const BasicInformation = ({
         />
       ),
       title: "Other definitions",
+    });
+  };
+
+  const showAddDefinition = () => {
+    setGlobalModal({
+      type: "prompt",
+      title: "Add definition",
+      placeholder: `English definition for "${props.word}"`,
+    });
+  };
+
+  const showAddNativeDefinition = () => {
+    setGlobalModal({
+      type: "prompt",
+      title: "Add definition",
+      placeholder: `Vietnamese definition for "${props.word}"`,
     });
   };
 
@@ -144,64 +166,7 @@ const BasicInformation = ({
             <AppIcon branch="antd" color="primary" name={"right"} size={20} />
           </Pressable>
         </View>
-
-        {/* Edit Line */}
-
-        {/* <Pressable
-          hitSlop={10}
-          onPress={swapLang}
-          className="items-center flex-row gap-2"
-        >
-          <Animated.View
-            layout={LinearTransition.springify()}
-            style={
-              props.languageMode !== 2 ? backFlagPosition : frontFlagPosition
-            }
-            className="h-8 w-10 rounded overflow-hidden"
-          >
-            <Image
-              className="w-full h-full"
-              source={require("@/assets/images/flags/vn.png")}
-            />
-          </Animated.View>
-          <Animated.View
-            layout={LinearTransition.springify()}
-            style={
-              props.languageMode === 2 ? backFlagPosition : frontFlagPosition
-            }
-            className="h-8 w-10 rounded overflow-hidden"
-          >
-            <Image
-              className="w-full h-full"
-              source={require("@/assets/images/flags/en.png")}
-            />
-          </Animated.View>
-        </Pressable> */}
       </View>
-
-      {/* {mode !== "view" && (
-        <Animated.View
-          entering={SlideInRight}
-          className="flex-row items-center justify-between mt-2"
-        >
-          <View className="gap-2 flex-row items-center">
-            <View>
-              <AudioPicker size="small" onAudioChange={setSelectedAudio} />
-            </View>
-
-            <View>
-              <AudioRecoder size="small" onAudioChange={setSelectedAudio} />
-            </View>
-          </View>
-          <View>
-            <AppButton onPress={() => {}} type="secondary">
-              <AppIcon name="external-link" color="white" branch="feather" />
-              <AppText color="white">Manage sense</AppText>
-            </AppButton>
-          </View>
-        </Animated.View>
-      )} */}
-
       <View className="my-10 items-center justify-center">
         {props.languageMode === 2 && (
           <Animated.View
@@ -294,7 +259,7 @@ const BasicInformation = ({
           )}
         </View>
         <Divider />
-        <View className="py-2">
+        <View className="py-3">
           <View style={{ marginTop: -10 }}>
             {definitions.slice(0, 1).length ? (
               definitions
@@ -309,7 +274,10 @@ const BasicInformation = ({
                   />
                 ))
             ) : (
-              <View className="flex-row py-3 items-center justify-between">
+              <AppPressable
+                onPress={showAddDefinition}
+                className="py-3 flex-row justify-between items-center"
+              >
                 <AppText
                   color="subText2"
                   font="MulishRegularItalic"
@@ -319,30 +287,26 @@ const BasicInformation = ({
                 </AppText>
 
                 <AppAddIcon onPress={() => Alert.alert("dmm")} size="sm" />
-              </View>
+              </AppPressable>
             )}
           </View>
 
           {props.languageMode === 2 && (
-            <View
+            <AppPressable
+              onPress={showAddNativeDefinition}
               style={{
                 marginHorizontal: -8,
                 marginVertical: 8,
                 backgroundColor: theme.secondary + "15",
                 padding: 8,
               }}
+              className="py-3  flex-row justify-between items-center"
             >
-              <View className="py-2 flex-row justify-between items-center">
-                <AppText
-                  color="subText2"
-                  font="MulishRegularItalic"
-                  size={"sm"}
-                >
-                  Not have Vietnamese definition
-                </AppText>
+              <AppText color="subText2" font="MulishRegularItalic" size={"sm"}>
+                Not have Vietnamese definition
+              </AppText>
 
-                <AppAddIcon size="sm" />
-              </View>
+              <AppAddIcon size="sm" />
               {/* {definitions.slice(0, 1).map((item, index) => (
                 <WordDefinitions
                   word="tip"
@@ -352,102 +316,22 @@ const BasicInformation = ({
                   languageMode={props.languageMode}
                 />
               ))} */}
-            </View>
+            </AppPressable>
           )}
         </View>
       </Animated.View>
 
-      <Animated.View layout={LinearTransition}>
-        <View className="flex-row justify-between items-center mt-4">
-          <AppTitle title="Usage 🔎" />
-        </View>
-        <Divider />
-        <View className="py-2">
-          <View>
-            {definitions.slice(1, 2).map((item, index) => (
-              <AppText color="subText1" key={index}>
-                {item.value}
-              </AppText>
-            ))}
-          </View>
-        </View>
+      <SenseUsage
+        word={props.word}
+        languageMode={props.languageMode}
+        usage={{ id: "1", value: definitions?.[2]?.value[0] || "" }}
+        usageTranslate={{ id: "1", value: definitions?.[3]?.value[0] || "" }}
+      />
 
-        {props.languageMode === 2 && (
-          <View
-            style={{
-              marginHorizontal: -8,
-              marginVertical: 8,
-              backgroundColor: theme.secondary + "15",
-              padding: 8,
-            }}
-          >
-            <View className="py-2 flex-row items-center justify-between">
-              <AppText color="subText2" font="MulishRegularItalic" size={"sm"}>
-                Not have usage in Vietnamese
-              </AppText>
-
-              <AppAddIcon size="sm" />
-
-              {/* <View className="mt-2 flex-row justify-start">
-                <AppButton size="sm" onPress={() => {}} type="success">
-                  <AppIcon
-                    name="plus"
-                    color="white"
-                    size={16}
-                    branch="feather"
-                  />
-                  <AppText color="white" size={"sm"}>
-                    Add usage
-                  </AppText>
-                </AppButton>
-              </View> */}
-            </View>
-            {/* {definitions.slice(1, 2).map((item, index) => (
-              <AppText color="subText1" key={index}>
-                {item.value}
-              </AppText>
-            ))} */}
-          </View>
-        )}
-      </Animated.View>
-
-      <Animated.View layout={LinearTransition}>
-        <View
-          style={{ marginHorizontal: -8, paddingHorizontal: 8 }}
-          className="mt-4 bg-gray-100 rounded-lg py-4"
-        >
-          {true ? (
-            <View className="flex-row items-center justify-between">
-              <AppText color="subText2" font="MulishLightItalic" size={"sm"}>
-                No note for now{" "}
-              </AppText>
-
-              <AppAddIcon size="sm" />
-            </View>
-          ) : (
-            <View>
-              <AppText color="title" size={"md"} font="MulishSemiBoldItalic">
-                Note 📝
-              </AppText>
-              <Divider />
-              <View className="py-2">
-                <View>
-                  {definitions.slice(2, 3).map((item, index) => (
-                    <AppText
-                      key={index}
-                      size={"sm"}
-                      color="subText2"
-                      font="MulishRegularItalic"
-                    >
-                      {item.value}
-                    </AppText>
-                  ))}
-                </View>
-              </View>
-            </View>
-          )}
-        </View>
-      </Animated.View>
+      <SenseNote
+        word={props.word}
+        note={{ id: "1", value: definitions?.[2]?.value[0] || "" }}
+      />
     </View>
   );
 };

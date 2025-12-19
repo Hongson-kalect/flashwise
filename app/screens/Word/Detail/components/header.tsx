@@ -54,12 +54,13 @@ const WordDetailHeader = ({
 
   const handleEditSense = () =>
     present({
-      title: "Edit sense - (n) Tip",
+      title: "Add sense - (n) Tip",
       size: "full",
       render: () => (
         <CreateSenseSheet
           word="tip"
           handleAddSense={() => {}}
+          // Lấy full sense data , lên sheet thì clone lại
           senseValue={tempSenseValue}
           setSenseValue={setTempSenseValue}
           languageMode={languageMode}
@@ -73,7 +74,7 @@ const WordDetailHeader = ({
       type: "menu",
       menuOptions: [
         {
-          label: "Edit current sense",
+          label: "Edit sense - (n) Tip",
           onPress: () => {
             handleEditSense();
           },

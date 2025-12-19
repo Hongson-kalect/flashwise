@@ -37,9 +37,9 @@ export const AppPressable = ({
       onPress={onPress}
       onLongPress={handleLongPress}
       style={style}
-      hitSlop={hitSlop}
+      hitSlop={hitSlop || 5}
       android_ripple={{
-        color: props.touchColor === null ? null : props.touchColor || "#eee",
+        color: "#00000010",
       }}
     >
       {children}

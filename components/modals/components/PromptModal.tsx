@@ -8,15 +8,14 @@ import { Pressable, TextInput, TouchableOpacity, View } from "react-native";
 type Props = PromptModalOptions & BasicModalOptions;
 
 const PromptModal = (modal: Props) => {
-  const { setGlobalModal } = useModalStore();
+  const { setGlobalModal, globalModal } = useModalStore();
   const [value, setValue] = useState("");
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
   const { theme } = useTheme();
 
   useEffect(() => {
-    setTimeout(() => textFocus(), 300);
-    // textFocus();
+    globalModal && setTimeout(() => textFocus(), 300);
   }, []);
 
   useEffect(() => {
@@ -61,6 +60,7 @@ const PromptModal = (modal: Props) => {
           value={value}
           onChangeText={setValue}
           placeholder={modal.placeholder}
+          placeholderTextColor={"#00000040"}
         ></TextInput>
         {modal.textInnerFooter}
       </Pressable>

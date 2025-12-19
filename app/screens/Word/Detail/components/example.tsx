@@ -212,6 +212,8 @@ const WordExample = ({ example, languageMode, translates, bold }: Props) => {
                 >
                   <AppText
                     key={"b" + index3}
+                    font="MulishLightItalic"
+                    color="primary"
                     className="flex-row items-center gap-2 pt-1 pb-2 pl-2"
                   >
                     <FontAwesome

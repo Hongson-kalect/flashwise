@@ -2,6 +2,7 @@ import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
+import useModalStore from "@/stores/modalStore";
 import { useEffect, useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { LineInput } from "../../Create/components/lineInput";
@@ -19,12 +20,13 @@ type Props = {
 };
 const EditExampleForm = (props: Props) => {
   const [example, setExample] = useState(props.example);
+  const { globalModal, setGlobalModal } = useModalStore();
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
   const { theme } = useTheme();
 
   useEffect(() => {
-    setTimeout(() => textFocus(), 300);
+    globalModal && setTimeout(() => textFocus(), 300);
     // textFocus();
   }, []);
 

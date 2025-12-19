@@ -1019,7 +1019,7 @@ export type WordType = {
   synonyms: string[];
   antonyms: never[];
   relateds: never[];
-  score: number;
+  score?: number;
   isUser?: boolean;
   forms: {
     value: string;
