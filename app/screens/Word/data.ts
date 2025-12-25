@@ -1,3 +1,247 @@
+export const testAPIStreamData = `{
+  "flags": {
+    "isValid": true,
+    "isOffensive": false,
+    "isCompound": false,
+    "shouldBeSaved": true,
+    "isCorrectLanguage": true,
+    "register": "common"
+  },
+  "entries": [
+    {
+      "pos": "noun",
+      "ipas": [
+        {
+          "text": "flæɡz",
+          "label": "US"
+        },
+        {
+          "text": "flæɡz",
+          "label": "UK"
+        }
+      ],
+      "senses": [
+        {
+          "imageDescribe": "Decorative cloth banner on a pole",
+          "definition": {
+            "text": "A piece of cloth, typically long and narrow, attached to a pole or mast, used as a symbol or signal.",
+            "translate": "Một mảnh vải, thường dài và hẹp, gắn vào cột hoặc cột buồm, dùng làm biểu tượng hoặc tín hiệu."
+          },
+          "usage": {
+            "text": "Used to represent a country, organization, or team.",
+            "translate": "Được sử dụng để đại diện cho một quốc gia, tổ chức hoặc đội bóng."
+          },
+          "level": "A2",
+          "examples": {
+            "text": "The national flag was flying high above the building.",
+            "translate": "Lá cờ quốc gia tung bay cao trên tòa nhà."
+          },
+          "translations": [
+            "cờ",
+            "biểu tượng"
+          ],
+          "synonyms": [
+            "banner",
+            "standard",
+            "ensign",
+            "colors"
+          ],
+          "forms": [
+            "flag"
+          ],
+          "tags": [
+            "symbol",
+            "nation",
+            "sport"
+          ]
+        },
+        {
+          "imageDescribe": "A limp or drooping object",
+          "definition": {
+            "text": "A limp or drooping part of a plant.",
+            "translate": "Một bộ phận của cây bị rũ xuống hoặc héo úa."
+          },
+          "usage": {
+            "text": "Refers to the drooping leaves or petals of a plant.",
+            "translate": "Đề cập đến lá hoặc cánh hoa của cây bị rũ xuống."
+          },
+          "level": "B1",
+          "examples": {
+            "text": "The hot weather caused the flowers' flags to wilt.",
+            "translate": "Thời tiết nóng bức khiến những lá cờ của hoa bị héo."
+          },
+          "translations": [
+            "lá rủ",
+            "cánh rủ"
+          ],
+          "synonyms": [
+            "droop",
+            "wilt"
+          ],
+          "forms": [
+            "flag"
+          ],
+          "tags": [
+            "plant",
+            "botany",
+            "nature"
+          ]
+        },
+        {
+          "imageDescribe": "A traffic control flag",
+          "definition": {
+            "text": "A signal or marker used to indicate danger, caution, or direction.",
+            "translate": "Một tín hiệu hoặc dấu hiệu được sử dụng để chỉ nguy hiểm, thận trọng hoặc hướng đi."
+          },
+          "usage": {
+            "text": "Often used in construction or road work to guide traffic.",
+            "translate": "Thường được sử dụng trong công trường xây dựng hoặc công trình đường bộ để hướng dẫn giao thông."
+          },
+          "level": "B2",
+          "examples": {
+            "text": "The construction worker held up a red flag to stop the traffic.",
+            "translate": "Người công nhân xây dựng giơ cao một lá cờ đỏ để chặn xe cộ."
+          },
+          "translations": [
+            "cờ hiệu",
+            "biển báo"
+          ],
+          "synonyms": [
+            "signal",
+            "marker",
+            "pennant"
+          ],
+          "forms": [
+            "flag"
+          ],
+          "tags": [
+            "traffic",
+            "safety",
+            "construction"
+          ]
+        }
+      ]
+    },
+    {
+      "pos": "verb",
+      "ipas": [
+        {
+          "text": "flæɡ",
+          "label": "US"
+        },
+        {
+          "text": "flæɡ",
+          "label": "UK"
+        }
+      ],
+      "senses": [
+        {
+          "imageDescribe": "A person or object becoming tired or weak",
+          "definition": {
+            "text": "To become weaker or less energetic; to lose strength or vitality.",
+            "translate": "Trở nên yếu hơn hoặc bớt năng lượng; mất sức hoặc sức sống."
+          },
+          "usage": {
+            "text": "Often used to describe a person, team, or system that is losing momentum.",
+            "translate": "Thường được sử dụng để mô tả một người, đội hoặc hệ thống đang mất đà."
+          },
+          "level": "B2",
+          "examples": {
+            "text": "The runner started to flag in the last mile of the marathon.",
+            "translate": "Vận động viên bắt đầu giảm tốc trong dặm cuối cùng của cuộc đua marathon."
+          },
+          "translations": [
+            "yếu đi",
+            "suy sụp",
+            "giảm sút"
+          ],
+          "synonyms": [
+            "weaken",
+            "tire",
+            "fade",
+            "diminish"
+          ],
+          "forms": [
+            "flagged",
+            "flagging"
+          ],
+          "tags": [
+            "exhaustion",
+            "decline",
+            "performance"
+          ]
+        },
+        {
+          "imageDescribe": "To mark or decorate with flags",
+          "definition": {
+            "text": "To mark or decorate something with flags.",
+            "translate": "Đánh dấu hoặc trang trí một cái gì đó bằng cờ."
+          },
+          "usage": {
+            "text": "Can be used literally to adorn a place or figuratively to mark a point.",
+            "translate": "Có thể được sử dụng theo nghĩa đen để tô điểm cho một địa điểm hoặc theo nghĩa bóng để đánh dấu một điểm."
+          },
+          "level": "C1",
+          "examples": {
+            "text": "They decided to flag the path to the campsite.",
+            "translate": "Họ quyết định cắm cờ dọc theo con đường dẫn đến khu cắm trại."
+          },
+          "translations": [
+            "cắm cờ",
+            "trang trí bằng cờ"
+          ],
+          "synonyms": [
+            "adorn",
+            "embellish",
+            "mark"
+          ],
+          "forms": [
+            "flagged",
+            "flagging"
+          ],
+          "tags": [
+            "decoration",
+            "marking",
+            "guidance"
+          ]
+        }
+      ]
+    }
+  ],
+  "word": "flags"
+}`;
+
+export function extractObjectByPath(
+  fullText: string,
+  pathKey: string,
+  isArrayElement = false
+) {
+  const startIdx = fullText.indexOf(pathKey);
+  if (startIdx === -1) return null;
+
+  // Nếu tìm mảng, bắt đầu từ dấu [, nếu tìm object thường, bắt đầu từ dấu {
+  const searchChar = isArrayElement ? "[" : "{";
+  const firstBrace = fullText.indexOf(searchChar, startIdx);
+  if (firstBrace === -1) return null;
+
+  // Nếu là phần tử mảng, ta cần tìm dấu { đầu tiên bên trong mảng đó
+  const targetBrace = isArrayElement
+    ? fullText.indexOf("{", firstBrace)
+    : firstBrace;
+  if (targetBrace === -1) return null;
+
+  let braceCount = 0;
+  for (let i = targetBrace; i < fullText.length; i++) {
+    if (fullText[i] === "{") braceCount++;
+    else if (fullText[i] === "}") braceCount--;
+
+    if (braceCount === 0 && i > targetBrace) {
+      return fullText.substring(targetBrace, i + 1);
+    }
+  }
+  return null;
+}
+
 export const testData = [
   {
     id: "019aa56e-9c92-7cd0-bea0-1b40d95ab004",

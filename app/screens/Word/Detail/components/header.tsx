@@ -8,6 +8,7 @@ import useModalStore from "@/stores/modalStore";
 import { Dispatch, SetStateAction, useState } from "react";
 import { Pressable, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
+import { extractObjectByPath, testAPIStreamData } from "../../data";
 import CreateSenseSheet, { SenseType } from "./createSenseSheet";
 import ToggleWordDisplayMode from "./toggleWordDisplayMode";
 
@@ -131,65 +132,117 @@ const WordDetailHeader = ({
       ],
     });
   };
-  return (
-    <View className="flex-row justify-between items-center">
-      <AppReturnHeader
-        title={
-          <AppText
-            numberOfLines={1}
-            font="MulishSemiBold"
-            color="primary"
-            size={"2xl"}
-          >
-            Tip
-          </AppText>
-        }
-        rightElement={
-          <View className="flex-row gap-2 items-center">
-            {mode === "view" ? (
-              <View
-              // exiting={SlideOutDown}
-              >
-                <ToggleWordDisplayMode
-                  languageMode={languageMode}
-                  setLanguageMode={setLanguageMode}
-                />
-              </View>
-            ) : (
-              <View
-              // exiting={SlideOutDown}
-              >
-                <AppButton
-                  style={{ minWidth: 0, paddingHorizontal: 10 }}
-                  type="error"
-                  outline
-                  title="Delete"
-                  onPress={() => {}}
-                  // Delete user word only, user never can delete official word
-                >
-                  <AppIcon
-                    name="trash"
-                    branch="feather"
-                    size={20}
-                    color="error"
-                  />
-                  {/* <AppText color="white">Delete</AppText> */}
-                </AppButton>
-              </View>
-            )}
 
-            <Pressable hitSlop={10} onPress={showMoreMenu}>
-              <AppIcon
-                name="more-vertical"
-                branch="feather"
-                size={36}
-                color="subText1"
-              />
-            </Pressable>
-          </View>
+  const testData = testAPIStreamData;
+
+  const getSpecificData = () => {
+    // accumulatedText += decoder.decode(value, { stream: true });
+    const startTime = performance.now();
+    let accumulatedText = testData; // streaming text to now
+    let flagsFound = false;
+    let firstSenseFound = false;
+
+    // 1. CHECK FLAGS (Ưu tiên số 1)
+    if (!flagsFound) {
+      const flagsMatch = extractObjectByPath(accumulatedText, '"flags"');
+      if (flagsMatch) {
+        const flags = JSON.parse(flagsMatch);
+        const timeFlags = (performance.now() - startTime).toFixed(2);
+        console.log(`🛡️ Flags detected at ${timeFlags}ms:`, flags);
+
+        // Xử lý che chắn ngay lập tức
+        if (flags.isOffensive) {
+          console.warn("CẢNH BÁO: Từ tục tịu! Kích hoạt chế độ che chắn.");
+          // Hiển thị cảnh báo hoặc ẩn nội dung nhạy cảm tại đây
         }
-      />
-    </View>
+        if (!flags.isValid) {
+          console.error("Từ không hợp lệ.");
+          // Có thể dừng stream hoặc báo lỗi
+        }
+
+        flagsFound = true;
+
+        // return flags;
+      }
+    }
+
+    // 2. NHẶT SENSE ĐẦU TIÊN (Ưu tiên số 2)
+    if (flagsFound && !firstSenseFound) {
+      const senseMatch = extractObjectByPath(accumulatedText, '"senses"', true); // true để lấy phần tử đầu tiên trong mảng
+      if (senseMatch) {
+        const sense = JSON.parse(senseMatch);
+        const timeSense = (performance.now() - startTime).toFixed(2);
+        console.log(`✅ First Sense detected at ${timeSense}ms`);
+
+        firstSenseFound = true;
+        return sense || { text: "Có éo gì đâu" };
+      }
+    }
+  };
+
+  return (
+    <>
+      <View className="flex-row justify-between items-center">
+        <AppReturnHeader
+          title={
+            <AppText
+              numberOfLines={1}
+              font="MulishSemiBold"
+              color="primary"
+              size={"2xl"}
+            >
+              Tip
+            </AppText>
+          }
+          rightElement={
+            <View className="flex-row gap-2 items-center">
+              {mode === "view" ? (
+                <View
+                // exiting={SlideOutDown}
+                >
+                  <ToggleWordDisplayMode
+                    languageMode={languageMode}
+                    setLanguageMode={setLanguageMode}
+                  />
+                </View>
+              ) : (
+                <View
+                // exiting={SlideOutDown}
+                >
+                  <AppButton
+                    style={{ minWidth: 0, paddingHorizontal: 10 }}
+                    type="error"
+                    outline
+                    title="Delete"
+                    onPress={() => {}}
+                    // Delete user word only, user never can delete official word
+                  >
+                    <AppIcon
+                      name="trash"
+                      branch="feather"
+                      size={20}
+                      color="error"
+                    />
+                    {/* <AppText color="white">Delete</AppText> */}
+                  </AppButton>
+                </View>
+              )}
+
+              <Pressable hitSlop={10} onPress={showMoreMenu}>
+                <AppIcon
+                  name="more-vertical"
+                  branch="feather"
+                  size={36}
+                  color="subText1"
+                />
+              </Pressable>
+            </View>
+          }
+        />
+      </View>
+
+      <AppText>{JSON.stringify(getSpecificData())}</AppText>
+    </>
   );
 };
 
