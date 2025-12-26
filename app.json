@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.hongson197201.flashwise"
     },
     "web": {
       "bundler": "metro",
@@ -35,10 +36,19 @@
         }
       ],
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-build-properties",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "fa8143fb-e870-4ca4-97e5-3ad5ad6c0637"
+      }
+    },
+    "owner": "hongson197201"
   }
 }

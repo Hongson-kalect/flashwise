@@ -1,7 +1,19 @@
 import AppText from "@/components/AppText";
+// import { database, tableNames } from "@/watermelon/database";
 import { View } from "react-native";
 
 const HomeHeader = () => {
+  // const [dbValue, setDBValue] = useState(null);
+  // Alert.alert("qq");
+  // const test = () => {
+  //   const qq = database.get(tableNames.board_games).query();
+
+  //   alert(qq);
+  // };
+
+  // useEffect(() => {
+  //   test();
+  // }, []);
   return (
     <View className="">
       {/* <AppLabel titles={["Flash", "wise"]} /> */}
