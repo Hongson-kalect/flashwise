@@ -14,10 +14,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import AppRecording from "@/components/AppRecording";
+import { DATABASE_NAME } from "@/configs/database";
 import { fonts } from "@/configs/fonts";
+import { initDatabase } from "@/database/schema";
 import { BottomSheetProvider } from "@/providers/BottomSheet";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
+import { SQLiteProvider } from "expo-sqlite";
+import { Suspense, useEffect, useState } from "react";
 import { MenuProvider } from "react-native-popup-menu";
 
 const queryClient = new QueryClient();
@@ -69,19 +72,26 @@ export default function RootLayout() {
             <Provider>
               <LanguageProvider>
                 <BottomSheetProvider>
-                  <AppWrapper>
-                    <Stack
-                      screenOptions={{ headerShown: false }}
-                      initialRouteName={
-                        hasSeenStart ? "tabs" : "screens/Start/screen"
-                      }
+                  <Suspense>
+                    <SQLiteProvider
+                      databaseName={DATABASE_NAME}
+                      onInit={initDatabase}
                     >
-                      <Stack.Screen name="tabs" />
-                      <Stack.Screen name="screens/Start/screen" />
-                      <Stack.Screen name="screens/Card/Create/screen" />
-                      <Stack.Screen name="+not-found" />
-                    </Stack>
-                  </AppWrapper>
+                      <AppWrapper>
+                        <Stack
+                          screenOptions={{ headerShown: false }}
+                          initialRouteName={
+                            hasSeenStart ? "tabs" : "screens/Start/screen"
+                          }
+                        >
+                          <Stack.Screen name="tabs" />
+                          <Stack.Screen name="screens/Start/screen" />
+                          <Stack.Screen name="screens/Card/Create/screen" />
+                          <Stack.Screen name="+not-found" />
+                        </Stack>
+                      </AppWrapper>
+                    </SQLiteProvider>
+                  </Suspense>
                 </BottomSheetProvider>
 
                 {/* <Toast /> */}

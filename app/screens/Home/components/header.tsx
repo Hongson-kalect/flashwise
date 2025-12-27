@@ -1,19 +1,21 @@
 import AppText from "@/components/AppText";
+import { useDatabase } from "@/hooks/useDatabase";
+import { useSQLiteContext } from "expo-sqlite";
+import { useEffect } from "react";
 // import { database, tableNames } from "@/watermelon/database";
 import { View } from "react-native";
 
 const HomeHeader = () => {
-  // const [dbValue, setDBValue] = useState(null);
-  // Alert.alert("qq");
-  // const test = () => {
-  //   const qq = database.get(tableNames.board_games).query();
+  const db = useSQLiteContext();
+  const search = "";
 
-  //   alert(qq);
-  // };
+  const database = useDatabase();
 
-  // useEffect(() => {
-  //   test();
-  // }, []);
+  const getTodos = async () => {};
+
+  useEffect(() => {
+    getTodos();
+  }, []);
   return (
     <View className="">
       {/* <AppLabel titles={["Flash", "wise"]} /> */}
