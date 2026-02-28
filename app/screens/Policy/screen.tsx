@@ -27,7 +27,7 @@ const PolicyScreen = () => {
             font="MulishLight"
             className="mb-6 opacity-70 text-right"
           >
-            Cập nhật lần cuối: 2025
+            Cập nhật lần cuối: 2026
           </AppText>
 
           {/* Section 1 */}
@@ -38,8 +38,9 @@ const PolicyScreen = () => {
           <AppText size="sm" className="mb-4 leading-5 opacity-90">
             Ứng dụng được xây dựng nhằm hỗ trợ người dùng học từ vựng hiệu quả
             thông qua hệ thống thẻ từ, ví dụ, phát âm, bài học và các chức năng
-            mở rộng. Ứng dụng cho phép người dùng tự tạo nội dung như từ vựng,
-            hình ảnh minh họa, ví dụ và chia sẻ cho cộng đồng.
+            mở rộng. Ứng dụng cho phép người dùng tự tạo nội dung từ các từ vựng
+            có sẵn, bao gồm các hình ảnh minh họa, định nghĩa, ví dụ và chia sẻ
+            cho cộng đồng.
           </AppText>
 
           {/* Section 2 */}

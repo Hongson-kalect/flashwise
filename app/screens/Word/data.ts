@@ -214,7 +214,7 @@ export const testAPIStreamData = `{
 export function extractObjectByPath(
   fullText: string,
   pathKey: string,
-  isArrayElement = false
+  isArrayElement = false,
 ) {
   const startIdx = fullText.indexOf(pathKey);
   if (startIdx === -1) return null;
@@ -1270,26 +1270,40 @@ export type WordType = {
     type: string[];
   }[];
   ruby: never[];
-  translates: {
-    value: string;
-    languageCode: string;
-    detail: null;
-  }[];
-  definitions: {
+  metadata?: {
+    ipas: {
+      value: string;
+      type: string;
+      url: string;
+      label: string;
+    }[];
+    source: string;
+    tags: string[];
+    word: string;
+    topics: string[];
+  };
+  translates: string[];
+  definition: {
     id: string;
     subId: string;
     languageCode: string;
-    value: string[];
-    examples: {
-      id: string;
-      subId: string;
-      value: string;
-      languageCode: string;
-      bold: number[][];
-      score?: number;
-      definition: string;
-      exampleTranslate: never[];
-    }[];
+    value: string;
+    translate: string;
+  };
+  usage: {
+    id: string;
+    subId: string;
+    languageCode: string;
+    value: string;
+    translate: string;
+  };
+  image?:string
+  examples: {
+    id: string;
+    subId: string;
+    languageCode: string;
+    value: string;
+    translate: string;
   }[];
 };
 

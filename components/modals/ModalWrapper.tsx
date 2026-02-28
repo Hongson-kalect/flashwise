@@ -46,10 +46,10 @@ export default function ModalWrapper(props: Props) {
       // key={props.type || "none"}
       onBackButtonPress={props.onCancel}
       animationIn={props.inAnimation || "zoomIn"}
-      animationOut={props.outAnimation || "slideOutUp"}
+      animationOut={props.outAnimation || "zoomOut"}
       isVisible={props.show}
       backdropTransitionOutTiming={1}
-      backdropColor="black"
+      // backdropColor="black"
       backdropOpacity={0.4}
       onBackdropPress={props.onCancel}
       style={{ zIndex: 1000 }}

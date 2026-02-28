@@ -34,7 +34,7 @@ export type SenseType = {
 export type SenseExample = {
   id: string;
   value: string;
-  translate: string;
+  translate?: string;
 };
 type AddSenseSheetProps = {
   senseValue: SenseType;

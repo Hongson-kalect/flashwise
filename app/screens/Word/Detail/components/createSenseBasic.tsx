@@ -4,9 +4,9 @@ import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { FontAwesome } from "@expo/vector-icons";
 import { useState } from "react";
 import { ToastAndroid, TouchableOpacity, View } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SenseType } from "./createSenseSheet";
 
 type Props = {
@@ -64,9 +64,9 @@ const CreateSenseBasicInfo = ({
     <View>
       <View>
         <View className="mt-6 mb-1 flex-row items-center justify-between">
-          <AppText color="subText2" size={"sm"}>
+          <AppText color="title" font="MulishBold" size={"sm"}>
             {languageMode === 2 ? (
-              <AppText color="primary" font="MulishBold" size={"sm"}>
+              <AppText color="title" font="MulishBold" size={"sm"}>
                 {targetLang + " "}
               </AppText>
             ) : (
@@ -81,10 +81,10 @@ const CreateSenseBasicInfo = ({
             hitSlop={10}
             className="gap-1 items-center flex-row"
           >
-            <AppText color="secondary" font="MulishBold" size={"sm"}>
+            <AppText color="secondary" font="MulishLightItalic" size={"xs"}>
               Preset
             </AppText>
-            <AppIcon branch="antd" name={"right"} size={14} color="secondary" />
+            <AppIcon branch="antd" name={"right"} size={10} color="secondary" />
           </TouchableOpacity>
         </View>
         <View className="flex-row gap-2">
@@ -112,8 +112,8 @@ const CreateSenseBasicInfo = ({
         <View>
           <View>
             <View className="mt-6 mb-1 flex-row items-center justify-between">
-              <AppText color="subText2" size={"sm"}>
-                <AppText color="primary" font="MulishBold" size={"sm"}>
+              <AppText color="title" font="MulishBold" size={"sm"}>
+                <AppText color="title" font="MulishBold" size={"sm"}>
                   {motherLang}
                 </AppText>{" "}
                 Definition
@@ -125,13 +125,13 @@ const CreateSenseBasicInfo = ({
                 hitSlop={10}
                 className="gap-1 items-center flex-row"
               >
-                <AppText color="secondary" font="MulishBold" size={"sm"}>
+                <AppText color="secondary" font="MulishLightItalic" size={"xs"}>
                   Preset
                 </AppText>
                 <AppIcon
                   branch="antd"
                   name={"right"}
-                  size={14}
+                  size={10}
                   color="secondary"
                 />
               </TouchableOpacity>
@@ -158,7 +158,7 @@ const CreateSenseBasicInfo = ({
           </View>
 
           <View className="mt-8 mb-1 flex-row items-center justify-between">
-            <AppText color="subText2" size={"sm"}>
+            <AppText color="title" font="MulishBold" size={"sm"}>
               Translations
             </AppText>
 
@@ -167,13 +167,13 @@ const CreateSenseBasicInfo = ({
               hitSlop={10}
               className="gap-1 items-center flex-row"
             >
-              <AppText color="secondary" font="MulishBold" size={"sm"}>
+              <AppText color="secondary" font="MulishLightItalic" size={"xs"}>
                 Preset
               </AppText>
               <AppIcon
                 branch="antd"
                 name={"right"}
-                size={14}
+                size={10}
                 color="secondary"
               />
             </TouchableOpacity>
@@ -194,58 +194,57 @@ const CreateSenseBasicInfo = ({
           </View>
 
           <View className="flex-row items-center flex-wrap gap-x-3 gap-y-1 mt-2">
-            <View className="h-10 items-center justify-center">
+            {/* <View className="h-10 items-center justify-center">
               <FontAwesome name="hand-o-right" size={18} color="black" />
-            </View>
-            {senseValue.translations.length ? (
-              senseValue.translations.map((item, index) => {
-                return (
-                  <TouchableOpacity
-                    onPress={() => removeTranslation(item)}
-                    key={item}
-                  >
-                    <AppText
-                      style={{
-                        backgroundColor: theme.warning + "20",
-                        paddingVertical: 2,
-                        paddingHorizontal: 8,
-                        borderRadius: 6,
-                      }}
-                      key={index}
-                      color="subText2"
-                      font="MulishRegularItalic"
-                      size={"sm"}
+            </View> */}
+            {senseValue.translations.length
+              ? senseValue.translations.map((item, index) => {
+                  return (
+                    <Animated.View
+                      key={item}
+                      entering={FadeIn}
+                      exiting={FadeOut}
                     >
-                      {item}
-                    </AppText>
+                      <TouchableOpacity onPress={() => removeTranslation(item)}>
+                        <AppText
+                          style={{
+                            backgroundColor: theme.warning + "15",
+                            paddingVertical: 2,
+                            paddingHorizontal: 8,
+                            borderRadius: 6,
+                          }}
+                          key={index}
+                          color="subText2"
+                          font="MulishRegularItalic"
+                          size={"sm"}
+                        >
+                          {item}
+                        </AppText>
 
-                    <View
-                      style={{
-                        position: "absolute",
-                        right: -6,
-                        top: -2,
-                        backgroundColor: theme.error,
-                        width: 12,
-                        height: 12,
-                        borderRadius: 999,
-                      }}
-                      className="h-2 w-2 rounded-full items-center justify-center"
-                    >
-                      <AppIcon
-                        color="white"
-                        name={"x"}
-                        branch="feather"
-                        size={8}
-                      />
-                    </View>
-                  </TouchableOpacity>
-                );
-              })
-            ) : (
-              <AppText color="subText3" font="MulishLightItalic" size={"sm"}>
-                No translated added
-              </AppText>
-            )}
+                        <View
+                          style={{
+                            position: "absolute",
+                            right: -6,
+                            top: -2,
+                            backgroundColor: theme.error,
+                            width: 12,
+                            height: 12,
+                            borderRadius: 999,
+                          }}
+                          className="h-2 w-2 rounded-full items-center justify-center"
+                        >
+                          <AppIcon
+                            color="white"
+                            name={"x"}
+                            branch="feather"
+                            size={8}
+                          />
+                        </View>
+                      </TouchableOpacity>
+                    </Animated.View>
+                  );
+                })
+              : null}
           </View>
         </View>
       )}

@@ -40,25 +40,27 @@ const CreateSenseHeader = ({
   return (
     <View className="flex-row items-center justify-between gap-2">
       <View>
-        <AppButton onPress={clearSense} type="disabled">
-          <AppIcon branch="feather" name={"trash"} color="white" size={20} />
-          <AppText color="white" font="MulishMedium">
+        <AppButton onPress={clearSense} size="sm" type="disabled">
+          <AppIcon branch="feather" name={"trash"} color="white" size={16} />
+          <AppText color="white" font="MulishMedium" size={"sm"}>
             Clear
           </AppText>
         </AppButton>
       </View>
       <View className="flex-row items-center justify-end gap-2">
         <View>
-          <ToggleWordDisplayMode
-            languageMode={languageMode}
-            setLanguageMode={setLanguageMode}
-          />
+          <View style={{ transform: [{ scale: 0.8 }] }}>
+            <ToggleWordDisplayMode
+              languageMode={languageMode}
+              setLanguageMode={setLanguageMode}
+            />
+          </View>
         </View>
         {/* Header */}
         <View>
-          <AppButton onPress={() => {}} type="success">
-            <AppIcon branch="antd" name={"check"} color="white" size={20} />
-            <AppText color="white" font="MulishMedium">
+          <AppButton onPress={() => {}} type="success" size="sm">
+            <AppIcon branch="antd" name={"check"} color="white" size={16} />
+            <AppText color="white" size={"sm"} font="MulishMedium">
               Save
             </AppText>
           </AppButton>

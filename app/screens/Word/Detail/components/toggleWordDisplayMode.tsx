@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   backFlagPosition: {
     position: "absolute",
     left: -6,
-    top: -6,
+    top: -4,
     opacity: 0.3,
     // zIndex: 1,
   },

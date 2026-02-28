@@ -7,6 +7,8 @@ import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
 } from "@/interfaces/word";
+import { useTheme } from "@/providers/Theme";
+import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { LayoutChangeEvent, View } from "react-native";
 import { Divider } from "react-native-paper";
 
@@ -57,59 +59,75 @@ const WordAdvanceInformation = ({
   openWordSelectModal,
   openRadioModal,
 }: Props) => {
+  const { theme } = useTheme();
   return (
     <View className="mt-2 gap-2">
       <View>
-        <AppTitle title="Từ mở rộng ↗️" />
+        <AppText size="lg" font="MulishBlack" color="primary">
+          Discover
+        </AppText>
+        {/* <AppTitle title="Từ mở rộng ↗️" /> */}
       </View>
       <Divider />
 
       <Related
         icon={
-          <AppIcon
-            branch="feather"
-            name={"external-link"}
-            size={12}
-            color="title"
+          <FontAwesome
+            name="link"
+            size={14}
+            style={{ color: theme.title, width: 14 }}
           />
         }
         title="Từ liên quan"
-        values={[{ value: "day" }, { value: "month" }, { value: "abc, def" }]}
+        values={["day", "month", "abc, def"]}
       />
       <Related
         icon={
-          <AppIcon branch="feather" name={"copy"} size={12} color="title" />
+          <Ionicons
+            name="copy"
+            size={14}
+            style={{ color: theme.title, width: 14 }}
+          />
         }
         title="Từ đồng nghĩa"
-        values={[{ value: "day" }, { value: "month" }, { value: "abc, def" }]}
+        values={["day", "month", "abc, def"]}
       />
       <Related
         icon={
-          <AppIcon branch="antd" name={"retweet"} size={12} color="title" />
+          <MaterialIcons
+            name="swap-horizontal-circle"
+            size={14}
+            style={{ color: theme.title, width: 14 }}
+          />
         }
         title="Từ trái nghĩa"
-        values={[{ value: "day" }, { value: "month" }, { value: "abc, def" }]}
+        values={["day", "month", "abc, def"]}
       />
       <Related
         icon={
           <AppIcon
-            branch="feather"
-            name={"git-branch"}
-            size={12}
+            branch="fa6"
+            name={"code-branch"}
+            style={{ width: 14 }}
+            size={14}
             color="title"
           />
         }
         title="Biến thể"
-        values={[
-          { value: "day" },
-          { value: "month" },
-          { value: "abc, def", id: "cc" },
-        ]}
+        values={["day", "month", "abc, def"]}
       />
       <Related
-        icon={<AppIcon branch="feather" name={"tag"} size={12} color="title" />}
+        icon={
+          <AppIcon
+            branch="fa6"
+            name={"tag"}
+            size={14}
+            style={{ width: 14 }}
+            color="title"
+          />
+        }
         title="Tags"
-        values={[{ value: "day" }, { value: "month" }, { value: "abc, def" }]}
+        values={["day", "month", "abc, def"]}
       />
 
       {/* <WordLink
@@ -228,16 +246,21 @@ const WordAdvanceInformation = ({
 type RelatedProp = {
   title: string;
   icon?: React.ReactNode;
-  values: {
-    value: string;
-    tags?: string[];
-    id?: string;
-  }[];
+  values: string[];
 };
 const Related = (props: RelatedProp) => {
+  const { theme } = useTheme();
   return (
     <View className="py-2">
-      <View className="flex-row items-center gap-1">
+      <View className="flex-row items-center gap-2">
+        {props.icon || (
+          <AppIcon branch="antd" name={"star"} size={14} color="title" />
+        )}
+        <AppTitle title={props.title} />
+      </View>
+      {/* <View className="flex-row items-center gap-1">
+
+        
         <View className="w-4">
           {props.icon || (
             <AppIcon branch="antd" name={"star"} size={12} color="title" />
@@ -246,19 +269,25 @@ const Related = (props: RelatedProp) => {
         <AppText color="title" font="MulishMedium">
           {props.title}
         </AppText>
-      </View>
+      </View> */}
 
       {props.values?.length > 0 ? (
-        <View className="flex-row items-center gap-1 mt-2 ml-5">
+        <View className="flex-row items-center gap-1 ml-2 flex-wrap">
           {props.values.map((item, index) => (
-            <AppText
-              color={item.id ? "primary" : "subText2"}
-              key={index}
-              className={item.id && "underline"}
+            <View
+              key={item}
+              className="px-2 py-1 rounded"
+              style={{ backgroundColor: theme.disabled + "20" }}
             >
-              {item.value}
-              {index < 2 ? "," : ""}
-            </AppText>
+              <AppText
+                size={"sm"}
+                color={"subText1"}
+                font="MulishRegularItalic"
+                key={index}
+              >
+                {item}
+              </AppText>
+            </View>
           ))}
         </View>
       ) : (

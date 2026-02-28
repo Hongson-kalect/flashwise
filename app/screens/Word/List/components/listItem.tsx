@@ -88,11 +88,14 @@ const WordListItem = (props: Props) => {
           </View>
 
           <View className="gap-2 flex-row justify-between">
-            <View className="flex-row items-center gap-1">
+            <View
+              className="flex-row items-center gap-1 p-1  rounded h-6 justify-center"
+              style={{ backgroundColor: theme.disabled + "30" }}
+            >
               <AppText
                 font="MulishSemiBold"
                 numberOfLines={1}
-                size={"sm"}
+                size={"xs"}
                 color="primary"
               >
                 L2
@@ -102,7 +105,7 @@ const WordListItem = (props: Props) => {
             <View className="flex-row items-center gap-1">
               <View
                 style={{ backgroundColor: theme.secondary }}
-                className="px-2 py-0.5 bg-gray-100 rounded"
+                className="px-2 py-0.5 bg-gray-100 rounded h-6 items-center justify-center"
               >
                 <AppText
                   numberOfLines={1}

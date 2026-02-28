@@ -11,10 +11,10 @@ const AppTitle = ({ title, style, ...props }: Props) => {
   return (
     <AppText
       color="title"
+      font="MulishBold"
       style={[
         {
-          fontSize: 18,
-          fontWeight: "bold",
+          fontSize: 15,
           lineHeight: 20 * 1.4,
           textDecorationLine: props.underline ? "underline" : "none",
         },

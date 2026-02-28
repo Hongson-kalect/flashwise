@@ -49,7 +49,7 @@ export const OptionsModal = (props: ListModalProps) => {
 
   const showValue = useMemo(
     () => (props.show ? props : placeholder),
-    [placeholder, props]
+    [placeholder, props],
   );
 
   const { height } = useWindowDimensions();
@@ -85,7 +85,7 @@ export const OptionsModal = (props: ListModalProps) => {
     <ReactNativeModal
       onBackButtonPress={props.onCancel}
       animationIn={props.inAnimation || "slideInUp"}
-      animationOut={outAnimation || "slideOutUp"}
+      animationOut={outAnimation || "fadeOut"}
       isVisible={props.show}
       backdropTransitionOutTiming={1}
       backdropColor={theme.text}

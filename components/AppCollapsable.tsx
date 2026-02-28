@@ -47,7 +47,7 @@ export default function CollapseSection({
   }));
 
   return (
-    <View className="">
+    <Animated.View layout={LinearTransition.springify(2)} className="">
       {/* Header */}
       <Pressable
         onPress={toggle}
@@ -58,7 +58,7 @@ export default function CollapseSection({
         className="flex-row items-center justify-between"
       >
         <View className="flex-1">
-          <AppText size="lg" font="MulishSemiBold" color="title">
+          <AppText size="lg" font="MulishBold" color="primary">
             {title}
           </AppText>
         </View>
@@ -83,7 +83,7 @@ export default function CollapseSection({
           {children}
         </View>
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -126,16 +126,7 @@ export const SubCollapseSection = ({
         }}
         className="flex-row items-center justify-between"
       >
-        <View className="flex-1">
-          <AppText
-            numberOfLines={1}
-            size={"sm"}
-            color="subText1"
-            font="MulishRegularItalic"
-          >
-            {title}
-          </AppText>
-        </View>
+        <View className="flex-1">{title}</View>
 
         <Animated.View style={arrowStyle}>
           <AppIcon name="chevron-right" branch="feather" size={18} />

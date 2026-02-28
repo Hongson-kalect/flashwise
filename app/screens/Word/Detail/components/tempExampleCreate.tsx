@@ -30,8 +30,11 @@ const TempExampleCreate = ({ languageMode, onAddExample }: Props) => {
       className="rounded-lg p-4 mb-4 mr-4 mt-4"
     >
       <View>
-        <AppText color="subText2" font="MulishRegularItalic" size={"xs"}>
-          Example <AppText color="error">*</AppText>
+        <AppText color="title" font="MulishBold" size={"xs"}>
+          Example{" "}
+          <AppText size={"xs"} color="error">
+            *
+          </AppText>
         </AppText>
         <View className="mt-1">
           <AppInput
@@ -44,13 +47,13 @@ const TempExampleCreate = ({ languageMode, onAddExample }: Props) => {
       </View>
       {languageMode === 2 && (
         <View className="mt-3">
-          <AppText color="subText2" font="MulishRegularItalic" size={"xs"}>
+          <AppText color="title" font="MulishBold" size={"xs"}>
             Translate
           </AppText>
           <View className="mt-1">
             <AppInput
               size={"sm"}
-              value={example.translate}
+              value={example.translate || ""}
               onChangeText={(text) =>
                 setExample({ ...example, translate: text })
               }
@@ -61,6 +64,7 @@ const TempExampleCreate = ({ languageMode, onAddExample }: Props) => {
       )}
       <View className="flex-row justify-start mt-4">
         <AppButton
+          size="sm"
           type="success"
           onPress={() => {
             onAddExample(example);

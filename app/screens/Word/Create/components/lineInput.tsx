@@ -62,13 +62,9 @@ export const LineInput = forwardRef<LineInputRef, LineInputProps>(
     return (
       <View>
         <View className="flex-row items-center justify-between">
-          <AppText
-            color="subText2"
-            font="MulishRegularItalic"
-            size={props.size}
-          >
-            {props.label}{" "}
-            {props.isRequired && <AppText color="error">*</AppText>}
+          <AppText color="title" font={"MulishBold"} size={props.size}>
+            {props.label}
+            {props.isRequired && <AppText color="error">{" *"}</AppText>}
           </AppText>
 
           {props.onPreset && (
@@ -77,10 +73,14 @@ export const LineInput = forwardRef<LineInputRef, LineInputProps>(
               hitSlop={10}
               className="gap-1 items-center flex-row"
             >
-              <AppText color="secondary" font="MulishBold" size={props.size}>
+              <AppText
+                color="secondary"
+                font="MulishLightItalic"
+                size={props.size}
+              >
                 Preset
               </AppText>
-              <AppIcon branch="antd" name="right" size={12} color="secondary" />
+              <AppIcon branch="antd" name="right" size={10} color="secondary" />
             </TouchableOpacity>
           )}
         </View>
@@ -108,7 +108,7 @@ export const LineInput = forwardRef<LineInputRef, LineInputProps>(
         </View>
       </View>
     );
-  }
+  },
 );
 
 LineInput.displayName = "LineInput";

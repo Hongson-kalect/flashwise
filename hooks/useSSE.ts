@@ -24,6 +24,7 @@ export function useSSE(url: string | null, options: SSEOptions) {
   const retryTimeoutRef = useRef<NodeJS.Timeout | number | null>(null);
   const unmountedRef = useRef(false);
 
+  const [data, setData] = useState<any>(null);
   const [status, setStatus] = useState<SSEStatus>("idle");
 
   const cleanup = useCallback(() => {
@@ -43,8 +44,10 @@ export function useSSE(url: string | null, options: SSEOptions) {
 
     const es = new EventSource(url);
     esRef.current = es;
+    alert("connect");
 
     es.addEventListener("open", () => {
+      alert("open");
       retryCountRef.current = 0;
       setStatus("open");
       onOpen?.();
@@ -52,6 +55,7 @@ export function useSSE(url: string | null, options: SSEOptions) {
 
     es.addEventListener("message", (event: any) => {
       if (!event?.data) return;
+      alert("message");
 
       //   let parsed: any
       //   try {
@@ -60,11 +64,13 @@ export function useSSE(url: string | null, options: SSEOptions) {
       //     parsed = undefined
       //   }
 
+      setData(event.data);
       onMessage(event.data, event.data);
     });
 
     es.addEventListener("error", (err: any) => {
       if (unmountedRef.current) return;
+      alert("error");
 
       onError?.(err);
       cleanup();
@@ -118,6 +124,7 @@ export function useSSE(url: string | null, options: SSEOptions) {
   }, [connect]);
 
   return {
+    data,
     status, // idle | connecting | open | retrying | closed | failed
     disconnect, // chủ động đóng
     retry, // user bấm "Try again"

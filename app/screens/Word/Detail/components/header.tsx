@@ -6,20 +6,28 @@ import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { Dispatch, SetStateAction, useState } from "react";
-import { Pressable, View } from "react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import { TouchableOpacity, View } from "react-native";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 import { extractObjectByPath, testAPIStreamData } from "../../data";
 import CreateSenseSheet, { SenseType } from "./createSenseSheet";
 import ToggleWordDisplayMode from "./toggleWordDisplayMode";
 
 type Props = {
   mode?: "create" | "update" | "view";
+  word: string;
+  isLoading: boolean;
   setMode: Dispatch<SetStateAction<"update" | "view">>;
   languageMode: 1 | 2;
   setLanguageMode: Dispatch<SetStateAction<1 | 2>>;
 };
 const WordDetailHeader = ({
+  word,
   mode,
+  isLoading,
   setMode,
   languageMode,
   setLanguageMode,
@@ -39,11 +47,11 @@ const WordDetailHeader = ({
 
   const handleAddSense = () =>
     present({
-      title: "Add sense - (n) Tip",
+      title: `Add sense - ${word[0].toUpperCase() + word.slice(1)}`,
       size: "full",
       render: () => (
         <CreateSenseSheet
-          word="tip"
+          word={word}
           handleAddSense={() => {}}
           senseValue={tempSenseValue}
           setSenseValue={setTempSenseValue}
@@ -55,11 +63,11 @@ const WordDetailHeader = ({
 
   const handleEditSense = () =>
     present({
-      title: "Add sense - (n) Tip",
+      title: `Add sense - (n) ${word[0].toUpperCase() + word.slice(1)}`,
       size: "full",
       render: () => (
         <CreateSenseSheet
-          word="tip"
+          word={word}
           handleAddSense={() => {}}
           // Lấy full sense data , lên sheet thì clone lại
           senseValue={tempSenseValue}
@@ -75,14 +83,13 @@ const WordDetailHeader = ({
       type: "menu",
       menuOptions: [
         {
-          label: "Edit sense - (n) Tip",
+          label: `Edit sense - (n) ${word[0].toUpperCase() + word.slice(1)}`,
           onPress: () => {
             handleEditSense();
           },
           icon: (
-            <AppIcon name="edit" branch="feather" size={20} color="warning" />
+            <AppIcon name="edit" branch="feather" size={24} color="warning" />
           ),
-          color: theme.warning,
           rightContent: (
             <AppIcon
               name="chevron-right"
@@ -94,13 +101,12 @@ const WordDetailHeader = ({
         },
         {
           icon: (
-            <AppIcon name="plus" branch="feather" size={20} color="success" />
+            <AppIcon name="plus" branch="feather" size={24} color="success" />
           ),
           label: "Create new sense",
           onPress: () => {
             handleAddSense();
           },
-          color: theme.success,
           rightContent: (
             <AppIcon
               name="chevron-right"
@@ -185,17 +191,33 @@ const WordDetailHeader = ({
       <View className="flex-row justify-between items-center">
         <AppReturnHeader
           title={
-            <AppText
-              numberOfLines={1}
-              font="MulishSemiBold"
-              color="primary"
-              size={"2xl"}
-            >
-              Tip
-            </AppText>
+            <View className="flex-row items-center gap-2">
+              <AppText
+                numberOfLines={1}
+                font="MulishSemiBold"
+                color="primary"
+                size={"2xl"}
+              >
+                {word[0].toUpperCase() + word.slice(1)}
+              </AppText>
+              {isLoading && (
+                <Animated.View
+                  entering={FadeIn}
+                  exiting={FadeOut}
+                  className="animate-spin"
+                >
+                  <AppIcon
+                    size={20}
+                    color="secondary"
+                    branch="feather"
+                    name={"loader"}
+                  />
+                </Animated.View>
+              )}
+            </View>
           }
           rightElement={
-            <View className="flex-row gap-2 items-center">
+            <View className="flex-row gap-4 items-center">
               {mode === "view" ? (
                 <View
                 // exiting={SlideOutDown}
@@ -228,20 +250,44 @@ const WordDetailHeader = ({
                 </View>
               )}
 
-              <Pressable hitSlop={10} onPress={showMoreMenu}>
-                <AppIcon
-                  name="more-vertical"
-                  branch="feather"
-                  size={36}
-                  color="subText1"
-                />
-              </Pressable>
+              <TouchableOpacity
+                hitSlop={10}
+                onPress={showMoreMenu}
+                className="h-8"
+              >
+                <View className="items-end justify-between h-full">
+                  <View
+                    style={{
+                      height: 4,
+                      borderRadius: 100,
+                      width: 28,
+                      backgroundColor: "black",
+                    }}
+                  />
+                  <View
+                    style={{
+                      height: 4,
+                      borderRadius: 100,
+                      width: 20,
+                      backgroundColor: "black",
+                    }}
+                  />
+                  <View
+                    style={{
+                      height: 4,
+                      borderRadius: 100,
+                      width: 12,
+                      backgroundColor: "black",
+                    }}
+                  />
+                </View>
+              </TouchableOpacity>
             </View>
           }
         />
       </View>
 
-      <AppText>{JSON.stringify(getSpecificData())}</AppText>
+      {/* <AppText>{JSON.stringify(getSpecificData())}</AppText> */}
     </>
   );
 };

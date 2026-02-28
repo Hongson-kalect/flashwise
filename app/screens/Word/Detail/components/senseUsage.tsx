@@ -5,6 +5,7 @@ import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
+import { FontAwesome } from "@expo/vector-icons";
 import { View } from "react-native";
 import { Divider } from "react-native-paper";
 import Animated, { LinearTransition } from "react-native-reanimated";
@@ -12,8 +13,7 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 type Props = {
   word: string;
   languageMode: 1 | 2;
-  usage?: { id: string; value: string } | null;
-  usageTranslate?: { id: string; value: string };
+  usage?: { id: string; value: string; translate: string } | null;
 };
 
 const SenseUsage = (props: Props) => {
@@ -113,7 +113,7 @@ const SenseUsage = (props: Props) => {
       setGlobalModal({
         title: "Edit usage",
         type: "prompt",
-        defaultValue: props.usageTranslate?.value,
+        defaultValue: props.usage?.translate,
       });
     }, 500);
   };
@@ -155,13 +155,19 @@ const SenseUsage = (props: Props) => {
   };
 
   return (
-    <Animated.View layout={LinearTransition}>
-      <View className="flex-row justify-between items-center mt-4">
-        <AppTitle title="Usage 🔎" />
+    <Animated.View className={"mt-2"} layout={LinearTransition}>
+      <View className="flex-row items-center gap-2 h-8">
+        <FontAwesome
+          style={{ width: 14 }}
+          name="search"
+          size={14}
+          color={theme.title}
+        />
+        <AppTitle title="Usage" />
       </View>
       <Divider />
       {props?.usage?.value ? (
-        <AppPressable onLongPress={showUsageModal} hitSlop={8} className="py-3">
+        <AppPressable onLongPress={showUsageModal} hitSlop={8} className="py-2">
           <AppText color="subText1">{props.usage.value}</AppText>
         </AppPressable>
       ) : (
@@ -179,19 +185,22 @@ const SenseUsage = (props: Props) => {
 
       {props.languageMode === 2 && (
         <View>
-          {props?.usageTranslate?.value ? (
+          {props?.usage?.translate ? (
             <AppPressable
               onLongPress={showUsageTranslateModal}
               touchColor={theme.secondary + "20"}
               style={{
                 marginHorizontal: -8,
-                marginVertical: 8,
-                backgroundColor: theme.secondary + "15",
+                marginTop: 4,
+                marginBottom: 8,
+                backgroundColor: theme.secondary + "08",
                 paddingHorizontal: 8,
               }}
               className="p-3"
             >
-              <AppText color="subText1">{props.usageTranslate.value}</AppText>
+              <AppText color="subText1" font="MulishLightItalic" size={"sm"}>
+                {props.usage.translate}
+              </AppText>
             </AppPressable>
           ) : (
             <AppPressable

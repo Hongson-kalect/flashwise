@@ -1,9 +1,11 @@
 import AppText from "@/components/AppText";
 import { BarChart } from "@/components/chart/bar";
+import { useTheme } from "@/providers/Theme";
 import { useWindowDimensions, View } from "react-native";
 
 const ListSumary = () => {
   const { height } = useWindowDimensions();
+  const { theme } = useTheme();
   return (
     <View
       style={{ height: (height / 5) * 3, elevation: 6 }}
@@ -27,9 +29,15 @@ const ListSumary = () => {
           </View>
         </View>
         <View>
-          <View className="h-24 w-24 bg-red-400 rounded-full p-4">
-            <View className="h-16 w-18 bg-white rounded-full p-4 items-center justify-center">
-              <AppText color="subText1">0%</AppText>
+          <View
+            style={{ backgroundColor: theme.success + "44" }}
+            className="h-24 w-24 rounded-full p-4"
+          >
+            <View className="h-16 w-16 bg-white rounded-full items-center justify-center">
+              <AppText color="subText1">0</AppText>
+              <AppText color="subText2" font="MulishLight" size={"xs"}>
+                %
+              </AppText>
             </View>
           </View>
         </View>

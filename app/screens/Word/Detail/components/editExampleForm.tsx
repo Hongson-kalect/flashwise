@@ -6,16 +6,11 @@ import useModalStore from "@/stores/modalStore";
 import { useEffect, useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { LineInput } from "../../Create/components/lineInput";
-
-type Example = {
-  id: string;
-  value: string;
-  translate: string;
-};
+import { SenseExample } from "./createSenseSheet";
 
 type Props = {
-  example: Example;
-  onChange: (example: Example) => void;
+  example: SenseExample;
+  onChange: (example: SenseExample) => void;
   languageMode: 1 | 2;
 };
 const EditExampleForm = (props: Props) => {
@@ -64,7 +59,7 @@ const EditExampleForm = (props: Props) => {
             key={"edit-translate"}
             size="sm"
             label="Translate"
-            value={example.translate}
+            value={example?.translate || ""}
             setValue={(value) => setExample({ ...example, translate: value })}
           />
         </View>

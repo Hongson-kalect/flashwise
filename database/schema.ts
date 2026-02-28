@@ -3,9 +3,9 @@ import * as SQLite from "expo-sqlite";
 // Hàm khởi tạo Database và bảng
 export const initDatabase = async (db: SQLite.SQLiteDatabase) => {
   const DATABASE_VERSION = 1; // get from server
-  //   clearDatabase(db);
+  // clearDatabase(db);
 
-  let { user_version: currentDbVersion } = { user_version: 0 };
+  let { user_version: currentDbVersion } = { user_version: 1 };
   if (currentDbVersion >= DATABASE_VERSION) {
     return;
   }
@@ -22,9 +22,7 @@ export const initDatabase = async (db: SQLite.SQLiteDatabase) => {
             id TEXT PRIMARY KEY NOT NULL,
             value TEXT NOT NULL UNIQUE,
             description TEXT, -- Hiển thị bổ sung khi tìm kiếm, Nếu không thì chắc phải hiển thị bản dịch
-            is_valid BOOLEAN DEFAULT 0,
-            is_offensive BOOLEAN DEFAULT 0,
-            register TEXT DEFAULT 'informal', -- Ví dụ: formal, informal
+            language TEXT NOT NULL,
             -- Base fields
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             created_by TEXT,
@@ -37,14 +35,74 @@ export const initDatabase = async (db: SQLite.SQLiteDatabase) => {
         CREATE INDEX IF NOT EXISTS idx_words_value ON words (value);
         CREATE INDEX IF NOT EXISTS idx_words_status ON words (is_active, is_deleted);
     
+        -- 3. Bảng SENSE_METADATA (Thông tin bổ trợ)
+        CREATE TABLE IF NOT EXISTS sense_metadata (
+            id TEXT PRIMARY KEY NOT NULL,
+            level TEXT,
+            synonyms TEXT,
+            antonyms TEXT,
+            relateds TEXT,
+            forms TEXT,
+            tags TEXT, -- JSON
+            voted INTEGER DEFAULT 0,
+            devoted INTEGER DEFAULT 0,
+            likes INTEGER DEFAULT 0,
+            views INTEGER DEFAULT 0,
+
+            pos TEXT, -- Part of speech
+            ipa TEXT, -- JSON: {label, audio, value}
+            is_valid BOOLEAN DEFAULT 0,
+            is_offensive BOOLEAN DEFAULT 0,
+            register TEXT DEFAULT 'informal', -- Ví dụ: formal, informal
+            
+            image_desc TEXT,
+            image_link TEXT,
+            image_metadata TEXT,
+
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT,
+            updated_by TEXT,
+            is_active BOOLEAN DEFAULT 0,
+            is_deleted BOOLEAN DEFAULT 0,
+            deleted_at DATETIME
+        );
+        CREATE INDEX IF NOT EXISTS idx_sense_metadata_status ON sense_metadata (is_active, is_deleted);
+
+        CREATE TABLE IF NOT EXISTS sense_content (
+            id TEXT PRIMARY KEY NOT NULL,
+            value TEXT,
+            content_type TEXT,
+            type TEXT,
+            parent TEXT,
+            reading TEXT,
+            roman TEXT,
+            ruby TEXT,
+            language TEXT,
+            language_code TEXT,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            created_by TEXT,
+            updated_by TEXT,
+            is_active BOOLEAN DEFAULT 0,
+            is_deleted BOOLEAN DEFAULT 0,
+            deleted_at DATETIME
+        );
+        CREATE INDEX IF NOT EXISTS idx_sense_content_status ON sense_content (is_active, is_deleted);
+        CREATE INDEX IF NOT EXISTS idx_sense_content_value ON sense_content (value);
+        CREATE INDEX IF NOT EXISTS idx_sense_content_parent ON sense_content (parent);
+        CREATE INDEX IF NOT EXISTS idx_sense_content_language_code ON sense_content (language_code);
+
         -- 2. Bảng SENSE (Phiên bản nghĩa của từ)
         CREATE TABLE IF NOT EXISTS senses (
             id TEXT PRIMARY KEY NOT NULL,
             word_id TEXT NOT NULL,
             original_id TEXT, -- ID của sense ngay trước nó
             metadata_id TEXT, -- ID bảng metadata
-            definition_id TEXT, -- JSON (danh sách ID hoặc value tùy bạn)
-            examples_id TEXT, -- JSON
+            contents_id TEXT, -- JSON (danh sách ID hoặc value tùy bạn)
+            new_contents TEXT,
+            old_contents TEXT,
+
             is_frozen BOOLEAN DEFAULT 0,
             versions INTEGER DEFAULT 1,
             origins TEXT, -- JSON Array: [id1, id2, id3...]
@@ -58,79 +116,17 @@ export const initDatabase = async (db: SQLite.SQLiteDatabase) => {
             deleted_at DATETIME,
             FOREIGN KEY (word_id) REFERENCES words (id) ON DELETE CASCADE,
             FOREIGN KEY (original_id) REFERENCES senses (id) ON DELETE SET NULL,
-            FOREIGN KEY (metadata_id) REFERENCES sense_metadata (id) ON DELETE SET NULL,
-            FOREIGN KEY (definition_id) REFERENCES definitions (id) ON DELETE SET NULL,
-            FOREIGN KEY (examples_id) REFERENCES examples (id) ON DELETE SET NULL
+            FOREIGN KEY (metadata_id) REFERENCES sense_metadata (id) ON DELETE SET NULL
         );
         CREATE INDEX IF NOT EXISTS idx_senses_word_id ON senses (word_id);
         CREATE INDEX IF NOT EXISTS idx_senses_original_id ON senses (original_id);
         CREATE INDEX IF NOT EXISTS idx_senses_metadata_id ON senses (metadata_id);
-        CREATE INDEX IF NOT EXISTS idx_senses_definition_id ON senses (definition_id);
-        CREATE INDEX IF NOT EXISTS idx_senses_examples_id ON senses (examples_id);
         CREATE INDEX IF NOT EXISTS idx_senses_status ON senses (is_active, is_deleted);
-    
-        -- 3. Bảng SENSE_METADATA (Thông tin bổ trợ)
-        CREATE TABLE IF NOT EXISTS sense_metadata (
-            id TEXT PRIMARY KEY NOT NULL,
-            translations TEXT, -- JSON
-            tags TEXT, -- JSON
-            voted INTEGER DEFAULT 0,
-            devoted INTEGER DEFAULT 0,
-            likes INTEGER DEFAULT 0,
-            views INTEGER DEFAULT 0,
-            pos TEXT, -- Part of speech
-            ipa TEXT, -- JSON: {label, audio, value}
-            image_desc TEXT,
-            image_link TEXT,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            is_active BOOLEAN DEFAULT 0,
-            is_deleted BOOLEAN DEFAULT 0,
-            deleted_at DATETIME
-        );
-        CREATE INDEX IF NOT EXISTS idx_sense_metadata_status ON sense_metadata (is_active, is_deleted);
-    
-        -- 4. Bảng DEFINITION
-        CREATE TABLE IF NOT EXISTS definitions (
-            id TEXT PRIMARY KEY NOT NULL,
-            value TEXT NOT NULL,
-            language TEXT NOT NULL,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            is_active BOOLEAN DEFAULT 0,
-            is_deleted BOOLEAN DEFAULT 0,
-            deleted_at DATETIME
-        );
-        CREATE INDEX IF NOT EXISTS idx_definitions_status ON definitions (is_active, is_deleted);
-    
-        -- 5. Bảng EXAMPLE
-        CREATE TABLE IF NOT EXISTS examples (
-            id TEXT PRIMARY KEY NOT NULL,
-            value TEXT NOT NULL,
-            language TEXT NOT NULL,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            is_active BOOLEAN DEFAULT 0,
-            is_deleted BOOLEAN DEFAULT 0,
-            deleted_at DATETIME
-        );
-        CREATE INDEX IF NOT EXISTS idx_examples_status ON examples (is_active, is_deleted);
-    
-        -- 6. Bảng EXAMPLE_TRANSLATED
-        CREATE TABLE IF NOT EXISTS example_translated (
-            id TEXT PRIMARY KEY NOT NULL,
-            example_id TEXT,
-            value TEXT NOT NULL,
-            language TEXT NOT NULL,
-            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            is_active BOOLEAN DEFAULT 0,
-            is_deleted BOOLEAN DEFAULT 0,
-            deleted_at DATETIME,
-            FOREIGN KEY (example_id) REFERENCES examples (id) ON DELETE CASCADE
-        );
-        CREATE INDEX IF NOT EXISTS idx_example_translated_example_id ON example_translated (example_id);
-        CREATE INDEX IF NOT EXISTS idx_example_translated_status ON example_translated (is_active, is_deleted);
+
         -- Bảng Like Summary
         CREATE TABLE IF NOT EXISTS likes_summary (
             target_type TEXT NOT NULL,
-            target_id INTEGER NOT NULL,
+            target_id TEXT NOT NULL,
             like_count INTEGER DEFAULT 0,
             dislike_count INTEGER DEFAULT 0,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -145,7 +141,7 @@ export const initDatabase = async (db: SQLite.SQLiteDatabase) => {
         CREATE TABLE IF NOT EXISTS likes_detail (
             id TEXT PRIMARY KEY NOT NULL,
             target_type TEXT NOT NULL,
-            target_id INTEGER NOT NULL,
+            target_id TEXT NOT NULL,
             user_id TEXT,
             status INTEGER DEFAULT 0,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

@@ -1,3 +1,4 @@
+import AppAddIcon from "@/components/AppAddIcon";
 import AppIcon from "@/components/AppIcon";
 import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
@@ -12,25 +13,22 @@ import CreateExampleForm from "./createExampleForm";
 import WordExample from "./example";
 
 type Props = {
-  item: WordType["definitions"][0];
+  definition: WordType["definition"];
+  examples: WordType["examples"];
   languageMode: 1 | 2;
-  index: number;
   isSimple?: boolean;
   word: string;
   style?: ViewStyle;
 };
 
 const WordDefinitions = ({
-  item,
+  definition,
+  examples,
   languageMode,
-  index,
   isSimple,
   word,
   style,
 }: Props) => {
-  const examples = item.examples;
-  const mainDefinition = item.value[0];
-  const subDefinitions = item.value.slice(1);
   const [action, setAction] = useState<null | "edit" | "add">(null);
 
   const { theme } = useTheme();
@@ -100,7 +98,7 @@ const WordDefinitions = ({
       setGlobalModal({
         title: "Edit definition",
         type: "prompt",
-        defaultValue: item.value[0],
+        defaultValue: definition.value,
       });
     }, 500);
   };
@@ -143,13 +141,52 @@ const WordDefinitions = ({
   };
 
   return (
-    <AppPressable onLongPress={showModal} className="py-3" style={style}>
+    <AppPressable onLongPress={showModal} className="py-2" style={style}>
       <AppText color="subText1">
-        {mainDefinition[0].toUpperCase()}
-        {mainDefinition.slice(1)}
+        {definition.value[0].toUpperCase()}
+        {definition.value.slice(1)}
       </AppText>
+      {languageMode === 2 && (
+        <View>
+          {definition?.translate ? (
+            <AppPressable
+              onLongPress={showModal} // Phải tạo model riêng cho từng thằng
+              touchColor={theme.secondary + "20"}
+              style={{
+                marginHorizontal: -8,
+                marginTop: 4,
+                marginBottom: 8,
+                backgroundColor: theme.secondary + "08",
+                paddingHorizontal: 8,
+              }}
+              className="p-3"
+            >
+              <AppText color="subText1" font="MulishLightItalic" size={"sm"}>
+                {definition.translate}
+              </AppText>
+            </AppPressable>
+          ) : (
+            <AppPressable
+              onPress={showModal} // để skeleton loading
+              touchColor={theme.secondary + "20"}
+              style={{
+                marginHorizontal: -8,
+                marginVertical: 8,
+                backgroundColor: theme.secondary + "15",
+                paddingHorizontal: 8,
+              }}
+              className="py-3 flex-row items-center justify-between"
+            >
+              <AppText color="subText2" font="MulishRegularItalic" size={"sm"}>
+                Để skeleton loading
+              </AppText>
+              <AppAddIcon size="sm" />
+            </AppPressable>
+          )}
+        </View>
+      )}
 
-      {subDefinitions.length > 0 ? (
+      {/* {subDefinitions.length > 0 ? (
         <View className="mt-1.5">
           {subDefinitions.map((subDefinition, index2) => {
             return (
@@ -167,21 +204,16 @@ const WordDefinitions = ({
             );
           })}
         </View>
-      ) : null}
+      ) : null} */}
 
-      {!isSimple && examples.length > 0 ? (
+      {!isSimple && examples?.length > 0 ? (
         <View className="gap-2 mt-2">
           {/* <AppText>Example</AppText> */}
           {examples.map((example, index2) => {
-            const translates = example.exampleTranslate;
-            const exampleText =
-              example.value[0].toUpperCase() + example.value.slice(1);
-
             return (
               <WordExample
-                translates={translates}
-                bold={example.bold}
-                example={exampleText}
+                bold={word}
+                example={example}
                 languageMode={languageMode}
                 key={"a" + index2}
               />

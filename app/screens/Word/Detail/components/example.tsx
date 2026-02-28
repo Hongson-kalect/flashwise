@@ -1,21 +1,18 @@
-import AppAddIcon from "@/components/AppAddIcon";
 import AppIcon from "@/components/AppIcon";
 import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
 import { BoldText } from "@/components/output/BoldText";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { FontAwesome } from "@expo/vector-icons";
 import { Alert, View } from "react-native";
+import { WordType } from "../../data";
 
 type Props = {
   bold: number[][] | string;
-  example: string;
-  translates: string[];
+  example: WordType["examples"][0];
   languageMode: 1 | 2;
 };
-const WordExample = ({ example, languageMode, translates, bold }: Props) => {
-  const upperCase = example[0].toUpperCase() + example.slice(1);
+const WordExample = ({ example, languageMode, bold }: Props) => {
   const { theme } = useTheme();
 
   const { setGlobalModal } = useModalStore();
@@ -117,7 +114,7 @@ const WordExample = ({ example, languageMode, translates, bold }: Props) => {
       setGlobalModal({
         title: "Edit example",
         type: "prompt",
-        defaultValue: example,
+        defaultValue: example.value,
       });
     }, 500);
   };
@@ -126,7 +123,7 @@ const WordExample = ({ example, languageMode, translates, bold }: Props) => {
     setTimeout(() => {
       setGlobalModal({
         type: "prompt",
-        subMessage: example,
+        subMessage: example.value,
         title: "Add vietnamese translate",
       });
     }, 500);
@@ -147,7 +144,7 @@ const WordExample = ({ example, languageMode, translates, bold }: Props) => {
       setGlobalModal({
         title: "Edit example",
         type: "prompt",
-        defaultValue: translates[0],
+        defaultValue: example.translate,
       });
     }, 500);
   };
@@ -168,88 +165,50 @@ const WordExample = ({ example, languageMode, translates, bold }: Props) => {
     Alert.alert("Deleted");
   };
 
-  const translates1 = ["test trans 1"];
-
   return (
-    <View>
+    <View
+      style={{
+        borderLeftWidth: 2,
+        borderLeftColor: theme.text + "33",
+        backgroundColor: theme.text + "08",
+        borderTopRightRadius: 4,
+        borderBottomRightRadius: 4,
+      }}
+    >
       <AppPressable
         hitSlop={5}
         className="py-2 pl-2"
-        // onPress={() => Alert.alert("dmm")}
         onLongPress={showExampleOptions}
       >
-        <AppText size={"sm"} font="MulishLightItalic" color="primary">
-          {/* <AppText size={"sm"} font="MulishRegularItalic" color="primary"> */}
-          <AppIcon
-            style={{ transform: [{ scaleX: -1 }] }}
-            color="primary"
-            branch="antd"
-            name={"edit"}
-            size={12}
-          />
-          {" : "}
-          {/* </AppText> */}
+        <AppText size={"xs"} font="MulishBold" color="title">
           <BoldText
             size={"sm"}
             color="subText1"
-            boldColor="primary"
-            font="MulishRegularItalic"
+            boldColor="text"
+            font="MulishRegular"
             boldFont="MulishBoldItalic"
-            text={upperCase}
+            text={example.value[0].toUpperCase() + example.value.slice(1)}
             bold={bold}
           />
         </AppText>
       </AppPressable>
-      {languageMode === 2 && translates1.length ? (
+      {languageMode === 2 && example.translate ? (
         <View>
-          {translates1.length ? (
-            translates1.slice(0, 1).map((translate, index3) => {
-              return (
-                <AppPressable
-                  onLongPress={showExampleTranslateOption}
-                  key={index3}
-                  hitSlop={{ bottom: 5 }}
-                >
-                  <AppText
-                    key={"b" + index3}
-                    font="MulishLightItalic"
-                    color="primary"
-                    className="flex-row items-center gap-2 pt-1 pb-2 pl-2"
-                  >
-                    <FontAwesome
-                      color={theme.primary}
-                      name="hand-o-right"
-                      className="mr-2"
-                      size={12}
-                    />
-                    {" : "}
-                    <AppText
-                      key={index3}
-                      size={"sm"}
-                      font="MulishRegularItalic"
-                      color="subText2"
-                    >
-                      {translate}
-                    </AppText>
-                  </AppText>
-                </AppPressable>
-              );
-            })
-          ) : (
-            <View className="flex-row items-center gap-1 justify-between pl-2">
-              <View className="flex-row items-center gap-1">
-                <FontAwesome
-                  name="hand-o-right"
-                  size={12}
-                  color={theme.subText2}
-                />
-                <AppText size={"sm"} font="MulishLightItalic" color="subText3">
-                  Chưa có bản dịch nào
-                </AppText>
-              </View>
-              <AppAddIcon size="sm" />
-            </View>
-          )}
+          <AppPressable
+            onLongPress={showExampleTranslateOption}
+            hitSlop={{ bottom: 5 }}
+          >
+            <AppText
+              font="MulishLightItalic"
+              color="primary"
+              className="flex-row items-center gap-2 pt-1 pb-2 pl-2"
+            >
+              <AppText size={"xs"} font="MulishLightItalic" color="subText2">
+                {example.translate[0].toUpperCase() +
+                  example.translate.slice(1)}
+              </AppText>
+            </AppText>
+          </AppPressable>
         </View>
       ) : null}
     </View>
