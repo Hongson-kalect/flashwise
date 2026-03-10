@@ -259,25 +259,28 @@ const WordDetailHeader = ({
                   <View
                     style={{
                       height: 4,
+                      elevation: 4,
                       borderRadius: 100,
                       width: 28,
-                      backgroundColor: "black",
+                      backgroundColor: "#555",
                     }}
                   />
                   <View
                     style={{
                       height: 4,
+                      elevation: 4,
                       borderRadius: 100,
                       width: 20,
-                      backgroundColor: "black",
+                      backgroundColor: "#555",
                     }}
                   />
                   <View
                     style={{
                       height: 4,
+                      elevation: 4,
                       borderRadius: 100,
                       width: 12,
-                      backgroundColor: "black",
+                      backgroundColor: "#555",
                     }}
                   />
                 </View>

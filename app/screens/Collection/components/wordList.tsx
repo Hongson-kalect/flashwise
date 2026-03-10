@@ -7,7 +7,7 @@ import AppSearch from "@/components/input/AppSearch";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import { useEffect, useState } from "react";
-import { Pressable, TouchableOpacity, View } from "react-native";
+import { Keyboard, Pressable, TouchableOpacity, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import WordSelectForm from "../../Word/Create/components/wordSelectForm";
 import WordListItem from "../../Word/List/components/listItem";
@@ -49,7 +49,7 @@ const CollectionWordList = (props: Props) => {
     <>
       <View className="flex-row items-center justify-between">
         <AppTitle title="Word list" />
-        {props.readonly ? (
+        {!props.readonly ? (
           isSelectingWord ? (
             <AppButton
               onPress={() => {
@@ -64,9 +64,10 @@ const CollectionWordList = (props: Props) => {
           ) : (
             <AppButton
               onPress={() => {
+                Keyboard.dismiss();
                 handleOpenBottomSheet();
               }}
-              type={"primary"}
+              type={"success"}
               size="sm"
             >
               <AppIcon branch="antd" name="plus" color="white" size={18} />

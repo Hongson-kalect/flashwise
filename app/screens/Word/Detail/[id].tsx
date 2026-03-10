@@ -19,6 +19,7 @@ import { WordType } from "../data";
 import { initialState } from "../type";
 import WordAdvanceInformation from "./components/advanceInfomation";
 import BasicInformation from "./components/basicInformation";
+import WordCollocations from "./components/collocations";
 import WordDetailHeader from "./components/header";
 import { getSenseData, mapSenses, senseDataReducer } from "./utils";
 
@@ -396,6 +397,10 @@ const WordInfo = (props: WordInfoType) => {
             openRadioModal={openRadioModal}
           />
         </View> */}
+
+        <View className="mt-6">
+          <WordCollocations />
+        </View>
 
         {/* <AppDivider style={{ marginTop: 8, marginBottom: 12 }} /> */}
 

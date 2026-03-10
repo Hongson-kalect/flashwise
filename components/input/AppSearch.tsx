@@ -2,8 +2,15 @@ import { fontFamily } from "@/configs/fonts";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { View } from "react-native";
+import { TextInput } from "react-native-gesture-handler";
 import { Divider } from "react-native-paper";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import AppIcon from "../AppIcon";
@@ -22,16 +29,21 @@ type Props = {
   isClearable?: boolean;
   isFilterable?: boolean;
   filterModal?: React.ReactNode;
+  autofocus?: boolean;
 };
-const AppSearch = ({
-  isClearable = true,
-  isFilterable = true,
-  ...props
-}: Props) => {
+
+const AppSearch = forwardRef((props: Props, ref) => {
+  const { isClearable = true, isFilterable = true } = props;
   const { theme } = useTheme();
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState("");
-  const inputRef = useRef(null);
+  const inputRef = useRef<TextInput>(null);
+  useImperativeHandle(ref, () => ({
+    focus: () => inputRef.current?.focus(),
+    blur: () => inputRef.current?.blur(),
+    clear: () => props.onChangeText(""),
+  }));
+
   const { present } = useBottomSheet();
   const { setGlobalModal, setListModal } = useModalStore();
   const showFilterModal = () => {
@@ -60,22 +72,6 @@ const AppSearch = ({
           isCloseAfterPress: false,
           onPress: showWordTypeModal,
         },
-        // {
-        //   label: "Tags",
-        //   rightContent: (
-        //     <AppText
-        //       size={"sm"}
-        //       color="subText2"
-        //       numberOfLines={1}
-        //       style={{ flex: 1 }}
-        //     >
-        //       All All All All All All All All All All All All All All All All
-        //       All All All All All All All All All All All All All All All All
-        //       All All All All All All All All All
-        //     </AppText>
-        //   ),
-        //   isCloseAfterPress: false,
-        // },
       ],
     });
   };
@@ -117,6 +113,14 @@ const AppSearch = ({
     });
   };
 
+  useEffect(() => {
+    if (props.autofocus) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 300);
+    }
+  }, []);
+
   return (
     <View
       style={{ borderRadius: 999, elevation: 4 }}
@@ -126,6 +130,7 @@ const AppSearch = ({
         <AppIcon name="search1" branch="antd" size={24} color="#888" />
         <View className="flex-1 justify-center">
           <AppInput
+            ref={inputRef}
             style={{
               fontFamily: fontFamily.MulishBold,
               alignItems: "center",
@@ -140,8 +145,14 @@ const AppSearch = ({
             containerStyle={{ borderColor: "transparent" }}
             value={props.value}
             onChangeText={(value) => props.onChangeText(value)}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
+            onFocus={() => {
+              props.onFocus?.();
+              setFocused(true);
+            }}
+            onBlur={() => {
+              props.onBlur?.();
+              setFocused(false);
+            }}
             placeholder={props.placeholder}
             // className="h-full w-full text-lg"
           />
@@ -178,7 +189,7 @@ const AppSearch = ({
       </View>
     </View>
   );
-};
+});
 
 const FilterModal = () => {
   return (

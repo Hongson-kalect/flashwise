@@ -1,3 +1,4 @@
+import { WordList } from "@/app/screens/Word/Create/components/wordSelectForm";
 import { useTheme } from "@/providers/Theme";
 import React from "react";
 import {
@@ -12,19 +13,41 @@ import { AppDivider } from "./AppDivider";
 import AppText from "./AppText";
 
 type Props = {
+  wordSet: Map<string, WordList>;
   onSelect: (val: string) => void;
   show?: boolean;
   itemStyle?: ViewStyle;
   options: { label: string | React.ReactNode; value: string }[];
-  render?: (props: {
-    value: string;
-    label: string | React.ReactNode;
-    index: number;
-  }) => React.ReactNode;
 };
-const AppSuggestion = (props: Props) => {
+const WordListSuggestion = (props: Props) => {
   const { theme } = useTheme();
   const { height } = useWindowDimensions();
+  const [status, setStatus] = React.useState<"loading" | "init" | "done">(
+    "init",
+  );
+  const [selectedSense, setSelectedSense] = React.useState<string[]>([]);
+
+  // Data để show cái nào đang select, status có ok hay chưa
+  // Loading, init, done
+
+  const handlePress = (
+    value: string,
+    status:
+      | "LOADING"
+      | "INITIAL"
+      | "PENDING"
+      | "PARTIAL"
+      | "COMPLETED"
+      | undefined,
+    data?: any,
+  ) => {
+    if (!status) props.onSelect(value);
+    else if (status === "COMPLETED" || status === "PARTIAL") {
+      // show modal lên
+    } else if (status === "LOADING" || status === "INITIAL") {
+      //toast nhẹ là đợi chờ là hạnh phúc
+    }
+  };
 
   if (!props.show) return null;
   return (
@@ -48,19 +71,28 @@ const AppSuggestion = (props: Props) => {
       >
         {props.options.map(({ label, value }, index) => {
           const isLast = index === props.options.length - 1;
+          const wordData = props.wordSet.get(value);
+          const status = wordData?.status;
+
           return (
             <View key={index}>
               <View>
                 <TouchableOpacity
                   style={props.itemStyle}
-                  onPress={() => props.onSelect(value)}
-                  className="px-2 h-14 flex-row items-center"
+                  onPress={() => handlePress(value, status, wordData)}
+                  className="px-2 h-14 flex-row items-center justify-between"
                 >
                   {typeof label === "string" ? (
                     <AppText>{label}</AppText>
                   ) : (
                     label
                   )}
+
+                  <View>
+                    <AppText>{status || "None"}</AppText>
+                    {/* Lấy được data, có thể hiện sense đã chọn hay chưa, init, disabled
+                     Chỉnh màu nền, viền,... */}
+                  </View>
                 </TouchableOpacity>
                 {!isLast && <AppDivider />}
               </View>
@@ -72,4 +104,4 @@ const AppSuggestion = (props: Props) => {
   );
 };
 
-export default AppSuggestion;
+export default WordListSuggestion;

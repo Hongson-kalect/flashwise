@@ -78,7 +78,7 @@ const CreateSenseMoreInfo = ({ senseValue, setSenseValue }: Props) => {
 
       <View className="px-1 py-4">
         <View className="flex-row items-center justify-between">
-          <AppText color="subText2" font="MulishRegularItalic" size={"xs"}>
+          <AppText color="title" font="MulishBold" size={"xs"}>
             {"Audio"}
           </AppText>
 
@@ -87,7 +87,7 @@ const CreateSenseMoreInfo = ({ senseValue, setSenseValue }: Props) => {
             hitSlop={10}
             className="gap-1 items-center flex-row"
           >
-            <AppText color="secondary" font="MulishBold" size={"xs"}>
+            <AppText color="secondary" font="MulishLightItalic" size={"xs"}>
               Preset
             </AppText>
             <AppIcon branch="antd" name={"right"} size={12} color="secondary" />
@@ -133,7 +133,7 @@ const CreateSenseMoreInfo = ({ senseValue, setSenseValue }: Props) => {
 
       <View className="px-1 py-4">
         <View className="flex-row items-center justify-between">
-          <AppText color="subText2" font="MulishRegularItalic" size={"xs"}>
+          <AppText color="title" font="MulishBold" size={"xs"}>
             Image
           </AppText>
 
@@ -142,7 +142,7 @@ const CreateSenseMoreInfo = ({ senseValue, setSenseValue }: Props) => {
             hitSlop={10}
             className="gap-1 items-center flex-row"
           >
-            <AppText color="secondary" font="MulishBold" size={"xs"}>
+            <AppText color="secondary" font="MulishLightItalic" size={"xs"}>
               Preset
             </AppText>
             <AppIcon branch="antd" name={"right"} size={12} color="secondary" />
@@ -168,7 +168,7 @@ const CreateSenseMoreInfo = ({ senseValue, setSenseValue }: Props) => {
               />
             </TouchableOpacity>
           ) : (
-            <AppButton onPress={handlePickImage}>
+            <AppButton onPress={handlePickImage} size="sm">
               <MaterialCommunityIcons
                 name="cursor-pointer"
                 size={16}

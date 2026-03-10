@@ -4,6 +4,7 @@ import { textSizes } from "@/configs/size";
 import { useTheme } from "@/providers/Theme";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import {
+  Alert,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -50,7 +51,7 @@ const AppInput = forwardRef<LineInputRef, Props>(
       disabled,
       ...rest
     }: Props,
-    ref
+    ref,
   ) => {
     const { theme } = useTheme();
     const [focused, setFocused] = useState(false);
@@ -113,6 +114,7 @@ const AppInput = forwardRef<LineInputRef, Props>(
               </AppText>
             </View>
             <TextInput
+              autoCorrect={false}
               ref={inputRef}
               onFocus={() => {
                 rest.onFocus && rest.onFocus();
@@ -123,6 +125,8 @@ const AppInput = forwardRef<LineInputRef, Props>(
                 setFocused(false);
               }}
               {...rest}
+              onSubmitEditing={() => Alert.alert("qq")}
+              returnKeyType="done"
               style={[
                 {
                   fontSize,
@@ -141,15 +145,15 @@ const AppInput = forwardRef<LineInputRef, Props>(
                 rest.secureTextEntry
                   ? "default"
                   : rest.keyboardType || rest.autoComplete === "email"
-                  ? "email-address"
-                  : "default"
+                    ? "email-address"
+                    : "default"
               }
             />
           </View>
         </View>
       </Pressable>
     );
-  }
+  },
 );
 
 const styles = StyleSheet.create({

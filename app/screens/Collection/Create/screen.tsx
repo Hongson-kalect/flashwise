@@ -60,7 +60,7 @@ const CreateCollection = () => {
         <Divider style={{ marginTop: 8 }} />
 
         <View className="flex-1">
-          <ScrollView>
+          <ScrollView keyboardShouldPersistTaps="handled">
             <AppContainer className="mt-4">
               <View>
                 <View className="mt-6 items-center justify-center">
@@ -86,9 +86,9 @@ const CreateCollection = () => {
                         borderColor: theme.secondary,
                         backgroundColor: theme.secondary + "10",
                       }}
-                      className="h-40 w-60 border border-dashed  rounded-lg p-4"
+                      className="h-40 w-60 border border-dashed rounded-lg p-4 items-center justify-center"
                     >
-                      <AppText color="subText2" size={"xs"}>
+                      <AppText color="subText3" size={"xs"}>
                         Hình minh họa
                       </AppText>
                     </TouchableOpacity>
@@ -99,7 +99,7 @@ const CreateCollection = () => {
               <TextInput
                 value={collectionInfo.name}
                 multiline
-                // submitBehavior="done"
+                submitBehavior="blurAndSubmit"
                 returnKeyType="done"
                 placeholder="Collection Name"
                 onChangeText={(name) =>
@@ -109,13 +109,14 @@ const CreateCollection = () => {
                   }))
                 }
                 style={{
-                  fontSize: 32,
+                  fontSize: 24,
                   fontFamily: "MulishBold",
                   color: theme.primary,
                   textAlign: "center",
                   borderBottomWidth: 2,
                   borderColor: nameFocus ? theme.primary : "transparent",
                 }}
+                autoFocus
                 onFocus={() => setNameFocus(true)}
                 onBlur={() => setNameFocus(false)}
                 placeholderTextColor={"#C4C4C4"}

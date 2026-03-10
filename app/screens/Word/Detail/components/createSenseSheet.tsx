@@ -76,7 +76,6 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
             setSenseValue={setSenseValue}
           />
         </View>
-
         <View className="mt-8 bg-gray-100 -mx-3 px-2">
           <CreateSenseMoreInfo
             senseValue={senseValue}
@@ -91,7 +90,7 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
                 {'Each word separated by ","'}
               </AppText>
             </View>
-            <View className="px-1 py-4">
+            <View className="px-1 py-4 mt-2">
               <LineInput
                 onPreset={() => Alert.alert("show ipa preset")}
                 label="Related word"

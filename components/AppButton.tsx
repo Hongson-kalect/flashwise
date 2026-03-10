@@ -82,6 +82,7 @@ const AppButton = ({
         onPressOut={onPressOut}
         disabled={disabled || isLoading}
         android_ripple={{ color: "#ffffff44" }}
+        hitSlop={10}
         style={[
           {
             shadowColor: "#000",

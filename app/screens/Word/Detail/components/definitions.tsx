@@ -76,17 +76,19 @@ const WordDefinitions = ({
         },
         {
           icon: (
-            <AppIcon name="trash" color="error" branch="feather" size={22} />
+            <AppIcon name="trash" color="white" branch="feather" size={22} />
           ),
           rightContent: (
             <AppIcon
               name="chevron-right"
               branch="feather"
-              color="subText3"
+              color="white"
               size={20}
             />
           ),
-          label: "Delete custom defination",
+          color: theme.white,
+          backgroundColor: theme.error,
+          label: "Clear custom defination",
           onPress: deleteDefinitionModal,
         },
       ],

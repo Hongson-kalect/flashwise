@@ -43,16 +43,18 @@ const SenseNote = (props: Props) => {
         },
         {
           icon: (
-            <AppIcon name="trash" color="error" branch="feather" size={22} />
+            <AppIcon name="trash" color="white" branch="feather" size={22} />
           ),
           rightContent: (
             <AppIcon
               name="chevron-right"
               branch="feather"
-              color="subText3"
+              color="white"
               size={20}
             />
           ),
+          backgroundColor: theme.error,
+          color: theme.white,
           label: "Delete Note",
           onPress: deleteNote,
         },
