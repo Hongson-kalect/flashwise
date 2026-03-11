@@ -14,16 +14,28 @@ import { Divider } from "react-native-paper";
 import Animated, { SlideInLeft, SlideOutLeft } from "react-native-reanimated";
 import WordSearchItem from "./wordSearchItem";
 
-type Sense = {
+export type Sense = {
   //Simple sense to show to user, if click detail => detail page
-  definition: {
-    value: string;
-    translate: string;
+  data?: {
+    definition: {
+      value: string;
+      translate: string;
+    };
+    id: string;
+    isNew?: boolean;
   };
-  id?: string;
-  wordId?: string;
-  wordValue?: string;
+  status: "LOADING" | "INITIAL" | "PENDING" | "PARTIAL" | "COMPLETED";
+  wordId: string;
+  wordValue: string;
 };
+type Word = {
+  id: string;
+  status: "LOADING" | "INITIAL" | "PENDING" | "PARTIAL" | "COMPLETED";
+  selectedSense?: string[];
+  value: string;
+  senses: Sense[];
+};
+
 type SenseInfo = {
   value: string;
   id: string;
@@ -68,15 +80,56 @@ type Props = {
 
 const WordSelectForm = (props: Props) => {
   const { theme } = useTheme();
+  const [senses, setSenses] = useState<Sense[]>(props.initialSenses || []);
+  const [order, setOrder] = useState<string[]>([]);
+
+  // Thằng này nó chỉ lưu được các giá trị hiện có chứ không lưu kết quả từ server trả về
+  const wordList = useMemo(() => {
+    const map = new Map<string, Word>();
+
+    senses.forEach((sense) => {
+      if (!map.has(sense.wordId)) {
+        if (sense.data) {
+          map.set(sense.wordId, {
+            value: sense.wordValue,
+            id: sense.wordId,
+            selectedSense: [sense.data.id],
+            status: sense.status,
+            senses: [sense],
+          });
+        } else {
+          map.set(sense.wordId, {
+            value: sense.wordValue,
+            id: sense.wordId,
+            status: sense.status,
+            senses: [],
+          });
+        }
+      } else {
+        const word = map.get(sense.wordId);
+        if (!sense.data) {
+          return;
+        }
+
+        word?.senses.push(sense);
+        word?.selectedSense?.push(sense.data.id);
+      }
+
+      map.get(sense.wordId).senses.push(sense);
+    });
+
+    return map;
+  }, [order]);
   const [focusing, setFocusing] = useState(false);
   const { width, height } = useWindowDimensions();
-  const [wordList, setWordList] = useState<Map<string, WordList>>(new Map());
-  const [order, setOrder] = useState<string[]>([]);
+  // const [wordList, setWordList] = useState<Map<string, WordList>>(new Map());
   const displayList = useMemo(() => {
-    return order.map((id) => ({
-      ...wordList.get(id)!,
-      id,
-    }));
+    return order.map((id) => {
+      ({
+        ...wordList.get(id)!,
+        id,
+      });
+    });
   }, [wordList]);
 
   const [searchVal, setSearchVal] = useState<string>("");
@@ -130,31 +183,6 @@ const WordSelectForm = (props: Props) => {
   };
 
   useEffect(() => {
-    // Nạp danh sách word trong lần đầu để hiển thị các từ đang có trong list với isNew = false
-    if (props.initialSenses) {
-      const wordList = new Map<string, WordList>();
-      props.initialSenses.forEach((item) => {
-        if (item.wordId && item.id && item.wordValue) {
-          const word = wordList.get(item.wordId);
-          if (!word)
-            wordList.set(item.wordId, {
-              id: item.wordId,
-              value: item.wordValue,
-              isNew: false,
-              status: "COMPLETED",
-              senses: [item],
-            });
-          else {
-            word?.senses?.push(item);
-            wordList.set(item.wordId, { ...word });
-          }
-        }
-      });
-      setWordList(wordList);
-    }
-  });
-
-  useEffect(() => {
     handleSearchResult(searchResult);
   }, [searchResult, searchDebounced]);
 
@@ -187,6 +215,7 @@ const WordSelectForm = (props: Props) => {
       }
     } else {
       if (word.isNew) {
+        setSenses([...senses, { wordId: word.id, wordValue: word.value }]);
         const newWordList = new Map(wordList);
         newWordList.set(word.id, { ...word, status: "INITIAL" });
         setWordList(newWordList);

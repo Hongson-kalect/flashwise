@@ -9,7 +9,7 @@ import { useTheme } from "@/providers/Theme";
 import { useEffect, useState } from "react";
 import { Keyboard, Pressable, TouchableOpacity, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
-import WordSelectForm from "../../Word/Create/components/wordSelectForm";
+import WordSelectForm, { Sense, WordList } from "../../Word/Create/components/wordSelectForm";
 import WordListItem from "../../Word/List/components/listItem";
 
 type Props = {
@@ -21,10 +21,17 @@ const CollectionWordList = (props: Props) => {
   const [search, setSearch] = useState("");
   const { theme } = useTheme();
   const { present } = useBottomSheet();
+  const [senses, setSense] = useState<Sense[]>([]);
+
+  const handleConfirmWordList = (list:WordList)=>{
+    // Map từng thằng word ra để ghi vào senses
+
+  }
 
   const handleOpenBottomSheet = () => {
+    // Từ sense để tạo thành words
     present({
-      render: () => <WordSelectForm />,
+      render: () => <WordSelectForm initialSenses={[]}/>,
       title: "Add word",
       size: "full",
     });
