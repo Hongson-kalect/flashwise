@@ -1,6 +1,5 @@
 import AppButton from "@/components/AppButton";
 import AppCheckbox from "@/components/AppCheckbox";
-import { AppDivider } from "@/components/AppDivider";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppSearch from "@/components/input/AppSearch";
@@ -14,6 +13,12 @@ import { Divider } from "react-native-paper";
 import Animated, { SlideInLeft, SlideOutLeft } from "react-native-reanimated";
 import WordSearchItem from "./wordSearchItem";
 
+export type STATUS =
+  | "LOADING"
+  | "INITIAL"
+  | "PENDING"
+  | "PARTIAL"
+  | "COMPLETED";
 export type Sense = {
   //Simple sense to show to user, if click detail => detail page
   data?: {
@@ -24,16 +29,16 @@ export type Sense = {
     id: string;
     isNew?: boolean;
   };
-  status: "LOADING" | "INITIAL" | "PENDING" | "PARTIAL" | "COMPLETED";
+  status: STATUS;
   wordId: string;
   wordValue: string;
 };
 type Word = {
   id: string;
-  status: "LOADING" | "INITIAL" | "PENDING" | "PARTIAL" | "COMPLETED";
-  selectedSense?: string[];
+  status?: STATUS;
+  selectedSense?: Sense[];
   value: string;
-  senses: Sense[];
+  // senses: Sense[];
 };
 
 type SenseInfo = {
@@ -46,7 +51,11 @@ type SenseInfo = {
 export type SearchSuggestion = {
   id: string;
   value: string;
+  status?: STATUS;
+  image?: string;
   data?: SenseInfo;
+  senses?: Sense[];
+  selectedSense?: Sense[];
   isNew?: boolean;
 };
 
@@ -54,7 +63,7 @@ export type WordList = {
   id: string;
   value: string;
   isNew?: boolean;
-  status: "LOADING" | "INITIAL" | "PENDING" | "PARTIAL" | "COMPLETED";
+  status: STATUS;
   isError?: boolean;
   haveChange?: boolean;
   senses?: Sense[];
@@ -80,29 +89,44 @@ type Props = {
 
 const WordSelectForm = (props: Props) => {
   const { theme } = useTheme();
+
+  // Các sense được chọn
   const [senses, setSenses] = useState<Sense[]>(props.initialSenses || []);
-  const [order, setOrder] = useState<string[]>([]);
+  const order = useMemo<string[]>(() => {
+    const ids: string[] = [];
+    const idSet = new Set<string>();
+
+    senses.forEach((item) => {
+      if (!idSet.has(item.wordId)) {
+        idSet.add(item.wordId);
+        ids.push(item.wordId);
+      }
+    });
+    return ids;
+  }, [senses]);
+
+  // Chứa tất cả các sense, chỉ để cache nếu người ta reselect word
+  const [wordSense, setWordSense] = useState<
+    Map<string, { status: STATUS; senses: Sense[] }>
+  >(new Map());
 
   // Thằng này nó chỉ lưu được các giá trị hiện có chứ không lưu kết quả từ server trả về
   const wordList = useMemo(() => {
     const map = new Map<string, Word>();
-
     senses.forEach((sense) => {
       if (!map.has(sense.wordId)) {
         if (sense.data) {
           map.set(sense.wordId, {
             value: sense.wordValue,
             id: sense.wordId,
-            selectedSense: [sense.data.id],
+            selectedSense: [sense],
             status: sense.status,
-            senses: [sense],
           });
         } else {
           map.set(sense.wordId, {
             value: sense.wordValue,
             id: sense.wordId,
             status: sense.status,
-            senses: [],
           });
         }
       } else {
@@ -110,42 +134,24 @@ const WordSelectForm = (props: Props) => {
         if (!sense.data) {
           return;
         }
-
-        word?.senses.push(sense);
-        word?.selectedSense?.push(sense.data.id);
+        word?.selectedSense?.push(sense);
       }
-
-      map.get(sense.wordId).senses.push(sense);
     });
 
     return map;
-  }, [order]);
+  }, [senses]);
+
+  const displayList = useMemo(() => {
+    return order.map((id) => wordList.get(id)!);
+  }, [order, wordList]);
+
   const [focusing, setFocusing] = useState(false);
   const { width, height } = useWindowDimensions();
-  // const [wordList, setWordList] = useState<Map<string, WordList>>(new Map());
-  const displayList = useMemo(() => {
-    return order.map((id) => {
-      ({
-        ...wordList.get(id)!,
-        id,
-      });
-    });
-  }, [wordList]);
 
   const [searchVal, setSearchVal] = useState<string>("");
-  const [existingWord, setExistingWord] = useState<SenseInfo[]>([]);
-  const [newWord, setNewWord] = useState<SenseInfo[]>([]);
   const appSearchRef = useRef<TextInput>(null);
   const [selectedWord, setSelectedWord] = useState<string | undefined[]>([]);
   const [editMode, setEditMode] = useState(false);
-
-  const wordMap = useMemo(() => {
-    const res = new Map<string, SenseInfo>();
-    existingWord.forEach((item) => {
-      res.set(item.value, item);
-    });
-    return res;
-  }, [existingWord]);
 
   const searchDebounced = useDebounce(searchVal);
   const [searchSuggestion, setSearchSuggestion] = useState<SearchSuggestion[]>(
@@ -155,7 +161,12 @@ const WordSelectForm = (props: Props) => {
   // Hàm gọi query các word đang tồn tại trong server
 
   const handleSearchResult = (
-    searchResult: { id: string; value: string; data?: SenseInfo }[],
+    searchResult: {
+      id: string;
+      value: string;
+      senses?: Sense[];
+      selectedSenses?: Sense[];
+    }[],
   ) => {
     let suggestData: SearchSuggestion[] = [];
     let isExist = false;
@@ -165,10 +176,9 @@ const WordSelectForm = (props: Props) => {
         isExist = true;
       }
 
-      if (wordMap.has(item.value)) {
-        const existing = wordMap.get(item.value);
-        tempData.data = existing;
-      }
+      tempData.selectedSenses = wordList.get(item.id)?.selectedSense || [];
+
+      if (senses) wordSense.set(item.id, { status: "COMPLETED", senses });
 
       suggestData.push(tempData);
     });
@@ -181,6 +191,19 @@ const WordSelectForm = (props: Props) => {
     }
     setSearchSuggestion(suggestData);
   };
+
+  useEffect(() => {
+    const wordSenseMap = new Map<string, { status: STATUS; senses: Sense[] }>();
+    senses.forEach((item) => {
+      const wordSense = wordSenseMap.get(item.wordId);
+      if (wordSense) {
+        wordSense.senses.push(item);
+      } else {
+        wordSenseMap.set(item.wordId, { status: "PARTIAL", senses: [item] });
+      }
+    });
+    setWordSense(wordSenseMap);
+  }, []);
 
   useEffect(() => {
     handleSearchResult(searchResult);
@@ -214,21 +237,27 @@ const WordSelectForm = (props: Props) => {
           break;
       }
     } else {
+      const newWordSense = new Map(wordSense);
       if (word.isNew) {
-        setSenses([...senses, { wordId: word.id, wordValue: word.value }]);
-        const newWordList = new Map(wordList);
-        newWordList.set(word.id, { ...word, status: "INITIAL" });
-        setWordList(newWordList);
-        setOrder([word.id, ...order]);
+        setSenses((prev) => [
+          { wordId: word.id, wordValue: word.value, status: "INITIAL" },
+          ...prev,
+        ]);
+        newWordSense.set(word.id, { ...word, status: "INITIAL", senses: [] });
         return;
       } else {
-        // Case suggest không có data
-        // api call data và hiển thị form. select và ok thì thêm vào word list.
-        // chưa có api, tạm thêm với sense []
-        const newWordList = new Map(wordList);
-        newWordList.set(word.id, { ...word, status: "PENDING", senses: [] });
-        setWordList(newWordList);
-        setOrder([word.id, ...order]);
+        newWordSense.set(word.id, {
+          ...word,
+          status: "PARTIAL",
+          senses: word.data?.senses || [],
+        });
+
+        // Ping thấp thì partial và hiển thị luôn popup add senses trong popup
+        // Ping cao LOADING và background api, add sense rỗng để hiện word ra list. có api res thì update sense và cho thành pending
+        // Cân nhắc gọi full sense với pos + definitons only, preview_image hên xui, translate nếu có
+        // Socket translate nếu cần
+        // api gọi word info Hiện wor
+        setWordSense(newWordSense);
         return;
       }
     }
@@ -237,7 +266,7 @@ const WordSelectForm = (props: Props) => {
   const [checkList, setCheckList] = useState<Set<string>>(new Set<string>());
   const isCheckAll = useMemo(() => {
     return checkList.size === displayList.length;
-  }, [checkList, newWord, existingWord]);
+  }, [checkList]);
 
   const checkWord = (id?: string) => {
     if (id) {
@@ -272,9 +301,10 @@ const WordSelectForm = (props: Props) => {
     id.forEach((item) => {
       newMap.delete(item);
     });
-    setWordList(newMap);
+
+    const newSense = [...senses].filter((item) => !idSet.has(item.wordId));
+    setSenses(newSense);
     const newOrder = order.filter((item) => !idSet.has(item));
-    setOrder(newOrder);
   };
 
   return (
@@ -329,13 +359,9 @@ const WordSelectForm = (props: Props) => {
 
         <View className="px-4">
           <WordListSuggestion
-            wordSet={wordList}
             show={!!searchVal && searchSuggestion.length > 0 && focusing}
             itemStyle={{ paddingLeft: 44 }}
-            options={searchSuggestion.map((item) => ({
-              label: item.value,
-              value: item.id,
-            }))}
+            words={searchSuggestion}
             onSelect={(val) => {
               selectSugession(val);
             }}
@@ -347,7 +373,7 @@ const WordSelectForm = (props: Props) => {
       <View className="flex-1 mt-6">
         <ScrollView className="px-4" keyboardShouldPersistTaps="handled">
           <View>
-            {displayList.length === 0 && newWord.length === 0 ? (
+            {displayList.length === 0 ? (
               <View className="mt-6 items-center justify-center">
                 <View
                   style={{ width: width / 2, height: width / 2 }}
@@ -445,24 +471,6 @@ const WordSelectForm = (props: Props) => {
                       startEditMode={() => setEditMode(true)}
                       word={word}
                     />
-                    {(index !== newWord.length - 1 ||
-                      existingWord.length > 0) && <AppDivider />}
-                  </View>
-                );
-              })}
-              {existingWord.map((word, index) => {
-                const isChecked = checkList.has(word.id);
-                return (
-                  <View key={"existing-" + word.id}>
-                    <WordSearchItem
-                      checked={isChecked}
-                      onSelect={checkWord}
-                      onDismiss={uncheckWord}
-                      editMode={editMode}
-                      startEditMode={() => setEditMode(true)}
-                      word={word}
-                    />
-                    {index !== existingWord.length - 1 && <AppDivider />}
                   </View>
                 );
               })}

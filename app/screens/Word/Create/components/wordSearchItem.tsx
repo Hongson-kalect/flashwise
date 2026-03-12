@@ -4,7 +4,7 @@ import { useTheme } from "@/providers/Theme";
 import { useEffect, useMemo, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import Animated, { FadeOut, LinearTransition } from "react-native-reanimated";
-import { SearchSuggestion } from "./wordSelectForm";
+import { SearchSuggestion, STATUS } from "./wordSelectForm";
 
 type Props = {
   word: SearchSuggestion;
@@ -16,9 +16,7 @@ type Props = {
 };
 const WordSearchItem = ({ word, ...props }: Props) => {
   const { theme } = useTheme();
-  const [status, setStatus] = useState<
-    "loading" | "init" | "translating" | "pending" | "done"
-  >("loading");
+  const [status, setStatus] = useState<STATUS>("LOADING");
 
   const bgColor = useMemo(() => {}, [status]);
   // loading = get word status from server
@@ -28,10 +26,10 @@ const WordSearchItem = ({ word, ...props }: Props) => {
 
   useEffect(() => {
     // Nếu là new | ko có id thì socket + init
-    if (!word.id) return setStatus("init");
+    if (!word.id) return setStatus("INITIAL");
 
     // Ko có data -> loading -> lấy server data
-    if (!word.data) return setStatus("loading");
+    if (!word.data) return setStatus("LOADING");
 
     //  -> create? init.
     //  ->not have trans? translating,

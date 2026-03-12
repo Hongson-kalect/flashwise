@@ -1,4 +1,7 @@
-import { WordList } from "@/app/screens/Word/Create/components/wordSelectForm";
+import {
+  SearchSuggestion,
+  Sense
+} from "@/app/screens/Word/Create/components/wordSelectForm";
 import { useTheme } from "@/providers/Theme";
 import React from "react";
 import {
@@ -13,18 +16,15 @@ import { AppDivider } from "./AppDivider";
 import AppText from "./AppText";
 
 type Props = {
-  wordSet: Map<string, WordList>;
   onSelect: (val: string) => void;
   show?: boolean;
   itemStyle?: ViewStyle;
-  options: { label: string | React.ReactNode; value: string }[];
+  words: SearchSuggestion[];
+  // options: { label: string | React.ReactNode; value: string }[];
 };
 const WordListSuggestion = (props: Props) => {
   const { theme } = useTheme();
   const { height } = useWindowDimensions();
-  const [status, setStatus] = React.useState<"loading" | "init" | "done">(
-    "init",
-  );
   const [selectedSense, setSelectedSense] = React.useState<string[]>([]);
 
   // Data để show cái nào đang select, status có ok hay chưa
@@ -39,12 +39,15 @@ const WordListSuggestion = (props: Props) => {
       | "PARTIAL"
       | "COMPLETED"
       | undefined,
-    data?: any,
+    selected?: Sense[],
+    allSenses?: Sense[],
   ) => {
     if (!status) props.onSelect(value);
     else if (status === "COMPLETED" || status === "PARTIAL") {
+      alert("Hiện model sense select");
       // show modal lên
     } else if (status === "LOADING" || status === "INITIAL") {
+      alert("loading");
       //toast nhẹ là đợi chờ là hạnh phúc
     }
   };
@@ -69,36 +72,41 @@ const WordListSuggestion = (props: Props) => {
         keyboardShouldPersistTaps="handled"
         style={{ maxHeight: height / 3 }}
       >
-        {props.options.map(({ label, value }, index) => {
-          const isLast = index === props.options.length - 1;
-          const wordData = props.wordSet.get(value);
-          const status = wordData?.status;
+        {props.words.map(
+          ({ id, value, image, status, selectedSense, senses }, index) => {
+            const isLast = index === props.words.length - 1;
+            // const status = wordData?.status;
 
-          return (
-            <View key={index}>
-              <View>
-                <TouchableOpacity
-                  style={props.itemStyle}
-                  onPress={() => handlePress(value, status, wordData)}
-                  className="px-2 h-14 flex-row items-center justify-between"
-                >
-                  {typeof label === "string" ? (
-                    <AppText>{label}</AppText>
-                  ) : (
-                    label
-                  )}
+            return (
+              <View key={index}>
+                <View>
+                  <TouchableOpacity
+                    style={props.itemStyle}
+                    onPress={() =>
+                      handlePress(value, status, selectedSense, senses)
+                    }
+                    className="px-2 h-14 flex-row items-center justify-between"
+                  >
+                    <View className="flex-row items-center gap-2">
+                      <View
+                        style={{ height: 27, width: 48 }}
+                        className="bg-gray-400 rounded "
+                      ></View>
+                      <AppText>{value}</AppText>
+                    </View>
 
-                  <View>
-                    <AppText>{status || "None"}</AppText>
-                    {/* Lấy được data, có thể hiện sense đã chọn hay chưa, init, disabled
+                    <View>
+                      <AppText>{status || "None"}</AppText>
+                      {/* Lấy được data, có thể hiện sense đã chọn hay chưa, init, disabled
                      Chỉnh màu nền, viền,... */}
-                  </View>
-                </TouchableOpacity>
-                {!isLast && <AppDivider />}
+                    </View>
+                  </TouchableOpacity>
+                  {!isLast && <AppDivider />}
+                </View>
               </View>
-            </View>
-          );
-        })}
+            );
+          },
+        )}
       </ScrollView>
     </Animated.View>
   );
