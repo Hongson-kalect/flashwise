@@ -29,6 +29,7 @@ const CardTextInput = (props: Props) => {
 
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      setIsFocusing(true);
       Animated.timing(translateY, {
         toValue: -e.endCoordinates.height, // Di chuyển lên
         duration: 100,
@@ -37,6 +38,7 @@ const CardTextInput = (props: Props) => {
     });
 
     const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setIsFocusing(false);
       Animated.timing(translateY, {
         toValue: 0, // Trở về vị trí ban đầu
         duration: 100,
@@ -108,9 +110,9 @@ const CardTextInput = (props: Props) => {
               styles.inputWrapper,
               {
                 borderColor: theme.primary,
-                borderWidth: 1.5,
+                borderWidth: 1,
                 borderRadius: 999,
-                paddingHorizontal: 16,
+                paddingHorizontal: 14,
                 backgroundColor: theme.background,
               },
             ]}
@@ -124,18 +126,17 @@ const CardTextInput = (props: Props) => {
               autoCapitalize="none"
               submitBehavior="blurAndSubmit"
               onSubmitEditing={() => props.onAnser(value)}
-              onFocus={() => setIsFocusing(true)}
-              onBlur={() => setIsFocusing(false)}
               enterKeyHint="done"
               readOnly={modalInput}
               value={value}
               onChangeText={setValue}
               style={{
+                height: 44,
                 fontFamily: fontFamily.MulishSemiBold,
-                fontSize: 20,
+                fontSize: 16,
                 borderRadius: 0,
               }}
-              placeholder="Nhập lại từ này..."
+              placeholder="Nhập lại từ"
             />
           </Pressable>
         </View>

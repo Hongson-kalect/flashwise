@@ -2,12 +2,7 @@ import AppTitle from "@/components/AppTitle";
 import CardOption from "@/components/card/CardOption";
 import { CardElement, cardElementMapping } from "@/configs/cardOptions";
 import { useTheme } from "@/providers/Theme";
-import {
-  ImageBackground,
-  StatusBar,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { ImageBackground, useWindowDimensions, View } from "react-native";
 
 type Props = {
   cardHeight: [number, React.Dispatch<React.SetStateAction<number>>];
@@ -31,12 +26,12 @@ const CardBackSide = ({
       onLayout={(e) => {
         e.persist();
         cardHeight[1]((prev) =>
-          Math.max(prev, e.nativeEvent?.layout?.height || 0)
+          Math.max(prev, e.nativeEvent?.layout?.height || 0),
         );
       }}
       style={[
         {
-          minHeight: ((height - (StatusBar.currentHeight || 0)) / 7) * 4,
+          // minHeight: ((height - (StatusBar.currentHeight || 0)) / 7) * 4,
           width: width - 48,
           backgroundColor: theme.background,
           elevation: 6,

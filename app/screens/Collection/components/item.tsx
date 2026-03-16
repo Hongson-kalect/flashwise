@@ -27,24 +27,48 @@ const CollectionItem = () => {
         // borderRightColor: theme.primary,
         // borderBottomColor: theme.primary,
       }}
-      className="bg-white rounded-lg overflow-hidden p-3 flex-row gap-4"
+      className="bg-white rounded-lg overflow-hidden p-3 flex-row gap-3"
     >
       {/* <View
         style={{ elevation: 4 }}
         className="h-6 w-6 absolute top-1 right-1 rounded-full bg-blue-500 z-[1]"
       ></View> */}
-      <View className="w-24 h-16 rounded overflow-hidden border border-gray-100 items-center justify-center">
-        <Image
-          source={{ uri: "https://picsum.photos/600/400" }}
-          className="w-full h-full"
-          style={{ resizeMode: "cover" }}
-        />
-      </View>
-      <View className=" flex-1 px-2 justify-between">
-        <View>
-          <AppText font="MulishSemiBold" size={"xs"} color={"secondary"}>
-            English
+      <View>
+        <View
+          style={{ height: 63, width: 112 }}
+          className="rounded overflow-hidden border border-gray-100 items-center justify-center"
+        >
+          <Image
+            source={{ uri: "https://picsum.photos/600/400" }}
+            className="w-full h-full"
+            style={{ resizeMode: "cover" }}
+          />
+        </View>
+        <View
+          style={{
+            position: "absolute",
+            bottom: 4,
+            left: 2,
+            paddingHorizontal: 4,
+            zIndex: 1,
+            backgroundColor: theme.text + "aa",
+          }}
+          className="items-center gap-1 flex-row"
+        >
+          {/* <AppIcon color="subText2" name={"user"} branch="feather" size={12} /> */}
+          <AppText
+            numberOfLines={1}
+            style={{ maxWidth: 100 }}
+            font="MulishLightItalic"
+            size={10}
+            color={"white"}
+          >
+            Leo Hiểu
           </AppText>
+        </View>
+      </View>
+      <View className=" flex-1 justify-between">
+        <View>
           <AppText
             font="MulishSemiBold"
             size={"sm"}

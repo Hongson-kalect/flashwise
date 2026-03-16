@@ -9,19 +9,19 @@ type Props = {
 };
 
 const CardImage = (props: Props) => {
-  const [imageWidth, setImageWidth] = useState(0);
+  const [imageHeight, setImageHeight] = useState(0);
 
-  const renderImageWidth = (width: number) => {
+  const renderImageHeight = (width: number) => {
     if (width) {
-      setImageWidth((prev) => Math.max(prev, (width / 16) * 9));
+      setImageHeight((prev) => Math.max(prev, (width / 16) * 9));
     }
   };
   return (
     <View
-      onLayout={(e) => renderImageWidth(e.nativeEvent.layout.width)}
+      onLayout={(e) => renderImageHeight(e.nativeEvent.layout.width)}
       className="w-full items-center justify-center"
     >
-      <View style={{ height: imageWidth || 180, width: "100%" }}>
+      <View style={{ height: imageHeight || 180, width: "100%" }}>
         <Image
           className="w-full h-full"
           source={{ uri: props.question.image }}

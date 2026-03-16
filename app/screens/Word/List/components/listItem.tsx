@@ -21,12 +21,8 @@ const WordListItem = (props: Props) => {
       disabled={props.disabled}
       activeOpacity={0.8}
       style={{
-        elevation: 6,
+        elevation: 4,
         borderRadius: 8,
-        shadowOffset: {
-          width: 0,
-          height: 8,
-        },
         backgroundColor: theme.background,
       }}
       onPress={() =>
@@ -35,7 +31,7 @@ const WordListItem = (props: Props) => {
       className="flex-row items-center gap-3 overflow-hidden p-3"
     >
       <View
-        style={{ height: 68, width: 110 }}
+        style={{ height: 63, width: 112 }}
         className="items-center justify-center bg-gray-200 rounded"
       >
         <Image

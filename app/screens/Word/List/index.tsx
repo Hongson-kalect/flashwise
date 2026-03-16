@@ -4,6 +4,7 @@ import { useTheme } from "@/providers/Theme";
 import { useRef, useState } from "react";
 import {
   Animated,
+  FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
@@ -13,9 +14,11 @@ import {
   View,
 } from "react-native";
 import ListHeader from "./components/header";
-import CardList from "./components/list";
 import ItemListHeader from "./components/listHeader";
+import WordListItem from "./components/listItem";
 import ListSumary from "./components/sumary";
+
+const numbers = Array.from({ length: 100 }, (v, k) => k + 1);
 
 export default function CardPage() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -58,11 +61,28 @@ export default function CardPage() {
           </View>
 
           <View className="mt-2">
-            <CardList />
+            <View
+              style={{
+                backgroundColor: theme.background,
+                marginHorizontal: -4,
+              }}
+              className="gap-6"
+            >
+              <FlatList
+                scrollEnabled={false}
+                contentContainerStyle={{
+                  gap: 20,
+                  paddingHorizontal: 4,
+                  paddingVertical: 12,
+                }}
+                data={numbers}
+                extraData={(item: number) => item.toString()}
+                renderItem={({ item }) => {
+                  return <WordListItem />;
+                }}
+              />
+            </View>
           </View>
-          {/* <View>
-            <AppText>Empty List Image</AppText>
-          </View> */}
         </AppContainer>
         <View className="h-10"></View>
       </ScrollView>

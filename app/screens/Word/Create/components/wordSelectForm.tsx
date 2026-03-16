@@ -310,36 +310,6 @@ const WordSelectForm = (props: Props) => {
   return (
     <View className="h-full w-full">
       <View className="px-4 justify-end flex-row items-center gap-2 pt-2">
-        {/* <View className="h-8"> */}
-        {/* <FlatList
-          style={{
-            paddingVertical: 12,
-            flex: 1,
-            borderRadius: 8,
-          }}
-          data={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
-          renderItem={({ item, index }) => <TagItem key={index} />}
-          horizontal
-          // showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            gap: 8,
-            paddingRight: 8,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "white",
-          }}
-        /> */}
-        {/* <ScrollView horizontal className="gap-2 bg-red-400">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <TagItem key={index} />
-            ))}
-          </ScrollView> */}
-        {/* </View> */}
-
-        {/* <View
-          style={{ borderRightWidth: 0.5, borderColor: "gray", height: 32 }}
-        ></View> */}
-
         <AppButton type="primary" onPress={() => {}}>
           <AppText color="white">Save</AppText>
         </AppButton>

@@ -4,11 +4,12 @@ import { FlipCard } from "@/components/output/flipCard";
 import { useTheme } from "@/providers/Theme";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  BackHandler,
   DimensionValue,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 // import FlipCard from "react-native-flip-card";
 import CardTextInput from "@/components/card/ansers/TextInput";
@@ -43,7 +44,7 @@ export default function PracticePage() {
   const [completed, setCompleted] = useState(false);
   const shuffleNumber = useRef(questions.length - 1);
   const [questionOrder, setQuestionOrder] = useState<number[]>(() =>
-    questions.map((question) => question.id)
+    questions.map((question) => question.id),
   );
   const [completedQuestions, setCompletedQuestions] = useState<number[]>([]);
   const [currentQuestionId, setCurrentQuestionId] = useState(questions[0].id);
@@ -126,7 +127,7 @@ export default function PracticePage() {
     //Kiểm tra tất cả câu hỏi đã hoàn thành hay chưa
     if (
       Object.entries(questionState).some(
-        ([key, value]) => value.length < method.length
+        ([key, value]) => value.length < method.length,
       )
     ) {
       // let newOrder = reOrderQuestion
@@ -189,7 +190,7 @@ export default function PracticePage() {
   const [modalInput, setModalInput] = useState(true);
   const questionsLength = useMemo(
     () => questions.length * method.length + 1,
-    [questions, method]
+    [questions, method],
   );
   const progressWidth = useMemo(() => {
     let currentLength = 0;
@@ -344,6 +345,30 @@ export default function PracticePage() {
       }, 500);
     }
   }, [questionState]);
+
+  const backAction = () => {
+    setGlobalModal({
+      type: "confirm",
+      title: "Huỷ phiên học",
+      message: "Tiến trình của bạn sẽ không được bảo lưu, xác nhận muốn thoát?",
+      okText: "Đồng ý",
+      cancelText: "Hủy",
+      onOk: () => router.back(),
+      onCancel: () => null,
+    });
+
+    return true;
+  };
+
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction,
+    );
+
+    // CLEANUP: Hủy bỏ listener khi unmount để không ảnh hưởng màn hình khác
+    return () => backHandler.remove();
+  }, []);
 
   return (
     <View

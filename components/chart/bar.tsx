@@ -1,8 +1,10 @@
 import { fonts } from "@/configs/fonts";
 import { useTheme } from "@/providers/Theme";
 import { LinearGradient, Text, useFont, vec } from "@shopify/react-native-skia";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { InteractionManager, useWindowDimensions, View } from "react-native";
 import { Bar, CartesianChart } from "victory-native";
+import { BarChartSkeleton } from "../skeleton/ChartSkeleton";
 
 const DATA = Array.from({ length: 7 }, (_, i) => ({
   x: i + 1,
@@ -14,6 +16,27 @@ export function BarChart() {
   const font2 = useFont(fonts.MulishMedium, 14);
   const { theme } = useTheme();
   const data = useMemo(() => [...DATA], []);
+  const { width, height } = useWindowDimensions();
+
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // Chờ cho hiệu ứng chuyển Tab chạy xong xuôi
+    const task = InteractionManager.runAfterInteractions(() => {
+      setIsReady(true);
+    });
+
+    return () => task.cancel();
+  }, []);
+
+  if (!isReady) {
+    return (
+      <View style={{ height: height / 2, width }}>
+        <BarChartSkeleton />
+      </View>
+    ); // Hiển thị Skeleton ngay lập tức
+  }
+
   return (
     <CartesianChart
       data={data}
