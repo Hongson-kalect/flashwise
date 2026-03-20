@@ -1,3 +1,4 @@
+import * as Speech from "expo-speech";
 import { WordState } from "../type";
 
 type ActionType =
@@ -5,6 +6,7 @@ type ActionType =
   | "FULLDATA"
   | "WORD"
   | "SENSE_PARTIAL"
+  | "SENSE_TRANSLATE"
   | "IMAGE_PARTIAL"
   | "COMPLETED";
 export const senseDataReducer = (
@@ -57,6 +59,64 @@ export const senseDataReducer = (
         ...state,
         status: "PARTIAL",
         senses: { ...state.senses, ...sense },
+      };
+    }
+
+    case "SENSE_TRANSLATE": {
+      const { data } = action.payload; // data chứa { s_2: { ... }, s_3: { ... } }
+
+      // Clone lại senses hiện tại để đảm bảo tính immutability
+      const updatedSenses = { ...state.senses };
+
+      Object.keys(data).forEach((senseId) => {
+        const translateData = data[senseId];
+        const targetSense = updatedSenses[senseId];
+
+        if (targetSense) {
+          updatedSenses[senseId] = {
+            ...targetSense,
+            // Cập nhật mảng translates gốc
+            translates: translateData.translates || targetSense.translates,
+
+            // Cập nhật bản dịch cho Definition
+            definition: {
+              ...targetSense.definition,
+              translate: translateData.definition.value,
+            },
+
+            // Cập nhật bản dịch cho Usage
+            usage: {
+              ...targetSense.usage,
+              translate: translateData.usage.value,
+            },
+
+            // Cập nhật bản dịch cho Examples
+            // Map qua mảng examples cũ và tìm example tương ứng dựa trên originId
+            examples: targetSense.examples.map((ex) => {
+              const translatedEx = translateData.examples.find(
+                (tEx: any) => tEx.originId === ex.id, // ex.id ở state chính là originId ở payload
+              );
+
+              if (translatedEx) {
+                return {
+                  ...ex,
+                  translate: translatedEx.value,
+                };
+              }
+              return ex;
+            }),
+
+            // Lưu lại note hoặc metadata nếu cần
+            note: targetSense.note,
+          };
+        }
+      });
+
+      return {
+        ...state,
+        senses: updatedSenses,
+        // Sau khi update, bạn có thể chạy hàm kiểm tra status ở đây
+        status: "COMPLETED", // Hoặc gọi hàm check logic để set COMPLETED
       };
     }
 
@@ -183,28 +243,17 @@ export const getSenseData = (dispatch: any) => {
             metadata: { ipa: "/ˈteɪbl/" },
             definition: {
               id: "def_2",
-              subId: "s_2",
-              languageCode: "en",
               value:
                 "To present something formally for discussion in a meeting.",
-              translate:
-                "Đưa ra một vấn đề gì đó chính thức để thảo luận trong cuộc họp.",
             },
             usage: {
               id: "usg_2",
-              subId: "s_2",
-              languageCode: "en",
               value: "Used in formal or parliamentary contexts.",
-              translate: "Dùng trong bối cảnh trang trọng hoặc nghị trường.",
             },
-            translates: ["trình lên", "đưa ra thảo luận"],
             examples: [
               {
                 id: "ex_2",
-                subId: "s_2",
-                languageCode: "en",
                 value: "The committee decided to table the report.",
-                translate: "Ủy ban đã quyết định đưa bản báo cáo ra thảo luận.",
               },
             ],
           },
@@ -229,4 +278,105 @@ export const getSenseData = (dispatch: any) => {
   setTimeout(() => {
     dispatch({ type: "COMPLETED" });
   }, 4000);
+};
+
+export const getTranslate = (dispatch: any) => {
+  setTimeout(() => {
+    dispatch({
+      type: "SENSE_TRANSLATE",
+      payload: {
+        data: {
+          s_2: {
+            language_code: "vi",
+            definition: {
+              id: "def_t_2",
+              originId: "def_2",
+              value:
+                "Đưa ra một vấn đề gì đó chính thức để thảo luận trong cuộc họp.",
+            },
+            usage: {
+              id: "usg_t_2",
+              oiriginId: "usg_2",
+              value: "Dùng trong bối cảnh trang trọng hoặc nghị trường.",
+            },
+            translates: ["trình lên", "đưa ra thảo luận"],
+            examples: [
+              {
+                id: "ex_t_2",
+                originId: "ex_2",
+                value: "Ủy ban đã quyết định đưa bản báo cáo ra thảo luận.",
+              },
+            ],
+          },
+          s_1: {
+            language_code: "vi",
+            definition: {
+              id: "def_t_1",
+              originId: "def_1",
+              value:
+                "Đưa ra một vấn đề gì đó chính thức để thảo luận trong cuộc họp.",
+            },
+            usage: {
+              id: "usg_t_1",
+              oiriginId: "usg_1",
+              value: "Dùng trong bối cảnh trang trọng hoặc nghị trường.",
+            },
+            translates: ["trình lên", "đưa ra thảo luận"],
+            examples: [
+              {
+                id: "ex_t_1",
+                originId: "ex_1",
+                value: "Ủy ban đã quyết định đưa bản báo cáo ra thảo luận.",
+              },
+            ],
+          },
+        },
+      },
+    });
+  }, 1000);
+};
+
+/**
+ * Kiểm tra xem dữ liệu WordState đã được dịch đầy đủ sang ngôn ngữ mục tiêu chưa.
+ * @param state - Trạng thái của từ hiện tại
+ */
+export const isTranslationCompleted = (state: WordState): boolean => {
+  const { senses } = state;
+  const senseIds = Object.keys(senses);
+
+  // Nếu không có sense nào, coi như chưa hoàn thành (hoặc tùy logic của bạn)
+  if (senseIds.length === 0) return false;
+
+  return senseIds.every((id) => {
+    const sense = senses[id];
+
+    // 1. Kiểm tra translates (mảng string) - Giả định mảng này chứa các từ tương đương đã dịch
+    // Nếu bạn yêu cầu phải có ít nhất 1 từ dịch
+    const hasTranslates = sense.translates && sense.translates.length > 0;
+    if (!hasTranslates) return false;
+
+    // 2. Kiểm tra Definition
+    const def = sense.definition;
+    const isDefTranslated = def && def.translate?.trim().length > 0;
+    if (!isDefTranslated) return false;
+
+    // 3. Kiểm tra Usage
+    const usage = sense.usage;
+    const isUsageTranslated = usage && usage.translate?.trim().length > 0;
+    if (!isUsageTranslated) return false;
+
+    // 4. Kiểm tra Examples (phải dịch toàn bộ các ví dụ trong mảng)
+    const hasExamples = sense.examples && sense.examples.length > 0;
+    if (!hasExamples) return false;
+
+    const areAllExamplesTranslated = sense.examples.every(
+      (ex) => ex.translate?.trim().length > 0,
+    );
+
+    return areAllExamplesTranslated;
+  });
+};
+
+export const textToSpeech = (text: string, language: string ='en') => {
+  Speech.speak(text,{language});
 };

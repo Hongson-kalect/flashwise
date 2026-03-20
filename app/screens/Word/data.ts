@@ -1286,22 +1286,19 @@ export type WordType = {
   definition: {
     id: string;
     subId: string;
-    languageCode: string;
     value: string;
     translate: string;
   };
   usage: {
     id: string;
     subId: string;
-    languageCode: string;
     value: string;
     translate: string;
   };
-  image?:string
+  image?: string;
   examples: {
     id: string;
     subId: string;
-    languageCode: string;
     value: string;
     translate: string;
   }[];

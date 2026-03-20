@@ -43,23 +43,25 @@ const AppRecording = () => {
     return () => stopInterval();
   }, [onRecording]);
 
-  const endRecord = () => {
-    setOnRecording(null);
-    setRecordTime(0);
-    stopInterval();
-  };
 
   const handleFinishRecording = async () => {
     await stopRecording();
-    endRecord();
+    setOnRecording(null);
   };
 
   const handleDismiss = () => {
     stopRecording(false);
-    endRecord();
+    setOnRecording(null);
   };
 
   if (!onRecording) return null;
+
+  useEffect(() => {
+    if (onRecording === null) {
+      setRecordTime(0);
+    stopInterval();
+    };
+  }, [onRecording]);
   return (
     <Animated.View
       entering={FadeIn}

@@ -179,6 +179,30 @@ export const initDatabase = async (db: SQLite.SQLiteDatabase) => {
         );
         CREATE INDEX IF NOT EXISTS idx_pending_status ON server_pendings (status);
         CREATE INDEX IF NOT EXISTS idx_pending_target ON server_pendings (target_id);
+
+        CREATE TABLE SyncQueue (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          action_type TEXT, -- 'INSERT_WORD', 'UPDATE_PROGRESS', 'DELETE_CARD'
+          table_name TEXT,  -- Tên bảng bị tác động
+          payload TEXT,     -- Toàn bộ dữ liệu dưới dạng JSON
+          timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+          status TEXT DEFAULT 'PENDING' -- PENDING, SYNCING, ERROR
+        );
+        CREATE TABLE AppSettings (
+            key TEXT PRIMARY KEY,
+            value TEXT, -- Lưu string, số, hoặc JSON string
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Khởi tạo các giá trị mặc định (Ví dụ)
+        INSERT INTO AppSettings (key, value) VALUES ('last_sync_timestamp', '1970-01-01T00:00:00Z');
+        INSERT INTO AppSettings (key, value) VALUES ('app_version', '1.0.0');
+        INSERT INTO AppSettings (key, value) VALUES ('theme', 'dark');
+        -- Lưu phiên bản nội dung hiện tại của máy
+        INSERT INTO AppSettings (key, value) VALUES ('content_version', '20260318_v1');
+
+        -- Lưu trạng thái gói cước (Dù có thể bị sửa nhưng dùng để hiển thị UI nhanh)
+        INSERT INTO AppSettings (key, value) VALUES ('user_tier', 'free');
       `);
   }
 

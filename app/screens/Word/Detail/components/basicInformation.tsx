@@ -1,4 +1,5 @@
 import AppAddIcon from "@/components/AppAddIcon";
+import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
@@ -12,19 +13,28 @@ import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { AudioType } from "@/stores/recordingStore";
+import { startRecording } from "@/utils/audioRecord";
 import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { useMemo, useState } from "react";
 import {
   Image,
   LayoutChangeEvent,
+  ScrollView,
+  Text,
   TouchableOpacity,
   useWindowDimensions,
-  View,
+  View
 } from "react-native";
 import { Divider } from "react-native-paper";
 import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
+// import {
+//   ExpoSpeechRecognitionModule,
+//   useSpeechRecognitionEvent,
+// } from "expo-speech-recognition";
+// import { initWhisper } from "whisper.rn";
 import { WordType } from "../../data";
+import { textToSpeech } from "../utils";
 import WordDefinitions from "./definitions";
 import SenseNote from "./senseNote";
 import SenseUsage from "./senseUsage";
@@ -92,18 +102,125 @@ const BasicInformation = ({
     });
   };
 
+  const [audio, setAudio] = useState<AudioType | null>(null);
+
+  const handleStartRecording = () => {
+    startRecording(handleStopRecording);
+  };
+
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [searchText, setSearchText] = useState("");
+
+  const handleStopRecording = async (result: AudioType | null) => {
+    if (!result) return;
+
+    // Kiểm tra thời lượng nếu cần
+    if (result.duration > 10000) {
+      // Ví dụ 10s cho thoải mái
+      return alert("Ghi âm quá dài, vui lòng nói ngắn gọn.");
+    }
+
+    try {
+      setIsProcessing(true); // Hiển thị loading trên UI
+
+      // 1. Khởi tạo Whisper Context (Nên làm 1 lần ở useEffect hoặc Global)
+      // Giả sử bạn đã có file model trong máy
+      // const whisperContext = await initWhisper({
+      //   filePath: "path/to/ggml-tiny.en.bin",
+      // });
+
+      // 2. Transcribe file từ URI
+      // const { promise } = await whisperContext.transcribe(result.uri, {
+      //   language: "en", // Ngôn ngữ mục tiêu
+      //   maxLen: 1, // Tối ưu cho việc nhận diện từ đơn/câu ngắn
+      // });
+
+      // const { text } = await promise;
+
+      // console.log("📝 Kết quả Whisper:", text);
+
+      // // 3. Đưa text vào ô search hoặc xử lý tiếp theo logic của Flashwise
+      // setSearchText(text.trim());
+    } catch (error) {
+      console.error("Whisper Error:", error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const [recognizing, setRecognizing] = useState(false);
+  const [transcript, setTranscript] = useState("");
+
+  // useSpeechRecognitionEvent("start", () => setRecognizing(true));
+  // useSpeechRecognitionEvent("end", () => setRecognizing(false));
+  // useSpeechRecognitionEvent("result", (event) => {
+  //   setTranscript(event.results[0]?.transcript);
+  // });
+  // useSpeechRecognitionEvent("error", (event) => {
+  //   console.log("error code:", event.error, "error message:", event.message);
+  // });
+
+  // const handleStart = async () => {
+  //   const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+  //   if (!result.granted) {
+  //     console.warn("Permissions not granted", result);
+  //     return;
+  //   }
+  //   // Start speech recognition
+  //   ExpoSpeechRecognitionModule.start({
+  //     lang: "en-US",
+  //     interimResults: true,
+  //     continuous: false,
+  //   });
+  // };
+
   return (
     <View>
       <View className="flex-row items-center gap-2">
         <View className="flex-row items-center gap-1 flex-1">
-          <View className="flex-row items-center justify-center gap-2">
-            <PhatAm
-              size="small"
-              audio={selectedAudio}
-              sound={sound}
-              disabled={!selectedAudio?.uri}
+          {/* {!recognizing ? (
+            <Button title="Start" onPress={handleStart} />
+          ) : (
+            <Button
+              title="Stop"
+              onPress={() => ExpoSpeechRecognitionModule.stop()}
             />
+          )}  */}
+
+          <ScrollView>
+            <Text>{transcript}</Text>
+          </ScrollView>
+          <View className="flex-row items-center justify-center gap-2">
+            {!selectedAudio?.uri ? (
+              <TouchableOpacity
+                onPress={() => textToSpeech(word)}
+                style={{
+                  backgroundColor: theme.secondary,
+                  width: 40,
+                  height: 40,
+                }}
+                className=" border-gray-400 rounded-lg h-16 w-16 items-center justify-center"
+              >
+                <AppIcon
+                  name={"volume-2"}
+                  branch="feather"
+                  color="white"
+                  size={32}
+                />
+              </TouchableOpacity>
+            ) : (
+              <PhatAm
+                size="small"
+                audio={selectedAudio}
+                sound={sound}
+                disabled={!selectedAudio?.uri}
+              />
+            )}
           </View>
+
+          <AppButton title="Test STT" onPress={handleStartRecording} />
+
+          <AppText>{searchText}</AppText>
 
           <TouchableOpacity
             onPress={() =>
@@ -258,7 +375,7 @@ const MoreDefinitions = ({ definitions }: MoreDefinitionsProps) => {
             examples={[]}
             word=""
             key={index}
-            definition={{ ...item, translate: "", languageCode: "", subId: "" }}
+            definition={{ ...item, translate: "", subId: "" }}
             languageMode={1}
           />
           {index !== definitions.length - 1 && (

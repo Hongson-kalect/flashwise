@@ -21,7 +21,13 @@ import WordAdvanceInformation from "./components/advanceInfomation";
 import BasicInformation from "./components/basicInformation";
 import WordCollocations from "./components/collocations";
 import WordDetailHeader from "./components/header";
-import { getSenseData, mapSenses, senseDataReducer } from "./utils";
+import {
+  getSenseData,
+  getTranslate,
+  isTranslationCompleted,
+  mapSenses,
+  senseDataReducer,
+} from "./utils";
 
 // const DATA: WordType[] = testData;
 
@@ -48,6 +54,14 @@ const WordDetail = () => {
 
   const toggleLanguageMode = () =>
     setLanguageMode((prev) => (prev === 1 ? 2 : 1));
+
+  const isFullTranslate = useMemo(() => {
+    if (sensesObj.status === "COMPLETED") {
+      return isTranslationCompleted(sensesObj);
+    }
+
+    return null;
+  }, [sensesObj.status]);
 
   useEffect(() => {
     // Connect socket bằng md5 trước khi gọi api
@@ -115,6 +129,9 @@ const WordDetail = () => {
         dispatch({
           type: "INITIAL",
           payload: {
+            // data: {
+            //   word: { id: "w_table", value: "table" },
+            // },
             data: response.data,
           },
         });
@@ -127,9 +144,17 @@ const WordDetail = () => {
       // 2.2.2 Mỗi khi có update (sense data, sense image) đều nhận 1 socket path. và update sense state ngay lập tức
       // 2.2.3 sau khi nhận patch cuối cùng với status completed thì tắt processing status -> 3
       // 2.2.4 save data
+      // 2.2.5 ngắt socket và tạo socket mới để gọi hàm translate cho word hiện tại.
+      // 2.2.6 Tiếp tục nhận data và save to database -> 3
       // 3. close socket connect
     }
   }, []);
+
+  useEffect(() => {
+    if (isFullTranslate === false) {
+      getTranslate(dispatch);
+    }
+  }, [isFullTranslate]);
 
   return (
     <Tabs.Container

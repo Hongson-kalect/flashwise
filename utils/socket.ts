@@ -46,89 +46,84 @@ class SocketManager {
     this.ws.onopen = () => {
       console.log("✅ Socket Connected");
       this.reconnectAttempts = 0;
-      // Gửi toàn bộ tin nhắn đang đợi trong hàng đợi
       while (this.sendQueue.length > 0) {
-        const data = this.sendQueue.shift();
-        this.send(data);
+        this.send(this.sendQueue.shift());
       }
     };
 
     this.ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data);
-        const key = data.word || data.type; // Lấy "nhãn" để phân phối (word hoặc type)
+        const res = JSON.parse(event.data);
+        // Lấy room_id để biết tin nhắn này thuộc về từ vựng nào
+        // Server cần trả về room_id trong mọi gói tin stream
+        const roomId = res.room_id || res.word_room; 
         
-        if (this.subscribers.has(key)) {
-          this.subscribers.get(key)?.forEach(callback => callback(data));
+        if (roomId && this.subscribers.has(roomId)) {
+          this.subscribers.get(roomId)?.forEach(cb => cb(res));
+          
+          // NẾU SERVER RA LỆNH UNSUBSCRIBE (Tự động cleanup ở phía Client)
+          if (res.unsubscribe_room) {
+            console.log(`🧹 Tự động cleanup group: ${res.unsubscribe_room}`);
+            this.subscribers.delete(res.unsubscribe_room);
+          }
         }
       } catch (e) {
         console.error("❌ Lỗi parse JSON socket:", e);
       }
     };
 
-    this.ws.onclose = (e) => {
+    this.ws.onclose = () => {
       console.log("🔌 Socket Closed");
-      // Nếu không phải chủ động tắt, hãy thử kết nối lại
       if (!this.isManualClose && this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++;
-        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000); // Exponential backoff
-        console.log(`🔄 Reconnecting in ${delay/1000}s... (Lần ${this.reconnectAttempts})`);
+        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
         setTimeout(() => this.connect(), delay);
       }
     };
 
-    this.ws.onerror = (err) => {
-      console.error("❌ Socket Error:", err);
-      this.ws?.close();
-    };
+    this.ws.onerror = (err) => this.ws?.close();
   }
 
-  // 2. Subscribe (Theo từ vựng hoặc Type)
-  subscribe(key: string, callback: SocketCallback) {
-    if (!this.subscribers.has(key)) {
-      this.subscribers.set(key, new Set());
+  // Sửa logic Subscribe: Dùng roomId làm key chính
+  subscribe(roomId: string, callback: SocketCallback) {
+    if (!this.subscribers.has(roomId)) {
+      this.subscribers.set(roomId, new Set());
     }
-    this.subscribers.get(key)?.add(callback);
+    this.subscribers.get(roomId)?.add(callback);
 
-    // Gửi lệnh subscribe lên server (nếu cần server join group)
-    this.send({ action: "subscribe", word: key });
+    // Đảm bảo socket đã mở mới gửi lệnh sub lên server
+    this.send({ action: "subscribe", word_room: roomId });
 
-    // Trả về hàm Unsubscribe để dùng trong cleanup của useEffect
-    return () => this.unsubscribe(key, callback);
+    // Trả về hàm hủy sub
+    return () => this.unsubscribe(roomId, callback);
   }
 
-  // 3. Unsubscribe
-  unsubscribe(key: string, callback: SocketCallback) {
-    const keySubscribers = this.subscribers.get(key);
+  unsubscribe(roomId: string, callback: SocketCallback) {
+    const keySubscribers = this.subscribers.get(roomId);
     if (keySubscribers) {
       keySubscribers.delete(callback);
       if (keySubscribers.size === 0) {
-        this.subscribers.delete(key);
-        // Có thể gửi lệnh unsubscribe lên server để rời group (tùy logic backend)
-        this.send({ action: "unsubscribe", word: key });
+        this.subscribers.delete(roomId);
+        this.send({ action: "unsubscribe", word_room: roomId });
       }
     }
   }
 
-  // 4. Gửi dữ liệu (Có hàng đợi)
   send(data: any) {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(data));
-    } else if (this.ws?.readyState === WebSocket.CONNECTING) {
-      console.log("⏳ Socket is connecting, queuing message...");
-      this.sendQueue.push(data);
     } else {
-      console.warn("⚠️ Socket chưa được kết nối. Vui lòng gọi .connect() trước.");
+      console.log("⏳ Queueing message...");
+      this.sendQueue.push(data);
+      if (this.ws?.readyState !== WebSocket.CONNECTING) this.connect();
     }
   }
 
-  // 5. Ngắt kết nối chủ động
   disconnect() {
     this.isManualClose = true;
     this.ws?.close();
     this.ws = null;
     this.subscribers.clear();
-    this.sendQueue = [];
   }
 }
 
