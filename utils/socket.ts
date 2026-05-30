@@ -127,4 +127,24 @@ class SocketManager {
   }
 }
 
-export const wordSocket = new SocketManager("ws://192.168.1.10:8000/ws/word/");
+export const socketRoom=(word:string, lang:string)=>{
+  if (!word) {
+    return "";
+  }
+
+  // 1. Đưa về lowercase
+  let cleanedWord = word.toLowerCase();
+
+  // 2. Loại bỏ các ký tự đặc biệt
+  // Giữ lại: chữ cái (Unicode), số (\d), khoảng trắng (\s) và các ký tự: ' - , .
+  // Cờ 'g' để thay thế toàn bộ, cờ 'u' để kích hoạt chế độ Unicode \p{L}
+  cleanedWord = cleanedWord.replace(/[^\p{L}\d\s'\-,\.]/gu, "");
+
+  // 3. Xoá khoảng trắng thừa bên trong và 2 bên
+  // split(/\s+/) băm chuỗi theo một hoặc nhiều khoảng trắng, lọc bỏ mảng rỗng, sau đó join lại
+  cleanedWord = cleanedWord.trim().split(/\s+/).join(" ");
+
+  return `${cleanedWord}:${lang}`;
+}
+
+export const wordSocket = new SocketManager("ws://localhost:8000/ws/word/");

@@ -215,7 +215,7 @@ export const initDatabase = async (db: SQLite.SQLiteDatabase) => {
   //   return db;
 };
 
-const clearDatabase = async (db: SQLite.SQLiteDatabase) => {
+export const clearDatabase = async (db: SQLite.SQLiteDatabase) => {
   // 1. Tắt khóa ngoại tạm thời để xóa cho dễ
   await db.execAsync("PRAGMA foreign_keys = OFF;");
 

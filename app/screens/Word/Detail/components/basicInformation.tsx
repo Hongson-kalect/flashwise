@@ -1,5 +1,4 @@
 import AppAddIcon from "@/components/AppAddIcon";
-import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
@@ -24,7 +23,7 @@ import {
   Text,
   TouchableOpacity,
   useWindowDimensions,
-  View
+  View,
 } from "react-native";
 import { Divider } from "react-native-paper";
 import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
@@ -190,7 +189,7 @@ const BasicInformation = ({
           <ScrollView>
             <Text>{transcript}</Text>
           </ScrollView>
-          <View className="flex-row items-center justify-center gap-2">
+          <View className="flex-row items-center w-full justify-start gap-2">
             {!selectedAudio?.uri ? (
               <TouchableOpacity
                 onPress={() => textToSpeech(word)}
@@ -218,7 +217,7 @@ const BasicInformation = ({
             )}
           </View>
 
-          <AppButton title="Test STT" onPress={handleStartRecording} />
+          {/* <AppButton title="Test STT" onPress={handleStartRecording} /> */}
 
           <AppText>{searchText}</AppText>
 

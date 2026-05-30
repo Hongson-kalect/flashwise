@@ -28,6 +28,7 @@ import {
   mapSenses,
   senseDataReducer,
 } from "./utils";
+import { wordSocket } from "@/utils/socket";
 
 // const DATA: WordType[] = testData;
 
@@ -62,6 +63,12 @@ const WordDetail = () => {
 
     return null;
   }, [sensesObj.status]);
+
+  const fetchWord=(word:string)=>{
+    wordSocket.subscribe();
+
+
+  }
 
   useEffect(() => {
     // Connect socket bằng md5 trước khi gọi api
