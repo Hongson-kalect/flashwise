@@ -1,7 +1,5 @@
 
 export const generateString =/*sql*/ `
-/*sql*/
--- 1. BẢNG LƯU TRỮ ẢNH THÔ (LOOKUP TABLE)
 CREATE TABLE IF NOT EXISTS image_library (
     id TEXT PRIMARY KEY,                            -- UUIDv7
     url TEXT NOT NULL,                              

@@ -34,6 +34,17 @@ export interface UserSetting {
 
 // type UserSettingEnum = "color"|"font"|""
 export interface UserSettingObj {
+  [key: string]:any;
+}
+
+export interface SystemConfig {
+  key: string;
+  value: string; // JSON string
+  version: number;
+}
+
+// type UserSettingEnum = "color"|"font"|""
+export interface SystemConfigObj {
   [key: string]:string;
 }
 
@@ -42,7 +53,7 @@ export interface Theme {
   name: string;
   color_palette: string; // JSON string
   font: string | null;
-  is_default: number;
+  priority: number;
   is_deleted: number;
   created_at: string;
   updated_at: string;

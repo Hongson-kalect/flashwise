@@ -6,14 +6,16 @@ import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { Alert, View } from "react-native";
 import { WordType } from "../../data";
+import { useAppStore } from "@/stores/appStore";
+import { useMemo } from "react";
 
 type Props = {
   bold: number[][] | string;
   example: WordType["examples"][0];
-  languageMode: 1 | 2;
 };
-const WordExample = ({ example, languageMode, bold }: Props) => {
-  const { theme } = useTheme();
+const WordExample = ({ example, bold }: Props) => {
+  const { themeObj,settings,dbService } = useAppStore();
+  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
 
   const { setGlobalModal } = useModalStore();
 
@@ -192,7 +194,7 @@ const WordExample = ({ example, languageMode, bold }: Props) => {
           />
         </AppText>
       </AppPressable>
-      {languageMode === 2 && example.translate ? (
+      {settings?.show_translation && example.translate ? (
         <View>
           <AppPressable
             onLongPress={showExampleTranslateOption}

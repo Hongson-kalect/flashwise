@@ -1,4 +1,5 @@
 import { UserProfile } from "@/interfaces/db.type";
+import { uuidv7 } from "@/utils/uuidv7";
 import { SQLiteDatabase } from "expo-sqlite";
 
 export const generateString = /*sql*/ `
@@ -66,19 +67,23 @@ CREATE TABLE IF NOT EXISTS user_profile (
 );
 `;
 
-export const getUserProfile= async (db: SQLiteDatabase): Promise<UserProfile | null> => {
-      // Vì local thường chỉ có 1 user active, ta lấy bản ghi mới nhất hoặc duy nhất
-      const row = await db.getFirstAsync<UserProfile>(
-        `SELECT * FROM user_profile ORDER BY updated_at DESC LIMIT 1;`
-      );
-      if (!row) return null;
+export const getUserProfile = async (
+  db: SQLiteDatabase,
+): Promise<UserProfile | null> => {
+  // Vì local thường chỉ có 1 user active, ta lấy bản ghi mới nhất hoặc duy nhất
+  const row = await db.getFirstAsync<UserProfile>(
+    `SELECT * FROM user_profile ORDER BY updated_at DESC LIMIT 1;`,
+  );
+  if (!row) return null;
 
-      return {
-        ...row,
-        learning_languages: JSON.parse(row.learning_languages || '[]'),
-      };
-    }
+  return {
+    ...row,
+    // learning_languages: JSON.parse(row.learning_languages || '[]'),
+    // learning_languages: JSON.parse(row.learning_languages || '[]'),
+  };
+};
 
+const id = uuidv7();
 export const seedData = /*sql*/ `
 INSERT OR IGNORE INTO user_profile (
     id,
@@ -93,8 +98,9 @@ INSERT OR IGNORE INTO user_profile (
     total_sessions,
     total_app_time
 )
+
 VALUES (
-    '018f0000-0000-7000-8000-000000000001',
+    '${id}',
     'vi',
     'en',
     'guest',

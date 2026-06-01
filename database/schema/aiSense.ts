@@ -1,6 +1,4 @@
-
 export const generateString =/*sql*/ `
-/*sql*/
 CREATE TABLE IF NOT EXISTS ai_sense (
     id TEXT PRIMARY KEY,                            -- UUIDv7 thống nhất hệ thống
     word_id TEXT NOT NULL,                          -- Khóa ngoại logic trỏ sang ai_word

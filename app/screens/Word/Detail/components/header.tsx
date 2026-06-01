@@ -15,26 +15,24 @@ import Animated, {
 import { extractObjectByPath, testAPIStreamData } from "../../data";
 import CreateSenseSheet, { SenseType } from "./createSenseSheet";
 import ToggleWordDisplayMode from "./toggleWordDisplayMode";
+import { useAppStore } from "@/stores/appStore";
 
 type Props = {
   mode?: "create" | "update" | "view";
   word: string;
   isLoading: boolean;
   setMode: Dispatch<SetStateAction<"update" | "view">>;
-  languageMode: 1 | 2;
-  setLanguageMode: Dispatch<SetStateAction<1 | 2>>;
 };
 const WordDetailHeader = ({
   word,
   mode,
   isLoading,
   setMode,
-  languageMode,
-  setLanguageMode,
 }: Props) => {
   const { theme } = useTheme();
   const { present } = useBottomSheet();
   const { setGlobalModal } = useModalStore();
+  const {settings,dbService} = useAppStore()
 
   // just use temp. buttom sheet will change this value while editing
   const [tempSenseValue, setTempSenseValue] = useState<SenseType>({
@@ -55,8 +53,6 @@ const WordDetailHeader = ({
           handleAddSense={() => {}}
           senseValue={tempSenseValue}
           setSenseValue={setTempSenseValue}
-          languageMode={languageMode}
-          setLanguageMode={setLanguageMode}
         />
       ),
     });
@@ -72,8 +68,6 @@ const WordDetailHeader = ({
           // Lấy full sense data , lên sheet thì clone lại
           senseValue={tempSenseValue}
           setSenseValue={setTempSenseValue}
-          languageMode={languageMode}
-          setLanguageMode={setLanguageMode}
         />
       ),
     });
@@ -222,10 +216,7 @@ const WordDetailHeader = ({
                 <View
                 // exiting={SlideOutDown}
                 >
-                  <ToggleWordDisplayMode
-                    languageMode={languageMode}
-                    setLanguageMode={setLanguageMode}
-                  />
+                  <ToggleWordDisplayMode/>
                 </View>
               ) : (
                 <View

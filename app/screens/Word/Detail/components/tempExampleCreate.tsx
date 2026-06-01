@@ -3,17 +3,20 @@ import AppIcon from "@/components/AppIcon";
 import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { SenseExample } from "./createSenseSheet";
+import { useAppStore } from "@/stores/appStore";
 
 type Props = {
-  languageMode: 1 | 2;
   onAddExample: (example: SenseExample) => void;
 };
 
-const TempExampleCreate = ({ languageMode, onAddExample }: Props) => {
-  const { theme } = useTheme();
+const TempExampleCreate = ({onAddExample }: Props) => {
+  const { themeObj,settings,dbService } = useAppStore();
+  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
+  
+  const toggleLanguageMode = () => dbService?.setShowTranslation(!settings?.show_translation);
   const [example, setExample] = useState<SenseExample>({
     id: new Date().getTime().toString(),
     value: "",
@@ -45,7 +48,7 @@ const TempExampleCreate = ({ languageMode, onAddExample }: Props) => {
           />
         </View>
       </View>
-      {languageMode === 2 && (
+      {settings?.show_translation && (
         <View className="mt-3">
           <AppText color="title" font="MulishBold" size={"xs"}>
             Translate

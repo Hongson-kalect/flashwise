@@ -1,16 +1,15 @@
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
-import { Dispatch, SetStateAction } from "react";
+import { useAppStore } from "@/stores/appStore";
+import { Dispatch, SetStateAction, useMemo } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 
-type Props = {
-  languageMode: 1 | 2;
-  setLanguageMode: Dispatch<SetStateAction<1 | 2>>;
-};
-const ToggleWordDisplayMode = ({ languageMode, setLanguageMode }: Props) => {
-  const { theme } = useTheme();
-  const toggleLanguageMode = () => setLanguageMode(languageMode === 1 ? 2 : 1);
+const ToggleWordDisplayMode = () => {
+  const { themeObj,settings,dbService } = useAppStore();
+  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
+  
+  const toggleLanguageMode = () => dbService?.setShowTranslation(!settings?.show_translation);
 
   return (
     <Pressable onPress={toggleLanguageMode}>
@@ -26,7 +25,7 @@ const ToggleWordDisplayMode = ({ languageMode, setLanguageMode }: Props) => {
             height: 36,
             width: 36,
           },
-          languageMode === 2
+          settings?.show_translation
             ? styles.frontFlagPosition
             : styles.backFlagPosition,
         ]}
@@ -45,7 +44,7 @@ const ToggleWordDisplayMode = ({ languageMode, setLanguageMode }: Props) => {
             height: 36,
             width: 36,
           },
-          languageMode !== 2
+          settings?.show_translation
             ? styles.frontFlagPosition
             : styles.backFlagPosition,
         ]}

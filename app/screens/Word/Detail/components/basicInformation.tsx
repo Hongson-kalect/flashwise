@@ -37,6 +37,7 @@ import { textToSpeech } from "../utils";
 import WordDefinitions from "./definitions";
 import SenseNote from "./senseNote";
 import SenseUsage from "./senseUsage";
+import { useAppStore } from "@/stores/appStore";
 
 interface Props {
   word: string;
@@ -48,7 +49,6 @@ interface Props {
   examples: WordType["examples"];
   metadata: WordType["metadata"];
   mode?: "create" | "update" | "view";
-  languageMode: 1 | 2;
   labelWidth: number;
   onLabelLayout: (event: LayoutChangeEvent) => void;
   openInputModal: (props: CreateWordInputModalProps) => void;
@@ -78,7 +78,10 @@ const BasicInformation = ({
   >(null);
 
   const sound = useState<Audio.Sound | null>(null);
-  const { theme } = useTheme();
+  const { themeObj,settings,dbService } = useAppStore();
+  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
+  
+  const toggleLanguageMode = () => dbService?.setShowTranslation(!settings?.show_translation);
   const ipas = useMemo(() => metadata?.ipas, [metadata?.ipas]);
 
   const { width } = useWindowDimensions();
@@ -233,7 +236,7 @@ const BasicInformation = ({
         </View>
       </View>
       <View className="my-4 items-center justify-center">
-        {props.languageMode === 2 && (
+        {settings?.show_translation && (
           <Animated.View
             entering={FadeInUp}
             // exiting={FadeOutUp}
@@ -346,13 +349,12 @@ const BasicInformation = ({
               word={word}
               definition={definition}
               examples={examples}
-              languageMode={props.languageMode}
             />
           </View>
         </View>
       </Animated.View>
 
-      <SenseUsage word={word} languageMode={props.languageMode} usage={usage} />
+      <SenseUsage word={word} usage={usage} />
 
       <SenseNote word={word} note={note} />
     </View>
@@ -375,7 +377,6 @@ const MoreDefinitions = ({ definitions }: MoreDefinitionsProps) => {
             word=""
             key={index}
             definition={{ ...item, translate: "", subId: "" }}
-            languageMode={1}
           />
           {index !== definitions.length - 1 && (
             <Divider style={{ marginVertical: 8 }} />

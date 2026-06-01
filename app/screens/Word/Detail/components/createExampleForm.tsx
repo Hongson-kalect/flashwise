@@ -2,9 +2,10 @@ import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { LineInput } from "../../Create/components/lineInput";
+import { useAppStore } from "@/stores/appStore";
 
 type Example = {
   value: string;
@@ -13,7 +14,6 @@ type Example = {
 
 type Props = {
   onAddExample: (example: Example) => void;
-  languageMode: 1 | 2;
 };
 
 const CreateExampleForm = (props: Props) => {
@@ -23,7 +23,8 @@ const CreateExampleForm = (props: Props) => {
   });
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
-  const { theme } = useTheme();
+  const { themeObj,settings,dbService } = useAppStore();
+  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
 
   useEffect(() => {
     setTimeout(() => textFocus(), 300);
@@ -57,7 +58,7 @@ const CreateExampleForm = (props: Props) => {
         setValue={(value) => setExample({ ...example, value })}
       />
 
-      {props.languageMode === 2 && (
+      {settings?.show_translation && (
         <View className="mt-3">
           <LineInput
             key={"edit-translate"}

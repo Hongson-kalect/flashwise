@@ -3,7 +3,7 @@ import AppText from "@/components/AppText";
 import { AudioType as AppAudioType } from "@/stores/recordingStore";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Alert, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { LineInput } from "../../Create/components/lineInput";
@@ -11,6 +11,7 @@ import CreateSenseBasicInfo from "./createSenseBasic";
 import CreateSenseExample from "./createSenseExample";
 import CreateSenseHeader from "./createSenseHeader";
 import CreateSenseMoreInfo from "./createSenseMoreInfo";
+import { useAppStore } from "@/stores/appStore";
 
 export type SenseType = {
   word?: string;
@@ -40,15 +41,16 @@ type AddSenseSheetProps = {
   senseValue: SenseType;
   setSenseValue: React.Dispatch<React.SetStateAction<SenseType>>;
   handleAddSense: () => void;
-  setLanguageMode: React.Dispatch<React.SetStateAction<1 | 2>>;
-  languageMode: 1 | 2;
   word: string;
 };
 
 const CreateSenseSheet = (props: AddSenseSheetProps) => {
   // Model sheet not sync with props, so we need to sync it manually
   const [senseValue, setSenseValue] = useState<SenseType>(props.senseValue);
-  const [languageMode, setLanguageMode] = useState<1 | 2>(props.languageMode);
+  const { themeObj,settings,dbService } = useAppStore();
+  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
+  
+  const toggleLanguageMode = () => dbService?.setShowTranslation(!settings?.show_translation);
 
   // Sync back to main screen. if close sheet, it still remain if reopen
   useEffect(() => props.setSenseValue(senseValue), [senseValue]);
@@ -56,13 +58,10 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
   return (
     <View className="p-4">
       <CreateSenseHeader
-        languageMode={languageMode}
-        setLanguageMode={setLanguageMode}
         setSenseValue={setSenseValue}
       />
 
       <CreateSenseBasicInfo
-        languageMode={languageMode}
         senseValue={senseValue}
         setSenseValue={setSenseValue}
       />
@@ -71,7 +70,6 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
         <View className="bg-gray-100 -mx-3 pl-2">
           <CreateSenseExample
             word={props.word}
-            languageMode={languageMode}
             senseValue={senseValue}
             setSenseValue={setSenseValue}
           />

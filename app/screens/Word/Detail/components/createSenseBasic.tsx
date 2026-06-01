@@ -4,23 +4,23 @@ import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ToastAndroid, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SenseType } from "./createSenseSheet";
+import { useAppStore } from "@/stores/appStore";
 
 type Props = {
   senseValue: SenseType;
   setSenseValue: React.Dispatch<React.SetStateAction<SenseType>>;
-  languageMode: 1 | 2;
 };
 const CreateSenseBasicInfo = ({
-  languageMode,
   senseValue,
   setSenseValue,
 }: Props) => {
   const [targetLang, motherLang] = ["EN", "VI"];
-  const { theme } = useTheme();
+  const { themeObj,settings,dbService } = useAppStore();
+  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
 
   const [translation, setTranslation] = useState("");
 
@@ -65,7 +65,7 @@ const CreateSenseBasicInfo = ({
       <View>
         <View className="mt-6 mb-1 flex-row items-center justify-between">
           <AppText color="title" font="MulishBold" size={"sm"}>
-            {languageMode === 2 ? (
+            {settings?.show_translation ? (
               <AppText color="title" font="MulishBold" size={"sm"}>
                 {targetLang + " "}
               </AppText>
@@ -108,7 +108,7 @@ const CreateSenseBasicInfo = ({
         </View>
       </View>
 
-      {languageMode === 2 && (
+      {settings?.show_translation && (
         <View>
           <View>
             <View className="mt-6 mb-1 flex-row items-center justify-between">

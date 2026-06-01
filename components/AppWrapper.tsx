@@ -1,6 +1,9 @@
 import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import { isColorDark } from "@/utils/color";
-import { useMemo } from "react";
+import { wordSocket } from "@/utils/socket";
+import { useSQLiteContext } from "expo-sqlite";
+import { useEffect, useMemo } from "react";
 import { Platform, StatusBar, View } from "react-native";
 
 export const AppWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -9,6 +12,17 @@ export const AppWrapper = ({ children }: { children: React.ReactNode }) => {
     if (isColorDark(theme.background)) return "light-content";
     return "dark-content";
   }, [theme]);
+
+  const db = useSQLiteContext();
+  const { bootstrapAppData, isLoadingData, userProfile } = useAppStore();
+
+  useEffect(() => {
+    if (db) {
+      bootstrapAppData(db);
+    }
+
+    wordSocket.connect()
+  }, [db]);
 
   return (
     <View style={{ flex: 1, backgroundColor: "transparent" }}>

@@ -17,13 +17,10 @@ type Props = {
   word: string;
   senseValue: SenseType;
   setSenseValue: Dispatch<SetStateAction<SenseType>>;
-  languageMode: 1 | 2;
 };
 const CreateSenseExample = ({
-  word,
   senseValue,
   setSenseValue,
-  languageMode,
 }: Props) => {
   const { setGlobalModal } = useModalStore();
   const showEditExampleModel = (example: SenseExample) => {
@@ -34,7 +31,6 @@ const CreateSenseExample = ({
       render: (
         <EditExampleForm
           example={example}
-          languageMode={2}
           onChange={(val) => {
             editExample(val);
             setGlobalModal(null);
@@ -179,7 +175,6 @@ const CreateSenseExample = ({
         <Divider />
         <Animated.View layout={LinearTransition}>
           <TempExampleCreate
-            languageMode={languageMode}
             onAddExample={(example: SenseExample) => addExample(example)}
           />
         </Animated.View>

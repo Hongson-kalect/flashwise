@@ -1,4 +1,3 @@
-
 export const generateString = /*sql*/ `
 CREATE TABLE IF NOT EXISTS collection (
     id TEXT PRIMARY KEY,                            -- UUIDv7 sinh từ Client/Server để đồng bộ nhất quán
@@ -24,7 +23,6 @@ CREATE TABLE IF NOT EXISTS collection (
     
     -- Trạng thái đồng bộ và bản quyền
     version INTEGER DEFAULT 0,                      -- Số tăng dần để check xem cần kéo update từ server về không
-    is_uploaded INTEGER DEFAULT 0,                  -- 0: Bộ từ tự tạo chưa sync lên server | 1: Đã sync an toàn
     is_official INTEGER DEFAULT 0,                  -- 0: Bộ từ cá nhân user tự tạo | 1: Bộ từ hệ thống khóa sẵn
     is_active INTEGER DEFAULT 1,                    -- 0: Bộ từ bị ẩn (User tạm cất đi không học nữa)
     is_frozen INTEGER DEFAULT 0,                    -- 1: Đóng băng không cho sửa đổi cấu trúc dữ liệu

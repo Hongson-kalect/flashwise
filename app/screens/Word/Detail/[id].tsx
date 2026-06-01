@@ -29,11 +29,16 @@ import {
   senseDataReducer,
 } from "./utils";
 import { wordSocket } from "@/utils/socket";
+import { useAppStore } from "@/stores/appStore";
+import { normalizeWord } from "@/utils/normalizeText";
+import { setShowTranslation } from "@/database/schema/userSetting";
+import { createDBService } from "@/database/schema";
 
 // const DATA: WordType[] = testData;
 
 const WordDetail = () => {
   const { theme } = useTheme();
+  const {settings, dbService} = useAppStore()
   const { id, w } = useLocalSearchParams();
   // Prev data: word value + word id [id]?w=...
   const [sensesObj, dispatch] = useReducer(senseDataReducer, initialState);
@@ -46,7 +51,6 @@ const WordDetail = () => {
 
   const [pageMode, setPageMode] = useState<"view" | "update">("view");
   const [tabIndex, setTabIndex] = useState(0);
-  const [languageMode, setLanguageMode] = useState<1 | 2>(1); // hiển thị single lang or 2 lang
   const [currentSense, setCurrentSense] = useState({});
 
   // const data = useMemo(() => basicWordMapping(DATA), [DATA]);
@@ -54,7 +58,7 @@ const WordDetail = () => {
   const [word, setWord] = useState("table"); // Get from previous page [id]?w
 
   const toggleLanguageMode = () =>
-    setLanguageMode((prev) => (prev === 1 ? 2 : 1));
+    dbService?.setShowTranslation(!settings?.show_translation);
 
   const isFullTranslate = useMemo(() => {
     if (sensesObj.status === "COMPLETED") {
@@ -65,9 +69,12 @@ const WordDetail = () => {
   }, [sensesObj.status]);
 
   const fetchWord=(word:string)=>{
-    wordSocket.subscribe();
+    normalizeWord(word)
+    const room_id = `${normalizeWord(word)}:${settings?.learning_languages}`
 
-
+    wordSocket.subscribe(room_id, (data) => {
+        dispatch({type:data.type,payload:data.payload})
+    });
   }
 
   useEffect(() => {
@@ -173,8 +180,6 @@ const WordDetail = () => {
           <WordDetailHeader
             isLoading={sensesObj.isLoading}
             word="Table"
-            languageMode={languageMode}
-            setLanguageMode={setLanguageMode}
             mode={pageMode}
             setMode={setPageMode}
           />
@@ -212,7 +217,6 @@ const WordDetail = () => {
               <Tabs.ScrollView>
                 <SensesInfo
                   word={word}
-                  languageMode={languageMode}
                   data={item.senses}
                   mode={pageMode}
                 />
@@ -258,7 +262,6 @@ const WordDetail = () => {
             <Tabs.ScrollView>
               <WordInfo
                 word={word}
-                languageMode={languageMode}
                 data={item}
                 mode={pageMode}
               />
@@ -274,7 +277,6 @@ type SensesInfoType = {
   word: string;
   data: WordType[];
   mode?: "create" | "update" | "view";
-  languageMode: 1 | 2;
 };
 const SensesInfo = (props: SensesInfoType) => {
   const [senseIndex, setSenseIndex] = useState(0);
@@ -338,7 +340,6 @@ const SensesInfo = (props: SensesInfoType) => {
         word={props.word}
         data={activeSense}
         mode={props.mode}
-        languageMode={props.languageMode}
       />
     </View>
   );
@@ -348,7 +349,6 @@ type WordInfoType = {
   word: string;
   data: WordType;
   mode?: "create" | "update" | "view";
-  languageMode: 1 | 2;
 };
 const WordInfo = (props: WordInfoType) => {
   const { theme } = useTheme();
@@ -412,7 +412,6 @@ const WordInfo = (props: WordInfoType) => {
             note=""
             metadata={props.data.metadata}
             mode={props.mode}
-            languageMode={props.languageMode}
             labelWidth={labelWidth}
             onLabelLayout={onLabelLayout}
             openInputModal={openInputModal}

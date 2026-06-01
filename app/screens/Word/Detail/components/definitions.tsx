@@ -6,16 +6,16 @@ import { AppMenu } from "@/components/modals/components/MenuModal";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Alert, View, ViewStyle } from "react-native";
 import { WordType } from "../../data";
 import CreateExampleForm from "./createExampleForm";
 import WordExample from "./example";
+import { useAppStore } from "@/stores/appStore";
 
 type Props = {
   definition: WordType["definition"];
   examples: WordType["examples"];
-  languageMode: 1 | 2;
   isSimple?: boolean;
   word: string;
   style?: ViewStyle;
@@ -24,14 +24,15 @@ type Props = {
 const WordDefinitions = ({
   definition,
   examples,
-  languageMode,
   isSimple,
   word,
   style,
 }: Props) => {
   const [action, setAction] = useState<null | "edit" | "add">(null);
 
-  const { theme } = useTheme();
+  const { themeObj,settings,dbService } = useAppStore();
+  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
+  
   const { setGlobalModal } = useModalStore();
   const { present } = useBottomSheet();
   const showModal = () => {
@@ -113,7 +114,6 @@ const WordDefinitions = ({
         render: (
           <CreateExampleForm
             onAddExample={(example) => handleAddExample(example)}
-            languageMode={languageMode}
           />
         ),
       });
@@ -148,7 +148,7 @@ const WordDefinitions = ({
         {definition.value[0].toUpperCase()}
         {definition.value.slice(1)}
       </AppText>
-      {languageMode === 2 && (
+      {settings?.show_translation && (
         <View>
           {definition?.translate ? (
             <AppPressable
@@ -216,7 +216,6 @@ const WordDefinitions = ({
               <WordExample
                 bold={word}
                 example={example}
-                languageMode={languageMode}
                 key={"a" + index2}
               />
             );

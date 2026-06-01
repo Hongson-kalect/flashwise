@@ -4,20 +4,24 @@ import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { FontAwesome } from "@expo/vector-icons";
+import { useMemo } from "react";
 import { View } from "react-native";
 import { Divider } from "react-native-paper";
 import Animated, { LinearTransition } from "react-native-reanimated";
 
 type Props = {
   word: string;
-  languageMode: 1 | 2;
   usage?: { id: string; value: string; translate: string } | null;
 };
 
 const SenseUsage = (props: Props) => {
-  const { theme } = useTheme();
+  const { themeObj,settings,dbService } = useAppStore();
+  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
+  
+  const toggleLanguageMode = () => dbService?.setShowTranslation(!settings?.show_translation);
   const { setGlobalModal } = useModalStore();
 
   const showUsageModal = () => {
@@ -185,7 +189,7 @@ const SenseUsage = (props: Props) => {
         </AppPressable>
       )}
 
-      {props.languageMode === 2 && (
+      {settings?.show_translation && (
         <View>
           {props?.usage?.translate ? (
             <AppPressable

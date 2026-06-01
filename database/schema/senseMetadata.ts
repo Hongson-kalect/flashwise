@@ -1,6 +1,5 @@
 
 export const generateString =/*sql*/ `
-/*sql*/
 CREATE TABLE IF NOT EXISTS sense_metadata (
     id TEXT PRIMARY KEY,                            -- UUIDv7 đồng bộ từ Server
     image_link TEXT,

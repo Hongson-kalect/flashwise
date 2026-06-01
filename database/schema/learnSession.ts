@@ -1,5 +1,4 @@
-
-export const generateString =/*sql*/ `
+export const generateString = /*sql*/ `
     CREATE TABLE IF NOT EXISTS learn_session (
         id TEXT PRIMARY KEY,                            -- UUIDv7 sinh ra ngay khi phiên học bắt đầu (Client tự cấp)
         type TEXT NOT NULL DEFAULT 'learn',             -- Loại phiên học: 'learn' (học mới), 'recall' (kiểm tra), 'review' (ôn tập SRS)
@@ -27,10 +26,4 @@ export const generateString =/*sql*/ `
     CREATE INDEX IF NOT EXISTS idx_learn_session_history
     ON learn_session (start_at DESC)
     WHERE is_deleted = 0;
-
-    -- INDEX TỐI ƯU CHO BACKGROUND WORKER SYNC
-    -- Giúp worker quét nhanh các phiên học vừa hoàn thành lúc offline để đẩy lên Cloud cập nhật Streak cho user.
-    CREATE INDEX IF NOT EXISTS idx_learn_session_sync_queue
-    ON learn_session (is_uploaded)
-    WHERE is_deleted = 0 AND is_uploaded = 0;
-`
+`;

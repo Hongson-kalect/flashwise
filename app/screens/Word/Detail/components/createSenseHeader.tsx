@@ -3,22 +3,17 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 import { SenseType } from "./createSenseSheet";
 import ToggleWordDisplayMode from "./toggleWordDisplayMode";
 
 type Props = {
-  languageMode: 1 | 2;
-  setLanguageMode: Dispatch<SetStateAction<1 | 2>>;
   setSenseValue: Dispatch<SetStateAction<SenseType>>;
 };
 const CreateSenseHeader = ({
-  languageMode,
-  setLanguageMode,
   setSenseValue,
 }: Props) => {
-  const { theme } = useTheme();
   const { setGlobalModal } = useModalStore();
 
   const clearSense = () => {
@@ -50,10 +45,7 @@ const CreateSenseHeader = ({
       <View className="flex-row items-center justify-end gap-2">
         <View>
           <View style={{ transform: [{ scale: 0.8 }] }}>
-            <ToggleWordDisplayMode
-              languageMode={languageMode}
-              setLanguageMode={setLanguageMode}
-            />
+            <ToggleWordDisplayMode/>
           </View>
         </View>
         {/* Header */}

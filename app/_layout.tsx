@@ -18,12 +18,11 @@ import { DATABASE_NAME } from "@/configs/database";
 import { fonts } from "@/configs/fonts";
 import { initDatabase } from "@/database/schema";
 import { BottomSheetProvider } from "@/providers/BottomSheet";
+import { wordSocket } from "@/utils/socket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { SQLiteProvider, useSQLiteContext } from "expo-sqlite";
+import { SQLiteProvider } from "expo-sqlite";
 import { Suspense, useEffect, useState } from "react";
 import { MenuProvider } from "react-native-popup-menu";
-import { wordSocket } from "@/utils/socket";
-import { useAppStore } from "@/stores/appStore";
 
 const queryClient = new QueryClient();
 
@@ -31,19 +30,11 @@ export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [hasSeenStart, setHasSeenStart] = useState<boolean | null>(null);
-  const db = useSQLiteContext();
-  const { bootstrapAppData, isLoadingData, userProfile } = useAppStore();
 
   SplashScreen.preventAutoHideAsync();
 
   useEffect(() => {
-    if (db) {
-      bootstrapAppData(db);
-    }
-  }, [db]);
-
-  useEffect(() => {
-    wordSocket.connect()
+    // wordSocket.connect();
     async function loadFonts() {
       try {
         console.log("loading font...");
