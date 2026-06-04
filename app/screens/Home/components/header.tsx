@@ -4,7 +4,6 @@ import { streamRequest } from "@/utils/apiStreaming";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useRef, useState } from "react";
 // import { database, tableNames } from "@/watermelon/database";
-import AppButton from "@/components/AppButton";
 import { useTypingText } from "@/hooks/useTypingText";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { View } from "react-native";
@@ -128,7 +127,7 @@ const HomeHeader = () => {
         </AppText>
       </View>
 
-      <View className="flex-row items-center justify-end gap-1 p-2">
+      {/* <View className="flex-row items-center justify-end gap-1 p-2">
         <AppButton
           onPress={() => {
             connectSocket();
@@ -154,7 +153,7 @@ const HomeHeader = () => {
       <AppText>{firstTimeRender?.toString()}</AppText>
       <AppText>{JSON.stringify(lastMessage) || "Not have any message"}</AppText>
       <AppText>{useTypingText(JSON.stringify(flags.current))}</AppText>
-      <AppText>{useTypingText(JSON.stringify(entries.current))}</AppText>
+      <AppText>{useTypingText(JSON.stringify(entries.current))}</AppText> */}
     </View>
   );
 };

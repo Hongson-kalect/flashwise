@@ -5,11 +5,10 @@ import AppTitle from "@/components/AppTitle";
 import PhatAm from "@/components/PhatAm";
 import PhienAm from "@/components/PhienAm";
 import {
-  CreateWordInputModalProps,
-  CreateWordRadioModalProps,
+    CreateWordInputModalProps,
+    CreateWordRadioModalProps,
 } from "@/interfaces/word";
 import { useBottomSheet } from "@/providers/BottomSheet";
-import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { AudioType } from "@/stores/recordingStore";
 import { startRecording } from "@/utils/audioRecord";
@@ -17,13 +16,13 @@ import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { useMemo, useState } from "react";
 import {
-  Image,
-  LayoutChangeEvent,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
+    Image,
+    LayoutChangeEvent,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    useWindowDimensions,
+    View,
 } from "react-native";
 import { Divider } from "react-native-paper";
 import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
@@ -32,12 +31,12 @@ import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
 //   useSpeechRecognitionEvent,
 // } from "expo-speech-recognition";
 // import { initWhisper } from "whisper.rn";
+import { useAppStore } from "@/stores/appStore";
 import { WordType } from "../../data";
 import { textToSpeech } from "../utils";
 import WordDefinitions from "./definitions";
 import SenseNote from "./senseNote";
 import SenseUsage from "./senseUsage";
-import { useAppStore } from "@/stores/appStore";
 
 interface Props {
   word: string;
@@ -78,10 +77,11 @@ const BasicInformation = ({
   >(null);
 
   const sound = useState<Audio.Sound | null>(null);
-  const { themeObj,settings,dbService } = useAppStore();
-  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
-  
-  const toggleLanguageMode = () => dbService?.setShowTranslation(!settings?.show_translation);
+  const { themeObj, settings, dbService } = useAppStore();
+  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+
+  const toggleLanguageMode = () =>
+    dbService?.setShowTranslation(!settings?.show_translation);
   const ipas = useMemo(() => metadata?.ipas, [metadata?.ipas]);
 
   const { width } = useWindowDimensions();

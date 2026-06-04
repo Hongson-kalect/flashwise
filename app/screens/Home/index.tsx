@@ -1,17 +1,10 @@
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import AppLineChart from "@/components/chart/line";
-import { BarChartSkeleton } from "@/components/skeleton/ChartSkeleton";
-import {
-  CollectionSkeleton,
-  WordSearchSkeleton,
-  WordSkeleton,
-} from "@/components/skeleton/WordSkeleton";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useLanguage, useT } from "@/providers/Language";
 import { useTheme } from "@/providers/Theme";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
-import { Divider } from "react-native-paper";
 import Discover from "./components/discover";
 import HomeHeader from "./components/header";
 import HomeSearch from "./components/homeSearch";
@@ -33,7 +26,7 @@ export default function HomePage() {
 
   return (
     <View style={{ backgroundColor: theme.background, flex: 1 }}>
-      <ScrollView>
+      <ScrollView keyboardShouldPersistTaps="handled">
         <View
           className="px-2 pb-1"
           style={{ backgroundColor: theme.background }}
@@ -41,7 +34,7 @@ export default function HomePage() {
           <HomeHeader />
         </View>
 
-        <View className="px-4">
+        {/* <View className="px-4">
           <WordSearchSkeleton />
           <Divider style={{ marginVertical: 4 }} />
           <WordSearchSkeleton />
@@ -54,9 +47,9 @@ export default function HomePage() {
           <Divider style={{ marginVertical: 4 }} />
           <CollectionSkeleton />
           <BarChartSkeleton />
-        </View>
+        </View> */}
 
-        <View className="px-3 mt-6">
+        <View className="px-3 mt-6 relative z-10">
           <HomeSearch />
         </View>
 

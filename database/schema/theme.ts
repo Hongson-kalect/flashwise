@@ -33,7 +33,7 @@ ON theme(is_deleted);
 
 export const getActiveTheme = async (
   db: SQLiteDatabase,
-): Promise<Theme | null> => {
+): Promise<Theme&{color_palette: any} | null> => {
   const now = new Date().toISOString();
   const row = await db.getFirstAsync<Theme>(
     `SELECT * FROM theme WHERE (expired_at IS NULL OR expired_at > "${now}") AND is_deleted = 0 ORDER BY priority DESC LIMIT 1;`,

@@ -1,5 +1,4 @@
 import { SQLiteDatabase } from "expo-sqlite";
-import { clearDatabase } from "../schema-old";
 import { generateString as aiSenseGenerateString } from "./aiSense";
 import { generateString as aiWordGenerateString } from "./aiWord";
 import { generateString as collectionGenerateString } from "./collection";
@@ -33,7 +32,9 @@ import {
 import { generateString as userSenseProgressGenerateString } from "./userSenseProgress";
 import {
   getUserSettings,
+  setLearningLanguage,
   setShowTranslation,
+  setTranslateLanguage,
   generateString as userSettingGenerateString,
   seedData as userSettingseedData,
 } from "./userSetting";
@@ -43,7 +44,9 @@ export const createDBService = (db: SQLiteDatabase) => ({
   getUserProfile: () => getUserProfile(db),
   getUserSettings: () => getUserSettings(db),
   getSystemConfigs: () => getSystemConfigs(db),
-  setShowTranslation: (state: boolean) => setShowTranslation(db,state),
+  setShowTranslation: (state: boolean) => setShowTranslation(db, state),
+  setLearningLanguage: (val: string) => setLearningLanguage(db, val),
+  setTranslateLanguage: (val: string) => setTranslateLanguage(db, val),
 });
 
 export const generateSchema = `
@@ -83,7 +86,7 @@ export const initDatabase = async (db: SQLiteDatabase) => {
   const DATABASE_VERSION = 1; // get from server
   // clearDatabase(db);
   let version = 0;
-  await clearDatabase(db);
+  // await clearDatabase(db);
   try {
     const db_version = await db.getFirstAsync<{ key: string; value: string }>(
       `select * from system_config where key='db_version'`,

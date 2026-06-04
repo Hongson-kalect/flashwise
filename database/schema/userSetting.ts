@@ -34,10 +34,26 @@ export const setShowTranslation = async (db: SQLiteDatabase, value: boolean) => 
   ]);
 };
 
+export const setLearningLanguage = async (db: SQLiteDatabase, value: string) => {
+  await db.runAsync(`UPDATE user_settings SET value = ? WHERE key = ?;`, [
+    JSON.stringify(value),
+    "learning_language",
+  ]);
+};
+
+export const setTranslateLanguage = async (db: SQLiteDatabase, value: string) => {
+  await db.runAsync(`UPDATE user_settings SET value = ? WHERE key = ?;`, [
+    JSON.stringify(value),
+    "translate_language",
+  ]);
+};
+
 export const seedData = /*sql*/ `
 INSERT OR IGNORE INTO user_settings (key, value) VALUES
 
 ('theme', '"system"'),
+
+('translate_language', '"vi"'),
 
 ('learning_language', '"en"'),
 

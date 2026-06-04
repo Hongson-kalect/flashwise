@@ -1,11 +1,10 @@
 import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
-import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { LineInput } from "../../Create/components/lineInput";
-import { useAppStore } from "@/stores/appStore";
 
 type Example = {
   value: string;
@@ -23,8 +22,8 @@ const CreateExampleForm = (props: Props) => {
   });
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
-  const { themeObj,settings,dbService } = useAppStore();
-  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
+  const { themeObj, settings, dbService } = useAppStore();
+  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
 
   useEffect(() => {
     setTimeout(() => textFocus(), 300);

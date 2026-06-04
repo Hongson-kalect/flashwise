@@ -1,11 +1,13 @@
+import { SearchSuggestion } from "@/app/screens/Word/Create/components/wordSelectForm";
 import { fontFamily } from "@/configs/fonts";
 import { useBottomSheet } from "@/providers/BottomSheet";
-import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -16,6 +18,20 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import AppIcon from "../AppIcon";
 import AppInput from "../AppInput";
 import AppText from "../AppText";
+import WordListSuggestion from "../WordListSugesstion";
+
+const searchResult: SearchSuggestion[] = [
+  { id: "1", value: "test" },
+  { id: "2", value: "test2" },
+  { id: "3", value: "test3" },
+  { id: "4", value: "test4" },
+  { id: "5", value: "test5" },
+  { id: "6", value: "test6" },
+  { id: "7", value: "test7" },
+  { id: "8", value: "test8" },
+  { id: "9", value: "test9" },
+  { id: "10", value: "test10" },
+];
 
 type Props = {
   placeholder?: string;
@@ -34,7 +50,9 @@ type Props = {
 
 const AppSearch = forwardRef((props: Props, ref) => {
   const { isClearable = true, isFilterable = true } = props;
-  const { theme } = useTheme();
+  // const { theme } = useTheme();
+  const { themeObj } = useAppStore();
+  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState("");
   const inputRef = useRef<TextInput>(null);
@@ -43,6 +61,18 @@ const AppSearch = forwardRef((props: Props, ref) => {
     blur: () => inputRef.current?.blur(),
     clear: () => props.onChangeText(""),
   }));
+
+  const [searchSuggestion, setSearchSuggestion] =
+    useState<SearchSuggestion[]>(searchResult);
+
+  const selectSugession = (val: string) => {
+    setFocused(false);
+    props.onFocus?.();
+    inputRef.current?.blur();
+    setValue(val);
+    // setSearchSuggestion([]);
+    // gọi api, socket các thứ
+  };
 
   const { present } = useBottomSheet();
   const { setGlobalModal, setListModal } = useModalStore();
@@ -122,70 +152,91 @@ const AppSearch = forwardRef((props: Props, ref) => {
   }, []);
 
   return (
-    <View
-      style={{ borderRadius: 999, elevation: 4 }}
-      className={"flex-row items-center px-5 bg-gray-100 h-14"}
-    >
-      <View className="flex-row items-center flex-1">
-        <AppIcon name="search1" branch="antd" size={24} color="#888" />
-        <View className="flex-1 justify-center">
-          <AppInput
-            ref={inputRef}
-            style={{
-              fontFamily: fontFamily.MulishBold,
-              alignItems: "center",
-              flex: 1,
-              fontSize: 16,
-              justifyContent: "center",
-              borderColor: "transparent",
-            }}
-            inputStyle={{
-              fontFamily: fontFamily.MulishMedium,
-            }}
-            containerStyle={{ borderColor: "transparent" }}
-            value={props.value}
-            onChangeText={(value) => props.onChangeText(value)}
-            onFocus={() => {
-              props.onFocus?.();
-              setFocused(true);
-            }}
-            onBlur={() => {
-              props.onBlur?.();
-              setFocused(false);
-            }}
-            placeholder={props.placeholder}
-            // className="h-full w-full text-lg"
-          />
+    <View>
+      <View
+        style={{
+          borderRadius: 999,
+          elevation: 4,
+          backgroundColor: theme.background,
+          shadowColor: focused ? theme.primary : "black",
+          borderWidth: 0.5,
+          borderColor: focused ? theme.primary : "#333333",
+        }}
+        className={"flex-row items-center px-5 bg-gray-100 h-14"}
+      >
+        <View className="flex-row items-center flex-1">
+          <AppIcon name="search1" branch="antd" size={24} color="#888" />
+          <View className="flex-1 justify-center">
+            <AppInput
+              ref={inputRef}
+              style={{
+                fontFamily: fontFamily.MulishBold,
+                alignItems: "center",
+                flex: 1,
+                fontSize: 16,
+                justifyContent: "center",
+                borderColor: "transparent",
+              }}
+              inputStyle={{
+                fontFamily: fontFamily.MulishMedium,
+              }}
+              containerStyle={{ borderColor: "transparent" }}
+              value={props.value}
+              onChangeText={(value) => props.onChangeText(value)}
+              onFocus={() => {
+                props.onFocus?.();
+                setFocused(true);
+              }}
+              onBlur={() => {
+                props.onBlur?.();
+                setFocused(false);
+              }}
+              placeholder={props.placeholder}
+              // className="h-full w-full text-lg"
+            />
+          </View>
+        </View>
+        <View className="flex-row gap-1 items-center">
+          <View className="h-full items-center justify-center pr-2">
+            {props.value && isClearable && (
+              <Animated.View
+                entering={FadeIn.duration(200)}
+                exiting={FadeOut.duration(200)}
+                className={"h-full items-center justify-center"}
+              >
+                <AppIcon
+                  onPress={() => props.onChangeText("")}
+                  name="closecircle"
+                  branch="antd"
+                  size={20}
+                  color="#888"
+                />
+              </Animated.View>
+            )}
+            {/* <AppIcon name="closecircle" branch="antd" size={16} color="#555" /> */}
+          </View>
+          {isFilterable && (
+            <AppIcon
+              onPress={showFilterModal}
+              name={"filter"}
+              branch="antd"
+              size={24}
+              color="#888"
+            />
+          )}
         </View>
       </View>
-      <View className="flex-row gap-1 items-center">
-        <View className="h-full items-center justify-center pr-2">
-          {props.value && isClearable && (
-            <Animated.View
-              entering={FadeIn.duration(200)}
-              exiting={FadeOut.duration(200)}
-              className={"h-full items-center justify-center"}
-            >
-              <AppIcon
-                onPress={() => props.onChangeText("")}
-                name="closecircle"
-                branch="antd"
-                size={20}
-                color="#888"
-              />
-            </Animated.View>
-          )}
-          {/* <AppIcon name="closecircle" branch="antd" size={16} color="#555" /> */}
-        </View>
-        {isFilterable && (
-          <AppIcon
-            onPress={showFilterModal}
-            name={"filter"}
-            branch="antd"
-            size={24}
-            color="#888"
-          />
-        )}
+
+      <View className="px-4">
+        <WordListSuggestion
+          show={!!props.value && searchSuggestion.length > 0 && focused}
+          // itemStyle={{ paddingLeft: 44 }}
+          words={searchSuggestion}
+          searchVal={props.value}
+          onSelect={(val) => {
+            selectSugession(val);
+          }}
+        />
       </View>
     </View>
   );

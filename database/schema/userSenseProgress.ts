@@ -13,9 +13,10 @@ CREATE TABLE IF NOT EXISTS user_sense_progress (
     remember_count INTEGER DEFAULT 0,
     repetitions INTEGER DEFAULT 0,
 
-    -- Chỉ số thuật toán SRS
-    easiness_factor REAL DEFAULT 2.5,
-    easiness_level INTEGER DEFAULT 100,
+    -- Chỉ số thuật toán FSRS
+    difficulty REAL DEFAULT 2.5,
+    stable INTEGER DEFAULT 0,
+    failed_at INTEGER,
 
     -- Cờ lọc trạng thái nhanh
     is_mastered INTEGER DEFAULT 0,

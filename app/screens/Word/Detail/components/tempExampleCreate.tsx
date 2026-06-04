@@ -2,21 +2,21 @@ import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
-import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { SenseExample } from "./createSenseSheet";
-import { useAppStore } from "@/stores/appStore";
 
 type Props = {
   onAddExample: (example: SenseExample) => void;
 };
 
-const TempExampleCreate = ({onAddExample }: Props) => {
-  const { themeObj,settings,dbService } = useAppStore();
-  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
-  
-  const toggleLanguageMode = () => dbService?.setShowTranslation(!settings?.show_translation);
+const TempExampleCreate = ({ onAddExample }: Props) => {
+  const { themeObj, settings, dbService } = useAppStore();
+  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+
+  const toggleLanguageMode = () =>
+    dbService?.setShowTranslation(!settings?.show_translation);
   const [example, setExample] = useState<SenseExample>({
     id: new Date().getTime().toString(),
     value: "",

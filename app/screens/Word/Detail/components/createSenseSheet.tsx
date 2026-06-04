@@ -1,5 +1,6 @@
 import CollapseSection from "@/components/AppCollapsable";
 import AppText from "@/components/AppText";
+import { useAppStore } from "@/stores/appStore";
 import { AudioType as AppAudioType } from "@/stores/recordingStore";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
@@ -11,7 +12,6 @@ import CreateSenseBasicInfo from "./createSenseBasic";
 import CreateSenseExample from "./createSenseExample";
 import CreateSenseHeader from "./createSenseHeader";
 import CreateSenseMoreInfo from "./createSenseMoreInfo";
-import { useAppStore } from "@/stores/appStore";
 
 export type SenseType = {
   word?: string;
@@ -47,19 +47,18 @@ type AddSenseSheetProps = {
 const CreateSenseSheet = (props: AddSenseSheetProps) => {
   // Model sheet not sync with props, so we need to sync it manually
   const [senseValue, setSenseValue] = useState<SenseType>(props.senseValue);
-  const { themeObj,settings,dbService } = useAppStore();
-  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
-  
-  const toggleLanguageMode = () => dbService?.setShowTranslation(!settings?.show_translation);
+  const { themeObj, settings, dbService } = useAppStore();
+  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+
+  const toggleLanguageMode = () =>
+    dbService?.setShowTranslation(!settings?.show_translation);
 
   // Sync back to main screen. if close sheet, it still remain if reopen
   useEffect(() => props.setSenseValue(senseValue), [senseValue]);
 
   return (
     <View className="p-4">
-      <CreateSenseHeader
-        setSenseValue={setSenseValue}
-      />
+      <CreateSenseHeader setSenseValue={setSenseValue} />
 
       <CreateSenseBasicInfo
         senseValue={senseValue}

@@ -4,14 +4,13 @@ import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
 import { AppMenu } from "@/components/modals/components/MenuModal";
 import { useBottomSheet } from "@/providers/BottomSheet";
-import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { useMemo, useState } from "react";
 import { Alert, View, ViewStyle } from "react-native";
 import { WordType } from "../../data";
 import CreateExampleForm from "./createExampleForm";
 import WordExample from "./example";
-import { useAppStore } from "@/stores/appStore";
 
 type Props = {
   definition: WordType["definition"];
@@ -30,9 +29,9 @@ const WordDefinitions = ({
 }: Props) => {
   const [action, setAction] = useState<null | "edit" | "add">(null);
 
-  const { themeObj,settings,dbService } = useAppStore();
-  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
-  
+  const { themeObj, settings, dbService } = useAppStore();
+  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+
   const { setGlobalModal } = useModalStore();
   const { present } = useBottomSheet();
   const showModal = () => {
@@ -213,11 +212,7 @@ const WordDefinitions = ({
           {/* <AppText>Example</AppText> */}
           {examples.map((example, index2) => {
             return (
-              <WordExample
-                bold={word}
-                example={example}
-                key={"a" + index2}
-              />
+              <WordExample bold={word} example={example} key={"a" + index2} />
             );
           })}
         </View>

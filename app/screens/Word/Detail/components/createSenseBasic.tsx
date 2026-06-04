@@ -2,25 +2,21 @@ import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
-import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { useMemo, useState } from "react";
 import { ToastAndroid, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SenseType } from "./createSenseSheet";
-import { useAppStore } from "@/stores/appStore";
 
 type Props = {
   senseValue: SenseType;
   setSenseValue: React.Dispatch<React.SetStateAction<SenseType>>;
 };
-const CreateSenseBasicInfo = ({
-  senseValue,
-  setSenseValue,
-}: Props) => {
+const CreateSenseBasicInfo = ({ senseValue, setSenseValue }: Props) => {
   const [targetLang, motherLang] = ["EN", "VI"];
-  const { themeObj,settings,dbService } = useAppStore();
-  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
+  const { themeObj, settings, dbService } = useAppStore();
+  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
 
   const [translation, setTranslation] = useState("");
 

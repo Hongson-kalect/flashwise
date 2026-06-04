@@ -1,6 +1,6 @@
 import {
   SearchSuggestion,
-  Sense
+  Sense,
 } from "@/app/screens/Word/Create/components/wordSelectForm";
 import { useTheme } from "@/providers/Theme";
 import React from "react";
@@ -11,6 +11,7 @@ import {
   ViewStyle,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import { Divider } from "react-native-paper";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { AppDivider } from "./AppDivider";
 import AppText from "./AppText";
@@ -20,6 +21,7 @@ type Props = {
   show?: boolean;
   itemStyle?: ViewStyle;
   words: SearchSuggestion[];
+  searchVal?: string;
   // options: { label: string | React.ReactNode; value: string }[];
 };
 const WordListSuggestion = (props: Props) => {
@@ -32,13 +34,7 @@ const WordListSuggestion = (props: Props) => {
 
   const handlePress = (
     value: string,
-    status:
-      | "LOADING"
-      | "INITIAL"
-      | "PENDING"
-      | "PARTIAL"
-      | "COMPLETED"
-      | undefined,
+    status?: "LOADING" | "INITIAL" | "PENDING" | "PARTIAL" | "COMPLETED",
     selected?: Sense[],
     allSenses?: Sense[],
   ) => {
@@ -62,16 +58,45 @@ const WordListSuggestion = (props: Props) => {
         elevation: 4,
         shadowColor: theme.text,
         top: "100%",
-        marginTop: 2,
+        marginTop: 4,
         left: 0,
         right: 0,
         zIndex: 9999,
+        borderRadius: 24,
       }}
     >
       <ScrollView
         keyboardShouldPersistTaps="handled"
         style={{ maxHeight: height / 3 }}
       >
+        {props?.searchVal && (
+          <>
+            <TouchableOpacity
+              style={props.itemStyle}
+              onPress={() => handlePress(props?.searchVal || "")}
+              className="px-2 h-14 flex-row items-center justify-between"
+            >
+              <View className="flex-row items-center gap-2">
+                <View
+                  style={{ width: 42 }}
+                  className="items-center justify-center"
+                >
+                  {/* status color, icon, image,...d */}
+                  <View
+                    style={{ height: 28, width: 28 }}
+                    className="bg-gray-400 rounded-full"
+                  ></View>
+                </View>
+                {/* <View
+                  style={{ height: 36, width: 64 }}
+                  className="bg-gray-400 rounded "
+                ></View> */}
+                <AppText numberOfLines={1}>{props.searchVal}</AppText>
+              </View>
+            </TouchableOpacity>
+            {props.words.length > 0 && <Divider />}
+          </>
+        )}
         {props.words.map(
           ({ id, value, image, status, selectedSense, senses }, index) => {
             const isLast = index === props.words.length - 1;
@@ -89,9 +114,14 @@ const WordListSuggestion = (props: Props) => {
                   >
                     <View className="flex-row items-center gap-2">
                       <View
-                        style={{ height: 27, width: 48 }}
-                        className="bg-gray-400 rounded "
-                      ></View>
+                        style={{ width: 42 }}
+                        className="items-center justify-center"
+                      >
+                        <View
+                          style={{ height: 28, width: 28 }}
+                          className="bg-gray-400 rounded-full"
+                        ></View>
+                      </View>
                       <AppText>{value}</AppText>
                     </View>
 

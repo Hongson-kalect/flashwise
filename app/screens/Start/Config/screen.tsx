@@ -2,6 +2,7 @@ import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useMemo, useRef, useState } from "react";
@@ -15,15 +16,15 @@ const step = [
   },
   {
     question: "Ngôn ngữ bạn cần học là gì nhỉ?",
-    type: "target-language",
+    type: "learning_language",
   },
   {
     question: "Tiếng mẹ đẻ của bạn là?",
-    type: "mother-language",
+    type: "translate_language",
   },
   {
-    question: "Bạn muốn học theo hình thức nào?",
-    type: "learning-type",
+    question: "Bạn có muốn hiển bản dịch khi học ngôn ngữ?",
+    type: "show_translation",
   },
   {
     question: "Chọn một vài chủ đề bạn quan tâm nhé?",
@@ -77,36 +78,72 @@ const motherLanguages = [
 
 const StartConfigPage = () => {
   const flatListRef = useRef<FlatList>(null);
+  const { displayLanguage, dbService, settings, updateSetting } = useAppStore();
   const [stepIndex, setStepIndex] = useState(0);
-  const [selectedLearningLanguage, setSelectedLearningLanguage] = useState<{
-    code: string;
-    language: string;
-  } | null>(null);
-  const [selectedUserLanguage, setSelectedUserLanguage] = useState<{
-    code: string;
-    language: string;
-  } | null>(null);
-  const [learningType, setLearningType] = useState<0 | 1 | null>(null);
+  const currentStep = useMemo(() => step[stepIndex], [stepIndex]);
+
+  const [learningLanguage, setLearningLanguage] = useState(
+    settings?.learning_language || "en",
+  );
+  const confirmLearningLanguage = async (val: string) => {
+    await dbService?.setLearningLanguage(val);
+  };
+
+  const [translateLanguage, setTranslateLanguage] = useState(() => {
+    const support = motherLanguages.find(
+      (item) => item.code === displayLanguage,
+    );
+    if (support) {
+      return support.code;
+    }
+
+    return "en";
+  });
+  const confirmTranslateLanguage = async (val: string) => {
+    await dbService?.setTranslateLanguage(val);
+  };
+
+  const [showTranslation, setShowTranslation] = useState(
+    settings?.show_translation || true,
+  );
+  const confirmShowTranslation = async (val: boolean) => {
+    await dbService?.setShowTranslation(val);
+  };
+
   const [searchValue, setSearchValue] = useState("");
+
+  const handleConfirm = async () => {
+    if (currentStep.type === "learning_language") {
+      await confirmLearningLanguage(learningLanguage);
+      updateSetting({ learning_language: learningLanguage });
+    } else if (currentStep.type === "translate_language") {
+      await confirmTranslateLanguage(translateLanguage);
+      updateSetting({ learning_language: learningLanguage });
+    } else if (currentStep.type === "show_translation") {
+      await confirmShowTranslation(showTranslation);
+      updateSetting({ learning_language: learningLanguage });
+    }
+
+    stepIndex === step.length - 1
+      ? start()
+      : setStepIndex(Math.min(step.length - 1, stepIndex + 1));
+  };
+
   const nextable = useMemo(() => {
-    if (stepIndex === 1 && !selectedLearningLanguage) {
+    if (stepIndex === 1 && !settings?.learning_language) {
       return false;
     }
 
-    if (stepIndex === 2 && !selectedUserLanguage) {
+    if (stepIndex === 2 && !settings?.translate_language) {
       return false;
     }
 
-    if (stepIndex === 3 && learningType === null) {
+    if (stepIndex === 3 && settings?.show_translation === undefined) {
       return false;
     }
 
     return true;
-  }, [selectedLearningLanguage, selectedUserLanguage, learningType, stepIndex]);
-
-  const currentStep = useMemo(() => {
-    return step[stepIndex];
-  }, [stepIndex]);
+  }, [settings, stepIndex]);
 
   const { theme } = useTheme();
   const goToTab = (tab: number) => {
@@ -140,22 +177,20 @@ const StartConfigPage = () => {
 
         {stepIndex === 1 && (
           <SelectTargetLanguage
-            value={selectedLearningLanguage}
-            onSelect={(val) => setSelectedLearningLanguage(val)}
+            value={learningLanguage}
+            onSelect={(val) => setLearningLanguage(val)}
           />
         )}
         {stepIndex === 2 && (
           <SelectMotherLanguage
-            value={selectedUserLanguage}
-            onSelect={(val) => setSelectedUserLanguage(val)}
+            value={translateLanguage}
+            onSelect={(val) => setTranslateLanguage(val)}
           />
         )}
         {stepIndex === 3 && (
           <SelectLearningMethod
-            value={learningType}
-            onSelect={(val) => setLearningType(val)}
-            targetLanguage={selectedLearningLanguage!}
-            motherLanguage={selectedUserLanguage!}
+            value={showTranslation}
+            onSelect={(val) => setShowTranslation(val)}
           />
         )}
       </View>
@@ -171,11 +206,7 @@ const StartConfigPage = () => {
           <View></View>
         )}
         <AppButton
-          onPress={() =>
-            stepIndex === step.length - 1
-              ? start()
-              : setStepIndex(Math.min(step.length - 1, stepIndex + 1))
-          }
+          onPress={handleConfirm}
           size="lg"
           disabled={!nextable}
           type={nextable ? "primary" : "disabled"}
@@ -198,20 +229,33 @@ const StartConfigPage = () => {
 };
 
 type Props1 = {
-  onSelect: (val: { code: string; language: string }) => void;
-  value: { code: string; language: string } | null;
+  onSelect: (val: string) => void;
+  value: string | null;
 };
 const SelectTargetLanguage = (props: Props1) => {
+  const orderedList = useMemo(() => {
+    // 1. Clone mảng gốc ra mảng mới để an toàn trong React
+    return [...supportLanguages].sort((a, b) => {
+      // 2. Ưu tiên hàng đầu: Thằng nào trùng với props.value thì LUÔN LÊN ĐẦU
+      if (a.code === props.value) return -1;
+      if (b.code === props.value) return 1;
+
+      // 3. Các ngôn ngữ còn lại thì xếp theo bảng chữ cái A -> Z
+      return a.language.localeCompare(b.language, "en", {
+        sensitivity: "base",
+      });
+    });
+  }, []);
   return (
     <Animated.View entering={SlideInRight} className="flex-1">
       <FlatList
         showsVerticalScrollIndicator={false}
         style={{ marginTop: 24, flex: 1 }}
         contentContainerStyle={{ gap: 12, paddingBottom: 12 }}
-        data={supportLanguages}
+        data={orderedList}
         keyExtractor={(item) => item.code}
         renderItem={({ item, index }) => {
-          const isActive = item.code === props.value?.code;
+          const isActive = item.code === props.value;
           return (
             <View key={index}>
               <AppButton
@@ -219,7 +263,7 @@ const SelectTargetLanguage = (props: Props1) => {
                 type={isActive ? "primary" : "disabled"}
                 style={{ borderColor: "#00000066" }}
                 size="lg"
-                onPress={() => props.onSelect(item)}
+                onPress={() => props.onSelect(item.code)}
               >
                 <AppText
                   color={isActive ? "white" : "text"}
@@ -236,16 +280,30 @@ const SelectTargetLanguage = (props: Props1) => {
   );
 };
 const SelectMotherLanguage = (props: Props1) => {
+  const orderedList = useMemo(() => {
+    // 1. Clone mảng gốc ra mảng mới để an toàn trong React
+    return [...motherLanguages].sort((a, b) => {
+      // 2. Ưu tiên hàng đầu: Thằng nào trùng với props.value thì LUÔN LÊN ĐẦU
+      if (a.code === props.value) return -1;
+      if (b.code === props.value) return 1;
+
+      // 3. Các ngôn ngữ còn lại thì xếp theo bảng chữ cái A -> Z
+      return a.language.localeCompare(b.language, "en", {
+        sensitivity: "base",
+      });
+    });
+  }, []);
+
   return (
     <Animated.View entering={SlideInRight} className="flex-1">
       <FlatList
         showsVerticalScrollIndicator={false}
         style={{ marginTop: 24, flex: 1 }}
         contentContainerStyle={{ gap: 12, paddingBottom: 12 }}
-        data={motherLanguages}
+        data={orderedList}
         keyExtractor={(item) => item.code}
         renderItem={({ item, index }) => {
-          const isActive = item.code === props.value?.code;
+          const isActive = item.code === props.value;
           return (
             <View key={index}>
               <AppButton
@@ -253,7 +311,7 @@ const SelectMotherLanguage = (props: Props1) => {
                 type={isActive ? "primary" : "disabled"}
                 style={{ borderColor: "#00000066" }}
                 size="lg"
-                onPress={() => props.onSelect(item)}
+                onPress={() => props.onSelect(item.code)}
               >
                 <AppText
                   color={isActive ? "white" : "text"}
@@ -272,18 +330,16 @@ const SelectMotherLanguage = (props: Props1) => {
 
 const learningMethod = [
   {
-    value: 0, // target -> target
+    value: true, // target -> target
   },
   {
-    value: 1, // target -> mother
+    value: false, // target -> mother
   },
 ];
 
 type LearningMethodProps = {
-  targetLanguage: { code: string; language: string };
-  motherLanguage: { code: string; language: string };
-  onSelect: (type: 0 | 1) => void;
-  value: 0 | 1 | null;
+  onSelect: (bol: boolean) => void;
+  value: boolean | undefined;
 };
 const SelectLearningMethod = (props: LearningMethodProps) => {
   return (
@@ -308,10 +364,7 @@ const SelectLearningMethod = (props: LearningMethodProps) => {
                   color={isActive ? "white" : "text"}
                   font="MulishSemiBold"
                 >
-                  {props.targetLanguage.language} -{" "}
-                  {item.value === 0
-                    ? props.targetLanguage.language
-                    : props.motherLanguage.language}
+                  {item.value ? "Yes" : "No"}
                 </AppText>
               </AppButton>
             </View>

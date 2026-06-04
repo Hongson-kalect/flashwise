@@ -19,6 +19,8 @@ const Relearn = () => {
       style={{
         backgroundColor: theme.primary + "ee",
         borderRadius: 8,
+        zIndex: 1,
+        position: "relative",
       }}
       className="p-4 rounded-xl"
     >

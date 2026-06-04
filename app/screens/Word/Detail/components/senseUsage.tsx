@@ -3,7 +3,6 @@ import AppIcon from "@/components/AppIcon";
 import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
-import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { FontAwesome } from "@expo/vector-icons";
@@ -18,10 +17,11 @@ type Props = {
 };
 
 const SenseUsage = (props: Props) => {
-  const { themeObj,settings,dbService } = useAppStore();
-  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
-  
-  const toggleLanguageMode = () => dbService?.setShowTranslation(!settings?.show_translation);
+  const { themeObj, settings, dbService } = useAppStore();
+  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+
+  const toggleLanguageMode = () =>
+    dbService?.setShowTranslation(!settings?.show_translation);
   const { setGlobalModal } = useModalStore();
 
   const showUsageModal = () => {

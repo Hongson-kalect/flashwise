@@ -2,20 +2,19 @@ import AppIcon from "@/components/AppIcon";
 import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
 import { BoldText } from "@/components/output/BoldText";
-import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
+import { useMemo } from "react";
 import { Alert, View } from "react-native";
 import { WordType } from "../../data";
-import { useAppStore } from "@/stores/appStore";
-import { useMemo } from "react";
 
 type Props = {
   bold: number[][] | string;
   example: WordType["examples"][0];
 };
 const WordExample = ({ example, bold }: Props) => {
-  const { themeObj,settings,dbService } = useAppStore();
-  const theme = useMemo(() => JSON.parse(themeObj?.color_palette||"{}"), [themeObj]);
+  const { themeObj, settings, dbService } = useAppStore();
+  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
 
   const { setGlobalModal } = useModalStore();
 
