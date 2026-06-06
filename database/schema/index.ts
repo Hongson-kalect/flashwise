@@ -1,3 +1,4 @@
+import * as SQLite from "expo-sqlite";
 import { SQLiteDatabase } from "expo-sqlite";
 import { generateString as aiSenseGenerateString } from "./aiSense";
 import { generateString as aiWordGenerateString } from "./aiWord";
@@ -86,7 +87,7 @@ export const initDatabase = async (db: SQLiteDatabase) => {
   const DATABASE_VERSION = 1; // get from server
   // clearDatabase(db);
   let version = 0;
-  // await clearDatabase(db);
+  await clearDatabase(db);
   try {
     const db_version = await db.getFirstAsync<{ key: string; value: string }>(
       `select * from system_config where key='db_version'`,
@@ -118,4 +119,24 @@ export const initDatabase = async (db: SQLiteDatabase) => {
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
+};
+
+export const clearDatabase = async (db: SQLite.SQLiteDatabase) => {
+  // 1. Tắt khóa ngoại tạm thời để xóa cho dễ
+  await db.execAsync("PRAGMA foreign_keys = OFF;");
+
+  // 2. Lấy danh sách tất cả các bảng hiện có (trừ các bảng hệ thống của SQLite)
+  const tables = await db.getAllAsync<{ name: string }>(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';",
+  );
+
+  // 3. Xóa từng bảng
+  for (const table of tables) {
+    await db.execAsync(`DROP TABLE IF EXISTS ${table.name};`);
+  }
+
+  // 4. Reset version về 0 để hàm migrateDbIfNeeded chạy lại từ đầu
+  await db.execAsync(`PRAGMA user_version = 0;`);
+
+  console.log("Database cleared successfully!");
 };

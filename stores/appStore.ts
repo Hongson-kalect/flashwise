@@ -21,7 +21,7 @@ interface AppState {
   displayLanguage: string;
 
   // Hàm cốt lõi để nạp dữ liệu từ local DB lên RAM Zustand
-  bootstrapAppData: (db: SQLiteDatabase) => Promise<void>;
+  bootstrapAppData: (db: SQLiteDatabase) => Promise<boolean>;
   updateSetting: (obj: object) => void;
 
   // Các hàm cập nhật nhanh (Action)
@@ -87,10 +87,10 @@ export const useAppStore = create<AppState>((set) => ({
         locale = settings.display_language;
       }
 
-      console.log("profile", profile);
+      // console.log("profile", profile);
       console.log("settings", settings);
-      console.log("configs", configs);
-      console.log("theme", theme);
+      // console.log("configs", configs);
+      // console.log("theme", theme);
 
       set({
         dbService: dbService,
@@ -106,9 +106,15 @@ export const useAppStore = create<AppState>((set) => ({
         "=> [Zustand] Khởi tạo dữ liệu Local DB thành công!",
         Date.now() - start,
       );
+
+      if (!settings?.learning_language){
+        return false
+      }
+      return true
     } catch (error) {
       console.error("=> [Zustand] Khởi tạo dữ liệu thất bại:", error);
       set({ isLoadingData: false });
+      return false
     }
   },
 

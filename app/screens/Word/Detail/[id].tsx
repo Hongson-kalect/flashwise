@@ -8,7 +8,11 @@ import {
 } from "@/interfaces/word";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
+import { GetAPI } from "@/services/axios";
+import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
+import { normalizeWord } from "@/utils/normalizeText";
+import { wordSocket } from "@/utils/socket";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { LayoutChangeEvent, Pressable, View } from "react-native";
@@ -22,23 +26,17 @@ import BasicInformation from "./components/basicInformation";
 import WordCollocations from "./components/collocations";
 import WordDetailHeader from "./components/header";
 import {
-  getSenseData,
   getTranslate,
   isTranslationCompleted,
   mapSenses,
   senseDataReducer,
 } from "./utils";
-import { wordSocket } from "@/utils/socket";
-import { useAppStore } from "@/stores/appStore";
-import { normalizeWord } from "@/utils/normalizeText";
-import { setShowTranslation } from "@/database/schema/userSetting";
-import { createDBService } from "@/database/schema";
 
 // const DATA: WordType[] = testData;
 
 const WordDetail = () => {
   const { theme } = useTheme();
-  const {settings, dbService} = useAppStore()
+  const { settings, dbService } = useAppStore();
   const { id, w } = useLocalSearchParams();
   // Prev data: word value + word id [id]?w=...
   const [sensesObj, dispatch] = useReducer(senseDataReducer, initialState);
@@ -68,16 +66,36 @@ const WordDetail = () => {
     return null;
   }, [sensesObj.status]);
 
-  const fetchWord=(word:string)=>{
-    normalizeWord(word)
-    const room_id = `${normalizeWord(word)}:${settings?.learning_languages}`
+  const fetchWord = async (word: string) => {
+    normalizeWord(word);
+    const room_id = `${normalizeWord(word, settings?.translate_language)}`;
+
+    if (!settings) return alert("No settings loaded. Please reload the app.");
 
     wordSocket.subscribe(room_id, (data) => {
-        dispatch({type:data.type,payload:data.payload})
+      // dispatch({ type: data.type, payload: data.payload });
+      alert(JSON.stringify(data));
     });
-  }
+
+    alert("Room id: " + room_id);
+
+    const res = await GetAPI(
+      "http://192.168.50.64:8000/api/ai-words/get-word/",
+      {
+        value: word,
+        lang: settings?.learning_language,
+        user_lang: settings?.translate_language,
+      },
+    );
+
+    alert("res " + JSON.stringify(res.data));
+  };
 
   useEffect(() => {
+    const handle = async () => {
+      await fetchWord("pencil");
+    };
+    handle();
     // Connect socket bằng md5 trước khi gọi api
     // Dùng useQuery hoặc fetch ở đây nhe
     // 2 case xử lý
@@ -86,82 +104,82 @@ const WordDetail = () => {
     //
     // Khởi tạo socket connect bằng md5 qua funtion có sẵn
 
-    const response: { status: number; message?: string; data: any } = {
-      status: 201,
-      message: "Processing",
-      data: {
-        word: { id: "w_table", value: "table" },
-        senses: {
-          s_1: {
-            id: "s_1",
-            pos: "noun",
-            metadata: { ipa: "/ˈteɪbl/" },
-            definition: {
-              id: "def_1",
-              subId: "s_1",
-              languageCode: "en",
-              value:
-                "A piece of furniture with a flat top and one or more legs.",
-              translate:
-                "Một món đồ nội thất có mặt phẳng và một hoặc nhiều chân.",
-            },
-            usage: {
-              id: "usg_1",
-              subId: "s_1",
-              languageCode: "en",
-              value: "Commonly used in dining rooms and offices.",
-              translate: "Thường dùng trong phòng ăn và văn phòng.",
-            },
-            translates: ["cái bàn", "mặt bàn"],
-            examples: [
-              {
-                id: "ex_1",
-                subId: "s_1",
-                languageCode: "en",
-                value: "The books are on the table.",
-                translate: "Những cuốn sách đang ở trên bàn.",
-              },
-            ],
-          },
-        },
-        images: {
-          s_1: "https://assets.pbimgs.com/pbimgs/rk/images/dp/wcm/202252/0235/modern-farmhouse-round-pedestal-extending-dining-table-l.jpg",
-        },
-      },
-    };
+    // const response: { status: number; message?: string; data: any } = {
+    //   status: 201,
+    //   message: "Processing",
+    //   data: {
+    //     word: { id: "w_table", value: "table" },
+    //     senses: {
+    //       s_1: {
+    //         id: "s_1",
+    //         pos: "noun",
+    //         metadata: { ipa: "/ˈteɪbl/" },
+    //         definition: {
+    //           id: "def_1",
+    //           subId: "s_1",
+    //           languageCode: "en",
+    //           value:
+    //             "A piece of furniture with a flat top and one or more legs.",
+    //           translate:
+    //             "Một món đồ nội thất có mặt phẳng và một hoặc nhiều chân.",
+    //         },
+    //         usage: {
+    //           id: "usg_1",
+    //           subId: "s_1",
+    //           languageCode: "en",
+    //           value: "Commonly used in dining rooms and offices.",
+    //           translate: "Thường dùng trong phòng ăn và văn phòng.",
+    //         },
+    //         translates: ["cái bàn", "mặt bàn"],
+    //         examples: [
+    //           {
+    //             id: "ex_1",
+    //             subId: "s_1",
+    //             languageCode: "en",
+    //             value: "The books are on the table.",
+    //             translate: "Những cuốn sách đang ở trên bàn.",
+    //           },
+    //         ],
+    //       },
+    //     },
+    //     images: {
+    //       s_1: "https://assets.pbimgs.com/pbimgs/rk/images/dp/wcm/202252/0235/modern-farmhouse-round-pedestal-extending-dining-table-l.jpg",
+    //     },
+    //   },
+    // };
 
-    if (response.status === 200) {
-      setTimeout(() => {
-        dispatch({ type: "FULLDATA", payload: response.data });
-      }, 2000);
-      // 1. Từ vựng đã tồn tại (90%) - easy
-      // 1.1 Gọi từ vựng
-      // 1.2 Hiển thị full dữ liệu -> 3
-      // 1.2 Save data -> 3
-    } else {
-      setTimeout(() => {
-        dispatch({
-          type: "INITIAL",
-          payload: {
-            // data: {
-            //   word: { id: "w_table", value: "table" },
-            // },
-            data: response.data,
-          },
-        });
-      }, 2000);
-      // 2. Từ vựng chưa tồn tại (10%) - complex
-      // 2.1 Gọi từ vựng
-      // 2.2 Nhận kết quả chưa tồn tại, nhận dữ liệu liên tục qua socket. show processing status
-      getSenseData(dispatch);
-      // 2.2.1 Khi bắt đầu gọi, nhận dữ liệu lập tức trong redis nếu có
-      // 2.2.2 Mỗi khi có update (sense data, sense image) đều nhận 1 socket path. và update sense state ngay lập tức
-      // 2.2.3 sau khi nhận patch cuối cùng với status completed thì tắt processing status -> 3
-      // 2.2.4 save data
-      // 2.2.5 ngắt socket và tạo socket mới để gọi hàm translate cho word hiện tại.
-      // 2.2.6 Tiếp tục nhận data và save to database -> 3
-      // 3. close socket connect
-    }
+    // if (response.status === 200) {
+    //   setTimeout(() => {
+    //     dispatch({ type: "FULLDATA", payload: response.data });
+    //   }, 2000);
+    //   // 1. Từ vựng đã tồn tại (90%) - easy
+    //   // 1.1 Gọi từ vựng
+    //   // 1.2 Hiển thị full dữ liệu -> 3
+    //   // 1.2 Save data -> 3
+    // } else {
+    //   setTimeout(() => {
+    //     dispatch({
+    //       type: "INITIAL",
+    //       payload: {
+    //         // data: {
+    //         //   word: { id: "w_table", value: "table" },
+    //         // },
+    //         data: response.data,
+    //       },
+    //     });
+    //   }, 2000);
+    //   // 2. Từ vựng chưa tồn tại (10%) - complex
+    //   // 2.1 Gọi từ vựng
+    //   // 2.2 Nhận kết quả chưa tồn tại, nhận dữ liệu liên tục qua socket. show processing status
+    //   getSenseData(dispatch);
+    //   // 2.2.1 Khi bắt đầu gọi, nhận dữ liệu lập tức trong redis nếu có
+    //   // 2.2.2 Mỗi khi có update (sense data, sense image) đều nhận 1 socket path. và update sense state ngay lập tức
+    //   // 2.2.3 sau khi nhận patch cuối cùng với status completed thì tắt processing status -> 3
+    //   // 2.2.4 save data
+    //   // 2.2.5 ngắt socket và tạo socket mới để gọi hàm translate cho word hiện tại.
+    //   // 2.2.6 Tiếp tục nhận data và save to database -> 3
+    //   // 3. close socket connect
+    // }
   }, []);
 
   useEffect(() => {
@@ -215,11 +233,7 @@ const WordDetail = () => {
               name={item.pos.toString()}
             >
               <Tabs.ScrollView>
-                <SensesInfo
-                  word={word}
-                  data={item.senses}
-                  mode={pageMode}
-                />
+                <SensesInfo word={word} data={item.senses} mode={pageMode} />
               </Tabs.ScrollView>
             </Tabs.Tab>
           );
@@ -336,11 +350,7 @@ const SensesInfo = (props: SensesInfoType) => {
         </Pressable>
       </Animated.View>
 
-      <WordInfo
-        word={props.word}
-        data={activeSense}
-        mode={props.mode}
-      />
+      <WordInfo word={props.word} data={activeSense} mode={props.mode} />
     </View>
   );
 };

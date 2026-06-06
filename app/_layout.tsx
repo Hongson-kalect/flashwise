@@ -40,10 +40,10 @@ export default function RootLayout() {
         console.log("loading font...");
         await Font.loadAsync(fonts);
         setFontsLoaded(true);
-        const seen = await AsyncStorage.getItem("hasSeenStartPage");
-        setHasSeenStart(seen === "true");
-        console.log(seen);
-        // if (seen === "true") router.replace("/screens/Start/screen");
+        const hasStarted = await AsyncStorage.getItem("hasSeenStartPage");
+        setHasSeenStart(hasStarted === "true");
+        console.log(hasStarted);
+        // if (hasStarted === "true") router.replace("/screens/Start/screen");
       } catch (err) {
         console.log(err);
         setHasSeenStart(false);

@@ -34,7 +34,7 @@ serverInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // ƯU TIÊN 1: Lấy từ Zustand trên RAM (Siêu nhanh)
     let token = useAuthStore.getState().accessToken;
-    
+
     // ƯU TIÊN 2: Dự phòng nếu Zustand chưa kịp init thì đọc đồng bộ từ SecureStore
     if (!token) {
       token = SecureStore.getItem("accessToken");
@@ -45,7 +45,7 @@ serverInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // 2. Response Interceptor
@@ -55,7 +55,10 @@ serverInstance.interceptors.response.use(
     const originalRequest = error.config;
 
     // NẾU LÀ GUEST HOẶC API CÔNG KHAI: Bỏ qua hoàn toàn logic Refresh Token
-    if (originalRequest.headers?.["x-no-auth"] === "true" || useAuthStore.getState().isGuest) {
+    if (
+      originalRequest.headers?.["x-no-auth"] === "true" ||
+      useAuthStore.getState().isGuest
+    ) {
       return Promise.reject(error); // Trả lỗi về thẳng component xử lý UI, không tự động logout
     }
 
@@ -103,31 +106,32 @@ serverInstance.interceptors.response.use(
       return serverInstance(originalRequest);
     } catch (err) {
       processQueue(err, null);
-      
+
       // REFRESH TOKEN HẾT HẠN -> Gọi store logout
       await useAuthStore.getState().logout();
-      
+
       Alert.alert("Phiên làm việc hết hạn", "Vui lòng đăng nhập lại.");
       return Promise.reject(err);
     } finally {
       isRefreshing = false;
     }
-  }
+  },
 );
 
 // Khi Guest gọi API, ta truyền thêm config { headers: { 'x-no-auth': 'true' } }
-export const GetPublicAPI = (url:string, params:object) => {
+export const GetPublicAPI = (url: string, params: object) => {
   return GetAPI(url, { ...params, headers: { "x-no-auth": "true" } });
 };
 
 export const GetAPI = async (url: string, params?: any) => {
+  console.log(url, params);
   return await serverInstance.get(url, { params });
 };
 
 export const PostAPI = async (
   url: string,
   data: any,
-  customConfig: AxiosRequestConfig = {}
+  customConfig: AxiosRequestConfig = {},
 ) => {
   return await serverInstance.post(url, data, customConfig);
 };
@@ -139,7 +143,7 @@ export const PutAPI = async (url: string, data: any) => {
 export const PatchAPI = async (
   url: string,
   data: any,
-  customConfig: AxiosRequestConfig = {}
+  customConfig: AxiosRequestConfig = {},
 ) => {
   return await serverInstance.patch(url, data, customConfig);
 };

@@ -9,10 +9,10 @@ import MD5 from "crypto-js/md5";
 export const getTranslateRoomId = (
   word: string,
   language: string,
-  userLanguage: string
+  userLanguage: string,
 ): string => {
   // Chuẩn hóa từ (viết thường, bỏ khoảng trắng thừa) để đảm bảo MD5 nhất quán
-  const normalizedWord = word.trim().replace(/\s+/g, ' ').toLowerCase();
+  const normalizedWord = word.trim().replace(/\s+/g, " ").toLowerCase();
 
   const hash = MD5(normalizedWord).toString();
 
@@ -38,7 +38,11 @@ class SocketManager {
 
   // 1. Kết nối với cơ chế Reconnect
   connect() {
-    if (this.ws?.readyState === WebSocket.OPEN || this.ws?.readyState === WebSocket.CONNECTING) return;
+    if (
+      this.ws?.readyState === WebSocket.OPEN ||
+      this.ws?.readyState === WebSocket.CONNECTING
+    )
+      return;
 
     this.isManualClose = false;
     this.ws = new WebSocket(this.url);
@@ -56,11 +60,13 @@ class SocketManager {
         const res = JSON.parse(event.data);
         // Lấy room_id để biết tin nhắn này thuộc về từ vựng nào
         // Server cần trả về room_id trong mọi gói tin stream
-        const roomId = res.room_id || res.word_room; 
-        
+        const roomId = res.room_id || res.word_room;
+
+        console.log("nhận message", res);
+
         if (roomId && this.subscribers.has(roomId)) {
-          this.subscribers.get(roomId)?.forEach(cb => cb(res));
-          
+          this.subscribers.get(roomId)?.forEach((cb) => cb(res));
+
           // NẾU SERVER RA LỆNH UNSUBSCRIBE (Tự động cleanup ở phía Client)
           if (res.unsubscribe_room) {
             console.log(`🧹 Tự động cleanup group: ${res.unsubscribe_room}`);
@@ -74,9 +80,15 @@ class SocketManager {
 
     this.ws.onclose = () => {
       console.log("🔌 Socket Closed");
-      if (!this.isManualClose && this.reconnectAttempts < this.maxReconnectAttempts) {
+      if (
+        !this.isManualClose &&
+        this.reconnectAttempts < this.maxReconnectAttempts
+      ) {
         this.reconnectAttempts++;
-        const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+        const delay = Math.min(
+          1000 * Math.pow(2, this.reconnectAttempts),
+          10000,
+        );
         setTimeout(() => this.connect(), delay);
       }
     };
@@ -127,7 +139,7 @@ class SocketManager {
   }
 }
 
-export const socketRoom=(word:string, lang:string)=>{
+export const socketRoom = (word: string, lang: string) => {
   if (!word) {
     return "";
   }
@@ -145,6 +157,6 @@ export const socketRoom=(word:string, lang:string)=>{
   cleanedWord = cleanedWord.trim().split(/\s+/).join(" ");
 
   return `${cleanedWord}:${lang}`;
-}
+};
 
-export const wordSocket = new SocketManager("ws://localhost:8000/ws/word/");
+export const wordSocket = new SocketManager("ws://192.168.50.64:8000/ws/word/");

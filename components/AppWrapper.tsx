@@ -2,6 +2,7 @@ import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
 import { isColorDark } from "@/utils/color";
 import { wordSocket } from "@/utils/socket";
+import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useMemo } from "react";
 import { Platform, StatusBar, View } from "react-native";
@@ -18,10 +19,17 @@ export const AppWrapper = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (db) {
-      bootstrapAppData(db);
+      const success = bootstrapAppData(db);
+      if (!success) {
+        router.replace("/screens/Start/screen");
+      }
     }
 
-    wordSocket.connect()
+    wordSocket.connect();
+
+    return () => {
+      wordSocket.disconnect();
+    };
   }, [db]);
 
   return (
