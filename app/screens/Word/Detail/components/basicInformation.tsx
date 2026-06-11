@@ -32,21 +32,17 @@ import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
 // } from "expo-speech-recognition";
 // import { initWhisper } from "whisper.rn";
 import { useAppStore } from "@/stores/appStore";
-import { WordType } from "../../data";
-import { textToSpeech } from "../utils";
+import { SenseContentType, SenseType } from "../../data";
+import { getLangContent, getLangTranslate, textToSpeech } from "../utils";
 import WordDefinitions from "./definitions";
 import SenseNote from "./senseNote";
 import SenseUsage from "./senseUsage";
+import { lightTheme } from "@/configs/theme";
 
 interface Props {
   word: string;
-  definition: WordType["definition"];
-  usage: WordType["definition"];
-  note: string;
-  image?: string;
-  translates: WordType["translates"];
-  examples: WordType["examples"];
-  metadata: WordType["metadata"];
+  sense: SenseType;
+  note?:string
   mode?: "create" | "update" | "view";
   labelWidth: number;
   onLabelLayout: (event: LayoutChangeEvent) => void;
@@ -56,14 +52,9 @@ interface Props {
 
 const BasicInformation = ({
   word,
-  metadata,
   mode,
-  translates,
-  definition,
-  usage,
+  sense,
   note,
-  image,
-  examples,
   labelWidth,
   onLabelLayout,
   openInputModal,
@@ -78,31 +69,32 @@ const BasicInformation = ({
 
   const sound = useState<Audio.Sound | null>(null);
   const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+  const theme = useMemo(() => themeObj?.color_palette||lightTheme, [themeObj]);
+  const translates= useMemo(() => getLangTranslate(sense?.contents?.translates, settings?.translate_language), [sense?.contents?.translates]);
 
   const toggleLanguageMode = () =>
     dbService?.setShowTranslation(!settings?.show_translation);
-  const ipas = useMemo(() => metadata?.ipas, [metadata?.ipas]);
+  const ipas = useMemo(() => sense?.ipas, [sense?.ipas]);
 
   const { width } = useWindowDimensions();
   const { present } = useBottomSheet();
   const { setGlobalModal } = useModalStore();
 
-  const onShowMoreDefinitions = () => {
-    present({
-      size: "full",
-      render: () => (
-        <MoreDefinitions
-          definitions={[
-            { value: "Lấy của người ta", id: "1" },
-            { value: "Lấy của người ta", id: "2" },
-            { value: "Lấy của người ta", id: "3" },
-          ]}
-        />
-      ),
-      title: "Other definitions",
-    });
-  };
+  // const onShowMoreDefinitions = () => {
+  //   present({
+  //     size: "full",
+  //     render: () => (
+  //       <MoreDefinitions
+  //         definitions={[
+  //           { value: "Lấy của người ta", id: "1" },
+  //           { value: "Lấy của người ta", id: "2" },
+  //           { value: "Lấy của người ta", id: "3" },
+  //         ]}
+  //       />
+  //     ),
+  //     title: "Other definitions",
+  //   });
+  // };
 
   const [audio, setAudio] = useState<AudioType | null>(null);
 
@@ -283,7 +275,7 @@ const BasicInformation = ({
         )}
 
         <Animated.View layout={LinearTransition}>
-          {image ? (
+          {sense.image ? (
             <View
               style={{
                 elevation: 4,
@@ -295,7 +287,7 @@ const BasicInformation = ({
             >
               <Image
                 source={{
-                  uri: image,
+                  uri: sense.image,
                 }}
                 style={{ width: "100%", height: "100%" }}
               />
@@ -323,7 +315,7 @@ const BasicInformation = ({
             <AppTitle title="Definition" />
           </View>
 
-          <View className="flex-row items-center gap-1">
+          {/* <View className="flex-row items-center gap-1">
             <AppText
               className="h-full"
               onPress={onShowMoreDefinitions}
@@ -340,49 +332,49 @@ const BasicInformation = ({
               color="primary"
               branch="feather"
             />
-          </View>
+          </View> */}
         </View>
         <Divider />
         <View>
           <View>
             <WordDefinitions
               word={word}
-              definition={definition}
-              examples={examples}
+              definition={sense.contents?.definition}
+              examples={sense.contents?.examples||[]}
             />
           </View>
         </View>
       </Animated.View>
 
-      <SenseUsage word={word} usage={usage} />
+      <SenseUsage word={word} usage={sense.contents?.usage} />
 
       <SenseNote word={word} note={note} />
     </View>
   );
 };
 
-export default BasicInformation;
+// export default BasicInformation;
 
-type MoreDefinitionsProps = {
-  definitions: { value: string; id: string }[];
-  // examples: WordType["examples"];
-};
-const MoreDefinitions = ({ definitions }: MoreDefinitionsProps) => {
-  return (
-    <View className="px-3 mt-4">
-      {definitions.map((item, index) => (
-        <View key={index}>
-          <WordDefinitions
-            examples={[]}
-            word=""
-            key={index}
-            definition={{ ...item, translate: "", subId: "" }}
-          />
-          {index !== definitions.length - 1 && (
-            <Divider style={{ marginVertical: 8 }} />
-          )}
-        </View>
-      ))}
-    </View>
-  );
-};
+// type MoreDefinitionsProps = {
+//   definitions: { value: string; id: string }[];
+//   // examples: WordType["examples"];
+// };
+// const MoreDefinitions = ({ definitions }: MoreDefinitionsProps) => {
+//   return (
+//     <View className="px-3 mt-4">
+//       {definitions.map((item, index) => (
+//         <View key={index}>
+//           <WordDefinitions
+//             examples={[]}
+//             word=""
+//             key={index}
+//             definition={{ ...item, translate: "", subId: "" }}
+//           />
+//           {index !== definitions.length - 1 && (
+//             <Divider style={{ marginVertical: 8 }} />
+//           )}
+//         </View>
+//       ))}
+//     </View>
+//   );
+// };

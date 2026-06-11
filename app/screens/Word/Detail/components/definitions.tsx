@@ -8,13 +8,15 @@ import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { useMemo, useState } from "react";
 import { Alert, View, ViewStyle } from "react-native";
-import { WordType } from "../../data";
+import { SenseContentType } from "../../data";
 import CreateExampleForm from "./createExampleForm";
 import WordExample from "./example";
+import { lightTheme } from "@/configs/theme";
+import { getLangContent } from "../utils";
 
 type Props = {
-  definition: WordType["definition"];
-  examples: WordType["examples"];
+  definition?: SenseContentType;
+  examples: SenseContentType[];
   isSimple?: boolean;
   word: string;
   style?: ViewStyle;
@@ -30,7 +32,11 @@ const WordDefinitions = ({
   const [action, setAction] = useState<null | "edit" | "add">(null);
 
   const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+  const theme = useMemo(() => themeObj?.color_palette||lightTheme, [themeObj]);
+
+  const [tDefinition, nDefinition] =useMemo(()=>{
+    return [getLangContent(definition,settings?.learning_language), getLangContent(definition,settings?.translate_language)]
+  },[definition])
 
   const { setGlobalModal } = useModalStore();
   const { present } = useBottomSheet();
@@ -100,7 +106,7 @@ const WordDefinitions = ({
       setGlobalModal({
         title: "Edit definition",
         type: "prompt",
-        defaultValue: definition.value,
+        defaultValue: tDefinition?.value,
       });
     }, 500);
   };
@@ -144,12 +150,12 @@ const WordDefinitions = ({
   return (
     <AppPressable onLongPress={showModal} className="py-2" style={style}>
       <AppText color="subText1">
-        {definition.value[0].toUpperCase()}
-        {definition.value.slice(1)}
+        {tDefinition?.value[0].toUpperCase()}
+        {tDefinition?.value.slice(1)}
       </AppText>
       {settings?.show_translation && (
         <View>
-          {definition?.translate ? (
+          {nDefinition ? (
             <AppPressable
               onLongPress={showModal} // Phải tạo model riêng cho từng thằng
               touchColor={theme.secondary + "20"}
@@ -163,7 +169,7 @@ const WordDefinitions = ({
               className="p-3"
             >
               <AppText color="subText1" font="MulishLightItalic" size={"sm"}>
-                {definition.translate}
+                {nDefinition.value}
               </AppText>
             </AppPressable>
           ) : (

@@ -1255,53 +1255,47 @@ export const testData = [
   },
 ];
 
-export type WordType = {
+export type SenseContentType={
+  [lang:string]:{
+    id: string;
+    subId: string;
+    value: string;
+    ruby?: string;
+    roman?: string;
+  }
+}
+
+export type SenseType = {
   id: string;
-  value: string;
-  languageCode: string;
-  wordInfo: WordInfoType;
-  synonyms: string[];
-  antonyms: never[];
-  relateds: never[];
+  value?: string;
+  pos?:string
+  languageCode?: string;
+  contents?: {
+    translates: {[lang:string]:string[]}
+    definition: SenseContentType;
+    usage: SenseContentType;
+    examples: SenseContentType[]
+    image?: string;
+  };
+  
   score?: number;
   isUser?: boolean;
-  forms: {
+  
+  ipas?: {
     value: string;
-    type: string[];
+    type: string;
+    url: string;
+    label: string;
   }[];
-  ruby: never[];
   metadata?: {
-    ipas: {
-      value: string;
-      type: string;
-      url: string;
-      label: string;
-    }[];
-    source: string;
-    tags: string[];
-    word: string;
-    topics: string[];
-  };
-  translates: string[];
-  definition: {
-    id: string;
-    subId: string;
-    value: string;
-    translate: string;
-  };
-  usage: {
-    id: string;
-    subId: string;
-    value: string;
-    translate: string;
-  };
+    forms?: string[];
+    source?: string;
+    tags?: string[];
+    synonyms?: string[];
+    antonyms?: never[];
+    relateds?: never[];
+  }
   image?: string;
-  examples: {
-    id: string;
-    subId: string;
-    value: string;
-    translate: string;
-  }[];
 };
 
 export type WordInfoType = {

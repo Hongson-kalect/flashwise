@@ -1,13 +1,15 @@
 import * as Speech from "expo-speech";
 import { WordState } from "../type";
+import { SenseContentType } from "../data";
 
 type ActionType =
   | "INITIAL"
   | "FULLDATA"
   | "WORD"
-  | "SENSE_PARTIAL"
-  | "SENSE_TRANSLATE"
-  | "IMAGE_PARTIAL"
+  | "PARTIAL_SENSE"
+  | "PARTIAL_METADATA"
+  | "PARTIAL_IMAGE"
+  | "PARTIAL_TRANSLATE"
   | "COMPLETED";
 export const senseDataReducer = (
   state: WordState,
@@ -15,19 +17,16 @@ export const senseDataReducer = (
 ): WordState => {
   switch (action.type) {
     case "INITIAL":
-      const { word, senses, images } = action.payload.data;
+      const { word, senses } = action.payload;
       const newData = {
         word: state.word,
         senses: state.senses,
-        images: state.images,
       };
 
       if (!newData.word && word) {
         newData.word = word;
       }
-
       newData.senses = { ...newData.senses, ...senses };
-      newData.images = { ...newData.images, ...images };
 
       return {
         ...state,
@@ -39,7 +38,7 @@ export const senseDataReducer = (
     case "FULLDATA":
       return {
         ...state,
-        ...action.payload.data,
+        ...action.payload,
         status: "COMPLETED",
         isLoading: false,
       };
@@ -48,91 +47,84 @@ export const senseDataReducer = (
       return {
         ...state,
         status: "PARTIAL",
-        word: action.payload.data,
+        word: action.payload,
       };
     }
 
-    case "SENSE_PARTIAL": {
-      const sense = action.payload.data;
-      if (state.senses[sense.id]) return state;
-      return {
-        ...state,
-        status: "PARTIAL",
-        senses: { ...state.senses, ...sense },
-      };
-    }
-
-    case "SENSE_TRANSLATE": {
-      const { data } = action.payload; // data chứa { s_2: { ... }, s_3: { ... } }
-
-      // Clone lại senses hiện tại để đảm bảo tính immutability
+    case "PARTIAL_SENSE": {
+      const senseObj = action.payload;
       const updatedSenses = { ...state.senses };
 
-      Object.keys(data).forEach((senseId) => {
-        const translateData = data[senseId];
-        const targetSense = updatedSenses[senseId];
+      // Vòng lặp O(k) với k là số lượng sense được gom trong lượt socket này (thường k = 1 hoặc vài sense)
+      Object.keys(senseObj).forEach((senseId) => {
+        const currentSense = updatedSenses[senseId];
+        const newSenseData = senseObj[senseId];
 
-        if (targetSense) {
-          updatedSenses[senseId] = {
-            ...targetSense,
-            // Cập nhật mảng translates gốc
-            translates: translateData.translates || targetSense.translates,
-
-            // Cập nhật bản dịch cho Definition
-            definition: {
-              ...targetSense.definition,
-              translate: translateData.definition.value,
-            },
-
-            // Cập nhật bản dịch cho Usage
-            usage: {
-              ...targetSense.usage,
-              translate: translateData.usage.value,
-            },
-
-            // Cập nhật bản dịch cho Examples
-            // Map qua mảng examples cũ và tìm example tương ứng dựa trên originId
-            examples: targetSense.examples.map((ex) => {
-              const translatedEx = translateData.examples.find(
-                (tEx: any) => tEx.originId === ex.id, // ex.id ở state chính là originId ở payload
-              );
-
-              if (translatedEx) {
-                return {
-                  ...ex,
-                  translate: translatedEx.value,
-                };
-              }
-              return ex;
-            }),
-
-            // Lưu lại note hoặc metadata nếu cần
-            note: targetSense.note,
-          };
-        }
+        updatedSenses[senseId] = currentSense
+          ? { ...currentSense, ...newSenseData } // Giữ data cũ, đè imageUrl (hoặc các prop ảnh khác) lên
+          : { id: senseId, ...newSenseData }; // Phòng thủ nếu sense chưa khởi tạo
       });
 
       return {
         ...state,
         senses: updatedSenses,
-        // Sau khi update, bạn có thể chạy hàm kiểm tra status ở đây
-        status: "COMPLETED", // Hoặc gọi hàm check logic để set COMPLETED
       };
     }
+    case "PARTIAL_IMAGE": {
+      const imageObj = action.payload;
+      const updatedSenses = { ...state.senses };
 
-    case "IMAGE_PARTIAL": {
-      const image = action.payload.data;
-      const senseId = Object.keys(image)[0];
+      // Vòng lặp O(k) với k là số lượng sense được gom trong lượt socket này (thường k = 1 hoặc vài sense)
+      Object.keys(imageObj).forEach((senseId) => {
+        const currentSense = updatedSenses[senseId];
+        const newSenseData = imageObj[senseId];
 
-      if (state.images[senseId]) return state;
+        updatedSenses[senseId] = currentSense
+          ? { ...currentSense, image: newSenseData } // Giữ data cũ, đè imageUrl (hoặc các prop ảnh khác) lên
+          : { id: senseId, image: newSenseData }; // Phòng thủ nếu sense chưa khởi tạo
+      });
 
       return {
         ...state,
-        status: "PARTIAL",
-        images: {
-          ...state.images,
-          ...image,
-        },
+        senses: updatedSenses,
+      };
+    }
+    case "PARTIAL_METADATA": {
+      const metadataObj = action.payload;
+      const updatedSenses = { ...state.senses };
+
+      // Vòng lặp O(k) với k là số lượng sense được gom trong lượt socket này (thường k = 1 hoặc vài sense)
+      Object.keys(metadataObj).forEach((senseId) => {
+        const currentSense = updatedSenses[senseId];
+        const newSenseData = metadataObj[senseId];
+
+        updatedSenses[senseId] = currentSense
+          ? { ...currentSense, metadata: newSenseData } // Giữ data cũ, đè imageUrl (hoặc các prop ảnh khác) lên
+          : { id: senseId, metadata: newSenseData }; // Phòng thủ nếu sense chưa khởi tạo
+      });
+
+      return {
+        ...state,
+        senses: updatedSenses,
+      };
+    }
+    case "PARTIAL_TRANSLATE": {
+      const translateObj = action.payload;
+      const updatedSenses = { ...state.senses };
+
+      // Vòng lặp O(k) với k là số lượng sense được gom trong lượt socket này (thường k = 1 hoặc vài sense)
+      Object.keys(translateObj).forEach((senseId) => {
+        const currentSense = updatedSenses[senseId];
+        const newSenseData = translateObj[senseId];
+
+        updatedSenses[senseId] = currentSense
+          ? { ...currentSense, contents: newSenseData } // Giữ data cũ, đè imageUrl (hoặc các prop ảnh khác) lên
+          : { id: senseId, contents: newSenseData }; // Phòng thủ nếu sense chưa khởi tạo
+      });
+
+      return {
+        ...state,
+        senses: updatedSenses,
       };
     }
 
@@ -155,7 +147,7 @@ export const mapSenses = (sensesObj: WordState) => {
   // 1. Nhóm các sense theo pos bằng một Object tạm (Map)
   const grouped = Object.values(sensesObj.senses).reduce(
     (acc, currentSense) => {
-      const pos = currentSense.pos || "unknown";
+      const pos = (currentSense.pos || "unknown").toLowerCase();
 
       if (!acc[pos]) {
         acc[pos] = {
@@ -167,7 +159,6 @@ export const mapSenses = (sensesObj: WordState) => {
       // 2. Chèn sense kèm ảnh vào mảng tương ứng của pos đó
       acc[pos].senses.push({
         ...currentSense,
-        image: sensesObj.images[currentSense.id] || null,
       });
 
       return acc;
@@ -181,6 +172,22 @@ export const mapSenses = (sensesObj: WordState) => {
     entries: Object.values(grouped),
   };
 };
+
+export const getLangContent = (content?:SenseContentType, lang?: string)=>{
+  if(!lang || !content) return null
+
+    if(content && !!content?.[lang]){
+      return content[lang]
+    }
+  }
+
+export const getLangTranslate = (content?:{[lang:string]:string[]}, lang?: string)=>{
+    if(!lang || !content) return null
+
+    if(content && !!content?.[lang]){
+      return content[lang]
+    }
+  }
 
 export const getSenseData = (dispatch: any) => {
   // 1. INITIAL: Trả về thông tin Word và nghĩa Danh từ (Noun)
@@ -377,6 +384,6 @@ export const isTranslationCompleted = (state: WordState): boolean => {
   });
 };
 
-export const textToSpeech = (text: string, language: string ='en') => {
-  Speech.speak(text,{language});
+export const textToSpeech = (text: string, language: string = "en") => {
+  Speech.speak(text, { language });
 };

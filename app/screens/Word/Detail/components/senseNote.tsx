@@ -11,7 +11,7 @@ import { Divider } from "react-native-paper";
 import Animated, { LinearTransition } from "react-native-reanimated";
 
 type Props = {
-  note: string;
+  note?: string;
   word: string;
   onAddNote?: () => void;
   onEditNote?: () => void;

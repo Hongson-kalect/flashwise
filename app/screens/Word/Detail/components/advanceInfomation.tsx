@@ -14,32 +14,10 @@ import { Divider } from "react-native-paper";
 
 type Props = {
   mode?: "create" | "update" | "view";
-  related: {
-    value: string;
-    tags: string[];
-    id: string;
-  }[];
-  synonym:
-    | {
-        value: string;
-        tags: string[];
-        id: string;
-      }[]
-    | string[];
-  antonym:
-    | {
-        value: string;
-        tags: string[];
-        id: string;
-      }[]
-    | string[];
-  form:
-    | {
-        value: string;
-        type: string[];
-        id?: string;
-      }[]
-    | string[];
+  related?: string[];
+  synonym?:string[];
+  antonym?:string[];
+  form?:string[];
   labelWidth?: number;
   onLabelLayout?: (event: LayoutChangeEvent) => void;
   openInputModal: (props: CreateWordInputModalProps) => void;

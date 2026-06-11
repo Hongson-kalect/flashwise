@@ -6,16 +6,20 @@ import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { useMemo } from "react";
 import { Alert, View } from "react-native";
-import { WordType } from "../../data";
+import { SenseContentType } from "../../data";
+import { getLangContent } from "../utils";
+import { lightTheme } from "@/configs/theme";
 
 type Props = {
   bold: number[][] | string;
-  example: WordType["examples"][0];
+  example: SenseContentType;
 };
 const WordExample = ({ example, bold }: Props) => {
   const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
-
+  const theme = useMemo(() => themeObj?.color_palette||lightTheme, [themeObj]);
+  const [tExample, nExample] =useMemo(()=>{
+      return [getLangContent(example,settings?.learning_language), getLangContent(example,settings?.translate_language)]
+    },[example])
   const { setGlobalModal } = useModalStore();
 
   const showExampleOptions = () => {
@@ -115,7 +119,7 @@ const WordExample = ({ example, bold }: Props) => {
       setGlobalModal({
         title: "Edit example",
         type: "prompt",
-        defaultValue: example.value,
+        defaultValue: tExample?.value,
       });
     }, 500);
   };
@@ -124,7 +128,7 @@ const WordExample = ({ example, bold }: Props) => {
     setTimeout(() => {
       setGlobalModal({
         type: "prompt",
-        subMessage: example.value,
+        subMessage: tExample?.value,
         title: "Add vietnamese translate",
       });
     }, 500);
@@ -145,7 +149,7 @@ const WordExample = ({ example, bold }: Props) => {
       setGlobalModal({
         title: "Edit example",
         type: "prompt",
-        defaultValue: example.translate,
+        defaultValue: nExample?.value,
       });
     }, 500);
   };
@@ -188,7 +192,7 @@ const WordExample = ({ example, bold }: Props) => {
             boldColor="text"
             font="MulishRegular"
             boldFont="MulishBoldItalic"
-            text={example.value[0].toUpperCase() + example.value.slice(1)}
+            text={`${tExample?.value?.toUpperCase()||''}${tExample?.value?.slice(1)}||'`}
             bold={bold}
           />
         </AppText>
@@ -205,8 +209,7 @@ const WordExample = ({ example, bold }: Props) => {
               className="flex-row items-center gap-2 pt-1 pb-2 pl-2"
             >
               <AppText size={"xs"} font="MulishLightItalic" color="subText2">
-                {example.translate[0].toUpperCase() +
-                  example.translate.slice(1)}
+                {`${nExample?.value?.toUpperCase()||''}${nExample?.value?.slice(1)||''}`}
               </AppText>
             </AppText>
           </AppPressable>

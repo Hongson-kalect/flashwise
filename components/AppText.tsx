@@ -1,5 +1,6 @@
 import { FontFamily } from "@/configs/fonts";
 import { textSizes } from "@/configs/size";
+import { lightTheme } from "@/configs/theme";
 import { useTheme } from "@/providers/Theme";
 import { LayoutChangeEvent, StyleProp, Text, TextStyle } from "react-native";
 
@@ -10,22 +11,7 @@ type Props = {
   onPress?: () => void;
   className?: string;
   size?: keyof typeof textSizes | number;
-  color?:
-    | "title"
-    | "constract"
-    | "primary"
-    | "secondary"
-    | "tertiary"
-    | "text"
-    | "success"
-    | "error"
-    | "warning"
-    | "link"
-    | "subText1"
-    | "subText2"
-    | "subText3"
-    | "white"
-    | "disabled";
+  color?:keyof typeof lightTheme;
 
   numberOfLines?: number;
   onLayout?: (event: LayoutChangeEvent) => void;

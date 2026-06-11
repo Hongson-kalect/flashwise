@@ -19,7 +19,7 @@ import { LayoutChangeEvent, Pressable, View } from "react-native";
 import { MaterialTabBar, Tabs } from "react-native-collapsible-tab-view";
 import Animated, { FadeIn } from "react-native-reanimated";
 import WordSelectForm from "../Create/components/wordSelectForm";
-import { WordType } from "../data";
+import { SenseType } from "../data";
 import { initialState } from "../type";
 import WordAdvanceInformation from "./components/advanceInfomation";
 import BasicInformation from "./components/basicInformation";
@@ -40,9 +40,16 @@ const WordDetail = () => {
   const { id, w } = useLocalSearchParams();
   // Prev data: word value + word id [id]?w=...
   const [sensesObj, dispatch] = useReducer(senseDataReducer, initialState);
+  const [isLoading, setIsLoading] = useState(false);
+  const [senses, setSenses] = useState<any>(null);
 
-  const senses = useMemo(() => {
-    return mapSenses(sensesObj);
+  // const senses = useMemo(() => {
+  //   return mapSenses(sensesObj);
+  // }, [sensesObj]);
+
+  useEffect(() => {
+    setSenses(mapSenses(sensesObj));
+    setIsLoading(sensesObj.isLoading || false);
   }, [sensesObj]);
 
   // Giả lập nhận dữ liệu từ socket
@@ -66,18 +73,27 @@ const WordDetail = () => {
     return null;
   }, [sensesObj.status]);
 
+  const [socketData, setSocketData] = useState<{data:any, time:number}[]>([]);
+
   const fetchWord = async (word: string) => {
+    const start = new Date().getTime();
     normalizeWord(word);
-    const room_id = `${normalizeWord(word, settings?.translate_language)}`;
+    const room_id = `${normalizeWord(word, settings?.learning_language)}`;
 
     if (!settings) return alert("No settings loaded. Please reload the app.");
 
     wordSocket.subscribe(room_id, (data) => {
-      // dispatch({ type: data.type, payload: data.payload });
-      alert(JSON.stringify(data));
-    });
+      setSocketData((prev) => [
+        ...prev,
+        { data, time: new Date().getTime() - start },
+      ]);
+      if (!data.type) {
+        console.log("socket không có type", data);
+        return;
+      }
 
-    alert("Room id: " + room_id);
+      dispatch({ type: data.type, payload: data.payload });
+    });
 
     const res = await GetAPI(
       "http://192.168.50.64:8000/api/ai-words/get-word/",
@@ -88,98 +104,18 @@ const WordDetail = () => {
       },
     );
 
-    alert("res " + JSON.stringify(res.data));
+    if (res.data?.status !== 200) {
+      dispatch({ type: "INITIAL", payload: res.data });
+    } else {
+      setSenses(res.data);
+    }
   };
 
   useEffect(() => {
     const handle = async () => {
-      await fetchWord("pencil");
+      await fetchWord("table");
     };
     handle();
-    // Connect socket bằng md5 trước khi gọi api
-    // Dùng useQuery hoặc fetch ở đây nhe
-    // 2 case xử lý
-    // Kiểm tra từ vựng trong phạm vi db với status is_Completed nếu true
-    // gọi sql trả về theo logic tương tự backend để trả về data hiển thị -> 1.2
-    //
-    // Khởi tạo socket connect bằng md5 qua funtion có sẵn
-
-    // const response: { status: number; message?: string; data: any } = {
-    //   status: 201,
-    //   message: "Processing",
-    //   data: {
-    //     word: { id: "w_table", value: "table" },
-    //     senses: {
-    //       s_1: {
-    //         id: "s_1",
-    //         pos: "noun",
-    //         metadata: { ipa: "/ˈteɪbl/" },
-    //         definition: {
-    //           id: "def_1",
-    //           subId: "s_1",
-    //           languageCode: "en",
-    //           value:
-    //             "A piece of furniture with a flat top and one or more legs.",
-    //           translate:
-    //             "Một món đồ nội thất có mặt phẳng và một hoặc nhiều chân.",
-    //         },
-    //         usage: {
-    //           id: "usg_1",
-    //           subId: "s_1",
-    //           languageCode: "en",
-    //           value: "Commonly used in dining rooms and offices.",
-    //           translate: "Thường dùng trong phòng ăn và văn phòng.",
-    //         },
-    //         translates: ["cái bàn", "mặt bàn"],
-    //         examples: [
-    //           {
-    //             id: "ex_1",
-    //             subId: "s_1",
-    //             languageCode: "en",
-    //             value: "The books are on the table.",
-    //             translate: "Những cuốn sách đang ở trên bàn.",
-    //           },
-    //         ],
-    //       },
-    //     },
-    //     images: {
-    //       s_1: "https://assets.pbimgs.com/pbimgs/rk/images/dp/wcm/202252/0235/modern-farmhouse-round-pedestal-extending-dining-table-l.jpg",
-    //     },
-    //   },
-    // };
-
-    // if (response.status === 200) {
-    //   setTimeout(() => {
-    //     dispatch({ type: "FULLDATA", payload: response.data });
-    //   }, 2000);
-    //   // 1. Từ vựng đã tồn tại (90%) - easy
-    //   // 1.1 Gọi từ vựng
-    //   // 1.2 Hiển thị full dữ liệu -> 3
-    //   // 1.2 Save data -> 3
-    // } else {
-    //   setTimeout(() => {
-    //     dispatch({
-    //       type: "INITIAL",
-    //       payload: {
-    //         // data: {
-    //         //   word: { id: "w_table", value: "table" },
-    //         // },
-    //         data: response.data,
-    //       },
-    //     });
-    //   }, 2000);
-    //   // 2. Từ vựng chưa tồn tại (10%) - complex
-    //   // 2.1 Gọi từ vựng
-    //   // 2.2 Nhận kết quả chưa tồn tại, nhận dữ liệu liên tục qua socket. show processing status
-    //   getSenseData(dispatch);
-    //   // 2.2.1 Khi bắt đầu gọi, nhận dữ liệu lập tức trong redis nếu có
-    //   // 2.2.2 Mỗi khi có update (sense data, sense image) đều nhận 1 socket path. và update sense state ngay lập tức
-    //   // 2.2.3 sau khi nhận patch cuối cùng với status completed thì tắt processing status -> 3
-    //   // 2.2.4 save data
-    //   // 2.2.5 ngắt socket và tạo socket mới để gọi hàm translate cho word hiện tại.
-    //   // 2.2.6 Tiếp tục nhận data và save to database -> 3
-    //   // 3. close socket connect
-    // }
   }, []);
 
   useEffect(() => {
@@ -201,6 +137,7 @@ const WordDetail = () => {
             mode={pageMode}
             setMode={setPageMode}
           />
+
           {/* <AppText color="primary" size={40} font="MulishSemiBold">
             {word}
           </AppText> */}
@@ -215,8 +152,9 @@ const WordDetail = () => {
       )}
       renderTabBar={(props) => <MaterialTabBar {...props} scrollEnabled />}
     >
-      {senses ? (
-        senses.entries.map((item, index) => {
+      {/* {senses ? ( */}
+      {false ? (
+        senses.entries.map((item:{pos:string, senses:SenseType[]}, index:number) => {
           const isActive = index === tabIndex;
           return (
             <Tabs.Tab
@@ -233,6 +171,7 @@ const WordDetail = () => {
               name={item.pos.toString()}
             >
               <Tabs.ScrollView>
+                <AppText>{JSON.stringify(item.senses)}</AppText>
                 <SensesInfo word={word} data={item.senses} mode={pageMode} />
               </Tabs.ScrollView>
             </Tabs.Tab>
@@ -251,9 +190,19 @@ const WordDetail = () => {
           )}
           name={tabIndex.toString()}
         >
-          <View>
-            <AppText>Có nịt</AppText>
-          </View>
+          <Tabs.ScrollView>
+            <AppText>{JSON.stringify(sensesObj)}</AppText>
+            {/* {socketData.map((item, index) => {
+              return (
+                <View key={index}>
+                  <AppText>
+                    {item?.time} - {JSON.stringify(item?.data)}
+                  </AppText>
+                  <Divider style={{ marginVertical: 8 }} />
+                </View>
+              );
+            })} */}
+          </Tabs.ScrollView>
         </Tabs.Tab>
       )}
       {/* {data.map((item, index) => {
@@ -289,7 +238,7 @@ const WordDetail = () => {
 
 type SensesInfoType = {
   word: string;
-  data: WordType[];
+  data: SenseType[];
   mode?: "create" | "update" | "view";
 };
 const SensesInfo = (props: SensesInfoType) => {
@@ -350,17 +299,17 @@ const SensesInfo = (props: SensesInfoType) => {
         </Pressable>
       </Animated.View>
 
-      <WordInfo word={props.word} data={activeSense} mode={props.mode} />
+      <SenseInfo word={props.word} data={activeSense} mode={props.mode} />
     </View>
   );
 };
 
 type WordInfoType = {
   word: string;
-  data: WordType;
+  data: SenseType;
   mode?: "create" | "update" | "view";
 };
-const WordInfo = (props: WordInfoType) => {
+const SenseInfo = (props: WordInfoType) => {
   const { theme } = useTheme();
   const { setGlobalModal, setListModal } = useModalStore();
   const { present } = useBottomSheet();
@@ -414,13 +363,8 @@ const WordInfo = (props: WordInfoType) => {
         <View className="mt-2">
           <BasicInformation
             word={props.word}
-            definition={props.data.definition}
-            usage={props.data.usage}
-            translates={props.data.translates}
-            examples={props.data.examples}
-            image={props.data.image}
-            note=""
-            metadata={props.data.metadata}
+            sense={props.data}
+            
             mode={props.mode}
             labelWidth={labelWidth}
             onLabelLayout={onLabelLayout}
@@ -447,10 +391,10 @@ const WordInfo = (props: WordInfoType) => {
 
         <View className="mt-6">
           <WordAdvanceInformation
-            related={props.data.relateds}
-            synonym={props.data.synonyms}
-            antonym={props.data.antonyms}
-            form={props.data.forms}
+            related={props.data.metadata?.relateds}
+            synonym={props.data.metadata?.synonyms}
+            antonym={props.data.metadata?.antonyms}
+            form={props.data.metadata?.forms}
             mode={props.mode}
             labelWidth={labelWidth}
             onLabelLayout={onLabelLayout}

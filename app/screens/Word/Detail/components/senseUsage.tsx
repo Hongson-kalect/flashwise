@@ -10,15 +10,22 @@ import { useMemo } from "react";
 import { View } from "react-native";
 import { Divider } from "react-native-paper";
 import Animated, { LinearTransition } from "react-native-reanimated";
+import { SenseContentType } from "../../data";
+import { lightTheme } from "@/configs/theme";
+import { getLangContent } from "../utils";
 
 type Props = {
   word: string;
-  usage?: { id: string; value: string; translate: string } | null;
+  usage?: SenseContentType
 };
 
 const SenseUsage = (props: Props) => {
   const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+  const theme = useMemo(() => themeObj?.color_palette||lightTheme, [themeObj]);
+
+  const [tUsage, nUsage] =useMemo(()=>{
+      return [getLangContent(props.usage,settings?.learning_language), getLangContent(props.usage,settings?.translate_language)]
+    },[props.usage])
 
   const toggleLanguageMode = () =>
     dbService?.setShowTranslation(!settings?.show_translation);
@@ -109,7 +116,7 @@ const SenseUsage = (props: Props) => {
       setGlobalModal({
         title: "Edit usage",
         type: "prompt",
-        defaultValue: props.usage?.value,
+        defaultValue: tUsage?.value,
       });
     }, 500);
   };
@@ -119,7 +126,7 @@ const SenseUsage = (props: Props) => {
       setGlobalModal({
         title: "Edit usage",
         type: "prompt",
-        defaultValue: props.usage?.translate,
+        defaultValue: nUsage?.value,
       });
     }, 500);
   };
@@ -174,7 +181,7 @@ const SenseUsage = (props: Props) => {
       <Divider />
       {props?.usage?.value ? (
         <AppPressable onLongPress={showUsageModal} hitSlop={8} className="py-2">
-          <AppText color="subText1">{props.usage.value}</AppText>
+          <AppText color="subText1">{tUsage?.value}</AppText>
         </AppPressable>
       ) : (
         <AppPressable
@@ -205,7 +212,7 @@ const SenseUsage = (props: Props) => {
               className="p-3"
             >
               <AppText color="subText1" font="MulishLightItalic" size={"sm"}>
-                {props.usage.translate}
+                {nUsage?.value}
               </AppText>
             </AppPressable>
           ) : (

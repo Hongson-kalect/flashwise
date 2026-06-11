@@ -4,12 +4,13 @@ import { useTheme } from "@/providers/Theme";
 import { useState } from "react";
 import { StyleProp, TextStyle } from "react-native";
 import AppText from "../AppText";
+import { lightTheme } from "@/configs/theme";
 
 type BoldTextProps = {
   text: string;
   bold: number[][] | string;
-  color?: keyof ReturnType<typeof useTheme>["theme"];
-  boldColor?: keyof ReturnType<typeof useTheme>["theme"];
+  color?: keyof typeof lightTheme;
+  boldColor?: keyof typeof lightTheme;
   size?: keyof typeof textSizes | number;
   style?: StyleProp<TextStyle>;
   font: keyof typeof fontFamily;

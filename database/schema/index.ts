@@ -109,9 +109,6 @@ export const initDatabase = async (db: SQLiteDatabase) => {
     return;
   }
 
-  console.log(1, generateSchema);
-  console.log(2, generateSeedData);
-
   if (version === 0) {
     await db.execAsync(generateSchema);
     console.log("qq");
