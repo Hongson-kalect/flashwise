@@ -5,8 +5,8 @@ import AppTitle from "@/components/AppTitle";
 import PhatAm from "@/components/PhatAm";
 import PhienAm from "@/components/PhienAm";
 import {
-    CreateWordInputModalProps,
-    CreateWordRadioModalProps,
+  CreateWordInputModalProps,
+  CreateWordRadioModalProps,
 } from "@/interfaces/word";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import useModalStore from "@/stores/modalStore";
@@ -16,13 +16,11 @@ import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { useMemo, useState } from "react";
 import {
-    Image,
-    LayoutChangeEvent,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    useWindowDimensions,
-    View,
+  Image,
+  LayoutChangeEvent,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
 } from "react-native";
 import { Divider } from "react-native-paper";
 import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
@@ -31,18 +29,18 @@ import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
 //   useSpeechRecognitionEvent,
 // } from "expo-speech-recognition";
 // import { initWhisper } from "whisper.rn";
+import { lightTheme } from "@/configs/theme";
 import { useAppStore } from "@/stores/appStore";
-import { SenseContentType, SenseType } from "../../data";
-import { getLangContent, getLangTranslate, textToSpeech } from "../utils";
+import { SenseType } from "../../data";
+import { getLangTranslate, textToSpeech } from "../utils";
 import WordDefinitions from "./definitions";
 import SenseNote from "./senseNote";
 import SenseUsage from "./senseUsage";
-import { lightTheme } from "@/configs/theme";
 
 interface Props {
   word: string;
   sense: SenseType;
-  note?:string
+  note?: string;
   mode?: "create" | "update" | "view";
   labelWidth: number;
   onLabelLayout: (event: LayoutChangeEvent) => void;
@@ -69,13 +67,22 @@ const BasicInformation = ({
 
   const sound = useState<Audio.Sound | null>(null);
   const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette||lightTheme, [themeObj]);
-  const translates= useMemo(() => getLangTranslate(sense?.contents?.translates, settings?.translate_language), [sense?.contents?.translates]);
+  const theme = useMemo(
+    () => themeObj?.color_palette || lightTheme,
+    [themeObj],
+  );
+  const translations = useMemo(
+    () =>
+      getLangTranslate(
+        sense?.contents?.translations,
+        settings?.translate_language,
+      ),
+    [sense?.contents?.translations],
+  );
 
   const toggleLanguageMode = () =>
     dbService?.setShowTranslation(!settings?.show_translation);
   const ipas = useMemo(() => sense?.ipas, [sense?.ipas]);
-
   const { width } = useWindowDimensions();
   const { present } = useBottomSheet();
   const { setGlobalModal } = useModalStore();
@@ -171,7 +178,7 @@ const BasicInformation = ({
   return (
     <View>
       <View className="flex-row items-center gap-2">
-        <View className="flex-row items-center gap-1 flex-1">
+        <View className="flex-row items-center justify-start gap-1">
           {/* {!recognizing ? (
             <Button title="Start" onPress={handleStart} />
           ) : (
@@ -181,49 +188,45 @@ const BasicInformation = ({
             />
           )}  */}
 
-          <ScrollView>
-            <Text>{transcript}</Text>
-          </ScrollView>
-          <View className="flex-row items-center w-full justify-start gap-2">
-            {!selectedAudio?.uri ? (
-              <TouchableOpacity
-                onPress={() => textToSpeech(word)}
-                style={{
-                  backgroundColor: theme.secondary,
-                  width: 40,
-                  height: 40,
-                }}
-                className=" border-gray-400 rounded-lg h-16 w-16 items-center justify-center"
-              >
-                <AppIcon
-                  name={"volume-2"}
-                  branch="feather"
-                  color="white"
-                  size={32}
-                />
-              </TouchableOpacity>
-            ) : (
-              <PhatAm
-                size="small"
-                audio={selectedAudio}
-                sound={sound}
-                disabled={!selectedAudio?.uri}
+          {!selectedAudio?.uri ? (
+            <TouchableOpacity
+              onPress={() => textToSpeech(word)}
+              style={{
+                backgroundColor: theme.secondary,
+                width: 40,
+                height: 40,
+              }}
+              className=" border-gray-400 rounded-lg h-16 w-16 items-center justify-center"
+            >
+              <AppIcon
+                name={"volume-2"}
+                branch="feather"
+                color="white"
+                size={32}
               />
-            )}
-          </View>
+            </TouchableOpacity>
+          ) : (
+            <PhatAm
+              size="small"
+              audio={selectedAudio}
+              sound={sound}
+              disabled={!selectedAudio?.uri}
+            />
+          )}
+
+          {/* <ScrollView>
+            <Text>{transcript}</Text>
+          </ScrollView> */}
 
           {/* <AppButton title="Test STT" onPress={handleStartRecording} /> */}
-
-          <AppText>{searchText}</AppText>
-
           <TouchableOpacity
             onPress={() =>
               openInputModal({ title: "Phiên âm", field: "phienAm" })
             }
             disabled={mode === "view"}
-            className="flex-1 flex-row"
+            // className="flex-1 flex-row"
           >
-            <PhienAm> {ipas?.[0]?.value}</PhienAm>
+            <PhienAm> {ipas?.[0].value || "unavailable"}</PhienAm>
           </TouchableOpacity>
         </View>
       </View>
@@ -235,8 +238,8 @@ const BasicInformation = ({
             className="mb-2 w-full"
           >
             <View className="flex-row gap-2 items-center flex-wrap mb-1">
-              {translates?.length ? (
-                translates.map((item, index) => (
+              {translations?.length ? (
+                translations.map((item, index) => (
                   <View
                     key={item}
                     className="px-2 py-0.5 rounded"
@@ -255,10 +258,10 @@ const BasicInformation = ({
                 //     // font="MulishLight"
                 //     size={"sm"}
                 //   >
-                //     {translates.join(", ")}
+                //     {translations.join(", ")}
                 //   </AppText>
                 // </View>
-                <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center justify-between w-full">
                   <AppText
                     color="subText3"
                     font="MulishRegularItalic"
@@ -340,7 +343,7 @@ const BasicInformation = ({
             <WordDefinitions
               word={word}
               definition={sense.contents?.definition}
-              examples={sense.contents?.examples||[]}
+              examples={sense.contents?.examples || []}
             />
           </View>
         </View>
@@ -353,7 +356,7 @@ const BasicInformation = ({
   );
 };
 
-// export default BasicInformation;
+export default BasicInformation;
 
 // type MoreDefinitionsProps = {
 //   definitions: { value: string; id: string }[];

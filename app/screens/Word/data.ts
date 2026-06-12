@@ -1271,7 +1271,7 @@ export type SenseType = {
   pos?:string
   languageCode?: string;
   contents?: {
-    translates: {[lang:string]:string[]}
+    translations: {[lang:string]:string[]}
     definition: SenseContentType;
     usage: SenseContentType;
     examples: SenseContentType[]

@@ -179,7 +179,7 @@ const SenseUsage = (props: Props) => {
         <AppTitle title="Usage" />
       </View>
       <Divider />
-      {props?.usage?.value ? (
+      {tUsage?.value ? (
         <AppPressable onLongPress={showUsageModal} hitSlop={8} className="py-2">
           <AppText color="subText1">{tUsage?.value}</AppText>
         </AppPressable>
@@ -198,7 +198,7 @@ const SenseUsage = (props: Props) => {
 
       {settings?.show_translation && (
         <View>
-          {props?.usage?.translate ? (
+          {nUsage?.value ? (
             <AppPressable
               onLongPress={showUsageTranslateModal}
               touchColor={theme.secondary + "20"}

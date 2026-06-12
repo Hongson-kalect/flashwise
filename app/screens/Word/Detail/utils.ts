@@ -1,6 +1,6 @@
 import * as Speech from "expo-speech";
-import { WordState } from "../type";
 import { SenseContentType } from "../data";
+import { WordState } from "../type";
 
 type ActionType =
   | "INITIAL"
@@ -17,14 +17,19 @@ export const senseDataReducer = (
 ): WordState => {
   switch (action.type) {
     case "INITIAL":
-      const { word, senses } = action.payload;
+      const { id, value, languageCode, senses } = action.payload;
       const newData = {
-        word: state.word,
-        senses: state.senses,
+        ...state,
       };
 
-      if (!newData.word && word) {
-        newData.word = word;
+      if (!newData?.id && id) {
+        newData.id = id;
+      }
+      if (!newData?.value && value) {
+        newData.value = value;
+      }
+      if (!newData?.languageCode && languageCode) {
+        newData.languageCode = languageCode;
       }
       newData.senses = { ...newData.senses, ...senses };
 
@@ -47,7 +52,7 @@ export const senseDataReducer = (
       return {
         ...state,
         status: "PARTIAL",
-        word: action.payload,
+        ...action.payload,
       };
     }
 
@@ -142,7 +147,7 @@ export const senseDataReducer = (
 };
 
 export const mapSenses = (sensesObj: WordState) => {
-  if (!sensesObj.word) return null;
+  if (!sensesObj.id) return null;
 
   // 1. Nhóm các sense theo pos bằng một Object tạm (Map)
   const grouped = Object.values(sensesObj.senses).reduce(
@@ -168,26 +173,29 @@ export const mapSenses = (sensesObj: WordState) => {
 
   // 3. Chuyển Object tạm thành Mảng để mapping (entries)
   return {
-    ...sensesObj.word,
+    id: sensesObj.id,
+    value: sensesObj.value,
+    languageCode: sensesObj.languageCode,
     entries: Object.values(grouped),
   };
 };
 
-export const getLangContent = (content?:SenseContentType, lang?: string)=>{
-  if(!lang || !content) return null
+export const getLangContent = (content?: SenseContentType, lang?: string) => {
+  if (!lang || !content) return null;
 
-    if(content && !!content?.[lang]){
-      return content[lang]
-    }
+  if (content && !!content?.[lang]) {
+    return content[lang];
   }
+};
 
-export const getLangTranslate = (content?:{[lang:string]:string[]}, lang?: string)=>{
-    if(!lang || !content) return null
+export const getLangTranslate = (
+  content?: { [lang: string]: string[] },
+  lang?: string,
+) => {
+  if (!lang || !content) return null;
 
-    if(content && !!content?.[lang]){
-      return content[lang]
-    }
-  }
+  return content[lang] || [];
+};
 
 export const getSenseData = (dispatch: any) => {
   // 1. INITIAL: Trả về thông tin Word và nghĩa Danh từ (Noun)

@@ -68,9 +68,9 @@ class SocketManager {
           this.subscribers.get(roomId)?.forEach((cb) => cb(res));
 
           // NẾU SERVER RA LỆNH UNSUBSCRIBE (Tự động cleanup ở phía Client)
-          if (res.unsubscribe_room) {
-            console.log(`🧹 Tự động cleanup group: ${res.unsubscribe_room}`);
-            this.subscribers.delete(res.unsubscribe_room);
+          if (res.unsubscribe) {
+            console.log(`🧹 Tự động cleanup group: ${roomId}`);
+            this.subscribers.delete(roomId);
           }
         }
       } catch (e) {

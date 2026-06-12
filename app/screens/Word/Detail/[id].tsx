@@ -50,7 +50,7 @@ const WordDetail = () => {
   useEffect(() => {
     setSenses(mapSenses(sensesObj));
     setIsLoading(sensesObj.isLoading || false);
-  }, [sensesObj]);
+  }, [JSON.stringify(sensesObj), sensesObj]);
 
   // Giả lập nhận dữ liệu từ socket
 
@@ -73,7 +73,9 @@ const WordDetail = () => {
     return null;
   }, [sensesObj.status]);
 
-  const [socketData, setSocketData] = useState<{data:any, time:number}[]>([]);
+  const [socketData, setSocketData] = useState<{ data: any; time: number }[]>(
+    [],
+  );
 
   const fetchWord = async (word: string) => {
     const start = new Date().getTime();
@@ -104,11 +106,11 @@ const WordDetail = () => {
       },
     );
 
-    if (res.data?.status !== 200) {
-      dispatch({ type: "INITIAL", payload: res.data });
-    } else {
-      setSenses(res.data);
-    }
+    // if (res?.status !== 200) {
+    dispatch({ type: "INITIAL", payload: res.data?.data });
+    // } else {
+    //   setSenses(res.data?.data);
+    // }
   };
 
   useEffect(() => {
@@ -153,30 +155,32 @@ const WordDetail = () => {
       renderTabBar={(props) => <MaterialTabBar {...props} scrollEnabled />}
     >
       {/* {senses ? ( */}
-      {false ? (
-        senses.entries.map((item:{pos:string, senses:SenseType[]}, index:number) => {
-          const isActive = index === tabIndex;
-          return (
-            <Tabs.Tab
-              key={index}
-              label={() => (
-                <AppText
-                  color={isActive ? "primary" : "subText2"}
-                  font={"MulishMedium"}
-                  className="w-full items-center justify-center h-10 px-2"
-                >
-                  {item.pos[0].toUpperCase() + item.pos.slice(1)}
-                </AppText>
-              )}
-              name={item.pos.toString()}
-            >
-              <Tabs.ScrollView>
-                <AppText>{JSON.stringify(item.senses)}</AppText>
-                <SensesInfo word={word} data={item.senses} mode={pageMode} />
-              </Tabs.ScrollView>
-            </Tabs.Tab>
-          );
-        })
+      {senses ? (
+        senses.entries.map(
+          (item: { pos: string; senses: SenseType[] }, index: number) => {
+            const isActive = index === tabIndex;
+            return (
+              <Tabs.Tab
+                key={index}
+                label={() => (
+                  <AppText
+                    color={isActive ? "primary" : "subText2"}
+                    font={"MulishMedium"}
+                    className="w-full items-center justify-center h-10 px-2"
+                  >
+                    {item.pos[0].toUpperCase() + item.pos.slice(1)}
+                  </AppText>
+                )}
+                name={item.pos.toString()}
+              >
+                <Tabs.ScrollView>
+                  {/* <AppText>{JSON.stringify(item.senses)}</AppText> */}
+                  <SensesInfo word={word} data={item.senses} mode={pageMode} />
+                </Tabs.ScrollView>
+              </Tabs.Tab>
+            );
+          },
+        )
       ) : (
         <Tabs.Tab
           label={() => (
@@ -191,7 +195,7 @@ const WordDetail = () => {
           name={tabIndex.toString()}
         >
           <Tabs.ScrollView>
-            <AppText>{JSON.stringify(sensesObj)}</AppText>
+            <AppText>{JSON.stringify(senses)}</AppText>
             {/* {socketData.map((item, index) => {
               return (
                 <View key={index}>
@@ -364,7 +368,6 @@ const SenseInfo = (props: WordInfoType) => {
           <BasicInformation
             word={props.word}
             sense={props.data}
-            
             mode={props.mode}
             labelWidth={labelWidth}
             onLabelLayout={onLabelLayout}

@@ -2,13 +2,13 @@ import AppIcon from "@/components/AppIcon";
 import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
 import { BoldText } from "@/components/output/BoldText";
+import { lightTheme } from "@/configs/theme";
 import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { useMemo } from "react";
 import { Alert, View } from "react-native";
 import { SenseContentType } from "../../data";
 import { getLangContent } from "../utils";
-import { lightTheme } from "@/configs/theme";
 
 type Props = {
   bold: number[][] | string;
@@ -16,10 +16,16 @@ type Props = {
 };
 const WordExample = ({ example, bold }: Props) => {
   const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette||lightTheme, [themeObj]);
-  const [tExample, nExample] =useMemo(()=>{
-      return [getLangContent(example,settings?.learning_language), getLangContent(example,settings?.translate_language)]
-    },[example])
+  const theme = useMemo(
+    () => themeObj?.color_palette || lightTheme,
+    [themeObj],
+  );
+  const [tExample, nExample] = useMemo(() => {
+    return [
+      getLangContent(example, settings?.learning_language),
+      getLangContent(example, settings?.translate_language),
+    ];
+  }, [example]);
   const { setGlobalModal } = useModalStore();
 
   const showExampleOptions = () => {
@@ -192,12 +198,12 @@ const WordExample = ({ example, bold }: Props) => {
             boldColor="text"
             font="MulishRegular"
             boldFont="MulishBoldItalic"
-            text={`${tExample?.value?.toUpperCase()||''}${tExample?.value?.slice(1)}||'`}
+            text={`${tExample?.value?.[0]?.toUpperCase() || ""}${tExample?.value?.slice(1) || ""}`}
             bold={bold}
           />
         </AppText>
       </AppPressable>
-      {settings?.show_translation && example.translate ? (
+      {settings?.show_translation && nExample ? (
         <View>
           <AppPressable
             onLongPress={showExampleTranslateOption}
@@ -209,7 +215,7 @@ const WordExample = ({ example, bold }: Props) => {
               className="flex-row items-center gap-2 pt-1 pb-2 pl-2"
             >
               <AppText size={"xs"} font="MulishLightItalic" color="subText2">
-                {`${nExample?.value?.toUpperCase()||''}${nExample?.value?.slice(1)||''}`}
+                {`${nExample?.value?.[0]?.toUpperCase() || ""}${nExample?.value?.slice(1) || ""}`}
               </AppText>
             </AppText>
           </AppPressable>

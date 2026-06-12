@@ -15,17 +15,18 @@ import { SenseType } from "./data";
 // }
 
 export type WordState = {
-  word?: {
-    id: string,
-    value:string
-  },
+  id?: string,
+  value?:string,
+  languageCode?: string,
   senses: {[sense_id:string]:SenseType},
   isLoading: boolean;
   status: "INITIAL" | "PARTIAL" | "COMPLETED" | null;
 };
 
 export const initialState: WordState = {
-  word:undefined,
+  id:undefined,
+  value:undefined,
+  languageCode:undefined,
   senses:{},
   isLoading: true,
   status: null,
