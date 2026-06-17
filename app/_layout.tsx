@@ -18,7 +18,6 @@ import { DATABASE_NAME } from "@/configs/database";
 import { fonts } from "@/configs/fonts";
 import { initDatabase } from "@/database/schema";
 import { BottomSheetProvider } from "@/providers/BottomSheet";
-import { wordSocket } from "@/utils/socket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SQLiteProvider } from "expo-sqlite";
 import { Suspense, useEffect, useState } from "react";
@@ -88,7 +87,6 @@ export default function RootLayout() {
                         >
                           <Stack.Screen name="tabs" />
                           <Stack.Screen name="screens/Start/screen" />
-                          <Stack.Screen name="screens/Card/Create/screen" />
                           <Stack.Screen name="+not-found" />
                         </Stack>
                       </AppWrapper>

@@ -1,4 +1,4 @@
-import AppButton from "@/components/AppButton";
+import AppAddIcon from "@/components/AppAddIcon";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
@@ -9,15 +9,17 @@ import {
 } from "@/interfaces/word";
 import { useTheme } from "@/providers/Theme";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { LayoutChangeEvent, View } from "react-native";
+import { router } from "expo-router";
+import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
 import { Divider } from "react-native-paper";
 
 type Props = {
   mode?: "create" | "update" | "view";
-  related?: string[];
-  synonym?:string[];
-  antonym?:string[];
-  form?:string[];
+  relateds?: string[];
+  synonyms?: string[];
+  antonyms?: string[];
+  forms?: string[];
+  tags?: string[];
   labelWidth?: number;
   onLabelLayout?: (event: LayoutChangeEvent) => void;
   openInputModal: (props: CreateWordInputModalProps) => void;
@@ -26,10 +28,11 @@ type Props = {
 };
 
 const WordAdvanceInformation = ({
-  related,
-  synonym,
-  antonym,
-  form,
+  relateds,
+  synonyms,
+  antonyms,
+  forms,
+  tags,
   mode = "view",
   labelWidth,
   onLabelLayout,
@@ -41,12 +44,14 @@ const WordAdvanceInformation = ({
   return (
     <View className="mt-2 gap-2">
       <View>
-        <AppText size="lg" font="MulishBlack" color="primary">
-          Discover
-        </AppText>
-        {/* <AppTitle title="Từ mở rộng ↗️" /> */}
+        <View>
+          <AppText size="md" font="MulishBlack" color="title">
+            Discover
+          </AppText>
+          {/* <AppTitle title="Từ mở rộng ↗️" /> */}
+        </View>
+        <Divider />
       </View>
-      <Divider />
 
       <Related
         icon={
@@ -57,7 +62,7 @@ const WordAdvanceInformation = ({
           />
         }
         title="Từ liên quan"
-        values={["day", "month", "abc, def"]}
+        values={relateds || []}
       />
       <Related
         icon={
@@ -68,7 +73,7 @@ const WordAdvanceInformation = ({
           />
         }
         title="Từ đồng nghĩa"
-        values={["day", "month", "abc, def"]}
+        values={synonyms || []}
       />
       <Related
         icon={
@@ -79,7 +84,7 @@ const WordAdvanceInformation = ({
           />
         }
         title="Từ trái nghĩa"
-        values={["day", "month", "abc, def"]}
+        values={antonyms || []}
       />
       <Related
         icon={
@@ -92,7 +97,7 @@ const WordAdvanceInformation = ({
           />
         }
         title="Biến thể"
-        values={["day", "month", "abc, def"]}
+        values={forms || []}
       />
       <Related
         icon={
@@ -105,7 +110,7 @@ const WordAdvanceInformation = ({
           />
         }
         title="Tags"
-        values={["day", "month", "abc, def"]}
+        values={tags || []}
       />
 
       {/* <WordLink
@@ -252,7 +257,10 @@ const Related = (props: RelatedProp) => {
       {props.values?.length > 0 ? (
         <View className="flex-row items-center gap-1 ml-2 flex-wrap">
           {props.values.map((item, index) => (
-            <View
+            <TouchableOpacity
+              onPress={() => {
+                router.push(`/screens/Word/Detail/${item}`);
+              }}
               key={item}
               className="px-2 py-1 rounded"
               style={{ backgroundColor: theme.disabled + "20" }}
@@ -265,16 +273,17 @@ const Related = (props: RelatedProp) => {
               >
                 {item}
               </AppText>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       ) : (
-        <View className="flex-row items-center gap-2 ml-5 mt-2">
+        <View className="flex-row items-center justify-between gap-2 ml-5 mt-2">
           <AppText size="sm" color="subText2" font="MulishLightItalic">
             Chưa có.
           </AppText>
 
-          <AppButton
+          <AppAddIcon size="sm" />
+          {/* <AppButton
             style={{ borderRadius: 4 }}
             type="success"
             onPress={() => {}}
@@ -284,7 +293,7 @@ const Related = (props: RelatedProp) => {
             <AppText color="white" size={"xs"}>
               Thêm
             </AppText>
-          </AppButton>
+          </AppButton> */}
         </View>
       )}
     </View>

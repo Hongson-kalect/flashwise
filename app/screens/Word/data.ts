@@ -1255,32 +1255,32 @@ export const testData = [
   },
 ];
 
-export type SenseContentType={
-  [lang:string]:{
+export type SenseContentType = {
+  [lang: string]: {
     id: string;
     subId: string;
     value: string;
     ruby?: string;
     roman?: string;
-  }
-}
+  };
+};
 
 export type SenseType = {
   id: string;
   value?: string;
-  pos?:string
+  pos?: string;
   languageCode?: string;
   contents?: {
-    translations: {[lang:string]:string[]}
+    translations: { [lang: string]: string[] };
     definition: SenseContentType;
     usage: SenseContentType;
-    examples: SenseContentType[]
+    examples: SenseContentType[];
     image?: string;
   };
-  
+  image_preview?: string;
   score?: number;
   isUser?: boolean;
-  
+
   ipas?: {
     value: string;
     type: string;
@@ -1288,14 +1288,27 @@ export type SenseType = {
     label: string;
   }[];
   metadata?: {
-    forms?: string[];
-    source?: string;
-    tags?: string[];
-    synonyms?: string[];
-    antonyms?: never[];
-    relateds?: never[];
-  }
-  image?: string;
+    id?: string;
+    created_at: string;
+    updated_at: string;
+    deleted_at: string | null;
+    is_deleted: boolean;
+    is_active: boolean;
+    created_by: string | null;
+    updated_by: string | null;
+    image_link: string | null;
+    advanced: {
+      collocations?: string[];
+      idioms?: string[];
+      forms?: string[];
+      relateds?: string[];
+      synonyms?: string[];
+      antonyms?: string[];
+    };
+    tags: string[];
+    image_keywords: string[];
+    image_metadata: { [key: string]: string };
+  };
 };
 
 export type WordInfoType = {

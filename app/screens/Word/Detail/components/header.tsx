@@ -4,6 +4,7 @@ import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { Dispatch, SetStateAction, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
@@ -15,7 +16,6 @@ import Animated, {
 import { extractObjectByPath, testAPIStreamData } from "../../data";
 import CreateSenseSheet, { SenseType } from "./createSenseSheet";
 import ToggleWordDisplayMode from "./toggleWordDisplayMode";
-import { useAppStore } from "@/stores/appStore";
 
 type Props = {
   mode?: "create" | "update" | "view";
@@ -23,16 +23,11 @@ type Props = {
   isLoading: boolean;
   setMode: Dispatch<SetStateAction<"update" | "view">>;
 };
-const WordDetailHeader = ({
-  word,
-  mode,
-  isLoading,
-  setMode,
-}: Props) => {
+const WordDetailHeader = ({ word, mode, isLoading, setMode }: Props) => {
   const { theme } = useTheme();
   const { present } = useBottomSheet();
   const { setGlobalModal } = useModalStore();
-  const {settings,dbService} = useAppStore()
+  const { settings, dbService } = useAppStore();
 
   // just use temp. buttom sheet will change this value while editing
   const [tempSenseValue, setTempSenseValue] = useState<SenseType>({
@@ -189,7 +184,7 @@ const WordDetailHeader = ({
               <AppText
                 numberOfLines={1}
                 font="MulishSemiBold"
-                color="primary"
+                // color="primary"
                 size={"2xl"}
               >
                 {word[0].toUpperCase() + word.slice(1)}
@@ -216,7 +211,7 @@ const WordDetailHeader = ({
                 <View
                 // exiting={SlideOutDown}
                 >
-                  <ToggleWordDisplayMode/>
+                  <ToggleWordDisplayMode />
                 </View>
               ) : (
                 <View

@@ -1,5 +1,5 @@
 import * as Speech from "expo-speech";
-import { SenseContentType } from "../data";
+import { SenseContentType, SenseType } from "../data";
 import { WordState } from "../type";
 
 type ActionType =
@@ -13,11 +13,12 @@ type ActionType =
   | "COMPLETED";
 export const senseDataReducer = (
   state: WordState,
-  action: { type: ActionType; payload?: any },
+  action: { type: ActionType; payload: any },
 ): WordState => {
   switch (action.type) {
     case "INITIAL":
-      const { id, value, languageCode, senses } = action.payload;
+      console.log("action.payload", action.payload);
+      const { id, value, language_code, senses } = action.payload;
       const newData = {
         ...state,
       };
@@ -28,10 +29,17 @@ export const senseDataReducer = (
       if (!newData?.value && value) {
         newData.value = value;
       }
-      if (!newData?.languageCode && languageCode) {
-        newData.languageCode = languageCode;
+      if (!newData?.languageCode && language_code) {
+        newData.languageCode = language_code;
       }
-      newData.senses = { ...newData.senses, ...senses };
+
+      Object.values<SenseType>(senses || {}).forEach((sense: SenseType) => {
+        if (!newData.senses[sense.id]) {
+          newData.senses[sense.id] = sense;
+        } else {
+          newData.senses[sense.id] = { ...newData.senses[sense.id], ...sense };
+        }
+      });
 
       return {
         ...state,
@@ -85,8 +93,8 @@ export const senseDataReducer = (
         const newSenseData = imageObj[senseId];
 
         updatedSenses[senseId] = currentSense
-          ? { ...currentSense, image: newSenseData } // Giữ data cũ, đè imageUrl (hoặc các prop ảnh khác) lên
-          : { id: senseId, image: newSenseData }; // Phòng thủ nếu sense chưa khởi tạo
+          ? { ...currentSense, image_preview: newSenseData } // Giữ data cũ, đè imageUrl (hoặc các prop ảnh khác) lên
+          : { id: senseId, image_preview: newSenseData }; // Phòng thủ nếu sense chưa khởi tạo
       });
 
       return {

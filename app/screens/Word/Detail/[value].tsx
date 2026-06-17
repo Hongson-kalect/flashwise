@@ -37,20 +37,27 @@ import {
 const WordDetail = () => {
   const { theme } = useTheme();
   const { settings, dbService } = useAppStore();
-  const { id, w } = useLocalSearchParams();
+  const { value: word } = useLocalSearchParams<{
+    value: string;
+    word: string;
+  }>();
   // Prev data: word value + word id [id]?w=...
   const [sensesObj, dispatch] = useReducer(senseDataReducer, initialState);
   const [isLoading, setIsLoading] = useState(false);
-  const [senses, setSenses] = useState<any>(null);
+  const [senses, setSenses] = useState<ReturnType<typeof mapSenses>>(null);
 
   // const senses = useMemo(() => {
   //   return mapSenses(sensesObj);
   // }, [sensesObj]);
 
   useEffect(() => {
-    setSenses(mapSenses(sensesObj));
+    const newSenses = mapSenses(sensesObj);
+    console.log("sensesObj", sensesObj);
+    console.log("newSenses", newSenses);
+    if (!newSenses) return;
+    setSenses(newSenses);
     setIsLoading(sensesObj.isLoading || false);
-  }, [JSON.stringify(sensesObj), sensesObj]);
+  }, [sensesObj]);
 
   // Giả lập nhận dữ liệu từ socket
 
@@ -60,7 +67,7 @@ const WordDetail = () => {
 
   // const data = useMemo(() => basicWordMapping(DATA), [DATA]);
 
-  const [word, setWord] = useState("table"); // Get from previous page [id]?w
+  // const [word, setWord] = useState("table"); // Get from previous page [id]?w
 
   const toggleLanguageMode = () =>
     dbService?.setShowTranslation(!settings?.show_translation);
@@ -84,18 +91,24 @@ const WordDetail = () => {
 
     if (!settings) return alert("No settings loaded. Please reload the app.");
 
-    wordSocket.subscribe(room_id, (data) => {
-      setSocketData((prev) => [
-        ...prev,
-        { data, time: new Date().getTime() - start },
-      ]);
-      if (!data.type) {
-        console.log("socket không có type", data);
-        return;
-      }
+    wordSocket.subscribe(
+      room_id,
+      (data) => {
+        setSocketData((prev) => [
+          ...prev,
+          { data, time: new Date().getTime() - start },
+        ]);
+        if (!data.type) {
+          console.log("socket không có type", data);
+          return;
+        }
 
-      dispatch({ type: data.type, payload: data.payload });
-    });
+        dispatch({ type: data.type, payload: data.payload });
+      },
+      () => {
+        setIsLoading(false);
+      },
+    );
 
     const res = await GetAPI(
       "http://192.168.50.64:8000/api/ai-words/get-word/",
@@ -106,6 +119,8 @@ const WordDetail = () => {
       },
     );
 
+    console.log("res", res.data?.data);
+
     // if (res?.status !== 200) {
     dispatch({ type: "INITIAL", payload: res.data?.data });
     // } else {
@@ -114,17 +129,26 @@ const WordDetail = () => {
   };
 
   useEffect(() => {
+    console.log("fetch word ", word);
     const handle = async () => {
-      await fetchWord("table");
+      await fetchWord(word);
     };
     handle();
-  }, []);
+  }, [word]);
 
   useEffect(() => {
     if (isFullTranslate === false) {
       getTranslate(dispatch);
     }
   }, [isFullTranslate]);
+
+  useEffect(() => {
+    console.log("mounted");
+
+    return () => {
+      console.log("unmounted");
+    };
+  }, []);
 
   return (
     <Tabs.Container
@@ -135,7 +159,7 @@ const WordDetail = () => {
         <View className="mb-4">
           <WordDetailHeader
             isLoading={sensesObj.isLoading}
-            word="Table"
+            word={word ? word[0].toUpperCase() + word.slice(1) : "###"}
             mode={pageMode}
             setMode={setPageMode}
           />
@@ -288,8 +312,7 @@ const SensesInfo = (props: SensesInfoType) => {
           hitSlop={20}
           disabled={senseIndex === props.data.length - 1}
           onPress={() =>
-            senseIndex < props.data.length - 1 &&
-            setSenseIndex(props.data.length - 1)
+            senseIndex < props.data.length - 1 && setSenseIndex(senseIndex + 1)
           }
         >
           <AppIcon
@@ -387,17 +410,20 @@ const SenseInfo = (props: WordInfoType) => {
         </View> */}
 
         <View className="mt-6">
-          <WordCollocations />
+          <WordCollocations
+            list={props.data.metadata?.advanced?.collocations || []}
+          />
         </View>
 
         {/* <AppDivider style={{ marginTop: 8, marginBottom: 12 }} /> */}
 
         <View className="mt-6">
           <WordAdvanceInformation
-            related={props.data.metadata?.relateds}
-            synonym={props.data.metadata?.synonyms}
-            antonym={props.data.metadata?.antonyms}
-            form={props.data.metadata?.forms}
+            relateds={props.data.metadata?.advanced.relateds || []}
+            synonyms={props.data.metadata?.advanced.synonyms || []}
+            antonyms={props.data.metadata?.advanced.antonyms || []}
+            forms={props.data.metadata?.advanced.forms || []}
+            tags={props.data.metadata?.tags || []}
             mode={props.mode}
             labelWidth={labelWidth}
             onLabelLayout={onLabelLayout}

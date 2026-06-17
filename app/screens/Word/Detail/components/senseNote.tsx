@@ -110,6 +110,7 @@ const SenseNote = (props: Props) => {
           />
           <AppTitle title="Note" />
         </View>
+        <Divider style={{ marginBottom: 8 }} />
         {!props.note ? (
           <View className="flex-row justify-start">
             <AppButton

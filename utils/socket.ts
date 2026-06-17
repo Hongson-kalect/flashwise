@@ -22,6 +22,7 @@ export const getTranslateRoomId = (
 
 // socketUtil.ts
 type SocketCallback = (data: any) => void;
+type SocketCleanup = () => void;
 
 class SocketManager {
   private ws: WebSocket | null = null;
@@ -97,7 +98,8 @@ class SocketManager {
   }
 
   // Sửa logic Subscribe: Dùng roomId làm key chính
-  subscribe(roomId: string, callback: SocketCallback) {
+  // cleanup sẽ chạy khi ngắt kết nối
+  subscribe(roomId: string, callback: SocketCallback, cleanup?: SocketCleanup) {
     if (!this.subscribers.has(roomId)) {
       this.subscribers.set(roomId, new Set());
     }
@@ -107,10 +109,14 @@ class SocketManager {
     this.send({ action: "subscribe", word_room: roomId });
 
     // Trả về hàm hủy sub
-    return () => this.unsubscribe(roomId, callback);
+    return () => this.unsubscribe(roomId, callback, cleanup);
   }
 
-  unsubscribe(roomId: string, callback: SocketCallback) {
+  unsubscribe(
+    roomId: string,
+    callback: SocketCallback,
+    cleanup?: SocketCleanup,
+  ) {
     const keySubscribers = this.subscribers.get(roomId);
     if (keySubscribers) {
       keySubscribers.delete(callback);
@@ -119,6 +125,7 @@ class SocketManager {
         this.send({ action: "unsubscribe", word_room: roomId });
       }
     }
+    if (cleanup) cleanup();
   }
 
   send(data: any) {

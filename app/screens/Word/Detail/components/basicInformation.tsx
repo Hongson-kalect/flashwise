@@ -278,7 +278,7 @@ const BasicInformation = ({
         )}
 
         <Animated.View layout={LinearTransition}>
-          {sense.image ? (
+          {sense.image_preview ? (
             <View
               style={{
                 elevation: 4,
@@ -290,7 +290,7 @@ const BasicInformation = ({
             >
               <Image
                 source={{
-                  uri: sense.image,
+                  uri: sense.image_preview,
                 }}
                 style={{ width: "100%", height: "100%" }}
               />

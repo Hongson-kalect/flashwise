@@ -2,6 +2,7 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Image, TouchableOpacity, View } from "react-native";
 
 type Props = {
@@ -12,6 +13,8 @@ type Props = {
 const WordListItem = (props: Props) => {
   const router = useRouter();
   const { theme } = useTheme();
+
+  const [word, setWord] = useState(()=>"table".toLocaleLowerCase());
 
   return (
     <TouchableOpacity
@@ -26,7 +29,7 @@ const WordListItem = (props: Props) => {
         backgroundColor: theme.background,
       }}
       onPress={() =>
-        props.onPress?.() || router.push(`/screens/Word/Detail/${2}`)
+        props.onPress?.() || router.push({pathname: `/screens/Word/Detail/[value]`, params: { value: word, word }})
       }
       className="flex-row items-center gap-3 overflow-hidden p-3"
     >
@@ -44,7 +47,7 @@ const WordListItem = (props: Props) => {
         {/* <AppText font="MulishSemiBold" size={"lg"}>
           Professional */}
         <AppText numberOfLines={1} font="MulishSemiBold" color="text">
-          Parazicmonobenzen
+          {`${word[0].toUpperCase()}${word.slice(1)}`}
         </AppText>
         <AppText
           numberOfLines={1}
