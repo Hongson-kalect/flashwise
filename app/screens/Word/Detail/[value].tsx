@@ -14,23 +14,18 @@ import useModalStore from "@/stores/modalStore";
 import { normalizeWord } from "@/utils/normalizeText";
 import { wordSocket } from "@/utils/socket";
 import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LayoutChangeEvent, Pressable, View } from "react-native";
 import { MaterialTabBar, Tabs } from "react-native-collapsible-tab-view";
 import Animated, { FadeIn } from "react-native-reanimated";
 import WordSelectForm from "../Create/components/wordSelectForm";
 import { SenseType } from "../data";
-import { initialState } from "../type";
+import { initialState, WordState } from "../type";
 import WordAdvanceInformation from "./components/advanceInfomation";
 import BasicInformation from "./components/basicInformation";
 import WordCollocations from "./components/collocations";
 import WordDetailHeader from "./components/header";
-import {
-  getTranslate,
-  isTranslationCompleted,
-  mapSenses,
-  senseDataReducer,
-} from "./utils";
+import { isTranslationCompleted, mapSenses, senseDataReducer } from "./utils";
 
 // const DATA: WordType[] = testData;
 
@@ -53,7 +48,8 @@ const WordDetail = ({ word }: { word: string }) => {
   const { settings, dbService } = useAppStore();
   // Prev data: word value + word id [id]?w=...
   // const [sensesObj, setSensesObj] = useState(JSON.parse(JSON.stringify(initialState)));
-  const [sensesObj, dispatch] = useReducer(senseDataReducer, JSON.parse(JSON.stringify(initialState)));
+  // const [sensesObj, dispatch] = useReducer(senseDataReducer, JSON.parse(JSON.stringify(initialState)));
+  const [sensesObj, setSenseObj] = useState<WordState>(initialState);
   const [isLoading, setIsLoading] = useState(false);
   const [senses, setSenses] = useState<ReturnType<typeof mapSenses>>(null);
 
@@ -115,10 +111,13 @@ const WordDetail = ({ word }: { word: string }) => {
           return;
         }
 
-        dispatch({ type: data.type, payload: data.payload });
-        
+        setSenseObj((prev) =>
+          senseDataReducer(prev, { type: data.type, payload: data.payload }),
+        );
+
+        // dispatch({ type: data.type, payload: data.payload });
+
         // senseDataReducer(data.type, data.payload);,
-    
       },
       () => {
         setIsLoading(false);
@@ -137,22 +136,19 @@ const WordDetail = ({ word }: { word: string }) => {
     console.log("res", res.data?.data);
 
     // if (res?.status !== 200) {
-    dispatch({ type: "INITIAL", payload: res.data?.data });
+    // dispatch({ type: "INITIAL", payload: res.data?.data });
+    setSenseObj((prev) =>
+      senseDataReducer(prev, { type: "INITIAL", payload: res.data?.data }),
+    );
     // } else {
     //   setSenses(res.data?.data);
     // }
   };
 
   useEffect(() => {
-    dispatch({ type: "RESET", payload: {} });
+    // dispatch({ type: "RESET", payload: {} });
     fetchWord(word);
   }, [word]);
-
-  useEffect(() => {
-    if (isFullTranslate === false) {
-      getTranslate(dispatch);
-    }
-  }, [isFullTranslate]);
 
   useEffect(() => {
     console.log("mounted");
@@ -337,6 +333,8 @@ const SensesInfo = (props: SensesInfoType) => {
           />
         </Pressable>
       </Animated.View>
+
+      {/* <AppText>{JSON.stringify(activeSense)}</AppText> */}
 
       <SenseInfo word={props.word} data={activeSense} mode={props.mode} />
     </View>

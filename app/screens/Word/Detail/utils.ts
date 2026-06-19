@@ -16,13 +16,13 @@ export const senseDataReducer = (
   state: WordState,
   action: { type: ActionType; payload: any },
 ): WordState => {
+  console.log('abcd', state, action.type)
   switch (action.type) {
     case "RESET":
       return {
         ...initialState,
       };
     case "INITIAL":
-      console.log("action.payload", action.payload);
       const { id, value, language_code, senses } = action.payload;
       const newData = {
         ...state,
