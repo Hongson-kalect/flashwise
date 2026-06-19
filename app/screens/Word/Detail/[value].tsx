@@ -13,7 +13,7 @@ import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { normalizeWord } from "@/utils/normalizeText";
 import { wordSocket } from "@/utils/socket";
-import { useLocalSearchParams } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useReducer, useState } from "react";
 import { LayoutChangeEvent, Pressable, View } from "react-native";
 import { MaterialTabBar, Tabs } from "react-native-collapsible-tab-view";
@@ -34,15 +34,26 @@ import {
 
 // const DATA: WordType[] = testData;
 
-const WordDetail = () => {
+function WordDetailWrapper() {
+  const { value } = useLocalSearchParams<{ value: string }>();
+
+  return (
+    <>
+      {/* Cấu hình getId ngay tại đây */}
+      <Stack.Screen getId={() => value} />
+
+      {/* Phần UI và logic hiện tại của bạn */}
+      <WordDetail key={value} word={value} />
+    </>
+  );
+}
+
+const WordDetail = ({ word }: { word: string }) => {
   const { theme } = useTheme();
   const { settings, dbService } = useAppStore();
-  const { value: word } = useLocalSearchParams<{
-    value: string;
-    word: string;
-  }>();
   // Prev data: word value + word id [id]?w=...
-  const [sensesObj, dispatch] = useReducer(senseDataReducer, initialState);
+  // const [sensesObj, setSensesObj] = useState(JSON.parse(JSON.stringify(initialState)));
+  const [sensesObj, dispatch] = useReducer(senseDataReducer, JSON.parse(JSON.stringify(initialState)));
   const [isLoading, setIsLoading] = useState(false);
   const [senses, setSenses] = useState<ReturnType<typeof mapSenses>>(null);
 
@@ -85,6 +96,7 @@ const WordDetail = () => {
   );
 
   const fetchWord = async (word: string) => {
+    console.log("before fetchWord", sensesObj);
     const start = new Date().getTime();
     normalizeWord(word);
     const room_id = `${normalizeWord(word, settings?.learning_language)}`;
@@ -104,6 +116,9 @@ const WordDetail = () => {
         }
 
         dispatch({ type: data.type, payload: data.payload });
+        
+        // senseDataReducer(data.type, data.payload);,
+    
       },
       () => {
         setIsLoading(false);
@@ -129,11 +144,8 @@ const WordDetail = () => {
   };
 
   useEffect(() => {
-    console.log("fetch word ", word);
-    const handle = async () => {
-      await fetchWord(word);
-    };
-    handle();
+    dispatch({ type: "RESET", payload: {} });
+    fetchWord(word);
   }, [word]);
 
   useEffect(() => {
@@ -440,4 +452,4 @@ const SenseInfo = (props: WordInfoType) => {
   );
 };
 
-export default WordDetail;
+export default WordDetailWrapper;

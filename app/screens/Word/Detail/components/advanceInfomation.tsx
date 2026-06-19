@@ -259,7 +259,10 @@ const Related = (props: RelatedProp) => {
           {props.values.map((item, index) => (
             <TouchableOpacity
               onPress={() => {
-                router.push(`/screens/Word/Detail/${item}`);
+                router.push({
+                  pathname: `/screens/Word/Detail/[value]`,
+                  params: { value: item, valueId: item },
+                });
               }}
               key={item}
               className="px-2 py-1 rounded"

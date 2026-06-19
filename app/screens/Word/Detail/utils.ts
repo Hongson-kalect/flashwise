@@ -1,8 +1,9 @@
 import * as Speech from "expo-speech";
 import { SenseContentType, SenseType } from "../data";
-import { WordState } from "../type";
+import { initialState, WordState } from "../type";
 
 type ActionType =
+  | "RESET"
   | "INITIAL"
   | "FULLDATA"
   | "WORD"
@@ -16,6 +17,10 @@ export const senseDataReducer = (
   action: { type: ActionType; payload: any },
 ): WordState => {
   switch (action.type) {
+    case "RESET":
+      return {
+        ...initialState,
+      };
     case "INITIAL":
       console.log("action.payload", action.payload);
       const { id, value, language_code, senses } = action.payload;

@@ -87,6 +87,12 @@ export default function RootLayout() {
                         >
                           <Stack.Screen name="tabs" />
                           <Stack.Screen name="screens/Start/screen" />
+                          <Stack.Screen
+                            getId={({ params }) => params?.value}
+                            singular
+                            name="screens/Word/Detail/[value]"
+                            dangerouslySingular={false} // Tạo phòng mới hoàn toàn cho mỗi từ khác nhau
+                          />
                           <Stack.Screen name="+not-found" />
                         </Stack>
                       </AppWrapper>

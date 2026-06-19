@@ -22,7 +22,8 @@ export default function CollapseSection({
 }) {
   const { theme } = useTheme();
 
-  const [contentHeight, setContentHeight] = useState(0);
+  // Đổi sang useSharedValue
+  const contentHeight = useSharedValue(0); 
   const expanded = useSharedValue(defaultExpanded ? 1 : 0);
 
   const toggle = () => {
@@ -33,7 +34,8 @@ export default function CollapseSection({
 
   // Height animation
   const animatedStyle = useAnimatedStyle(() => ({
-    height: contentHeight * expanded.value,
+    // Cả 2 đều là Shared Value -> Chạy cực mượt trên UI Thread, không lo rác log
+    height: contentHeight.value * expanded.value, 
     overflow: "hidden",
   }));
 
@@ -77,7 +79,10 @@ export default function CollapseSection({
       <Animated.View style={[animatedStyle]}>
         <View
           style={{ position: "absolute", width: "100%" }}
-          onLayout={(e) => setContentHeight(e.nativeEvent.layout.height)}
+          // Cập nhật giá trị thông qua .value thay vì hàm set của useState
+          onLayout={(e) => {
+            contentHeight.value = e.nativeEvent.layout.height;
+          }}
         >
           <Divider />
           {children}

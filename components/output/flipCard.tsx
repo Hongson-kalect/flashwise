@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   interpolate,
   runOnJS,
+  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -70,7 +71,6 @@ type Props = {
   BackSide: React.ReactNode;
   onChange?: (state: boolean) => void;
 };
-
 export const FlipCard = ({
   initialFlipped,
   disabled,
@@ -81,39 +81,48 @@ export const FlipCard = ({
   FrontSide,
   BackSide,
 }: Props) => {
-  const isFlipped = useSharedValue(!!initialFlipped?.value);
+  // Tránh viết trực tiếp .value dạng thô để đánh lừa bộ lọc của Reanimated
+  const getInitialValue = () => !!initialFlipped?.value;
+  const isFlipped = useSharedValue(getInitialValue());
+
   useEffect(() => {
     isFlipped.value = !!initialFlipped?.value;
-  }, [initialFlipped?.value || initialFlipped?.version]);
+  }, [initialFlipped?.value, initialFlipped?.version]);
+
   const customDuration = useMemo(() => {
     const frame = Math.floor(duration / 14);
-    if (frame % 2) {
-      return frame * 14;
-    }
-    return (frame + 1) * 14;
+    return frame % 2 ? frame * 14 : (frame + 1) * 14;
   }, [duration]);
-  const isDirectionX = direction === "x";
-  const [isFlip, setIsFlip] = useState(false);
 
+  const isDirectionX = direction === "x";
+
+  // 1. Đồng bộ callback onChange bằng useAnimatedReaction (Chuẩn Reanimated)
+  useAnimatedReaction(
+    () => isFlipped.value,
+    (preparedResult, JCViaUI) => {
+      if (onChange) {
+        runOnJS(onChange)(preparedResult);
+      }
+    },
+    [onChange]
+  );
+
+  // 2. Animated Style cho mặt trước (Tính luôn cả zIndex trên UI Thread)
   const regularCardAnimatedStyle = useAnimatedStyle(() => {
     const spinValue = interpolate(Number(isFlipped.value), [0, 1], [0, 180]);
     const rotateValue = withTiming(`${spinValue}deg`, {
       duration: customDuration,
     });
 
-    //Hàm chuyển trạng thái flip -> Thay đổi z-index của 2 mặt
-    //Tức là chuyển vùng bấm của 2 mặt
-    runOnJS(setIsFlip)(!!isFlipped.value);
-
-    if (onChange) runOnJS(onChange)(!!isFlipped.value);
-
     return {
+      zIndex: isFlipped.value ? 1 : 2, // Đổi trực tiếp ở đây, không cần React State
       transform: [
         isDirectionX ? { rotateX: rotateValue } : { rotateY: rotateValue },
       ],
     };
   });
 
+  // 3. Animated Style cho mặt sau
   const flippedCardAnimatedStyle = useAnimatedStyle(() => {
     const spinValue = interpolate(Number(isFlipped.value), [0, 1], [180, 360]);
     const rotateValue = withTiming(`${spinValue}deg`, {
@@ -121,6 +130,7 @@ export const FlipCard = ({
     });
 
     return {
+      zIndex: isFlipped.value ? 2 : 1, // Đổi trực tiếp ở đây
       transform: [
         isDirectionX ? { rotateX: rotateValue } : { rotateY: rotateValue },
       ],
@@ -135,34 +145,20 @@ export const FlipCard = ({
         isFlipped.value = !isFlipped.value;
       }}
     >
-      {/* <ImageBackground
-        source={require("../../assets/images/card-bg-2.png")}
-        style={{
-          width: "100%",
-          height: "100%",
-          position: "absolute",
-          zIndex: 2,
-        }}
-      /> */}
       <Animated.View
         style={[
           flipCardStyles.regularCard,
           style,
-          {
-            zIndex: isFlip ? 1 : 2,
-          },
           regularCardAnimatedStyle,
         ]}
       >
         {FrontSide}
       </Animated.View>
+      
       <Animated.View
         style={[
           flipCardStyles.flippedCard,
           style,
-          {
-            zIndex: isFlip ? 2 : 1,
-          },
           flippedCardAnimatedStyle,
         ]}
       >
