@@ -27,8 +27,9 @@ CREATE TABLE IF NOT EXISTS theme (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_theme_single_default
 ON theme(priority);
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_theme_single_active
-ON theme(is_deleted);
+-- Không để UNIQUE: UNIQUE trên is_deleted chỉ cho tồn tại 1 theme chưa xoá
+CREATE INDEX IF NOT EXISTS idx_theme_active_lookup
+ON theme(is_deleted, priority DESC);
 `;
 
 export const getActiveTheme = async (

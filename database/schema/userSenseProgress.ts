@@ -13,15 +13,17 @@ CREATE TABLE IF NOT EXISTS user_sense_progress (
     remember_count INTEGER DEFAULT 0,
     repetitions INTEGER DEFAULT 0,
 
-    -- Chỉ số thuật toán FSRS
-    difficulty REAL DEFAULT 2.5,
-    stable INTEGER DEFAULT 0,
-    failed_at INTEGER,
+    -- Chỉ số thuật toán FSRS (tên cột giống bảng user_sense_progress phía server)
+    state INTEGER DEFAULT 0,                        -- 0: New, 1: Learning, 2: Review, 3: Relearning
+    stability REAL DEFAULT 0,                       -- Số ngày để xác suất nhớ giảm còn 90%
+    difficulty REAL DEFAULT 0,                      -- 1 - 10, 0 = chưa học lần nào
+    failed_at TEXT,                                 -- Lần quên gần nhất (ISO8601)
 
     -- Cờ lọc trạng thái nhanh
     is_mastered INTEGER DEFAULT 0,
     is_hidden INTEGER DEFAULT 0,
     is_avoid INTEGER DEFAULT 0,
+    is_deleted INTEGER DEFAULT 0,                   -- Xóa mềm, chờ sync lên server
 
     -- Thời gian định dạng ISO8601 String ('YYYY-MM-DD HH:MM:SS')
     last_seen_at TEXT,
@@ -38,5 +40,5 @@ CREATE TABLE IF NOT EXISTS user_sense_progress (
 -- Lọc bỏ toàn bộ các từ đã mastered, hidden, avoid ngay từ tầng cấu trúc index vật lý
 CREATE INDEX IF NOT EXISTS idx_srs_mobile_queue
 ON user_sense_progress (next_review_at)
-WHERE is_mastered = 0 AND is_hidden = 0 AND is_avoid = 0;
+WHERE is_mastered = 0 AND is_hidden = 0 AND is_avoid = 0 AND is_deleted = 0;
 `;
