@@ -16,3 +16,4 @@ App học từ vựng bằng flashcard, Expo 53 + React Native 0.79 + expo-route
 ## Còn dở
 - Chưa gọi `POST /api/auth/device-login/` khi mở app.
 - `app/screens/Word/Detail/[value].tsx` gọi get-word bằng `fetch` với IP ghi cứng, cần chuyển sang `serverInstance`; `baseURL` trong `services/axios.ts` cũng ghi cứng IP.
+- Backend đã có `POST /api/sync/push/`, `GET /api/sync/pull/`, `GET/PATCH /api/me/`, `GET /api/app-config/`, like / report / feedback (chi tiết trong CLAUDE.md của flashwise_api). App chưa gọi: cần worker đọc bảng `sync_queue` gửi lên push, lưu con trỏ từng bảng vào `system_configs.sync_cursor`.
