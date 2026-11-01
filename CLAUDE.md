@@ -13,6 +13,9 @@ App học từ vựng bằng flashcard, Expo 53 + React Native 0.79 + expo-route
 - Lặp ngắt quãng dùng FSRS.
 - Repo lưu file dạng LF: commit bình thường, không dùng `core.autocrlf=false`.
 
+## Phần học từ vựng
+Thiết kế (phương pháp học cụm / vuốt / giọng nói, cách ghi `review_log`, `learn_session`, setting) và hiện trạng màn Practice: `docs/learning-design.md`. Đọc trước khi làm màn học.
+
 ## Còn dở
 - Chưa gọi `POST /api/auth/device-login/` khi mở app.
 - `app/screens/Word/Detail/[value].tsx` gọi get-word bằng `fetch` với IP ghi cứng, cần chuyển sang `serverInstance`; `baseURL` trong `services/axios.ts` cũng ghi cứng IP.

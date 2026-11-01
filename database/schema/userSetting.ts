@@ -73,7 +73,18 @@ INSERT OR IGNORE INTO user_settings (key, value) VALUES
 
 ('study_reminder_hour', '20'),
 
-('new_word_first', 'true'),
+('new_word_first', 'false'), -- Ôn trước rồi mới học từ mới
+
+-- Phần học (docs/learning-design.md)
+('study_methods', '["write","choose","listen","cloze","speak"]'),
+('cluster_size', '6'),
+('cluster_steps', '6'),
+('swipe_min_level', '3'),
+('voice_min_level', '3'),
+('hearable', 'true'),
+('talkable', 'true'),
+('learning_direction', '"target_native"'),
+('request_retention', '0.9'),
 
 ('offline_mode', 'true');
 `;

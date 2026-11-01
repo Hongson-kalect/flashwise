@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS user_sense_progress (
     id TEXT PRIMARY KEY,                            -- UUIDv7 định danh tiến trình
     original_sense_id TEXT NOT NULL,                -- ID tĩnh của nghĩa từ vựng
     
-    level INTEGER DEFAULT 1,                        -- 1: New, 2: Learning, 3: Review, 4: Mastered
-    max_level INTEGER DEFAULT 1,
+    level INTEGER DEFAULT 0,                        -- Cấp thẻ 0-7: quyết định kiểu thẻ / phương pháp (docs/learning-design.md)
+    max_level INTEGER DEFAULT 0,                    -- Cấp cao nhất từng đạt, lên lại nhanh khi học lại
 
     -- Bộ đếm học tập
     streak_correct INTEGER DEFAULT 0,
@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS user_sense_progress (
     state INTEGER DEFAULT 0,                        -- 0: New, 1: Learning, 2: Review, 3: Relearning
     stability REAL DEFAULT 0,                       -- Số ngày để xác suất nhớ giảm còn 90%
     difficulty REAL DEFAULT 0,                      -- 1 - 10, 0 = chưa học lần nào
+    scheduled_days REAL DEFAULT 0,                  -- Khoảng ôn đã hẹn ở lần chấm gần nhất (ngày)
+    learning_steps INTEGER DEFAULT 0,               -- Bước học ngắn hạn hiện tại (ts-fsrs)
     failed_at TEXT,                                 -- Lần quên gần nhất (ISO8601)
 
     -- Cờ lọc trạng thái nhanh

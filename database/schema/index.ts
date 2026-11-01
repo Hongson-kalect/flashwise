@@ -10,6 +10,7 @@ import { generateString as imageLibraryGenerateString } from "./imageLibrary";
 import { generateString as learnSessionGenerateString } from "./learnSession";
 import { generateString as notificationGenerateString } from "./notification";
 import { generateString as restrictedListGenerateString } from "./restrictedList";
+import { generateString as reviewLogGenerateString } from "./reviewLog";
 import { generateString as senseMetadataGenerateString } from "./senseMetadata";
 import { generateString as syncQueueGenerateString } from "./syncQueue";
 import {
@@ -73,6 +74,7 @@ export const generateSchema = `
     
     ${userInteractionGenerateString}
     ${userSenseProgressGenerateString}
+    ${reviewLogGenerateString}
     ${syncQueueGenerateString}
 `;
 
