@@ -3,6 +3,7 @@ export const generateString = /*sql*/ `
         id TEXT PRIMARY KEY,                            -- UUIDv7 sinh ra ngay khi phiên học bắt đầu (Client tự cấp)
         type TEXT NOT NULL DEFAULT 'learn',             -- 'learn' (học cụm), 'review' (vuốt), 'voice', 'speed', 'mixed' (docs/learning-design.md)
         status TEXT NOT NULL DEFAULT 'in_progress',     -- 'in_progress' | 'completed' | 'abandoned'
+        mode TEXT DEFAULT 'normal',                     -- Kiểu học / ôn: 'normal' | 'quick' (vuốt / đọc)
         collection_id TEXT,                             -- Bộ từ đang học (NULL = hàng đợi ôn chung)
         methods TEXT DEFAULT '[]',                      -- JSON mã phương pháp đã bật, vd ["write","cloze","listen"]
         

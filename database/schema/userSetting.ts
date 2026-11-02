@@ -59,7 +59,7 @@ INSERT OR IGNORE INTO user_settings (key, value) VALUES
 
 ('daily_goal', '20'),
 
-('review_limit', '100'),
+('review_limit', '0'), -- 0 = không giới hạn số thẻ ôn / ngày
 
 ('auto_play_audio', 'true'),
 
@@ -85,6 +85,11 @@ INSERT OR IGNORE INTO user_settings (key, value) VALUES
 ('talkable', 'true'),
 ('learning_direction', '"target_native"'),
 ('request_retention', '0.9'),
+('swipe_retention', '0.93'),         -- Mục tiêu nhớ khi chấm bằng vuốt (khoảng ôn ngắn hơn)
+('first_review_hours', '6'),         -- Từ mới ôn lại lần đầu sau bao nhiêu giờ (cùng ngày)
+('day_start_hour', '4'),             -- Ngày học mới bắt đầu lúc 4h sáng
+('swipe_direction', '"left_remember"'), -- Vuốt trái = nhớ, phải = chưa chắc
+('method_weights', '{}'),            -- Tỉ lệ chọn phương pháp, tính từ review_log
 
 ('offline_mode', 'true');
 `;

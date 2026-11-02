@@ -6,6 +6,8 @@ CREATE TABLE IF NOT EXISTS ai_word (
     language_code TEXT NOT NULL DEFAULT 'en',
     status TEXT NOT NULL DEFAULT 'PENDING',
     description TEXT,
+    ipas TEXT DEFAULT '[]',                    -- Phiên âm chung của từ (JSON [{label, value, roman}])
+    audio TEXT,                                -- Đường dẫn âm thanh chung; rỗng thì đọc bằng giọng máy
     is_active INTEGER DEFAULT 1,               -- SQLite không có Boolean, dùng 0/1
     created_at TEXT DEFAULT (DATETIME('now')),
     updated_at TEXT DEFAULT (DATETIME('now'))

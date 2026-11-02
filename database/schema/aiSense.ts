@@ -3,7 +3,9 @@ CREATE TABLE IF NOT EXISTS ai_sense (
     id TEXT PRIMARY KEY,                            -- UUIDv7 thống nhất hệ thống
     word_id TEXT NOT NULL,                          -- Khóa ngoại logic trỏ sang ai_word
     word_value TEXT NOT NULL,                       -- Lưu trực tiếp chữ để render UI không cần JOIN ngược
-    metadata_id TEXT,                               -- Khóa ngoại logic trỏ sang sense_metadata
+    original_id TEXT,                               -- Nghĩa gốc (null = chính nó là gốc); tiến độ học gắn với original (user_sense_progress.original_sense_id)
+    delta TEXT DEFAULT '{}',                        -- Nghĩa riêng dạng delta: áp lên contents (contents lấy của bản gốc)
+    metadata_id TEXT,                             -- Khóa ngoại logic trỏ sang sense_metadata
     image_context_id TEXT,                          -- Khóa ngoại logic trỏ sang image_context
     language_code TEXT NOT NULL DEFAULT 'en',
     
@@ -11,7 +13,8 @@ CREATE TABLE IF NOT EXISTS ai_sense (
     preview TEXT DEFAULT '{}',                      -- Định nghĩa nhanh, ảnh preview, audio thô
     image_preview TEXT,                             
     contents TEXT DEFAULT '{}',                     -- Cấu trúc chi tiết giải nghĩa
-    ipas TEXT DEFAULT '[]',                         -- Phiên âm, chữ Kanji có ruby, đính kèm link file âm thanh local/remote
+    ipas TEXT DEFAULT '[]',                         -- Phiên âm riêng của nghĩa; rỗng thì dùng ai_word.ipas
+    audio TEXT,                                     -- Âm thanh riêng của nghĩa; thứ tự dùng: sense.audio > word.audio > giọng máy
     
     -- Thuộc tính phân loại để filter
     pos TEXT,                                       -- Từ loại (Noun, Verb, Adj)
@@ -26,6 +29,10 @@ CREATE TABLE IF NOT EXISTS ai_sense (
     score INTEGER DEFAULT 0,
     like_count INTEGER DEFAULT 0,
     main_count INTEGER DEFAULT 0,
+
+    -- Thống kê học của mọi user (server cộng dồn từ review_log)
+    global_difficulty REAL DEFAULT 0,               -- Độ khó FSRS ban đầu trung bình (1-10), 0 = chưa ai học; chiếm 3 phần khi khởi tạo thẻ
+    learner_count INTEGER DEFAULT 0,                -- Số user đã học, ít người thì giảm trọng số global_difficulty
 
     -- Các trường Base tối giản cho hệ thống Local-First
     is_deleted INTEGER DEFAULT 0,

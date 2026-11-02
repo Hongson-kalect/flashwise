@@ -40,10 +40,16 @@ Chi tiết:
 - Cuối cụm: bài nối từ (đã có) + một vòng "chỉ các từ đã sai". Bài nối từ không tính vào FSRS.
 
 ### 3.2 Vuốt (từ cấp ≥ 3, `swipe_min_level`)
-- Thẻ xếp chồng. **Bắt lật thẻ rồi mới cho vuốt** (vuốt trước khi xem mặt sau là đoán).
-- Đủ 4 mức FSRS, ít nhất phải có "Nhớ": vuốt phải = Nhớ (Good, dùng nhiều nhất), vuốt trái = Quên (Again), nút Khó (Hard) / Dễ (Easy). Chỉ dễ / khó / quên thì user hay bấm "khó" cho thẻ nhớ bình thường, khoảng ôn bị ngắn.
-- Khó / quên: chèn lại vào giữa phần còn lại của bộ (1/2 deck). Quên 3 lần trong phiên thì rút khỏi vuốt, hạ cấp để lần sau quay về học cụm.
-- **Chỉ lần chấm đầu tiên của mỗi thẻ trong phiên** vào FSRS; lần quay lại chỉ củng cố.
+- Thẻ xếp chồng. Mặt trước toàn tiếng đích: từ, ảnh, định nghĩa, ví dụ. Mặt sau là tiếng mẹ đẻ (bản dịch), chỉ để cứu khi không hiểu, hạn chế thói quen tự dịch trong đầu. Không bắt lật.
+- Mỗi thẻ có **điểm khó trong phiên**, bắt đầu từ 0 (chốt 2026-11-02):
+  - **Vuốt "nhớ"** (mặc định trái, cùng chiều cuộn thông thường): xong thẻ. Điểm 0 → Good, điểm 1–2 → Hard.
+  - **Vuốt "chưa chắc"** (mặc định phải): điểm +1. Dưới 3 thì thẻ quay lại deck (chèn vào giữa phần còn lại); đạt 3 thì tính quên (Again).
+  - **Lật thẻ** (xem tiếng mẹ đẻ): điểm lên thẳng 3 = quên, vuốt hướng nào sau đó cũng vậy.
+  - Thẻ quên: quay lại deck 1 lần để xem lại (không tính FSRS), lần sau về học cụm (hạ cấp).
+- Không có Easy trong vuốt (user hay lạm dụng Easy làm khoảng ôn quá dài). Điểm 1 và 2 cùng là Hard với FSRS, khác nhau ở thống kê / độ khó (`attempts` = điểm khó lúc chốt).
+- Mỗi thẻ 1 dòng `is_fsrs=1` lúc chốt (vuốt "nhớ", điểm đạt 3, hoặc lật); các lần vuốt "chưa chắc" trước đó `is_fsrs=0`.
+- Lật tốn điểm nặng nên tránh lật nhầm: lật bằng nút "Xem nghĩa" / giữ lâu, không phải chạm nhẹ. Có nút hoàn tác. Cho đảo chiều vuốt trong setting (`swipe_direction`).
+- Thời gian từ lúc thẻ hiện tới lúc vuốt (`duration_ms`) chỉ ghi để thống kê, chưa dùng chấm: tự dừng đếm khi app ra nền, có nút tạm dừng, bỏ giá trị quá 60s.
 - Có nút hoàn tác. Đảo chiều ngẫu nhiên (nghĩa → từ khó hơn, dành cho cấp cao).
 
 ### 3.3 Giọng nói (từ cấp nhất định, `voice_min_level`)
@@ -73,7 +79,74 @@ Chi tiết:
 - `learn_session`: `collection_id`, `status` (in_progress / completed / abandoned), `methods` (JSON mã phương pháp đã bật), `new_count`, `review_count`, `correct_count`, `wrong_count`, `xp_earned`; `snapshot` (JSON, chỉ ở máy, không sync) để học tiếp phiên dở.
 - `user_settings` thêm key: `study_methods`, `cluster_size`, `cluster_steps`, `swipe_min_level`, `voice_min_level`, `hearable`, `talkable`, `learning_direction`, `request_retention`.
 
-## 5. Chưa chốt
-- Cách đổi kết quả sang điểm FSRS cho học cụm (đề xuất ở 3.1), luật lên / xuống cấp, ngưỡng cấp cho từng phương pháp.
-- Có cho học tiếp phiên dở không (đã có cột `snapshot` sẵn).
-- Từ ôn lại đi qua mấy bước (đề xuất: vuốt 1 lần nếu cấp ≥ 3, còn lại 1–2 bước của học cụm theo cấp).
+## 5. Luồng học đã chốt (2026-11-02)
+
+Đơn vị học là **nghĩa** (1 thẻ = 1 nghĩa, tiến độ theo `original_sense_id` nên 1 nghĩa nằm ở nhiều bộ vẫn chỉ 1 tiến độ).
+
+1. **Tải bộ từ** về máy kèm đủ dữ liệu học offline (nghĩa, bản dịch ngôn ngữ user, metadata, ảnh, ipas / audio). Thiếu bản dịch thì chờ dịch bù trước khi học.
+2. **Học mới** từ 1 bộ, cấu hình phiên: số nghĩa (`cluster_size`), số bước (`cluster_steps` 5–8). Không xếp 2 nghĩa của cùng 1 từ vào 1 cụm. Thẻ giới thiệu có nút **"Đã biết"**: lên thẳng **cấp 5**, khởi tạo FSRS như chấm Easy, bỏ khỏi cụm.
+3. **Màn học**: đi lần lượt từng nghĩa, giãn cách trong phiên (3.1).
+4. **Kết thúc**: bảng tổng kết, mỗi nghĩa chọn sẵn Dễ / Vừa / Khó / Quên theo kết quả phiên, user sửa nếu thấy sai. Mỗi thẻ 1 dòng `is_fsrs=1`.
+5. **Lần sau**: có thẻ đến hạn thì hiện **"Học lại" trước "Học mới"**.
+6. **Vuốt** mở từ cấp 3.
+7. **Thống kê**: ghi mọi lần chấm vào `review_log` để tính thống kê cá nhân, độ khó chung của nghĩa và hiệu quả từng phương pháp.
+
+### 5.1 Khởi tạo độ khó: 7 phần phiên học, 3 phần toàn server
+Lần học đầu chỉ là 1 lần đo nên dễ phiến diện; độ khó chung của mọi user kéo về cho cân bằng.
+- **Điểm chấm lần đầu** (quyết định `stability` ban đầu): lấy từ kết quả phiên (không gợi ý = Good, có gợi ý / sai 1 ký tự = Hard, phải hiện đáp án / sai 2 lần = Again), user tự đánh giá chỉ đẩy lên / xuống tối đa 1 nấc.
+- **Độ khó ban đầu** `D0 = 0,7 × D_phiên + 0,3 × D_server` (thang FSRS 1–10). `D_phiên` = độ khó FSRS ứng với điểm chấm trên; `D_server` = trung bình độ khó ban đầu của các user khác với nghĩa này.
+- Nghĩa ít người học thì `D_server` chưa đáng tin: trọng số giảm theo số người học `n`, `w = 0,3 × n / (n + 20)`, `n < 5` thì `w = 0` (dùng 100% phiên học). Số 20 / 5 chỉnh sau khi có dữ liệu.
+
+### 5.2 Cấp và số bước
+- Số bước học cụm theo cấp: `max(3, cluster_steps − cấp)`. Cấp 0 = 5–8 bước (đủ nghe, nói, đọc, viết), mỗi cấp giảm 1, tối thiểu 3.
+- Cấp ≥ 3 (`swipe_min_level`): ôn được bằng vuốt.
+- Lên / xuống cấp (tạm, chỉnh khi test thật): học xong từ mới → cấp 1 (Easy → 2); mỗi lần ôn Good / Easy +1, Hard giữ nguyên, Again −2 (tối thiểu 0), tối đa 7. **Vuốt chỉ đưa tối đa tới cấp 5**: cấp 6–7 phải qua 1 lần tự nhớ lại (gõ / nói).
+
+### 5.3 Ôn lần đầu trong cùng ngày
+Kinh nghiệm thực tế: sáng học, tối ôn thì 2 ngày sau vẫn nhớ rõ; học xong để cách 1 ngày mới ôn thì dễ rối và quên. Nên từ mới có **1 bước học ngắn hạn cùng ngày** (FSRS `learning_steps`, mặc định `['6h']`, setting `first_review_hours`) trước khi FSRS hẹn khoảng ôn dài. Lần ôn tối đi theo số bước của cấp hiện tại. Cần kiểm tra lại cú pháp `learning_steps` của `ts-fsrs` khi cài (app chưa cài thư viện này).
+
+### 5.4 Vuốt: khoảng ôn ngắn hơn
+Vuốt là nhận ra + tự chấm nên yếu hơn tự nhớ lại. Không sửa `stability`; khi tính lịch cho lần chấm `review:swipe` dùng mục tiêu nhớ cao hơn: `request_retention = 0,93` (setting `swipe_retention`) thay vì 0,90 → khoảng ôn ngắn hơn khoảng 30%.
+
+### 5.5 Không giới hạn số thẻ / ngày
+Giới hạn chỉ làm lượng tồn tăng dần. Không có trần ôn / ngày; thẻ đến hạn sắp theo xác suất còn nhớ thấp nhất trước (quá hạn lâu đứng đầu), vuốt giúp xử lý nhanh. Số từ mới do cấu hình phiên quyết định. "Đến hạn" = `next_review_at` ≤ cuối ngày theo múi giờ user, ngày mới bắt đầu lúc 4h sáng (`day_start_hour`).
+
+### 5.6 Thống kê và chỉ số phương pháp
+- Hiệu quả phương pháp đo bằng **lần ôn FSRS kế tiếp** (thẻ học bằng `learn:cloze` thì lần ôn sau còn nhớ không), không bằng tỉ lệ đúng trong phiên. Làm mượt khi ít dữ liệu, chỉ dùng khi phương pháp có ≥ ~30 lần. Chỉ số này chỉ đổi **tỉ lệ chọn phương pháp** khi tạo phiên (`method_weights`), không đổi FSRS.
+- Thống kê cá nhân tính trên máy từ `review_log`.
+- Thống kê chung của nghĩa do server cộng dồn khi nhận `review_log`, chỉ dòng `is_fsrs=1` mới chèn (push lặp lại không cộng 2 lần).
+- Nghĩa bị quên ≥ 4 lần: đánh dấu "hay quên", gợi ý ghi mẹo nhớ riêng (`user_note`).
+
+### 5.7 Học tiếp phiên dở
+Thoát giữa chừng / app bị tắt thì lưu `learn_session.snapshot` (chỉ ở máy). Lần sau mở trong vòng **1 giờ** kể từ lúc tạo snapshot thì hỏi "Học tiếp?"; quá 1 giờ thì bỏ snapshot, phiên đó `status=abandoned`. Các bước đã làm vẫn giữ trong `review_log` (`is_fsrs=0`); thẻ chưa có dòng `is_fsrs=1` coi như chưa học.
+
+### 5.8 Dữ liệu chấm của từng kiểu phiên
+FSRS chỉ cần **1 điểm chấm (Again / Hard / Good / Easy) + thời điểm** cho mỗi thẻ mỗi phiên; mọi thứ khác là để quy ra điểm đó.
+- **Học mới**: user chỉ làm bài, không phải tự chấm từng bước. Mỗi bước ghi `correct`, `hint_count`, `attempts`, `duration_ms`. Cuối phiên app quy ra điểm (bước nhớ lại phải hiện đáp án / sai 2 lần → Again; có gợi ý / gần đúng → Hard; còn lại → Good; mọi bước đúng ngay, không gợi ý, nhanh hơn thời gian trung vị của chính user → Easy), hiện bảng tổng kết chọn sẵn, user sửa tối đa ±1 nấc.
+- **Học lại (học cụm theo cấp)**: điểm lấy theo **bước đầu tiên** (lúc user chưa được nhắc lại, đúng là đang đo trí nhớ); các bước sau là học lại, chỉ hạ điểm nếu sai nặng, không nâng.
+- **Vuốt**: điểm khó trong phiên (3.2), mỗi lần vuốt "chưa chắc" +1, lật = 3: chốt ở 0 = Good, 1–2 = Hard, 3 = Again.
+- **Giọng nói**: đúng lần đầu = Good, đúng sau khi thử lại = Hard, sai / bỏ qua = Again.
+
+## 6. Việc cần làm
+
+### Backend
+| # | Việc | Ghi chú |
+|---|---|---|
+| 1 | ~~`GET user-collections/{id}/bundle?user_lang`~~ | Xong 2026-11-02: từ + nghĩa + metadata + dòng bộ từ theo cột SQLite, `pending`, `etag` |
+| 2 | ~~Sync `user_collection`~~ | Xong: `sync/pull` có `user_collection`; `collection_items` lấy qua bundle (dòng đã gộp nháp / phát hành, không sync từng dòng thô) |
+| 3 | ~~`AISense.global_difficulty`, `learner_count`~~ | Xong: cộng dồn khi push `review_log` (lần `is_fsrs=1` đầu của user, độ khó theo điểm chấm, tham số FSRS-6), cộng số lần quên / nhớ |
+| 4 | ~~Trả `global_difficulty`, `learner_count`~~ | Xong: trong get-word, bundle, các API nghĩa; cột mới ở `ai_sense` (cùng `original_id`, `delta`) |
+| 5 | ~~Seed key `user_settings`~~ | Xong ở app: `first_review_hours`, `swipe_retention`, `day_start_hour`, `swipe_direction`, `method_weights`; `review_limit` = 0 (không giới hạn) |
+| 5b | ~~`GET /api/learn/new/`, `GET /api/learn/review/`~~ | Xong 2026-11-02, tách 2 API: học mới (`count` nghĩa của 1 bộ, không 2 nghĩa cùng từ) và ôn tập (`mode` normal / quick, theo bộ hoặc mọi nghĩa, R thấp nhất trước); kiểu mới thêm vào `NEW_MODES` / `REVIEW_MODES` |
+| 5c | ~~`POST /api/learn/new/complete/`, `POST /api/learn/review/complete/`~~ | Xong 2026-11-02: server tính FSRS (py-fsrs, cùng tham số ts-fsrs), khởi tạo / chấm tiếp tiến độ theo 5.1–5.4, ghi log / phiên / thống kê ngày; gửi lại cùng phiên không áp 2 lần. App gửi điểm chấm cuối mỗi thẻ (`gradeMapper` ở app) + các bước |
+| 6 | Sau: `GET me/fsrs-params` | Tối ưu tham số FSRS riêng từng user từ `review_log` |
+
+### App
+- `fsrsService`: bọc `ts-fsrs` (khởi tạo thẻ theo 5.1, chấm theo phương pháp với mục tiêu nhớ riêng, bước học cùng ngày).
+- `gradeMapper`: tín hiệu phiên (gợi ý, số lần sai, thời gian) + tự đánh giá → điểm chấm.
+- `levelPolicy`: luật cấp 5.2, trần cấp cho vuốt.
+- `sessionBuilder`: thẻ đến hạn trước, rồi từ mới; không 2 nghĩa cùng từ trong cụm; chọn phương pháp theo cấp + dữ liệu có sẵn + `method_weights`; xếp giãn cách.
+- `methodRegistry`, `answerChecker` (sai 1 ký tự, kana / kanji), `distractorPicker`, `statsAggregator`, `dueQueue` (mốc 4h sáng, đếm thẻ đến hạn cho Home).
+
+## 7. Chưa chốt
+- Các con số trong 5.1 / 5.2 / 5.3 (trọng số theo số người học, bước cấp, `6h`): chỉnh khi test thật.

@@ -2,6 +2,9 @@
 
 App học từ vựng bằng flashcard, Expo 53 + React Native 0.79 + expo-router + NativeWind + zustand. Local-first: dữ liệu học nằm trong SQLite trên máy, sync lên backend Django ở `D:\Code\flashwise_api` (xem CLAUDE.md bên đó).
 
+## Kết nối backend
+Đọc `D:\Codelashwise_api\docs\APP_INTEGRATION.md` trước khi làm phần gọi API: cách chạy backend để test, đăng nhập, tra từ + websocket, sync, bundle, học, upload file, mã lỗi.
+
 ## Cấu trúc
 - `app/`: route expo-router, màn hình trong `app/screens/<Tên>` (Collection, Home, Learning, Practice, Profile, Start, Word, Policy)
 - `database/schema/*.ts`: câu `CREATE TABLE` SQLite từng bảng, gộp trong `index.ts`. `initDatabase` hiện xoá và tạo lại DB mỗi lần mở app (đang dev) nên sửa schema chỉ cần sửa file, chưa có migration.
