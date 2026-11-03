@@ -69,6 +69,8 @@ export type MenuOption = {
   isCloseAfterPress?: boolean;
   onPress?: () => void;
   disabled?: boolean;
+  /** Hành động phá huỷ (xoá...): hiện tông đỏ nhạt. */
+  destructive?: boolean;
   color?: string;
   backgroundColor?: string;
 };

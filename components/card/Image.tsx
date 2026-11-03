@@ -1,6 +1,7 @@
 import { QuestionType } from "@/app/screens/Practice/example";
 import { useState } from "react";
-import { Image, TextStyle, View, ViewStyle } from "react-native";
+import { TextStyle, View, ViewStyle } from "react-native";
+import AppImage from "../AppImage";
 
 type Props = {
   wrapperStyle?: ViewStyle;
@@ -22,10 +23,9 @@ const CardImage = (props: Props) => {
       className="w-full items-center justify-center"
     >
       <View style={{ height: imageHeight || 180, width: "100%" }}>
-        <Image
+        <AppImage
           className="w-full h-full"
           source={{ uri: props.question.image }}
-          resizeMode="cover"
         />
       </View>
     </View>

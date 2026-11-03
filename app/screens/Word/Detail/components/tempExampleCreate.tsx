@@ -1,3 +1,4 @@
+import { useTheme } from "@/providers/Theme";
 import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppInput from "@/components/AppInput";
@@ -12,8 +13,8 @@ type Props = {
 };
 
 const TempExampleCreate = ({ onAddExample }: Props) => {
-  const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+  const { settings, dbService } = useAppStore();
+  const { theme } = useTheme();
 
   const toggleLanguageMode = () =>
     dbService?.setShowTranslation(!settings?.show_translation);
@@ -68,7 +69,6 @@ const TempExampleCreate = ({ onAddExample }: Props) => {
       <View className="flex-row justify-start mt-4">
         <AppButton
           size="sm"
-          type="success"
           onPress={() => {
             onAddExample(example);
             setExample({
@@ -78,9 +78,9 @@ const TempExampleCreate = ({ onAddExample }: Props) => {
             });
           }}
         >
-          <AppIcon name="plus" size={14} color="white" branch="antd" />
-          <AppText size={"sm"} color="white">
-            Add
+          <AppIcon name="plus" size={14} color="white" branch="feather" />
+          <AppText size={"sm"} weight="bold" color="white">
+            Thêm ví dụ
           </AppText>
         </AppButton>
       </View>

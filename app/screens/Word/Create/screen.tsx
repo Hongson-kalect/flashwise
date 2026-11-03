@@ -1,263 +1,123 @@
-import CollapseSection from "@/components/AppCollapsable";
-import { AppDivider } from "@/components/AppDivider";
+import AppIcon from "@/components/AppIcon";
+import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
-import WordInput from "@/components/input/wordInput";
-import {
-  bottomSheetTitle,
-  CreateWordInputModalProps,
-  CreateWordRadioModalProps,
-} from "@/interfaces/word";
-import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
-import useModalStore from "@/stores/modalStore";
-import { useLocalSearchParams } from "expo-router";
+import { useAppStore } from "@/stores/appStore";
+import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, LayoutChangeEvent, View } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import Animated, { FadeIn, LinearTransition } from "react-native-reanimated";
-import WordSelectForm from "../Create/components/wordSelectForm";
-import CreateSenseBasicInfo from "../Detail/components/createSenseBasic";
-import CreateSenseExample from "../Detail/components/createSenseExample";
-import CreateSenseMoreInfo from "../Detail/components/createSenseMoreInfo";
-import { SenseType } from "../Detail/components/createSenseSheet";
-import WordDetailHeader from "./components/header";
-import { LineInput } from "./components/lineInput";
+import { KeyboardAvoidingView, Platform, Pressable, TextInput, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const WordDetail = () => {
-  const { theme } = useTheme();
-  const { setGlobalModal, setListModal } = useModalStore();
-  const { present } = useBottomSheet();
-  const { id } = useLocalSearchParams();
-  const [labelWidth, setLabelWidth] = useState(0);
-  const [pageMode, setPageMode] = useState<"view" | "update" | "create">(
-    "create"
-  );
-  const onLabelLayout = (event: LayoutChangeEvent) => {
-    const { width } = event.nativeEvent.layout;
+// Khớp bộ lọc của server (utils/utils/normalize.lookup_entry_problem): chỉ từ, cụm từ, thành ngữ, tục ngữ
+const MAX_TOKENS = 12;
+const MAX_CJK_CHARS = 14;
+const MAX_CHARS = 100;
 
-    setLabelWidth((prev) => (width > prev ? width : prev));
-  };
-
-  const openInputModal = ({
-    title,
-    field,
-    type = "prompt",
-  }: CreateWordInputModalProps) => {
-    setGlobalModal({
-      type: type,
-      title: title,
-    });
-  };
-
-  const openRadioModal = ({
-    title,
-    field,
-    options,
-  }: CreateWordRadioModalProps) => {
-    setListModal({
-      onSubmit: () => {},
-      options,
-      title,
-
-      value: "1",
-    });
-  };
-
-  const openWordSelectForm = ({
-    type,
-  }: {
-    type: keyof typeof bottomSheetTitle;
-  }) => {
-    present({
-      size: "full",
-      scrollable: false,
-      title: bottomSheetTitle[type],
-      render: () => <WordSelectForm />,
-    });
-  };
-
-  const [languageMode, setLanguageMode] = useState<1 | 2>(2);
-  const [senseValue, setSenseValue] = useState<SenseType>({
-    definition: "",
-    examples: [],
-    id: new Date().getTime().toString(),
-    translations: [],
-    traslatedDefinition: "",
-    word: "",
-  });
-
-  return (
-    <KeyboardAwareScrollView
-      className="flex-1"
-      style={{ flexGrow: 1, backgroundColor: theme.background }}
-      enableOnAndroid
-      keyboardShouldPersistTaps="handled"
-      extraScrollHeight={100}
-    >
-      <View style={{ backgroundColor: theme.background }} className="flex-1">
-        <View>
-          <WordDetailHeader
-            languageMode={languageMode}
-            setLanguageMode={setLanguageMode}
-          />
-        </View>
-        <AppDivider />
-
-        <View className="px-2">
-          <View className="mt-4">
-            <View className=" w-full mr-4 flex-row gap-2 items-center">
-              {/* <View className="-scale-x-100">
-            <EditIcon />
-          </View> */}
-              {/* <AppButton type="error" onPress={() => {}}> */}
-              <View className="rounded bg-red-400 h-8 w-14"></View>
-              {/* </AppButton> */}
-            </View>
-
-            {/* <WordTitle>Run</WordTitle> */}
-            <View className="py-2 w-full">
-              <WordInput
-                value={senseValue.word || ""}
-                onChangeText={(val) =>
-                  setSenseValue({ ...senseValue, word: val })
-                }
-                editable={true}
-              />
-            </View>
-          </View>
-
-          {senseValue.word && (
-            <Animated.View entering={FadeIn} className="mt-2">
-              <CreateSenseBasicInfo
-                languageMode={languageMode}
-                senseValue={senseValue}
-                setSenseValue={setSenseValue}
-              />
-
-              <Animated.View layout={LinearTransition} className="mt-8">
-                <View className="bg-gray-100 -mx-3 pl-2">
-                  <CreateSenseExample
-                    word={senseValue.word}
-                    languageMode={languageMode}
-                    senseValue={senseValue}
-                    setSenseValue={setSenseValue}
-                  />
-                </View>
-
-                <View className="mt-8 bg-gray-100 -mx-3 px-2">
-                  <CreateSenseMoreInfo
-                    senseValue={senseValue}
-                    setSenseValue={setSenseValue}
-                  />
-                </View>
-
-                <View className="mt-8 bg-gray-100 -mx-3 px-2">
-                  <CollapseSection title="Related word">
-                    <View className="items-end mt-2">
-                      <AppText
-                        size={"xs"}
-                        color="primary"
-                        font="MulishLightItalic"
-                      >
-                        {'Each word separated by ","'}
-                      </AppText>
-                    </View>
-                    <View className="px-1 py-4">
-                      <LineInput
-                        onPreset={() => Alert.alert("show ipa preset")}
-                        label="Related word"
-                        value={senseValue.relateds || ""}
-                        setValue={(text) =>
-                          setSenseValue({ ...senseValue, relateds: text })
-                        }
-                        size="xs"
-                        placeholder="Closely related words or expressions"
-                      />
-                    </View>
-                    <View className="px-1 py-4">
-                      <LineInput
-                        onPreset={() => Alert.alert("show ipa preset")}
-                        label="Synonyms"
-                        value={senseValue.synonyms || ""}
-                        setValue={(text) =>
-                          setSenseValue({ ...senseValue, synonyms: text })
-                        }
-                        size="xs"
-                        placeholder="Words with similar meaning"
-                      />
-                    </View>
-                    <View className="px-1 py-4">
-                      <LineInput
-                        onPreset={() => Alert.alert("show ipa preset")}
-                        label="Antonyms"
-                        value={senseValue.antonyms || ""}
-                        setValue={(text) =>
-                          setSenseValue({ ...senseValue, antonyms: text })
-                        }
-                        size="xs"
-                        placeholder="Words with opposite meaning"
-                      />
-                    </View>
-                    <View className="h-4">{/* bottom padding */}</View>
-                  </CollapseSection>
-                </View>
-              </Animated.View>
-            </Animated.View>
-          )}
-
-          {/* <View className="mt-6">
-            <BasicInformation
-              mode={pageMode}
-              labelWidth={labelWidth}
-              onLabelLayout={onLabelLayout}
-              openInputModal={openInputModal}
-              openRadioModal={openRadioModal}
-            />
-          </View> */}
-
-          {/* <View className="mt-6">
-            <WordMoreInformation
-              mode={pageMode}
-              labelWidth={labelWidth}
-              onLabelLayout={onLabelLayout}
-              openInputModal={openInputModal}
-              openRadioModal={openRadioModal}
-            />
-          </View>
-
-          <AppDivider style={{ marginTop: 16, marginBottom: 12 }} />
-
-          <View>
-            <WordAdvanceInformation
-              mode={pageMode}
-              labelWidth={labelWidth}
-              onLabelLayout={onLabelLayout}
-              openInputModal={openInputModal}
-              openRadioModal={openRadioModal}
-              openWordSelectModal={openWordSelectForm}
-            />
-          </View> */}
-        </View>
-
-        {/* <AppDivider style={{ marginTop: 16, marginBottom: 8 }} />
-
-        <View className="mt-8 px-4">
-          <AppButton
-            title="Xem bản dịch"
-            type="primary"
-            size="lg"
-            onPress={() =>
-              router.push("/screens/Word/Create/Translate/List/screen")
-            }
-          />
-        </View> */}
-
-        <View style={{ height: 156 }}></View>
-
-        {/* <AppText>Từ liên quan (search- chọn)</AppText> */}
-      </View>
-    </KeyboardAwareScrollView>
-  );
+/** Lỗi nhìn thấy ngay ở máy; còn lại (từ sai chính tả, câu ngắn...) do AI quyết định ở bước tạo từ. */
+const entryProblem = (raw: string, lang: string): string | null => {
+  const word = raw.trim().replace(/\s+/g, " ");
+  if (!word) return "Hãy nhập một từ hoặc cụm từ.";
+  if (!/[\p{L}\p{N}]/u.test(word)) return "Hãy nhập một từ hoặc cụm từ.";
+  if (word.length > MAX_CHARS) return `Tối đa ${MAX_CHARS} ký tự.`;
+  const cjk = ["ja", "zh"].includes(lang.split("-")[0]);
+  const tooLong = cjk ? word.length > MAX_CJK_CHARS : word.split(" ").length > MAX_TOKENS;
+  const body = word.replace(/[.!?。！？ ]+$/u, "");
+  if (tooLong || /[.!?。！？]\s*\S/u.test(body)) {
+    return "Đây giống một câu hơn là một mục từ. Chỉ thêm từ, cụm từ, thành ngữ hoặc tục ngữ.";
+  }
+  return null;
 };
 
-export default WordDetail;
+/**
+ * Tìm kiếm từ mới: chỉ nhập từ rồi Enter. Từ chưa có sẽ được AI tạo ngay ở trang từ (tiến độ hiện dần, báo rõ nếu bị từ chối);
+ * từ đã có thì mở luôn.
+ */
+export default function CreateWord() {
+  const { theme } = useTheme();
+  const wordLang: string = useAppStore((s) => s.settings?.learning_language) ?? "en";
+  const [text, setText] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = () => {
+    const problem = entryProblem(text, wordLang);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    const value = text.trim().replace(/\s+/g, " ").toLowerCase();
+    // Thay màn này bằng trang từ: quay lại sẽ về danh sách từ chứ không về ô nhập
+    router.replace({ pathname: "/screens/Word/Detail/[value]", params: { value, valueId: value } });
+  };
+
+  const ready = text.trim().length > 0;
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <AppReturnHeader title="Tìm kiếm từ mới" />
+        <View className="px-4 pt-4 gap-5">
+          <View className="gap-1">
+            <AppText size="xl" weight="bold" color="title">
+              Bạn muốn tìm từ nào?
+            </AppText>
+            <AppText color="subText1">
+              Nhập một từ, cụm từ, thành ngữ hoặc tục ngữ ({wordLang.toUpperCase()}). Nếu từ chưa có trong từ điển, nó sẽ được khởi tạo cùng nghĩa, ví dụ và bản dịch.
+            </AppText>
+          </View>
+
+          <View>
+            <TextInput
+              value={text}
+              onChangeText={(t) => {
+                setText(t);
+                if (error) setError(null);
+              }}
+              onSubmitEditing={submit}
+              autoFocus
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="go"
+              maxLength={MAX_CHARS}
+              placeholder="vd: break the ice"
+              placeholderTextColor={theme.subText3}
+              style={{
+                height: 60,
+                color: theme.text,
+                backgroundColor: theme.card,
+                borderColor: error ? theme.error : theme.primary,
+                borderWidth: 2,
+                borderRadius: 20,
+                paddingHorizontal: 18,
+                fontFamily: "MulishSemiBold",
+                fontSize: 20,
+              }}
+            />
+            {!!error && (
+              <View className="flex-row gap-2 items-start" style={{ marginTop: 8 }}>
+                <AppIcon branch="feather" name="alert-circle" size={16} color={theme.error} style={{ marginTop: 2 }} />
+                <AppText size="sm" color="error" style={{ flex: 1 }}>
+                  {error}
+                </AppText>
+              </View>
+            )}
+          </View>
+
+          <Pressable
+            disabled={!ready}
+            onPress={submit}
+            className="h-14 rounded-2xl flex-row items-center justify-center gap-2"
+            style={{ backgroundColor: theme.primary, opacity: ready ? 1 : 0.45 }}
+          >
+            <AppText color="white" size="lg" weight="bold">
+              Tìm từ
+            </AppText>
+            <AppIcon branch="feather" name="arrow-right" size={18} color="white" />
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}

@@ -84,12 +84,12 @@ const WordListSuggestion = (props: Props) => {
                   {/* status color, icon, image,...d */}
                   <View
                     style={{ height: 28, width: 28 }}
-                    className="bg-gray-400 rounded-full"
+                    className="bg-disabled rounded-full"
                   ></View>
                 </View>
                 {/* <View
                   style={{ height: 36, width: 64 }}
-                  className="bg-gray-400 rounded "
+                  className="bg-disabled rounded "
                 ></View> */}
                 <AppText numberOfLines={1}>{props.searchVal}</AppText>
               </View>
@@ -119,7 +119,7 @@ const WordListSuggestion = (props: Props) => {
                       >
                         <View
                           style={{ height: 28, width: 28 }}
-                          className="bg-gray-400 rounded-full"
+                          className="bg-disabled rounded-full"
                         ></View>
                       </View>
                       <AppText>{value}</AppText>

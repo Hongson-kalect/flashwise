@@ -53,7 +53,7 @@ const CreateSenseMoreInfo = ({ senseValue, setSenseValue }: Props) => {
   };
 
   return (
-    <CollapseSection title="Advanced information">
+    <CollapseSection title="Thông tin nâng cao">
       <View className="px-1 py-4">
         <LineInput
           onPreset={() => {}}

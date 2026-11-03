@@ -1,26 +1,28 @@
-import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
-import AppLabel from "@/components/AppLabel";
 import AppText from "@/components/AppText";
 import { useAppNavigation } from "@/hooks/useNavigation";
-import { View } from "react-native";
+import { useTheme } from "@/providers/Theme";
+import { Pressable, View } from "react-native";
 
 const ListHeader = () => {
   const { routerPush } = useAppNavigation();
+  const { theme } = useTheme();
 
   return (
-    <View className="flex-row justify-between items-center h-14">
-      <AppLabel titles={["Words"]} />
-      <AppButton
+    <View className="flex-row justify-between items-center h-16">
+      <AppText size="3xl" weight="bold" color="title">
+        Từ vựng
+      </AppText>
+      <Pressable
         onPress={() => routerPush("/screens/Word/Create/screen")}
-        // onPress={testFunction}
-        type="primary"
+        className="flex-row items-center gap-1.5 h-10 px-4 rounded-full"
+        style={{ backgroundColor: theme.primary }}
       >
-        <AppIcon name="plus" branch="fa6" color="white" size={18} />
-        <AppText font="MulishMedium" color="white">
-          Create
+        <AppIcon name="plus" branch="feather" color="white" size={18} />
+        <AppText weight="bold" color="white" size="sm">
+          Tìm từ mới
         </AppText>
-      </AppButton>
+      </Pressable>
     </View>
   );
 };

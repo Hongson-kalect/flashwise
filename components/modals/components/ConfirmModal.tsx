@@ -1,14 +1,13 @@
 import AppText from "@/components/AppText";
 import { BasicModalOptions, ConfirmModalOptions } from "@/providers/Modal";
-import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { TouchableOpacity, View } from "react-native";
+import { View } from "react-native";
+import ModalButton from "../ModalButton";
 
 type Props = ConfirmModalOptions & BasicModalOptions;
 
 const ConfirmModal = (modal: Props) => {
   const { setGlobalModal } = useModalStore();
-  const { theme } = useTheme();
   return (
     <View>
       {modal.title && (
@@ -20,26 +19,22 @@ const ConfirmModal = (modal: Props) => {
 
       {modal?.middle}
 
-      <View className="flex-row justify-between mt-4">
-        <TouchableOpacity
-          className="bg-gray-300 rounded-lg py-3 px-4"
+      <View className="flex-row gap-3 mt-4">
+        <ModalButton
+          variant="ghost"
+          label={modal.cancelText || "Huỷ"}
           onPress={() => {
             modal.onCancel?.();
             setGlobalModal(null);
           }}
-        >
-          <AppText color="white">{modal.cancelText || "Cancel"}</AppText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{ backgroundColor: theme.primary }}
-          className=" rounded-lg py-3 items-center justify-center min-w-28"
+        />
+        <ModalButton
+          label={modal.okText || "OK"}
           onPress={() => {
             modal.onOk?.();
             setGlobalModal(null);
           }}
-        >
-          <AppText color="white">{modal.okText || "OK"}</AppText>
-        </TouchableOpacity>
+        />
       </View>
     </View>
   );

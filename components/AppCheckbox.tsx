@@ -44,7 +44,7 @@ const AppCheckbox = ({
           styles.checkbox,
           {
             borderColor: checked ? theme[type] : theme.subText3,
-            backgroundColor: checked ? theme[type] : "#fff",
+            backgroundColor: checked ? theme[type] : theme.card,
             opacity: disabled ? 0.5 : 1,
             transform: [{ scale: scale || 1 }], // Apply scaling if provided
           },

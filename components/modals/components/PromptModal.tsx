@@ -1,9 +1,10 @@
 import AppText from "@/components/AppText";
+import ModalButton from "../ModalButton";
 import { BasicModalOptions, PromptModalOptions } from "@/providers/Modal";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { useEffect, useRef, useState } from "react";
-import { Pressable, TextInput, TouchableOpacity, View } from "react-native";
+import { Pressable, TextInput, View } from "react-native";
 
 type Props = PromptModalOptions & BasicModalOptions;
 
@@ -48,56 +49,42 @@ const PromptModal = (modal: Props) => {
 
       <Pressable
         onPress={textFocus}
-        className="bg-gray-100 rounded-lg px-1 mt-3"
+        className="rounded-2xl px-3 mt-3"
+        style={{ backgroundColor: theme.card }}
       >
         {modal.textInnerHeader}
         <TextInput
-          style={{ textAlignVertical: "top", height: 90 }}
-          className="text-gray-700 "
+          style={{ textAlignVertical: "top", height: 90, color: theme.text }}
           ref={textRef}
           multiline
           numberOfLines={4}
           value={value}
           onChangeText={setValue}
           placeholder={modal.placeholder}
-          placeholderTextColor={"#00000040"}
+          placeholderTextColor={theme.subText3}
         ></TextInput>
         {modal.textInnerFooter}
       </Pressable>
       {modal.textOuterFooter}
 
-      <View
-        style={{
-          justifyContent:
-            modal.isShowCancelButton !== false ? "space-between" : "center",
-        }}
-        className="flex-row items-center mt-4"
-      >
+      <View className="flex-row gap-3 mt-5">
         {modal.isShowCancelButton !== false && (
-          <TouchableOpacity
-            className="bg-gray-300 rounded-lg py-3 px-4"
+          <ModalButton
+            variant="ghost"
+            label={modal.cancelText || "Đóng"}
             onPress={() => {
               modal.onCancel?.();
               setGlobalModal(null);
             }}
-          >
-            <AppText color="white">{modal.cancelText || "Close"}</AppText>
-          </TouchableOpacity>
+          />
         )}
-        <TouchableOpacity
-          className={`rounded-lg py-3 items-center justify-center ${
-            modal.isShowCancelButton === false ? "w-full" : ""
-          } min-w-28`}
-          style={{
-            backgroundColor: theme.primary,
-          }}
+        <ModalButton
+          label={modal.okText || "OK"}
           onPress={() => {
             modal.onOk?.(value);
             setGlobalModal(null);
           }}
-        >
-          <AppText color="white">{modal.okText || "OK"}</AppText>
-        </TouchableOpacity>
+        />
       </View>
     </View>
   );

@@ -20,7 +20,22 @@ export type WordState = {
   languageCode?: string,
   senses: {[sense_id:string]:SenseType},
   isLoading: boolean;
-  status: "INITIAL" | "PARTIAL" | "COMPLETED" | null;
+  status: "INITIAL" | "PARTIAL" | "COMPLETED" | "ERROR" | null;
+  /** Lỗi get-word / socket: màn hình hiện thông báo thay vì spinner. */
+  error?: WordError | null;
+};
+
+export type WordErrorCode =
+  | "rejected" // từ không hợp lệ / bị từ chối / bị ban (404, REJECTED)
+  | "throttled" // tra từ mới quá nhiều (429)
+  | "failed" // lần tạo vừa lỗi (500, ERROR), có retryAfter
+  | "unavailable" // hàng đợi / DB lỗi (503)
+  | "offline"; // không có mạng
+
+export type WordError = {
+  code: WordErrorCode;
+  message?: string;
+  retryAfter?: number;
 };
 
 export const initialState: WordState = {
@@ -30,5 +45,6 @@ export const initialState: WordState = {
   senses:{},
   isLoading: true,
   status: null,
+  error: null,
 };
 

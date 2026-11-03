@@ -1,11 +1,16 @@
+import { useTheme } from "@/providers/Theme";
 import CollapseSection from "@/components/AppCollapsable";
+import AppCard from "@/components/AppCard";
 import AppText from "@/components/AppText";
 import { useAppStore } from "@/stores/appStore";
+import useModalStore from "@/stores/modalStore";
+import { applyCommunitySense, applySummary } from "../communityApply";
+import CommunitySuggestions from "./communitySuggestions";
 import { AudioType as AppAudioType } from "@/stores/recordingStore";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
 import { useEffect, useMemo, useState } from "react";
-import { Alert, View } from "react-native";
+import { Keyboard, ToastAndroid, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { LineInput } from "../../Create/components/lineInput";
 import CreateSenseBasicInfo from "./createSenseBasic";
@@ -42,13 +47,14 @@ type AddSenseSheetProps = {
   setSenseValue: React.Dispatch<React.SetStateAction<SenseType>>;
   handleAddSense: () => void;
   word: string;
+  wordId?: string;
 };
 
 const CreateSenseSheet = (props: AddSenseSheetProps) => {
   // Model sheet not sync with props, so we need to sync it manually
   const [senseValue, setSenseValue] = useState<SenseType>(props.senseValue);
-  const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+  const { settings, dbService } = useAppStore();
+  const { theme } = useTheme();
 
   const toggleLanguageMode = () =>
     dbService?.setShowTranslation(!settings?.show_translation);
@@ -56,78 +62,92 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
   // Sync back to main screen. if close sheet, it still remain if reopen
   useEffect(() => props.setSenseValue(senseValue), [senseValue]);
 
+  // Gợi ý nghĩa từ cộng đồng: chọn 1 nghĩa thì chỉ điền các ô đang trống, ô đã có dữ liệu giữ nguyên
+  const { setGlobalModal } = useModalStore();
+  const wordLang: string = settings?.learning_language ?? "en";
+  const userLang: string = settings?.translate_language ?? "vi";
+  const openSuggestions = props.wordId
+    ? () => {
+        const wordId = props.wordId as string;
+        Keyboard.dismiss();
+        setGlobalModal({
+          type: "custom",
+          modalTitle: "Gợi ý từ cộng đồng",
+          render: (
+            <CommunitySuggestions
+              wordId={wordId}
+              wordLang={wordLang}
+              userLang={userLang}
+              onPick={(picked) => {
+                const { next, filled, skipped } = applyCommunitySense(senseValue, picked, wordLang, userLang);
+                setSenseValue(next);
+                setGlobalModal(null);
+                ToastAndroid.show(applySummary({ filled, skipped }), ToastAndroid.LONG);
+              }}
+            />
+          ),
+        });
+      }
+    : undefined;
+
   return (
-    <View className="p-4">
+    <View className="px-4 pt-3 gap-4">
       <CreateSenseHeader setSenseValue={setSenseValue} />
 
-      <CreateSenseBasicInfo
-        senseValue={senseValue}
-        setSenseValue={setSenseValue}
-      />
-      {/* Advanced info */}
-      <Animated.View layout={LinearTransition} className="mt-8">
-        <View className="bg-gray-100 -mx-3 pl-2">
-          <CreateSenseExample
-            word={props.word}
-            senseValue={senseValue}
-            setSenseValue={setSenseValue}
-          />
-        </View>
-        <View className="mt-8 bg-gray-100 -mx-3 px-2">
-          <CreateSenseMoreInfo
-            senseValue={senseValue}
-            setSenseValue={setSenseValue}
-          />
-        </View>
+      <AppCard>
+        <CreateSenseBasicInfo
+          senseValue={senseValue}
+          setSenseValue={setSenseValue}
+          onSuggest={openSuggestions}
+        />
+      </AppCard>
 
-        <View className="mt-8 bg-gray-100 -mx-3 px-2">
-          <CollapseSection title="Related word">
-            <View className="items-end mt-2">
-              <AppText size={"xs"} color="primary" font="MulishLightItalic">
-                {'Each word separated by ","'}
-              </AppText>
-            </View>
-            <View className="px-1 py-4 mt-2">
-              <LineInput
-                onPreset={() => Alert.alert("show ipa preset")}
-                label="Related word"
-                value={senseValue.relateds || ""}
-                setValue={(text) =>
-                  setSenseValue({ ...senseValue, relateds: text })
-                }
-                size="xs"
-                placeholder="Closely related words or expressions"
-              />
-            </View>
-            <View className="px-1 py-4">
-              <LineInput
-                onPreset={() => Alert.alert("show ipa preset")}
-                label="Synonyms"
-                value={senseValue.synonyms || ""}
-                setValue={(text) =>
-                  setSenseValue({ ...senseValue, synonyms: text })
-                }
-                size="xs"
-                placeholder="Words with similar meaning"
-              />
-            </View>
-            <View className="px-1 py-4">
-              <LineInput
-                onPreset={() => Alert.alert("show ipa preset")}
-                label="Antonyms"
-                value={senseValue.antonyms || ""}
-                setValue={(text) =>
-                  setSenseValue({ ...senseValue, antonyms: text })
-                }
-                size="xs"
-                placeholder="Words with opposite meaning"
-              />
-            </View>
-            <View className="h-4">{/* bottom padding */}</View>
-          </CollapseSection>
-        </View>
+      <Animated.View layout={LinearTransition} className="gap-4">
+        <CreateSenseExample
+          word={props.word}
+          senseValue={senseValue}
+          setSenseValue={setSenseValue}
+        />
+        <CreateSenseMoreInfo
+          senseValue={senseValue}
+          setSenseValue={setSenseValue}
+        />
+        <CollapseSection title="Từ liên quan">
+          <View className="items-end mt-3">
+            <AppText size="xs" color="subText2">
+              Ngăn cách các từ bằng dấu phẩy
+            </AppText>
+          </View>
+          <View className="py-3">
+            <LineInput
+              label="Từ liên quan"
+              value={senseValue.relateds || ""}
+              setValue={(text) => setSenseValue({ ...senseValue, relateds: text })}
+              size="xs"
+              placeholder="Từ hoặc cụm từ có liên quan"
+            />
+          </View>
+          <View className="pb-3">
+            <LineInput
+              label="Từ đồng nghĩa"
+              value={senseValue.synonyms || ""}
+              setValue={(text) => setSenseValue({ ...senseValue, synonyms: text })}
+              size="xs"
+              placeholder="Từ có nghĩa tương tự"
+            />
+          </View>
+          <View className="pb-4">
+            <LineInput
+              label="Từ trái nghĩa"
+              value={senseValue.antonyms || ""}
+              setValue={(text) => setSenseValue({ ...senseValue, antonyms: text })}
+              size="xs"
+              placeholder="Từ có nghĩa đối lập"
+            />
+          </View>
+        </CollapseSection>
       </Animated.View>
-      <View style={{ height: 100 }}></View>
+      <View style={{ height: 60 }} />
     </View>
   );
 };

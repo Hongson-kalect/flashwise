@@ -17,16 +17,16 @@ const TabsModal = (modal: Props) => {
           {modal.title}
         </AppText>
       )}
-      <AppText className="text-gray-700">{modal.message}</AppText>
+      <AppText className="text-body">{modal.message}</AppText>
       {modal.subMessage && (
-        <AppText className="text-sm mt-1.5 text-gray-500">
+        <AppText className="text-sm mt-1.5 text-sub-2">
           {modal.subMessage}
         </AppText>
       )}
       {modal?.middle}
 
       <View>
-        <AppText className="text-xs text-gray-600 text-right">
+        <AppText className="text-xs text-sub-2 text-right">
           {tabIndex + 1}/{modal.tabs.length}
         </AppText>
       </View>
@@ -54,13 +54,13 @@ const TabsModal = (modal: Props) => {
       >
         {modal.isShowCancelButton !== false && (
           <TouchableOpacity
-            className="bg-gray-300 rounded-lg py-3 px-4"
+            className="bg-disabled rounded-lg py-3 px-4"
             onPress={() => {
               modal.onCancel?.();
               setGlobalModal(null);
             }}
           >
-            <AppText className="text-gray-600">
+            <AppText className="text-sub-2">
               {modal.cancelText || "Close"}
             </AppText>
           </TouchableOpacity>

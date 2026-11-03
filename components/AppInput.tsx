@@ -59,7 +59,7 @@ const AppInput = forwardRef<LineInputRef, Props>(
 
     const fontSize = typeof size === "number" ? size : textSizes[size];
 
-    const borderColor = focused ? theme[focusedBorderColor] : "#E0E0E0"; // Default border color when not focused
+    const borderColor = focused ? theme[focusedBorderColor] : theme.border;
 
     useImperativeHandle(ref, () => ({
       focus: () => inputRef.current?.focus(),
@@ -85,6 +85,7 @@ const AppInput = forwardRef<LineInputRef, Props>(
         <View
           style={[
             styles.container,
+            { backgroundColor: theme.card },
             border && { borderColor, borderWidth: 1 },
             containerStyle,
           ]}
@@ -158,9 +159,10 @@ const AppInput = forwardRef<LineInputRef, Props>(
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 8,
+    borderRadius: 12,
     justifyContent: "center",
-    padding: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
 });
 

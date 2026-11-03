@@ -49,42 +49,58 @@ export default function CollapseSection({
   }));
 
   return (
-    <Animated.View layout={LinearTransition.springify(2)} className="">
+    <Animated.View
+      layout={LinearTransition.springify(2)}
+      style={{
+        backgroundColor: theme.card,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: theme.border,
+        overflow: "hidden",
+      }}
+    >
       {/* Header */}
       <Pressable
         onPress={toggle}
-        style={{
-          paddingHorizontal: 4,
-          paddingVertical: 12,
-        }}
+        style={{ paddingHorizontal: 16, paddingVertical: 14 }}
         className="flex-row items-center justify-between"
       >
         <View className="flex-1">
-          <AppText size="lg" font="MulishBold" color="primary">
-            {title}
-          </AppText>
+          {typeof title === "string" ? (
+            <AppText size="md" font="MulishBold" color="title">
+              {title}
+            </AppText>
+          ) : (
+            title
+          )}
         </View>
 
-        <Animated.View style={arrowStyle}>
-          <AppIcon
-            name="chevron-right"
-            branch="feather"
-            size={24}
-            color={theme.title}
-          />
+        <Animated.View
+          style={[
+            arrowStyle,
+            {
+              height: 28,
+              width: 28,
+              borderRadius: 14,
+              backgroundColor: theme.primary + "14",
+              alignItems: "center",
+              justifyContent: "center",
+            },
+          ]}
+        >
+          <AppIcon name="chevron-right" branch="feather" size={18} color={theme.primary} />
         </Animated.View>
       </Pressable>
 
       {/* Content wrapper */}
       <Animated.View style={[animatedStyle]}>
         <View
-          style={{ position: "absolute", width: "100%" }}
-          // Cập nhật giá trị thông qua .value thay vì hàm set của useState
+          style={{ position: "absolute", width: "100%", paddingHorizontal: 16 }}
           onLayout={(e) => {
             contentHeight.value = e.nativeEvent.layout.height;
           }}
         >
-          <Divider />
+          <View style={{ height: 1, backgroundColor: theme.border, marginHorizontal: -16 }} />
           {children}
         </View>
       </Animated.View>

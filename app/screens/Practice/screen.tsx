@@ -383,10 +383,10 @@ export default function PracticePage() {
             className="h-8 w-8 items-center justify-center rounded-full"
             style={{ backgroundColor: theme.success }}
           >
-            <View className="h-6 w-6 rounded-full bg-white"></View>
+            <View className="h-6 w-6 rounded-full bg-card"></View>
           </View>
           <View
-            className="h-5 bg-gray-200 rounded-full overflow-hidden"
+            className="h-5 bg-background-2 rounded-full overflow-hidden"
             style={{ flex: 1 }}
           >
             <ReAnimated.View

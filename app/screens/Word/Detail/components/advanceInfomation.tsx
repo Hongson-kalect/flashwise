@@ -10,7 +10,8 @@ import {
 import { useTheme } from "@/providers/Theme";
 import { FontAwesome, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
+import { LayoutChangeEvent, Pressable, TouchableOpacity, View } from "react-native";
+import { ItemKind, useAddItems } from "../addItems";
 import { Divider } from "react-native-paper";
 
 type Props = {
@@ -61,6 +62,7 @@ const WordAdvanceInformation = ({
             style={{ color: theme.title, width: 14 }}
           />
         }
+        kind="relateds"
         title="Từ liên quan"
         values={relateds || []}
       />
@@ -72,6 +74,7 @@ const WordAdvanceInformation = ({
             style={{ color: theme.title, width: 14 }}
           />
         }
+        kind="synonyms"
         title="Từ đồng nghĩa"
         values={synonyms || []}
       />
@@ -83,6 +86,7 @@ const WordAdvanceInformation = ({
             style={{ color: theme.title, width: 14 }}
           />
         }
+        kind="antonyms"
         title="Từ trái nghĩa"
         values={antonyms || []}
       />
@@ -96,6 +100,7 @@ const WordAdvanceInformation = ({
             color="title"
           />
         }
+        kind="forms"
         title="Biến thể"
         values={forms || []}
       />
@@ -109,6 +114,7 @@ const WordAdvanceInformation = ({
             color="title"
           />
         }
+        kind="tags"
         title="Tags"
         values={tags || []}
       />
@@ -227,19 +233,31 @@ const WordAdvanceInformation = ({
 };
 
 type RelatedProp = {
+  kind: ItemKind;
   title: string;
   icon?: React.ReactNode;
   values: string[];
 };
 const Related = (props: RelatedProp) => {
   const { theme } = useTheme();
+  const { open, canAdd, sense } = useAddItems();
+  const add = canAdd ? () => open(props.kind) : undefined;
   return (
     <View className="py-2">
-      <View className="flex-row items-center gap-2">
-        {props.icon || (
-          <AppIcon branch="antd" name={"star"} size={14} color="title" />
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center gap-2">
+          {props.icon || (
+            <AppIcon branch="antd" name={"star"} size={14} color="title" />
+          )}
+          <AppTitle title={props.title} />
+        </View>
+        {props.values?.length > 0 && add && (
+          <Pressable onPress={add} hitSlop={10}>
+            <AppText size="sm" color="primary" weight="semibold">
+              + Thêm
+            </AppText>
+          </Pressable>
         )}
-        <AppTitle title={props.title} />
       </View>
       {/* <View className="flex-row items-center gap-1">
 
@@ -261,7 +279,8 @@ const Related = (props: RelatedProp) => {
               onPress={() => {
                 router.push({
                   pathname: `/screens/Word/Detail/[value]`,
-                  params: { value: item, valueId: item },
+                  // from / kind: nếu từ này bị từ chối khi mở thì trang từ gỡ nó khỏi danh sách nguồn rồi quay lại
+                  params: { value: item, valueId: item, ...(sense?.id ? { from: sense.id, kind: props.kind } : {}) },
                 });
               }}
               key={item}
@@ -285,7 +304,7 @@ const Related = (props: RelatedProp) => {
             Chưa có.
           </AppText>
 
-          <AppAddIcon size="sm" />
+          <AppAddIcon size="sm" onPress={add} />
           {/* <AppButton
             style={{ borderRadius: 4 }}
             type="success"

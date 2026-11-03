@@ -1,6 +1,11 @@
+import AntDesign from "@expo/vector-icons/AntDesign";
+import Feather from "@expo/vector-icons/Feather";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { SplashScreen, Stack } from "expo-router";
 import "react-native-reanimated";
 import "./globals.css";
+import "@/configs/ui";
 
 import { AppWrapper } from "@/components/AppWrapper";
 import { ListModal } from "@/components/modals/OptionModal";
@@ -8,7 +13,7 @@ import { LanguageProvider } from "@/providers/Language";
 import { GlobalModal } from "@/providers/Modal";
 import { ThemeProvider } from "@/providers/Theme";
 import * as Font from "expo-font";
-import { Portal, Provider } from "react-native-paper";
+import { Portal } from "react-native-paper";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -37,7 +42,14 @@ export default function RootLayout() {
     async function loadFonts() {
       try {
         console.log("loading font...");
-        await Font.loadAsync(fonts);
+        // Nạp sẵn font icon cùng font chữ để icon không nhấp nháy lúc đầu
+        await Font.loadAsync({
+          ...fonts,
+          ...Feather.font,
+          ...AntDesign.font,
+          ...MaterialIcons.font,
+          ...FontAwesome6.font,
+        });
         setFontsLoaded(true);
         const hasStarted = await AsyncStorage.getItem("hasSeenStartPage");
         setHasSeenStart(hasStarted === "true");
@@ -70,7 +82,7 @@ export default function RootLayout() {
       <ThemeProvider>
         <MenuProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <Provider>
+            <>
               <LanguageProvider>
                 <BottomSheetProvider>
                   <Suspense>
@@ -81,12 +93,12 @@ export default function RootLayout() {
                       <AppWrapper>
                         <Stack
                           screenOptions={{ headerShown: false }}
-                          initialRouteName={
-                            hasSeenStart ? "tabs" : "screens/Start/screen"
-                          }
+                          initialRouteName="index"
                         >
+                          <Stack.Screen name="index" />
                           <Stack.Screen name="tabs" />
                           <Stack.Screen name="screens/Start/screen" />
+                          <Stack.Screen name="screens/Login/screen" />
                           <Stack.Screen
                             getId={({ params }) => params?.value}
                             singular
@@ -109,7 +121,7 @@ export default function RootLayout() {
                 </Portal>
                 {/* <StatusBar style="auto" /> */}
               </LanguageProvider>
-            </Provider>
+            </>
           </GestureHandlerRootView>
         </MenuProvider>
       </ThemeProvider>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image } from "react-native";
+import AppImage from "@/components/AppImage";
 
 const CollectionImage = ({ source }: { source: string }) => {
   const [height, setHeight] = useState(0);
@@ -12,11 +12,10 @@ const CollectionImage = ({ source }: { source: string }) => {
   };
 
   return (
-    <Image
+    <AppImage
       style={{
         height: height || "auto",
         width: "100%",
-        resizeMode: "cover",
         borderRadius: 8,
       }}
       onLayout={(e) => setImageHeight(e.nativeEvent.layout.width)}

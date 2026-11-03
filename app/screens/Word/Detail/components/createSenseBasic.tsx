@@ -1,9 +1,9 @@
+import { useTheme } from "@/providers/Theme";
 import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
 import { useAppStore } from "@/stores/appStore";
-import useModalStore from "@/stores/modalStore";
 import { useMemo, useState } from "react";
 import { ToastAndroid, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
@@ -12,28 +12,17 @@ import { SenseType } from "./createSenseSheet";
 type Props = {
   senseValue: SenseType;
   setSenseValue: React.Dispatch<React.SetStateAction<SenseType>>;
+  /** Mở danh sách gợi ý từ cộng đồng; không có (từ chưa có id) thì ẩn nút Gợi ý. */
+  onSuggest?: () => void;
 };
-const CreateSenseBasicInfo = ({ senseValue, setSenseValue }: Props) => {
+const CreateSenseBasicInfo = ({ senseValue, setSenseValue, onSuggest }: Props) => {
   const [targetLang, motherLang] = ["EN", "VI"];
-  const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+  const { settings, dbService } = useAppStore();
+  const { theme } = useTheme();
 
   const [translation, setTranslation] = useState("");
 
-  const { setListModal } = useModalStore();
-  const showExistingDefinition = () => {
-    setListModal({
-      onSubmit: () => {},
-      // type: "checkbox"
-      outAnimation: "slideOutDown",
-      options: [
-        { label: "Test", value: "1" },
-        { label: "Test", value: "2" },
-      ],
-      title: "Definitions",
-      value: "1",
-    });
-  };
+  const showExistingDefinition = onSuggest;
   const addTranslations = () => {
     if (translation === "") return;
     const trans = translation.trim();
@@ -59,7 +48,7 @@ const CreateSenseBasicInfo = ({ senseValue, setSenseValue }: Props) => {
   return (
     <View>
       <View>
-        <View className="mt-6 mb-1 flex-row items-center justify-between">
+        <View className="mb-1.5 flex-row items-center justify-between">
           <AppText color="title" font="MulishBold" size={"sm"}>
             {settings?.show_translation ? (
               <AppText color="title" font="MulishBold" size={"sm"}>
@@ -74,13 +63,14 @@ const CreateSenseBasicInfo = ({ senseValue, setSenseValue }: Props) => {
 
           <TouchableOpacity
             onPress={showExistingDefinition}
+            style={{ display: onSuggest ? "flex" : "none" }}
             hitSlop={10}
             className="gap-1 items-center flex-row"
           >
-            <AppText color="secondary" font="MulishLightItalic" size={"xs"}>
-              Preset
+            <AppText color="primary" font="MulishSemiBold" size={"xs"}>
+              Gợi ý
             </AppText>
-            <AppIcon branch="antd" name={"right"} size={10} color="secondary" />
+            <AppIcon branch="feather" name="chevron-right" size={12} color="primary" />
           </TouchableOpacity>
         </View>
         <View className="flex-row gap-2">
@@ -118,18 +108,14 @@ const CreateSenseBasicInfo = ({ senseValue, setSenseValue }: Props) => {
 
               <TouchableOpacity
                 onPress={showExistingDefinition}
+                style={{ display: onSuggest ? "flex" : "none" }}
                 hitSlop={10}
                 className="gap-1 items-center flex-row"
               >
-                <AppText color="secondary" font="MulishLightItalic" size={"xs"}>
-                  Preset
+                <AppText color="primary" font="MulishSemiBold" size={"xs"}>
+              Gợi ý
                 </AppText>
-                <AppIcon
-                  branch="antd"
-                  name={"right"}
-                  size={10}
-                  color="secondary"
-                />
+                <AppIcon branch="feather" name="chevron-right" size={12} color="primary" />
               </TouchableOpacity>
             </View>
             <View className="flex-row gap-2">
@@ -160,18 +146,14 @@ const CreateSenseBasicInfo = ({ senseValue, setSenseValue }: Props) => {
 
             <TouchableOpacity
               onPress={showExistingDefinition}
+              style={{ display: onSuggest ? "flex" : "none" }}
               hitSlop={10}
               className="gap-1 items-center flex-row"
             >
-              <AppText color="secondary" font="MulishLightItalic" size={"xs"}>
-                Preset
+              <AppText color="primary" font="MulishSemiBold" size={"xs"}>
+              Gợi ý
               </AppText>
-              <AppIcon
-                branch="antd"
-                name={"right"}
-                size={10}
-                color="secondary"
-              />
+              <AppIcon branch="feather" name="chevron-right" size={12} color="primary" />
             </TouchableOpacity>
           </View>
           <View className="flex-row items-center gap-2">

@@ -1,87 +1,94 @@
-import { routes } from "@/configs/bottomTab";
+import AppIcon from "@/components/AppIcon";
+import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
+import { haptic } from "@/ui";
 import { useState } from "react";
-import { Image, ImageSourcePropType, View } from "react-native";
-import { BottomNavigation } from "react-native-paper";
-import CardPage from "./screens/Word/List";
+import { Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CollectionsPage from "./screens/Collection";
 import HomePage from "./screens/Home";
 import ProfilePage from "./screens/Profile";
+import CardPage from "./screens/Word/List";
 
+const TABS = [
+  { key: "home", label: "Trang chủ", icon: "home", Page: HomePage },
+  { key: "collections", label: "Bộ từ", icon: "layers", Page: CollectionsPage },
+  { key: "cards", label: "Từ vựng", icon: "book-open", Page: CardPage },
+  { key: "profile", label: "Cá nhân", icon: "user", Page: ProfilePage },
+] as const;
+
+/**
+ * Thanh tab dưới cùng: icon + nhãn, tab đang chọn có nền xanh nhạt.
+ * Mỗi tab chỉ dựng khi mở lần đầu rồi giữ nguyên (không mất vị trí cuộn / dữ liệu khi chuyển tab).
+ */
 export default function Layout() {
-  const [activeTab, setActiveTab] = useState(0);
   const { theme } = useTheme();
+  const { bottom } = useSafeAreaInsets();
+  const [active, setActive] = useState(0);
+  const [visited, setVisited] = useState<number[]>([0]);
 
-  const renderScene = BottomNavigation.SceneMap({
-    home: HomePage,
-    collections: CollectionsPage,
-    cards: CardPage,
-    profile: ProfilePage,
-  });
-
-  const renderIcon = ({
-    route,
-    focused,
-  }: {
-    route: { key: string; title: string; icon: ImageSourcePropType };
-    focused: boolean;
-  }) => {
-    return (
-      <View className="relative h-14 w-14 -mt-4">
-        {focused && (
-          <View
-            style={{
-              height: "116%",
-              width: "116%",
-              top: "-8%",
-              right: "-8%",
-            }}
-            className="absolute rounded-xl border-2 border-blue-400 bg-blue-200 "
-          ></View>
-        )}
-        <Image
-          className="h-full w-full rounded-3xl"
-          style={{ resizeMode: "contain" }}
-          source={route.icon}
-        />
-      </View>
-    );
+  const select = (i: number) => {
+    if (i !== active) haptic("selection");
+    setActive(i);
+    setVisited((v) => (v.includes(i) ? v : [...v, i]));
   };
 
   return (
-    <>
-      <BottomNavigation
-        labeled={false}
-        sceneAnimationType="shifting"
-        style={{
-          padding: 0,
-        }}
-        shifting={false}
-        renderIcon={renderIcon}
-        barStyle={{
-          // height: 70,
-          alignItems: "center",
-          justifyContent: "center",
-          borderTopWidth: 1,
-          borderColor: "#e7e7e7",
-          borderStyle: "solid",
-          zIndex: 100,
-          backgroundColor: "white",
-          paddingVertical: 0,
-          marginHorizontal: 0,
-        }}
-        activeIndicatorStyle={{ backgroundColor: "white" }}
-        activeColor="#3865e0"
-        inactiveColor="#aaa"
-        navigationState={{ index: activeTab, routes }}
-        onIndexChange={setActiveTab}
-        theme={{
-          colors: { primary: theme.primary, background: theme.background },
-        }}
-        renderScene={(props) => (
-          <View style={{ flex: 1 }}>{renderScene(props)}</View>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <View style={{ flex: 1 }}>
+        {TABS.map(({ key, Page }, i) =>
+          visited.includes(i) ? (
+            <View
+              key={key}
+              style={{ flex: 1, display: i === active ? "flex" : "none" }}
+            >
+              <Page />
+            </View>
+          ) : null,
         )}
-      />
-    </>
+      </View>
+
+      <View
+        className="flex-row px-2 pt-2"
+        style={{
+          paddingBottom: Math.max(bottom, 8),
+          backgroundColor: theme.card,
+          borderTopWidth: 1,
+          borderTopColor: theme.border,
+        }}
+      >
+        {TABS.map((t, i) => {
+          const on = i === active;
+          return (
+            <Pressable
+              key={t.key}
+              onPress={() => select(i)}
+              className="flex-1 items-center gap-0.5"
+            >
+              <View
+                className="h-8 w-16 items-center justify-center rounded-full"
+                style={{
+                  backgroundColor: on ? theme.primary + "1F" : "transparent",
+                }}
+              >
+                <AppIcon
+                  branch="feather"
+                  name={t.icon}
+                  size={20}
+                  color={on ? theme.primary : theme.subText2}
+                />
+              </View>
+              <AppText
+                size="tiny"
+                font={on ? "MulishBold" : "MulishMedium"}
+                style={{ color: on ? theme.primary : theme.subText2 }}
+              >
+                {t.label}
+              </AppText>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
   );
 }

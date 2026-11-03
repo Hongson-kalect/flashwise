@@ -1,3 +1,4 @@
+import { WS_WORD_URL } from "@/configs/server";
 import MD5 from "crypto-js/md5";
 
 /**
@@ -166,4 +167,4 @@ export const socketRoom = (word: string, lang: string) => {
   return `${cleanedWord}:${lang}`;
 };
 
-export const wordSocket = new SocketManager("ws://192.168.50.64:8000/ws/word/");
+export const wordSocket = new SocketManager(WS_WORD_URL);

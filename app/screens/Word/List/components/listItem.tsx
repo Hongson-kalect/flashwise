@@ -1,140 +1,114 @@
 import AppIcon from "@/components/AppIcon";
+import AppImage from "@/components/AppImage";
 import AppText from "@/components/AppText";
+import { WordRow } from "@/database/queries/words";
 import { useTheme } from "@/providers/Theme";
+import { mediaUrl } from "@/stores/appStore";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import * as Speech from "expo-speech";
+import { Pressable, View } from "react-native";
 
 type Props = {
+  word: WordRow;
   onLongPress?: () => void;
-  onPress?: () => void;
-  disabled?: boolean;
 };
-const WordListItem = (props: Props) => {
+
+const cap = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
+
+/** Thẻ 1 từ trong danh sách: ảnh, từ, nghĩa ngắn, phiên âm, từ loại. Chạm để mở chi tiết. */
+const WordListItem = ({ word, onLongPress }: Props) => {
   const router = useRouter();
   const { theme } = useTheme();
-
-  const [word, setWord] = useState(()=>"table".toLocaleLowerCase());
+  const image = mediaUrl(word.imageUri);
 
   return (
-    <TouchableOpacity
-      onLongPress={() => {
-        props.onLongPress?.();
-      }}
-      disabled={props.disabled}
-      activeOpacity={0.8}
-      style={{
-        elevation: 4,
-        borderRadius: 8,
-        backgroundColor: theme.background,
-      }}
+    <Pressable
+      onLongPress={onLongPress}
+      android_ripple={{ color: theme.primary + "14" }}
       onPress={() =>
-        props.onPress?.() || router.push({pathname: `/screens/Word/Detail/[value]`, params: { value: word, word }})
+        router.push({
+          pathname: "/screens/Word/Detail/[value]",
+          params: { value: word.value },
+        })
       }
-      className="flex-row items-center gap-3 overflow-hidden p-3"
+      className="flex-row items-center gap-3 p-3 rounded-2xl"
+      style={{
+        backgroundColor: theme.card,
+        borderWidth: 1,
+        borderColor: theme.border,
+      }}
     >
       <View
-        style={{ height: 63, width: 112 }}
-        className="items-center justify-center bg-gray-200 rounded"
+        className="rounded-xl overflow-hidden items-center justify-center"
+        style={{ height: 76, width: 96, backgroundColor: theme.background2 }}
       >
-        <Image
-          className="w-full h-full rounded"
-          source={{ uri: "https://picsum.photos/900/1200" }}
-          style={{ resizeMode: "cover" }}
-        />
+        {image ? (
+          <AppImage source={{ uri: image }} style={{ width: "100%", height: "100%" }} />
+        ) : (
+          <AppText size="2xl" weight="bold" style={{ color: theme.primary + "99" }}>
+            {word.value[0]?.toUpperCase()}
+          </AppText>
+        )}
       </View>
-      <View className="h-full flex-1">
-        {/* <AppText font="MulishSemiBold" size={"lg"}>
-          Professional */}
-        <AppText numberOfLines={1} font="MulishSemiBold" color="text">
-          {`${word[0].toUpperCase()}${word.slice(1)}`}
+
+      <View className="flex-1">
+        <View className="flex-row items-center gap-2">
+          <AppText numberOfLines={1} size="lg" weight="bold" color="title" style={{ flexShrink: 1 }}>
+            {cap(word.value)}
+          </AppText>
+          {word.learned && (
+            <AppIcon branch="feather" name="check-circle" size={14} color={theme.success} />
+          )}
+        </View>
+        <AppText numberOfLines={1} size="sm" color="subText1" style={{ marginTop: 1 }}>
+          {word.gloss || " "}
         </AppText>
-        <AppText
-          numberOfLines={1}
-          size={"xs"}
-          font={"MulishRegularItalic"}
-          color="subText2"
-        >
-          Chuyên nghiệp, chuyên môn, biểu diễn
-        </AppText>
+
         <View className="flex-row items-center justify-between mt-2">
           <View className="flex-row items-center gap-2 flex-1">
-            <TouchableOpacity
-              className=" rounded h-7 w-7 items-center justify-center"
-              style={{
-                backgroundColor: props.disabled
-                  ? theme.disabled
-                  : theme.primary,
-              }}
-              onPress={() => {}}
+            <Pressable
+              hitSlop={8}
+              onPress={() => Speech.speak(word.value, { language: word.languageCode })}
+              className="h-7 w-7 rounded-full items-center justify-center"
+              style={{ backgroundColor: theme.primary + "1F" }}
             >
-              <AppIcon
-                branch="feather"
-                name={"volume-2"}
-                size={14}
-                color="white"
-              />
-            </TouchableOpacity>
-
-            <AppText
-              style={{ flexShrink: 1 }}
-              numberOfLines={1}
-              size={"xs"}
-              color="subText2"
-            >
-              /las:jky/
+              <AppIcon branch="feather" name="volume-2" size={14} color={theme.primary} />
+            </Pressable>
+            <AppText numberOfLines={1} size="xs" color="subText2" style={{ flexShrink: 1 }}>
+              {word.ipa}
             </AppText>
           </View>
-
-          <View className="gap-2 flex-row justify-between">
-            <View
-              className="flex-row items-center gap-1 p-1  rounded h-6 justify-center"
-              style={{ backgroundColor: theme.disabled + "30" }}
-            >
-              <AppText
-                font="MulishSemiBold"
-                numberOfLines={1}
-                size={"xs"}
-                color="primary"
-              >
-                L2
-              </AppText>
-            </View>
-
-            <View className="flex-row items-center gap-1">
+          <View className="flex-row items-center gap-1.5">
+            {word.level ? (
               <View
-                style={{ backgroundColor: theme.secondary }}
-                className="px-2 py-0.5 bg-gray-100 rounded h-6 items-center justify-center"
+                className="px-2 h-6 rounded-md items-center justify-center"
+                style={{ backgroundColor: theme.accent + "26" }}
               >
-                <AppText
-                  numberOfLines={1}
-                  font="MulishMedium"
-                  size={"xs"}
-                  color="white"
-                >
-                  Noun
+                <AppText size="xs" weight="semibold" style={{ color: theme.accent }}>
+                  {word.level}
                 </AppText>
               </View>
-            </View>
+            ) : null}
+            {word.posList.slice(0, 2).map((p) => (
+              <View
+                key={p}
+                className="px-2 h-6 rounded-md items-center justify-center"
+                style={{ backgroundColor: theme.primary + "14" }}
+              >
+                <AppText size="xs" weight="semibold" color="primary">
+                  {p}
+                </AppText>
+              </View>
+            ))}
+            {word.senseCount > 1 && (
+              <AppText size="xs" color="subText3">
+                +{word.senseCount}
+              </AppText>
+            )}
           </View>
         </View>
       </View>
-      {/* <TouchableOpacity
-        onPress={() => {}}
-        className="w-12 h-full items-center justify-center"
-      >
-        <AppCheckbox onChange={() => {}} checked={false} />
-      </TouchableOpacity>
-      <AppText size={"sm"} className="flex-1 text-center">
-        Từ
-      </AppText>
-      <AppText size={"sm"} className="w-16 text-center">
-        {["n", "v", "adj"][Math.floor(Math.random() * 3)]}
-      </AppText>
-      <AppText size={"sm"} className="w-16 text-center">
-        {Math.floor(Math.random() * 10)}
-      </AppText> */}
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 

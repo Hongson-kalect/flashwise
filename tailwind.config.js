@@ -1,16 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    // Ensure this points to your source code
     "./app/**/*.{js,tsx,ts,jsx}",
     "./components/**/*.{js,tsx,ts,jsx}",
-    "./provider/**/*.{js,tsx,ts,jsx}",
-    // If you use a `src` directory, add: './src/**/*.{js,tsx,ts,jsx}'
-    // Do the same with `components`, `hooks`, `styles`, or any other top-level directories
+    "./providers/**/*.{js,tsx,ts,jsx}",
+    "./ui/**/*.{js,tsx,ts,jsx}",
   ],
-  presets: [require("nativewind/preset")],
-  theme: {
-    extend: {},
-  },
+  // Màu (bg-card, text-title, bg-primary/10...) lấy từ UI kit: ui/tailwind.preset.js
+  presets: [require("nativewind/preset"), require("./ui/tailwind.preset")],
+  theme: { extend: {} },
   plugins: [],
 };

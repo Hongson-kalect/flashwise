@@ -55,7 +55,7 @@ const CardFrontSide = ({
     >
       <ImageBackground
         borderRadius={8}
-        source={require("@/assets/images/card-bg-1.png")}
+        source={require("@/assets/images/card-bg-1.webp")}
         style={{
           opacity: 1,
           width: "100%",

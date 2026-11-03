@@ -1,4 +1,5 @@
 import { useTheme } from "@/providers/Theme";
+import React from "react";
 import { Pressable, StyleProp, TextStyle, ViewStyle } from "react-native";
 
 // Icon libraries
@@ -41,18 +42,25 @@ const AppIcon = <B extends IconBranch>({
   style,
 }: AppIconProps<B>) => {
   const { theme } = useTheme();
-  const IconComponent = iconBranchMap[branch];
+  const IconComponent = iconBranchMap[branch] as React.ComponentType<any>;
+
+  const icon = (
+    <IconComponent
+      name={name}
+      size={size}
+      color={theme[color as keyof typeof theme] || color}
+      style={style}
+    />
+  );
+
+  // Icon tĩnh không cần Pressable bọc ngoài (đỡ 1 view native + touch handler mỗi icon).
+  if (!onPress) return icon;
 
   return (
-    <Pressable hitSlop={10} disabled={!onPress} onPress={onPress}>
-      <IconComponent
-        name={name}
-        size={size}
-        color={theme[color as keyof typeof theme] || color}
-        style={style}
-      />
+    <Pressable hitSlop={10} onPress={onPress}>
+      {icon}
     </Pressable>
   );
 };
 
-export default AppIcon;
+export default React.memo(AppIcon) as typeof AppIcon;

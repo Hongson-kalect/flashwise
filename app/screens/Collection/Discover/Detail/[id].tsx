@@ -30,7 +30,7 @@ const DiscoverDetail = () => {
 
       <KeyboardAwareScrollView style={{ paddingHorizontal: 12 }}>
         <View className="flex-row items-center gap-2">
-          <View className="w-6 h-6 rounded-full bg-gray-200 items-center justify-center">
+          <View className="w-6 h-6 rounded-full bg-background-2 items-center justify-center">
             <AppIcon name="user" branch="feather" size={12} color="subText3" />
           </View>
           <AppText size={"xs"} color="subText2">
@@ -79,7 +79,7 @@ const DiscoverDetail = () => {
               borderRightWidth: 0.5,
               borderColor: theme.subText3,
             }}
-            className="h-full  border-r border-gray-200"
+            className="h-full  border-r border-border"
           ></View>
 
           <View>
@@ -146,7 +146,7 @@ const DiscoverDetail = () => {
                       paddingVertical: 6,
                     }}
                   >
-                    <View className="h-7 w-7 rounded-full bg-white"></View>
+                    <View className="h-7 w-7 rounded-full bg-card"></View>
                     <AppText size={"xs"} font="MulishBold" color="subText1">
                       123
                     </AppText>
@@ -195,7 +195,7 @@ const DiscoverDetail = () => {
                       paddingVertical: 6,
                     }}
                   >
-                    <View className="h-7 w-7 rounded-full bg-white"></View>
+                    <View className="h-7 w-7 rounded-full bg-card"></View>
                     <AppText size={"xs"} font="MulishBold" color="subText1">
                       123
                     </AppText>

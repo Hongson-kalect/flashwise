@@ -29,7 +29,7 @@ const CardOption = (props: Props) => {
       )}
 
       <View className="flex-row gap-2 justify-end">
-        <View className="bg-gray-200 h-8 w-8 rounded-lg items-center justify-center">
+        <View className="bg-background-2 h-8 w-8 rounded-lg items-center justify-center">
           <AppIcon
             color="subText3"
             branch="feather"
@@ -37,7 +37,7 @@ const CardOption = (props: Props) => {
             name={"arrow-left"}
           />
         </View>
-        <View className="bg-gray-200 h-8 w-8 rounded-lg items-center justify-center">
+        <View className="bg-background-2 h-8 w-8 rounded-lg items-center justify-center">
           <AppIcon
             color="subText3"
             branch="feather"
@@ -45,7 +45,7 @@ const CardOption = (props: Props) => {
             name={"arrow-right"}
           />
         </View>
-        <View className="bg-gray-200 h-8 w-8 rounded-lg items-center justify-center">
+        <View className="bg-background-2 h-8 w-8 rounded-lg items-center justify-center">
           <AppIcon color="subText3" branch="feather" size={16} name={"save"} />
         </View>
       </View>

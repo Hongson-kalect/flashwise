@@ -4,6 +4,7 @@ import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import { useTheme } from "@/providers/Theme";
 import Slider from "@react-native-community/slider";
+import { router } from "expo-router";
 import React from "react";
 import {
   StyleSheet,
@@ -32,7 +33,7 @@ export default function ProfilePage() {
           <View className="w-full items-center">
             {/* <View
               style={{ height: 100, width: 100 }}
-              className=" rounded-full border border-gray-300"
+              className=" rounded-full border border-border"
             ></View> */}
             <AppText
               font="MulishBold"
@@ -48,7 +49,7 @@ export default function ProfilePage() {
             <View className="flex-row gap-2 flex-1 my-4">
               <View
                 style={{ elevation: 2, borderWidth: 1, borderColor: "#ddd" }}
-                className="h-14 w-14 rounded-full bg-gray-200"
+                className="h-14 w-14 rounded-full bg-background-2"
               ></View>
               <View>
                 <AppText font="MulishSemiBold" size={10} color="primary">
@@ -61,7 +62,11 @@ export default function ProfilePage() {
               </View>
             </View>
             <View>
-              <AppButton title="Login" type="primary" onPress={() => {}}>
+              <AppButton
+                title="Login"
+                type="primary"
+                onPress={() => router.push("/screens/Login/screen")}
+              >
                 <AppIcon
                   branch="feather"
                   name="log-in"

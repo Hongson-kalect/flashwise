@@ -1,7 +1,8 @@
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { router, useLocalSearchParams } from "expo-router";
-import { Image, TouchableOpacity, View } from "react-native";
+import AppImage from "@/components/AppImage";
+import { TouchableOpacity, View } from "react-native";
 
 const CollectionItem = () => {
   const { theme } = useTheme();
@@ -27,7 +28,7 @@ const CollectionItem = () => {
         // borderRightColor: theme.primary,
         // borderBottomColor: theme.primary,
       }}
-      className="bg-white rounded-lg overflow-hidden p-3 flex-row gap-3"
+      className="bg-card rounded-lg overflow-hidden p-3 flex-row gap-3"
     >
       {/* <View
         style={{ elevation: 4 }}
@@ -36,12 +37,11 @@ const CollectionItem = () => {
       <View>
         <View
           style={{ height: 63, width: 112 }}
-          className="rounded overflow-hidden border border-gray-100 items-center justify-center"
+          className="rounded overflow-hidden border border-border items-center justify-center"
         >
-          <Image
-            source={{ uri: "https://picsum.photos/600/400" }}
+          <AppImage
+            source={{ uri: "https://picsum.photos/240/140" }}
             className="w-full h-full"
-            style={{ resizeMode: "cover" }}
           />
         </View>
         <View
@@ -93,7 +93,7 @@ const CollectionItem = () => {
               </AppText>
             </View>
           </View>
-          <View className="h-2 bg-gray-200  rounded-full">
+          <View className="h-2 bg-background-2  rounded-full">
             <View
               style={{
                 backgroundColor: theme.primary,

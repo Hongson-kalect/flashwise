@@ -1,3 +1,4 @@
+import { useTheme } from "@/providers/Theme";
 import { SearchSuggestion } from "@/app/screens/Word/Create/components/wordSelectForm";
 import { fontFamily } from "@/configs/fonts";
 import { useBottomSheet } from "@/providers/BottomSheet";
@@ -51,8 +52,7 @@ type Props = {
 const AppSearch = forwardRef((props: Props, ref) => {
   const { isClearable = true, isFilterable = true } = props;
   // const { theme } = useTheme();
-  const { themeObj } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+  const { theme } = useTheme();
   const [focused, setFocused] = useState(false);
   const [value, setValue] = useState("");
   const inputRef = useRef<TextInput>(null);
@@ -162,7 +162,7 @@ const AppSearch = forwardRef((props: Props, ref) => {
           borderWidth: 0.5,
           borderColor: focused ? theme.primary : "#333333",
         }}
-        className={"flex-row items-center px-5 bg-gray-100 h-14"}
+        className={"flex-row items-center px-5 bg-background-2 h-14"}
       >
         <View className="flex-row items-center flex-1">
           <AppIcon name="search1" branch="antd" size={24} color="#888" />

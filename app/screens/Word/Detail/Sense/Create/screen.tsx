@@ -154,7 +154,7 @@ const WordSenseCreate = () => {
                 data={item}
                 mode={pageMode}
               /> */}
-              <View className="px-2 bg-gray-50">
+              <View className="px-2 bg-background-2">
                 <Tab
                   list={getList(tab, data)}
                   onSelectAll={onSelectAll}

@@ -1,240 +1,76 @@
 import AppAddIcon from "@/components/AppAddIcon";
-import AppIcon from "@/components/AppIcon";
 import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
+import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
-import useModalStore from "@/stores/modalStore";
 import { FontAwesome } from "@expo/vector-icons";
 import { useMemo } from "react";
 import { View } from "react-native";
 import { Divider } from "react-native-paper";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SenseContentType } from "../../data";
-import { lightTheme } from "@/configs/theme";
+import { useSenseEditor } from "../senseEdit";
 import { getLangContent } from "../utils";
 
 type Props = {
   word: string;
-  usage?: SenseContentType
+  usage?: SenseContentType;
 };
 
+/** Nhấn giữ để sửa; khi chưa có thì chạm vào dòng gợi ý để thêm. */
 const SenseUsage = (props: Props) => {
-  const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette||lightTheme, [themeObj]);
+  const settings = useAppStore((s) => s.settings);
+  const { theme } = useTheme();
+  const { edit, canEdit } = useSenseEditor();
 
-  const [tUsage, nUsage] =useMemo(()=>{
-      return [getLangContent(props.usage,settings?.learning_language), getLangContent(props.usage,settings?.translate_language)]
-    },[props.usage])
-
-  const toggleLanguageMode = () =>
-    dbService?.setShowTranslation(!settings?.show_translation);
-  const { setGlobalModal } = useModalStore();
-
-  const showUsageModal = () => {
-    setGlobalModal({
-      type: "menu",
-      title: "Usage options",
-      menuOptions: [
-        {
-          icon: (
-            <AppIcon name="edit" color="warning" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="subText3"
-              size={20}
-            />
-          ),
-          onPress: showEditUsageModal,
-          label: "Edit usage",
-        },
-        {
-          icon: (
-            <AppIcon name="trash" color="white" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="white"
-              size={20}
-            />
-          ),
-          backgroundColor: theme.error,
-          color: theme.white,
-          label: "Delete custom usage",
-          onPress: deleteUsage,
-        },
-      ],
-    });
-  };
-
-  const showUsageTranslateModal = () => {
-    setGlobalModal({
-      type: "menu",
-      title: "Usage translate options",
-      menuOptions: [
-        {
-          icon: (
-            <AppIcon name="edit" color="warning" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="subText3"
-              size={20}
-            />
-          ),
-          onPress: showEditUsageTranslateModal,
-          label: "Edit Vietnamese usage",
-        },
-        {
-          icon: (
-            <AppIcon name="trash" color="error" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="subText3"
-              size={20}
-            />
-          ),
-          label: "Delete custom usage",
-          onPress: deleteUsageTranslate,
-        },
-      ],
-    });
-  };
-
-  const showEditUsageModal = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        title: "Edit usage",
-        type: "prompt",
-        defaultValue: tUsage?.value,
-      });
-    }, 500);
-  };
-
-  const showEditUsageTranslateModal = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        title: "Edit usage",
-        type: "prompt",
-        defaultValue: nUsage?.value,
-      });
-    }, 500);
-  };
-
-  const showAddUsageModal = () => {
-    setGlobalModal({
-      title: "Add usage",
-      type: "prompt",
-      placeholder: `English usage for "${props.word}"`,
-    });
-  };
-
-  const showAddUsageTranslateModal = () => {
-    setGlobalModal({
-      title: "Add usage",
-      type: "prompt",
-      placeholder: `Vietnamese usage for "${props.word}"`,
-    });
-  };
-
-  const deleteUsage = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        type: "confirm",
-        message: "Do you want to delete this usage?",
-        onOk: () => {},
-      });
-    }, 500);
-  };
-
-  const deleteUsageTranslate = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        type: "confirm",
-        message: "Do you want to delete this usage?",
-        onOk: () => {},
-      });
-    }, 500);
-  };
+  const [tUsage, nUsage] = useMemo(
+    () => [
+      getLangContent(props.usage, settings?.learning_language),
+      getLangContent(props.usage, settings?.translate_language),
+    ],
+    [props.usage, settings?.learning_language, settings?.translate_language],
+  );
+  const open = canEdit ? () => edit("usage") : undefined;
 
   return (
     <Animated.View className={"mt-2"} layout={LinearTransition}>
       <View className="flex-row items-center gap-2 h-8">
-        <FontAwesome
-          style={{ width: 14 }}
-          name="search"
-          size={14}
-          color={theme.title}
-        />
+        <FontAwesome style={{ width: 14 }} name="search" size={14} color={theme.title} />
         <AppTitle title="Usage" />
       </View>
       <Divider />
       {tUsage?.value ? (
-        <AppPressable onLongPress={showUsageModal} hitSlop={8} className="py-2">
-          <AppText color="subText1">{tUsage?.value}</AppText>
+        <AppPressable onLongPress={open} hitSlop={8} className="py-2">
+          <AppText color="subText1">{tUsage.value}</AppText>
         </AppPressable>
       ) : (
-        <AppPressable
-          onPress={showAddUsageModal}
-          className="py-3 flex-row items-center justify-between"
-        >
+        <AppPressable onPress={open} className="py-3 flex-row items-center justify-between">
           <AppText color="subText2" font="MulishRegularItalic" size={"sm"}>
-            Not have usage in English
+            Chưa có cách dùng — chạm để thêm
           </AppText>
-
           <AppAddIcon size="sm" />
         </AppPressable>
       )}
 
-      {settings?.show_translation && (
-        <View>
-          {nUsage?.value ? (
-            <AppPressable
-              onLongPress={showUsageTranslateModal}
-              touchColor={theme.secondary + "20"}
-              style={{
-                marginHorizontal: -8,
-                marginTop: 4,
-                marginBottom: 8,
-                backgroundColor: theme.secondary + "08",
-                paddingHorizontal: 8,
-              }}
-              className="p-3"
-            >
-              <AppText color="subText1" font="MulishLightItalic" size={"sm"}>
-                {nUsage?.value}
-              </AppText>
-            </AppPressable>
-          ) : (
-            <AppPressable
-              onPress={showAddUsageTranslateModal}
-              touchColor={theme.secondary + "20"}
-              style={{
-                marginHorizontal: -8,
-                marginVertical: 8,
-                backgroundColor: theme.secondary + "15",
-                paddingHorizontal: 8,
-              }}
-              className="py-3 flex-row items-center justify-between"
-            >
-              <AppText color="subText2" font="MulishRegularItalic" size={"sm"}>
-                Not have usage in Vietnamese
-              </AppText>
-              <AppAddIcon size="sm" />
-            </AppPressable>
-          )}
-        </View>
-      )}
+      {settings?.show_translation && nUsage?.value ? (
+        <AppPressable
+          onLongPress={open}
+          touchColor={theme.secondary + "20"}
+          style={{
+            marginHorizontal: -8,
+            marginTop: 4,
+            marginBottom: 8,
+            backgroundColor: theme.secondary + "08",
+            paddingHorizontal: 8,
+          }}
+          className="p-3"
+        >
+          <AppText color="subText1" font="MulishLightItalic" size={"sm"}>
+            {nUsage.value}
+          </AppText>
+        </AppPressable>
+      ) : null}
     </Animated.View>
   );
 };

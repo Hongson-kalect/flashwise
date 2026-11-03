@@ -1,55 +1,54 @@
+import AppCard from "@/components/AppCard";
 import AppText from "@/components/AppText";
-import { BarChart } from "@/components/chart/bar";
-import { useTheme } from "@/providers/Theme";
-import { useWindowDimensions, View } from "react-native";
+import { WordStats } from "@/database/queries/words";
+import { ProgressRing, Skeleton } from "@/ui";
+import { View } from "react-native";
 
-const ListSumary = () => {
-  const { height } = useWindowDimensions();
-  const { theme } = useTheme();
+const Stat = ({ value, label }: { value: number | string; label: string }) => (
+  <View className="flex-1">
+    <AppText size="xl" weight="bold" color="title">
+      {value}
+    </AppText>
+    <AppText size="xs" color="subText2">
+      {label}
+    </AppText>
+  </View>
+);
+
+/** Thẻ tổng quan: tiến độ học (vòng) + số từ / số nghĩa / đã học. */
+const ListSumary = ({ stats, loading = false }: { stats?: WordStats; loading?: boolean }) => {
+  const total = stats?.senses ?? 0;
+  const learned = stats?.learned ?? 0;
+  const pct = total ? Math.min(100, (learned / total) * 100) : 0;
+
   return (
-    <View
-      style={{ height: (height / 5) * 3, elevation: 6 }}
-      className="bg-white items-center p-4 rounded-lg"
-    >
-      <View className="flex-row w-full items-center justify-between">
-        <View>
-          <AppText color="subText1">Đã học</AppText>
-          <View className="flex-row gap-1 items-end">
-            <AppText color="primary" font="MulishBold" size={48}>
-              0
+    <AppCard>
+      <View className="flex-row items-center gap-5">
+        <ProgressRing value={pct} size={84} strokeWidth={9} color="primary">
+          <AppText size="lg" weight="bold">
+            {Math.round(pct)}%
+          </AppText>
+        </ProgressRing>
+        <View className="flex-1">
+          <AppText size="sm" color="subText2">
+            Đã học
+          </AppText>
+          {loading ? (
+            <Skeleton width={90} height={28} />
+          ) : (
+            <AppText size="2xl" weight="bold">
+              {learned}
+              <AppText size="md" color="subText2">{` / ${total} nghĩa`}</AppText>
             </AppText>
-            <AppText
-              className="mb-3"
-              font="MulishMedium"
-              color="subText2"
-              size={24}
-            >
-              /123
-            </AppText>
-          </View>
-        </View>
-        <View>
-          <View
-            style={{ backgroundColor: theme.success + "44" }}
-            className="h-24 w-24 rounded-full p-4"
-          >
-            <View className="h-16 w-16 bg-white rounded-full items-center justify-center">
-              <AppText color="subText1">0</AppText>
-              <AppText color="subText2" font="MulishLight" size={"xs"}>
-                %
-              </AppText>
-            </View>
-          </View>
+          )}
         </View>
       </View>
-
-      <View className="mt-4 flex-1 w-full">
-        <AppText color="subText1" className="mb-4">
-          Tiến trình học
-        </AppText>
-        <BarChart />
+      <View className="flex-row mt-4 pt-4" style={{ borderTopWidth: 1, borderTopColor: "#94A3B833" }}>
+        <Stat value={stats?.words ?? 0} label="Từ" />
+        <Stat value={total} label="Nghĩa" />
+        <Stat value={Math.max(0, total - learned)} label="Chưa học" />
       </View>
-    </View>
+    </AppCard>
   );
 };
 

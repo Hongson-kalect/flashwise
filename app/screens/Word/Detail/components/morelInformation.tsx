@@ -128,17 +128,17 @@ const WordMoreInformation = ({
           Tag 🏷️
         </AppText>
         <View className="flex-row gap-2 flex-wrap mt-2 px-2">
-          <View className="bg-gray-200 rounded-lg px-2 py-1">
+          <View className="bg-background-2 rounded-lg px-2 py-1">
             <AppText size={"xs"} color="subText2">
               tag 1
             </AppText>
           </View>
-          <View className="bg-gray-200 rounded-lg px-2 py-1">
+          <View className="bg-background-2 rounded-lg px-2 py-1">
             <AppText size={"xs"} color="subText2">
               y a y e
             </AppText>
           </View>
-          <View className="bg-gray-200 rounded-lg px-2 py-1">
+          <View className="bg-background-2 rounded-lg px-2 py-1">
             <AppText size={"xs"} color="subText2">
               bum ba la bum
             </AppText>

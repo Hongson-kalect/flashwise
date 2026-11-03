@@ -248,7 +248,7 @@ const BasicInformation = ({
             />
           </View>
         ) : (
-          // <TouchableOpacity className="h-40 w-40 bg-gray-200 rounded-lg p-4">
+          // <TouchableOpacity className="h-40 w-40 bg-background-2 rounded-lg p-4">
           <AppIcon
             name={"image"}
             branch="feather"

@@ -8,24 +8,26 @@ import {
 } from "@/interfaces/word";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
-import { GetAPI } from "@/services/axios";
-import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
-import { normalizeWord } from "@/utils/normalizeText";
-import { wordSocket } from "@/utils/socket";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { LayoutChangeEvent, Pressable, View } from "react-native";
+import { LayoutChangeEvent, Platform, Pressable, ToastAndroid, View } from "react-native";
 import { MaterialTabBar, Tabs } from "react-native-collapsible-tab-view";
 import Animated, { FadeIn } from "react-native-reanimated";
 import WordSelectForm from "../Create/components/wordSelectForm";
 import { SenseType } from "../data";
-import { initialState, WordState } from "../type";
 import WordAdvanceInformation from "./components/advanceInfomation";
 import BasicInformation from "./components/basicInformation";
 import WordCollocations from "./components/collocations";
 import WordDetailHeader from "./components/header";
-import { isTranslationCompleted, mapSenses, senseDataReducer } from "./utils";
+import SenseSkeleton from "@/components/skeleton/SenseSkeleton";
+import { WordLoadingContext } from "./loadingContext";
+import { useWordData } from "./useWordData";
+import WordStatus from "./components/wordStatus";
+import { mapSenses } from "./utils";
+import { SenseContext, SenseSavedContext } from "./senseEdit";
+import { ItemKind, removeItems } from "@/services/senseLists";
+import { useAppStore } from "@/stores/appStore";
 
 // const DATA: WordType[] = testData;
 
@@ -45,120 +47,26 @@ function WordDetailWrapper() {
 
 const WordDetail = ({ word }: { word: string }) => {
   const { theme } = useTheme();
-  const { settings, dbService } = useAppStore();
-  // Prev data: word value + word id [id]?w=...
-  // const [sensesObj, setSensesObj] = useState(JSON.parse(JSON.stringify(initialState)));
-  // const [sensesObj, dispatch] = useReducer(senseDataReducer, JSON.parse(JSON.stringify(initialState)));
-  const [sensesObj, setSenseObj] = useState<WordState>(initialState);
-  const [isLoading, setIsLoading] = useState(false);
-  const [senses, setSenses] = useState<ReturnType<typeof mapSenses>>(null);
-
-  // const senses = useMemo(() => {
-  //   return mapSenses(sensesObj);
-  // }, [sensesObj]);
-
+  const { state: sensesObj, retry, refresh, hadLocal } = useWordData(word);
+  // Mở từ này từ 1 chip trong danh sách của nghĩa khác (from = id nghĩa, kind = danh sách). Từ bị từ chối thì gỡ khỏi danh sách đó và quay lại
+  const { from, kind } = useLocalSearchParams<{ from?: string; kind?: ItemKind }>();
+  const userLang = useAppStore((s) => s.settings?.translate_language) ?? "vi";
   useEffect(() => {
-    const newSenses = mapSenses(sensesObj);
-    console.log("sensesObj", sensesObj);
-    console.log("newSenses", newSenses);
-    if (!newSenses) return;
-    setSenses(newSenses);
-    setIsLoading(sensesObj.isLoading || false);
-  }, [sensesObj]);
-
-  // Giả lập nhận dữ liệu từ socket
-
+    if (sensesObj.error?.code !== "rejected" || !from || !kind) return;
+    removeItems({ senseId: from, kind, words: [word], userLang }); // không gỡ được thì thôi, người dùng tự xoá
+    if (Platform.OS === "android") ToastAndroid.show(`"${word}" không phải từ hợp lệ, đã gỡ khỏi danh sách`, ToastAndroid.LONG);
+    router.back();
+  }, [sensesObj.error?.code]);
+  const senses = useMemo(() => mapSenses(sensesObj), [sensesObj]);
   const [pageMode, setPageMode] = useState<"view" | "update">("view");
   const [tabIndex, setTabIndex] = useState(0);
-  const [currentSense, setCurrentSense] = useState({});
-
-  // const data = useMemo(() => basicWordMapping(DATA), [DATA]);
-
-  // const [word, setWord] = useState("table"); // Get from previous page [id]?w
-
-  const toggleLanguageMode = () =>
-    dbService?.setShowTranslation(!settings?.show_translation);
-
-  const isFullTranslate = useMemo(() => {
-    if (sensesObj.status === "COMPLETED") {
-      return isTranslationCompleted(sensesObj);
-    }
-
-    return null;
-  }, [sensesObj.status]);
-
-  const [socketData, setSocketData] = useState<{ data: any; time: number }[]>(
-    [],
-  );
-
-  const fetchWord = async (word: string) => {
-    console.log("before fetchWord", sensesObj);
-    const start = new Date().getTime();
-    normalizeWord(word);
-    const room_id = `${normalizeWord(word, settings?.learning_language)}`;
-
-    if (!settings) return alert("No settings loaded. Please reload the app.");
-
-    wordSocket.subscribe(
-      room_id,
-      (data) => {
-        setSocketData((prev) => [
-          ...prev,
-          { data, time: new Date().getTime() - start },
-        ]);
-        if (!data.type) {
-          console.log("socket không có type", data);
-          return;
-        }
-
-        setSenseObj((prev) =>
-          senseDataReducer(prev, { type: data.type, payload: data.payload }),
-        );
-
-        // dispatch({ type: data.type, payload: data.payload });
-
-        // senseDataReducer(data.type, data.payload);,
-      },
-      () => {
-        setIsLoading(false);
-      },
-    );
-
-    const res = await GetAPI(
-      "http://192.168.50.64:8000/api/ai-words/get-word/",
-      {
-        value: word,
-        lang: settings?.learning_language,
-        user_lang: settings?.translate_language,
-      },
-    );
-
-    console.log("res", res.data?.data);
-
-    // if (res?.status !== 200) {
-    // dispatch({ type: "INITIAL", payload: res.data?.data });
-    setSenseObj((prev) =>
-      senseDataReducer(prev, { type: "INITIAL", payload: res.data?.data }),
-    );
-    // } else {
-    //   setSenses(res.data?.data);
-    // }
-  };
-
-  useEffect(() => {
-    // dispatch({ type: "RESET", payload: {} });
-    fetchWord(word);
-  }, [word]);
-
-  useEffect(() => {
-    console.log("mounted");
-
-    return () => {
-      console.log("unmounted");
-    };
-  }, []);
+  // Chỉ số nghĩa đang xem trong từng tab loại từ, để menu 3 chấm sửa đúng nghĩa đang hiện
+  const [senseIdx, setSenseIdx] = useState<Record<number, number>>({});
+  const activeSense = senses?.entries[tabIndex]?.senses[senseIdx[tabIndex] ?? 0];
 
   return (
+    <WordLoadingContext.Provider value={sensesObj.isLoading}>
+    <SenseSavedContext.Provider value={refresh}>
     <Tabs.Container
       onTabChange={(props) => {
         setTabIndex(props.index);
@@ -170,7 +78,12 @@ const WordDetail = ({ word }: { word: string }) => {
             word={word ? word[0].toUpperCase() + word.slice(1) : "###"}
             mode={pageMode}
             setMode={setPageMode}
+            wordId={sensesObj.id}
+            senses={sensesObj.senses}
+            onSenseAdded={refresh}
+            activeSense={activeSense}
           />
+          <WordStatus state={sensesObj} hadLocal={hadLocal} onRetry={retry} />
 
           {/* <AppText color="primary" size={40} font="MulishSemiBold">
             {word}
@@ -184,10 +97,22 @@ const WordDetail = ({ word }: { word: string }) => {
           </View> */}
         </View>
       )}
-      renderTabBar={(props) => <MaterialTabBar {...props} scrollEnabled />}
+      headerContainerStyle={{ backgroundColor: theme.background, shadowOpacity: 0, elevation: 0 }}
+      containerStyle={{ backgroundColor: theme.background }}
+      renderTabBar={(props) => (
+        <MaterialTabBar
+          {...props}
+          scrollEnabled
+          style={{ backgroundColor: theme.background, elevation: 0, shadowOpacity: 0 }}
+          indicatorStyle={{ backgroundColor: theme.primary, height: 3, borderRadius: 3 }}
+          activeColor={theme.primary}
+          inactiveColor={theme.subText2}
+          labelStyle={{ fontFamily: "MulishBold", textTransform: "none" }}
+        />
+      )}
     >
       {/* {senses ? ( */}
-      {senses ? (
+      {senses && senses.entries.length > 0 ? (
         senses.entries.map(
           (item: { pos: string; senses: SenseType[] }, index: number) => {
             const isActive = index === tabIndex;
@@ -205,9 +130,15 @@ const WordDetail = ({ word }: { word: string }) => {
                 )}
                 name={item.pos.toString()}
               >
-                <Tabs.ScrollView>
+                <Tabs.ScrollView style={{ backgroundColor: theme.background }}>
                   {/* <AppText>{JSON.stringify(item.senses)}</AppText> */}
-                  <SensesInfo word={word} data={item.senses} mode={pageMode} />
+                  <SensesInfo
+                    word={word}
+                    data={item.senses}
+                    mode={pageMode}
+                    senseIndex={senseIdx[index] ?? 0}
+                    setSenseIndex={(i) => setSenseIdx((m) => ({ ...m, [index]: i }))}
+                  />
                 </Tabs.ScrollView>
               </Tabs.Tab>
             );
@@ -221,13 +152,13 @@ const WordDetail = ({ word }: { word: string }) => {
               font={"MulishMedium"}
               className="w-full items-center justify-center h-10 px-2"
             >
-              Loading...
+              {sensesObj.error ? " " : "Đang tải…"}
             </AppText>
           )}
           name={tabIndex.toString()}
         >
-          <Tabs.ScrollView>
-            <AppText>{JSON.stringify(senses)}</AppText>
+          <Tabs.ScrollView style={{ backgroundColor: theme.background }}>
+            <View style={{ height: 120 }} />
             {/* {socketData.map((item, index) => {
               return (
                 <View key={index}>
@@ -269,6 +200,8 @@ const WordDetail = ({ word }: { word: string }) => {
         );
       })} */}
     </Tabs.Container>
+    </SenseSavedContext.Provider>
+    </WordLoadingContext.Provider>
   );
 };
 
@@ -276,9 +209,11 @@ type SensesInfoType = {
   word: string;
   data: SenseType[];
   mode?: "create" | "update" | "view";
+  senseIndex: number;
+  setSenseIndex: (i: number) => void;
 };
 const SensesInfo = (props: SensesInfoType) => {
-  const [senseIndex, setSenseIndex] = useState(0);
+  const { senseIndex, setSenseIndex } = props;
 
   const activeSense = useMemo(() => {
     return props.data[senseIndex];
@@ -336,7 +271,15 @@ const SensesInfo = (props: SensesInfoType) => {
 
       {/* <AppText>{JSON.stringify(activeSense)}</AppText> */}
 
-      <SenseInfo word={props.word} data={activeSense} mode={props.mode} />
+      {activeSense?.contents?.definition ? (
+        <SenseContext.Provider value={activeSense}>
+          <SenseInfo word={props.word} data={activeSense} mode={props.mode} />
+        </SenseContext.Provider>
+      ) : (
+        <View className="px-3 pt-14">
+          <SenseSkeleton />
+        </View>
+      )}
     </View>
   );
 };
@@ -395,7 +338,7 @@ const SenseInfo = (props: WordInfoType) => {
   };
 
   return (
-    <View className="bg-white">
+    <View style={{ backgroundColor: theme.background }}>
       <View className="px-2">
         <View className="mt-2">
           <BasicInformation

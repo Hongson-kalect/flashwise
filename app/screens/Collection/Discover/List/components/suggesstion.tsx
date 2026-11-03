@@ -2,7 +2,8 @@ import AppText from "@/components/AppText";
 import AppCarousel from "@/components/output/carousel";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { Image, Pressable, useWindowDimensions, View } from "react-native";
+import AppImage from "@/components/AppImage";
+import { Pressable, useWindowDimensions, View } from "react-native";
 
 const DiscoverSuggesstion = () => {
   const width = useWindowDimensions().width;
@@ -34,14 +35,11 @@ const SuggesstionItem = ({ item }: SuggesstionItemProps) => {
       }}
       className="rounded-lg overflow-hidden"
     >
-      <Image
+      <AppImage
         className="h-full w-full"
         source={{ uri: "https://picsum.photos/600/600" }}
-        style={{
-          resizeMode: "cover",
-          backgroundColor: "white",
-        }}
-      ></Image>
+        style={{ backgroundColor: "white" }}
+      />
       <LinearGradient
         colors={["transparent", "rgba(0,0,0,0.5)", "rgba(0,0,0,0.9)"]}
         style={{

@@ -70,7 +70,7 @@ const SenseItem = (props: WordInfoType) => {
   };
 
   return (
-    <View className="bg-white">
+    <View className="bg-card">
       <View className="px-2">
         <View className="pt-2">
           <BasicInformation

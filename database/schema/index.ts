@@ -35,6 +35,7 @@ import { generateString as userSenseProgressGenerateString } from "./userSensePr
 import {
   getUserSettings,
   setLearningLanguage,
+  setSetting,
   setShowTranslation,
   setTranslateLanguage,
   generateString as userSettingGenerateString,
@@ -49,6 +50,7 @@ export const createDBService = (db: SQLiteDatabase) => ({
   setShowTranslation: (state: boolean) => setShowTranslation(db, state),
   setLearningLanguage: (val: string) => setLearningLanguage(db, val),
   setTranslateLanguage: (val: string) => setTranslateLanguage(db, val),
+  setSetting: (key: string, val: unknown) => setSetting(db, key, val),
 });
 
 export const generateSchema = `

@@ -1,18 +1,16 @@
-import AppAddIcon from "@/components/AppAddIcon";
-import AppIcon from "@/components/AppIcon";
 import { AppPressable } from "@/components/AppPressable";
+import AppAddIcon from "@/components/AppAddIcon";
 import AppText from "@/components/AppText";
-import { AppMenu } from "@/components/modals/components/MenuModal";
-import { useBottomSheet } from "@/providers/BottomSheet";
+import { SkeletonReact } from "@/components/skeleton/ReactSkeleton";
+import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
-import useModalStore from "@/stores/modalStore";
-import { useMemo, useState } from "react";
-import { Alert, View, ViewStyle } from "react-native";
+import { useMemo } from "react";
+import { View, ViewStyle } from "react-native";
 import { SenseContentType } from "../../data";
-import CreateExampleForm from "./createExampleForm";
-import WordExample from "./example";
-import { lightTheme } from "@/configs/theme";
+import { useWordLoading } from "../loadingContext";
+import { EditFocus, useSenseEditor } from "../senseEdit";
 import { getLangContent } from "../utils";
+import WordExample from "./example";
 
 type Props = {
   definition?: SenseContentType;
@@ -22,142 +20,35 @@ type Props = {
   style?: ViewStyle;
 };
 
-const WordDefinitions = ({
-  definition,
-  examples,
-  isSimple,
-  word,
-  style,
-}: Props) => {
-  const [action, setAction] = useState<null | "edit" | "add">(null);
+/** Nhấn giữ định nghĩa / bản dịch / ví dụ để sửa ngay phần đó; sửa toàn bộ nghĩa ở menu 3 chấm. */
+const WordDefinitions = ({ definition, examples, isSimple, word, style }: Props) => {
+  const settings = useAppStore((s) => s.settings);
+  const isWordLoading = useWordLoading();
+  const { theme } = useTheme();
+  const { edit, canEdit } = useSenseEditor();
 
-  const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette||lightTheme, [themeObj]);
-
-  const [tDefinition, nDefinition] =useMemo(()=>{
-    return [getLangContent(definition,settings?.learning_language), getLangContent(definition,settings?.translate_language)]
-  },[definition])
-
-  const { setGlobalModal } = useModalStore();
-  const { present } = useBottomSheet();
-  const showModal = () => {
-    // return present({
-    //   title: "Example",
-    //   render: () => <BottomSheetMenu />,
-    // });
-
-    setGlobalModal({
-      type: "menu",
-      title: "Definition options",
-      menuOptions: [
-        {
-          icon: (
-            <AppIcon name="edit" color="warning" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="subText3"
-              size={20}
-            />
-          ),
-          onPress: showEditModal,
-          label: "Edit definations",
-        },
-        {
-          icon: (
-            <AppIcon name="plus" color="success" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="subText3"
-              size={20}
-            />
-          ),
-          label: "Add example",
-          onPress: addExampleModal,
-        },
-        {
-          icon: (
-            <AppIcon name="trash" color="white" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="white"
-              size={20}
-            />
-          ),
-          color: theme.white,
-          backgroundColor: theme.error,
-          label: "Clear custom defination",
-          onPress: deleteDefinitionModal,
-        },
-      ],
-    });
-  };
-
-  const showEditModal = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        title: "Edit definition",
-        type: "prompt",
-        defaultValue: tDefinition?.value,
-      });
-    }, 500);
-  };
-
-  const addExampleModal = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        type: "custom",
-        // title: "Add example",
-        render: (
-          <CreateExampleForm
-            onAddExample={(example) => handleAddExample(example)}
-          />
-        ),
-      });
-    }, 500);
-  };
-
-  const deleteDefinitionModal = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        type: "confirm",
-        message: "Do you want to delete this example?",
-        onOk: () => handleDeleteDefinition(),
-      });
-    }, 500);
-  };
-
-  const handleAddExample = (example: { value: string; translate: string }) => {
-    Alert.alert("Example added");
-    // Thêm sense vào local db. Thành công, add to current sense
-    // push to server
-  };
-
-  const handleDeleteDefinition = () => {
-    // Chỉ khi definition này được tạo bởi người dùng thì mới có options này, và check lại khi lên server
-    // Chỉ xóa ô definition trong userword
-    Alert.alert("Deleted");
-  };
+  const [tDefinition, nDefinition] = useMemo(
+    () => [
+      getLangContent(definition, settings?.learning_language),
+      getLangContent(definition, settings?.translate_language),
+    ],
+    [definition, settings?.learning_language, settings?.translate_language],
+  );
+  const hold = (focus: EditFocus) => (canEdit ? () => edit(focus) : undefined);
 
   return (
-    <AppPressable onLongPress={showModal} className="py-2" style={style}>
-      <AppText color="subText1">
-        {tDefinition?.value[0].toUpperCase()}
-        {tDefinition?.value.slice(1)}
-      </AppText>
+    <View className="py-2" style={style}>
+      <AppPressable onLongPress={hold("definition")}>
+        <AppText color="subText1">
+          {tDefinition?.value?.[0]?.toUpperCase()}
+          {tDefinition?.value?.slice(1)}
+        </AppText>
+      </AppPressable>
       {settings?.show_translation && (
         <View>
           {nDefinition ? (
             <AppPressable
-              onLongPress={showModal} // Phải tạo model riêng cho từng thằng
+              onLongPress={hold("translation")}
               touchColor={theme.secondary + "20"}
               style={{
                 marginHorizontal: -8,
@@ -172,9 +63,14 @@ const WordDefinitions = ({
                 {nDefinition.value}
               </AppText>
             </AppPressable>
+          ) : isWordLoading ? (
+            <View style={{ marginVertical: 8 }}>
+              <SkeletonReact width="85%" height={14} style={{ borderRadius: 6 }} />
+              <SkeletonReact width="55%" height={14} style={{ borderRadius: 6, marginTop: 6 }} />
+            </View>
           ) : (
             <AppPressable
-              onPress={showModal} // để skeleton loading
+              onPress={hold("translation")}
               touchColor={theme.secondary + "20"}
               style={{
                 marginHorizontal: -8,
@@ -185,7 +81,7 @@ const WordDefinitions = ({
               className="py-3 flex-row items-center justify-between"
             >
               <AppText color="subText2" font="MulishRegularItalic" size={"sm"}>
-                Để skeleton loading
+                Chưa có bản dịch — chạm để thêm
               </AppText>
               <AppAddIcon size="sm" />
             </AppPressable>
@@ -193,88 +89,15 @@ const WordDefinitions = ({
         </View>
       )}
 
-      {/* {subDefinitions.length > 0 ? (
-        <View className="mt-1.5">
-          {subDefinitions.map((subDefinition, index2) => {
-            return (
-              <View key={"sub-" + index2}>
-                <AppText
-                  key={index2}
-                  size={"sm"}
-                  font="MulishLight"
-                  color="subText1"
-                >
-                  {subDefinition[0].toUpperCase()}
-                  {subDefinition.slice(1)}
-                </AppText>
-              </View>
-            );
-          })}
-        </View>
-      ) : null} */}
-
       {!isSimple && examples?.length > 0 ? (
         <View className="gap-2 mt-2">
-          {/* <AppText>Example</AppText> */}
-          {examples.map((example, index2) => {
-            return (
-              <WordExample bold={word} example={example} key={"a" + index2} />
-            );
-          })}
+          {examples.map((example, index) => (
+            <WordExample bold={word} example={example} index={index} key={"a" + index} />
+          ))}
         </View>
       ) : null}
-    </AppPressable>
-  );
-};
-
-const BottomSheetMenu = () => {
-  return (
-    <View>
-      <AppMenu
-        label={
-          <AppText size={18} font="MulishSemiBold" color="warning">
-            Edit definations
-          </AppText>
-        }
-        icon={<AppIcon name="edit" branch="antd" color="warning" size={20} />}
-        rightContent={
-          <AppIcon branch="feather" color="warning" name={"plus"} size={20} />
-        }
-      />
-      <AppMenu
-        label={
-          <AppText size={18} font="MulishSemiBold" color="success">
-            Add example
-          </AppText>
-        }
-        icon={<AppIcon name="edit" branch="antd" color="success" size={20} />}
-        rightContent={
-          <AppIcon
-            branch="feather"
-            color="success"
-            name={"chevron-right"}
-            size={20}
-          />
-        }
-      />
-      <AppMenu
-        backgroundColor={"red"}
-        label={
-          <AppText size={18} font="MulishSemiBold" color="white">
-            Delete custom definations
-          </AppText>
-        }
-        icon={<AppIcon name="trash" branch="feather" color="white" size={20} />}
-        rightContent={
-          <AppIcon
-            branch="feather"
-            color="white"
-            name={"chevron-right"}
-            size={20}
-          />
-        }
-      />
     </View>
   );
 };
+
 export default WordDefinitions;

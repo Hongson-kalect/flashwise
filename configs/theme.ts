@@ -1,48 +1,72 @@
-export const lightTheme = {
-  primary: "#2563eb", // Xanh da trời chủ đạo
-  secondary: "#FF7700", // Xanh phụ nhẹ hơn
-  tertiary: "#BBDEFB", // Xanh phụ nhạt nhất
-  title: "#0D47A1", // Màu tiêu đề đậm hơn
+/**
+ * Token màu của Flashwise (docs/DESIGN.md). Màu chủ đạo là xanh dương; mọi màn lấy màu từ đây
+ * qua useTheme() hoặc class Tailwind (bg-card, text-title, bg-primary/10...).
+ * Thêm token mới: khai báo ở cả light + dark, rồi thêm vào TOKEN_KEYS (ui/tokens.ts) và ui/tailwind.preset.js.
+ */
+import type { UITheme } from "@/ui";
 
-  success: "#4CAF50", // Màu thành công
-  error: "#F44336", // Màu lỗi
-  warning: "#FF9800", // Màu cảnh báo
-  disabled: "#BDBDBD", // Màu vô hiệu hóa
-  link: "#3F51B5", // Màu liên kết
-  //   border: '#E0E0E0',       // Màu viền nhẹ
-  text: "#212121", // Text chính – đen xám
-  subText1: "#424242", // Text phụ cấp 1
-  subText2: "#757575", // Text phụ cấp 2
-  subText3: "#BDBDBD", // Text phụ cấp 3
+/** Bảng màu của app = token của UI kit + vài khoá riêng (white). */
+export type Theme = UITheme & { white: string };
 
-  background: "#FFFFFF", // Nền sáng
-  background2: "#f8f8f8", // Nền sáng 2
-  constract: "#FFFFFF", // Màu cho nút, tương phản với nền đậm
-  card: "#F5F5F5", // Màu nền thẻ
+export const lightTheme: Theme = {
+  // Thương hiệu
+  primary: "#2563EB", // xanh chủ đạo: nút chính, link, tab đang chọn
+  secondary: "#0EA5E9", // xanh trời: nhấn phụ, gradient
+  tertiary: "#DBEAFE", // xanh nhạt: nền chip / vùng nhấn nhẹ
+  accent: "#F59E0B", // vàng cam: streak, XP, phần thưởng (dùng tiết kiệm)
+
+  // Trạng thái
+  success: "#16A34A",
+  error: "#DC2626",
+  warning: "#D97706",
+  info: "#0284C7",
+  disabled: "#CBD5E1",
+  link: "#2563EB",
+
+  // Chữ
+  title: "#0B1B3A",
+  text: "#1E293B",
+  subText1: "#475569",
+  subText2: "#64748B",
+  subText3: "#94A3B8",
+
+  // Nền: card trắng nổi trên nền xanh xám rất nhạt
+  background: "#F5F8FD",
+  background2: "#EAF0FA",
+  card: "#FFFFFF",
+  border: "#E2E8F0",
+
+  // Chữ / icon đặt trên nền primary
+  constract: "#FFFFFF",
   white: "#FFFFFF",
 };
 
-export const darkTheme = {
-  primary: "#90CAF9", // Xanh da trời sáng hơn (trên nền tối)
-  secondary: "#64B5F6", // Xanh phụ giống theme sáng
-  tertiary: "#BBDEFB", // Xanh phụ nhạt nhất
-  title: "#E3F2FD", // Màu tiêu đề sáng hơn
+export const darkTheme: Theme = {
+  primary: "#3B82F6",
+  secondary: "#38BDF8",
+  tertiary: "#1E3A8A",
+  accent: "#FBBF24",
 
-  success: "#81C784", // Xanh thành công dịu hơn
-  error: "#E57373", // Đỏ nhẹ cho lỗi
-  warning: "#FFB74D", // Cam cảnh báo mềm
-  disabled: "#BDBDBD", // Màu vô hiệu hóa
-  link: "#3F51B5", // Màu liên kết
+  success: "#4ADE80",
+  error: "#F87171",
+  warning: "#FBBF24",
+  info: "#38BDF8",
+  disabled: "#334155",
+  link: "#60A5FA",
 
-  text: "#FFFFFF", // Text chính – trắng
-  subText1: "#EEEEEE", // Text phụ cấp 1
-  subText2: "#BDBDBD", // Text phụ cấp 2
-  subText3: "#9E9E9E", // Text phụ cấp 3
+  title: "#F1F5F9",
+  text: "#E2E8F0",
+  subText1: "#CBD5E1",
+  subText2: "#94A3B8",
+  subText3: "#64748B",
 
-  background: "#121212", // Nền tối
-  background2: "#1E1E1E",
-  constract: "#1E1E1E", // Màu cho nút, tương phản với nền sáng
-  card: "#1E1E1E", // Nền thẻ dạng tối
+  // Nền xanh than, card sáng hơn nền một bậc, không dùng đen/trắng tinh
+  background: "#0B1220",
+  background2: "#111A2E",
+  card: "#151F36",
+  border: "#243049",
+
+  constract: "#FFFFFF",
   white: "#FFFFFF",
 };
 

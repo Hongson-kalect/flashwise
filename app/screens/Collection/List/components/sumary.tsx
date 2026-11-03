@@ -19,7 +19,7 @@ const CollectionSumary = () => {
         Learning Progress
       </AppText>
 
-      <View className="rounded-xl bg-white flex-1">
+      <View className="rounded-xl bg-card flex-1">
         <AppText className="p-3 mt-4" size={"xs"} color="subText3">
           Sơ đồ cột số lượng từ đã học từ các collection. Giới hạn 5 cái
         </AppText>

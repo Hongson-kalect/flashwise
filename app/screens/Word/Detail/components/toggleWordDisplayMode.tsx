@@ -1,3 +1,4 @@
+import { useTheme } from "@/providers/Theme";
 import AppText from "@/components/AppText";
 import { useAppStore } from "@/stores/appStore";
 import { useMemo } from "react";
@@ -5,8 +6,8 @@ import { Pressable, StyleSheet } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 
 const ToggleWordDisplayMode = () => {
-  const { themeObj, settings, dbService, updateSetting } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+  const { settings, dbService, updateSetting } = useAppStore();
+  const { theme } = useTheme();
 
   const toggleLanguageMode = () => {
     dbService?.setShowTranslation(!settings?.show_translation);

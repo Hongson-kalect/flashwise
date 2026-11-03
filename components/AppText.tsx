@@ -1,55 +1,12 @@
 import { FontFamily } from "@/configs/fonts";
-import { textSizes } from "@/configs/size";
-import { lightTheme } from "@/configs/theme";
-import { useTheme } from "@/providers/Theme";
-import { LayoutChangeEvent, StyleProp, Text, TextStyle } from "react-native";
+import { Text, UITextProps } from "@/ui";
 
-type Props = {
-  children: React.ReactNode;
+type Props = Omit<UITextProps, "font"> & {
+  /** Tên font đã nạp (vd "MulishBold"). Ưu tiên dùng `weight` của kit. */
   font?: FontFamily;
-  style?: StyleProp<TextStyle>;
-  onPress?: () => void;
-  className?: string;
-  size?: keyof typeof textSizes | number;
-  color?:keyof typeof lightTheme;
-
-  numberOfLines?: number;
-  onLayout?: (event: LayoutChangeEvent) => void;
-  ellipsizeMode?: "head" | "middle" | "tail" | "clip";
-  textAlign?: "left" | "center" | "right" | "justify";
 };
 
-const AppText = ({
-  children,
-  style,
-  color,
-  onPress,
-  font = "MulishRegular",
-  ...props
-}: Props) => {
-  const { theme } = useTheme();
-  const fontSize =
-    typeof props.size === "number" ? props.size : textSizes[props.size || "md"];
-
-  return (
-    <Text
-      onPress={onPress}
-      className={props.className}
-      style={[
-        {
-          color: theme[color || "text"],
-          fontFamily: font,
-          fontSize: fontSize,
-          // fontWeight: "bold",
-          lineHeight: fontSize * 1.3, // Adjust line height based on font size
-        },
-        style,
-      ]}
-      {...props}
-    >
-      {children}
-    </Text>
-  );
-};
+/** Chữ chuẩn của app = Text của UI kit (token màu, thang cỡ chữ chung); `font` giữ cho code cũ. */
+const AppText = (props: Props) => <Text {...props} />;
 
 export default AppText;

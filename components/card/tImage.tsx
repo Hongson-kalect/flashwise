@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Image, TextStyle, View, ViewStyle } from "react-native";
+import { TextStyle, View, ViewStyle } from "react-native";
+import AppImage from "../AppImage";
 
 type Props = {
   wrapperStyle?: ViewStyle;
@@ -20,10 +21,9 @@ const CardTranslatedImage = (props: Props) => {
       className="w-full items-center justify-center"
     >
       <View style={{ height: imageWidth || 180, width: "100%" }}>
-        <Image
+        <AppImage
           className="w-full h-full"
-          source={{ uri: "https://picsum.photos/900/1700" }}
-          resizeMode="cover"
+          source={{ uri: "https://picsum.photos/600/1100" }}
         />
       </View>
     </View>

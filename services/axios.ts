@@ -1,9 +1,9 @@
 import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from "axios";
 import * as SecureStore from "expo-secure-store";
-import { Alert } from "react-native";
+import { API_BASE_URL } from "../configs/server";
 import { useAuthStore } from "../stores/useAuthStore"; // <--- Import Store ở đây
 
-export const baseURL = "http://192.168.1.111:8000/api/";
+export const baseURL = API_BASE_URL;
 // ... (giữ nguyên dictionaryURL và datamuseURL của bạn)
 
 interface FailedRequest {
@@ -54,24 +54,19 @@ serverInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // NẾU LÀ GUEST HOẶC API CÔNG KHAI: Bỏ qua hoàn toàn logic Refresh Token
-    if (
-      originalRequest.headers?.["x-no-auth"] === "true" ||
-      useAuthStore.getState().isGuest
-    ) {
-      return Promise.reject(error); // Trả lỗi về thẳng component xử lý UI, không tự động logout
+    if (originalRequest?.headers?.["x-no-auth"] === "true") {
+      return Promise.reject(error);
     }
 
+    // Backend trả 401 kèm errorCode; chỉ thử refresh khi có refresh token
+    // và request này chưa thử lại. login_required/account_disabled là lỗi thật.
+    const errorCode = error.response?.data?.errorCode;
+    const isAuthError = error.response?.status === 401;
+    const fatal = ["login_required", "account_disabled"].includes(errorCode);
     const shouldAttemptRefresh =
-      error.response?.status === 401 &&
-      error.response?.data?.messages?.[0]?.message === "Token is expired" &&
-      !originalRequest._retry;
+      isAuthError && !fatal && !originalRequest._retry;
 
     if (!shouldAttemptRefresh) {
-      if (error.response?.status === 401) {
-        // Token bẩn, sai chữ ký -> Gọi store logout để đá user ra ngoài
-        await useAuthStore.getState().logout();
-      }
       return Promise.reject(error);
     }
 
@@ -92,7 +87,7 @@ serverInstance.interceptors.response.use(
     try {
       const refreshToken = await SecureStore.getItemAsync("refreshToken");
 
-      const response = await axios.post(`${baseURL}/refresh-token`, {
+      const response = await axios.post(`${baseURL}refresh-token`, {
         refreshToken,
       });
 
@@ -108,9 +103,8 @@ serverInstance.interceptors.response.use(
       processQueue(err, null);
 
       // REFRESH TOKEN HẾT HẠN -> Gọi store logout
+      // Xoá token cũ; lần mở app sau (hoặc bootstrapSession) sẽ device-login lại
       await useAuthStore.getState().logout();
-
-      Alert.alert("Phiên làm việc hết hạn", "Vui lòng đăng nhập lại.");
       return Promise.reject(err);
     } finally {
       isRefreshing = false;

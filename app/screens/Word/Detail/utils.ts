@@ -11,46 +11,94 @@ type ActionType =
   | "PARTIAL_METADATA"
   | "PARTIAL_IMAGE"
   | "PARTIAL_TRANSLATE"
+  | "SENSE_REMOVED"
+  | "FULL_SENSE"
+  | "REJECTED"
+  | "ERROR"
+  | "FAILED"
   | "COMPLETED";
+const errText = (p: any) =>
+  typeof p === "string" ? p : p?.message || p?.detail || undefined;
+
 export const senseDataReducer = (
   state: WordState,
   action: { type: ActionType; payload: any },
 ): WordState => {
-  console.log('abcd', state, action.type)
   switch (action.type) {
     case "RESET":
       return {
         ...initialState,
       };
-    case "INITIAL":
-      const { id, value, language_code, senses } = action.payload;
-      const newData = {
-        ...state,
-      };
-
-      if (!newData?.id && id) {
-        newData.id = id;
-      }
-      if (!newData?.value && value) {
-        newData.value = value;
-      }
-      if (!newData?.languageCode && language_code) {
-        newData.languageCode = language_code;
-      }
-
-      Object.values<SenseType>(senses || {}).forEach((sense: SenseType) => {
-        if (!newData.senses[sense.id]) {
-          newData.senses[sense.id] = sense;
-        } else {
-          newData.senses[sense.id] = { ...newData.senses[sense.id], ...sense };
-        }
+    case "INITIAL": {
+      // payload = data của get-word. complete=true (HTTP 200): đã đủ, không chờ socket.
+      const { id, value, language_code, senses } = action.payload.data ?? {};
+      const complete = !!action.payload.complete;
+      // complete (bản đủ từ server): thay hẳn nghĩa, bỏ nghĩa cũ đã bị server loại
+      const merged = complete ? {} : { ...state.senses };
+      Object.values<SenseType>(senses || {}).forEach((sense) => {
+        merged[sense.id] = merged[sense.id]
+          ? { ...merged[sense.id], ...sense }
+          : sense;
       });
 
       return {
         ...state,
-        ...newData,
-        isLoading: true,
-        status: "INITIAL",
+        id: state.id ?? id,
+        value: state.value ?? value,
+        languageCode: state.languageCode ?? language_code,
+        senses: merged,
+        isLoading: !complete,
+        status: complete ? "COMPLETED" : "INITIAL",
+        error: null,
+      };
+    }
+
+    // Bản cuối từ socket (như get-word 200): thay toàn bộ, lưu được
+    case "FULL_SENSE": {
+      const data = action.payload ?? {};
+      return {
+        ...state,
+        id: data.id ?? state.id,
+        value: data.value ?? state.value,
+        languageCode: data.language_code ?? state.languageCode,
+        senses: { ...(data.senses ?? {}) },
+        isLoading: false,
+        status: "COMPLETED",
+        error: null,
+      };
+    }
+
+    case "SENSE_REMOVED": {
+      const senses = { ...state.senses };
+      (Array.isArray(action.payload) ? action.payload : []).forEach(
+        (id: string) => delete senses[id],
+      );
+      return { ...state, senses };
+    }
+
+    case "REJECTED":
+      return {
+        ...state,
+        isLoading: false,
+        status: "ERROR",
+        error: { code: "rejected", message: errText(action.payload) },
+      };
+
+    case "ERROR":
+      return {
+        ...state,
+        isLoading: false,
+        status: "ERROR",
+        error: { code: "failed", message: errText(action.payload) },
+      };
+
+    // Lỗi HTTP của get-word (payload = WordError)
+    case "FAILED":
+      return {
+        ...state,
+        isLoading: false,
+        status: "ERROR",
+        error: action.payload,
       };
 
     case "FULLDATA":
@@ -62,10 +110,13 @@ export const senseDataReducer = (
       };
 
     case "WORD": {
+      const { id, value, language_code } = action.payload ?? {};
       return {
         ...state,
-        status: "PARTIAL",
-        ...action.payload,
+        id: id ?? state.id,
+        value: value ?? state.value,
+        languageCode: language_code ?? state.languageCode,
+        status: state.status === "COMPLETED" ? state.status : "PARTIAL",
       };
     }
 
@@ -136,7 +187,10 @@ export const senseDataReducer = (
         const newSenseData = translateObj[senseId];
 
         updatedSenses[senseId] = currentSense
-          ? { ...currentSense, contents: newSenseData } // Giữ data cũ, đè imageUrl (hoặc các prop ảnh khác) lên
+          ? {
+              ...currentSense,
+              contents: { ...currentSense.contents, ...newSenseData },
+            }
           : { id: senseId, contents: newSenseData }; // Phòng thủ nếu sense chưa khởi tạo
       });
 

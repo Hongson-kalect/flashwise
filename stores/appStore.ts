@@ -1,4 +1,4 @@
-import { lightTheme } from "./../configs/theme";
+import { lightTheme } from "@/configs/theme";
 // src/store/appStore.ts
 import {
   SystemConfigObj,
@@ -15,10 +15,15 @@ interface AppState {
   userProfile: UserProfile | null;
   settings: UserSettingObj | null;
   configs: SystemConfigObj | null;
-  themeObj: (Theme & { color_palette: typeof lightTheme }) | null;
+  themeObj: (Omit<Theme, "color_palette"> & { color_palette: typeof lightTheme }) | null;
   isLoadingData: boolean;
   dbService: ReturnType<typeof createDBService> | null;
   displayLanguage: string;
+  /** Ghép với khoá file (ảnh, audio) server trả về; lấy từ GET app-config. */
+  mediaBaseUrl: string;
+  /** App thấp hơn min_version của server: bắt cập nhật. */
+  forceUpdate: boolean;
+  setServerConfig: (cfg: { mediaBaseUrl?: string; forceUpdate?: boolean }) => void;
 
   // Hàm cốt lõi để nạp dữ liệu từ local DB lên RAM Zustand
   bootstrapAppData: (db: SQLiteDatabase) => Promise<boolean>;
@@ -35,29 +40,7 @@ export const useAppStore = create<AppState>((set) => ({
   themeObj: {
     id: "",
     name: "default",
-    color_palette: {
-      primary: "#2563eb", // Xanh da trời chủ đạo
-      secondary: "#FF7700", // Xanh phụ nhẹ hơn
-      tertiary: "#BBDEFB", // Xanh phụ nhạt nhất
-      title: "#0D47A1", // Màu tiêu đề đậm hơn
-
-      success: "#4CAF50", // Màu thành công
-      error: "#F44336", // Màu lỗi
-      warning: "#FF9800", // Màu cảnh báo
-      disabled: "#BDBDBD", // Màu vô hiệu hóa
-      link: "#3F51B5", // Màu liên kết
-      //   border: '#E0E0E0',       // Màu viền nhẹ
-      text: "#212121", // Text chính – đen xám
-      subText1: "#424242", // Text phụ cấp 1
-      subText2: "#757575", // Text phụ cấp 2
-      subText3: "#BDBDBD", // Text phụ cấp 3
-
-      background: "#FFFFFF", // Nền sáng
-      background2: "#f8f8f8", // Nền sáng 2
-      constract: "#FFFFFF", // Màu cho nút, tương phản với nền đậm
-      card: "#F5F5F5", // Màu nền thẻ
-      white: "#FFFFFF",
-    },
+    color_palette: lightTheme,
     font: null,
     priority: 0,
     is_deleted: 0,
@@ -67,6 +50,9 @@ export const useAppStore = create<AppState>((set) => ({
   dbService: null,
   isLoadingData: true, // Mặc định là true để giữ màn hình Loading/Splash
   displayLanguage: "en",
+  mediaBaseUrl: "",
+  forceUpdate: false,
+  setServerConfig: (cfg) => set(cfg),
 
   bootstrapAppData: async (db: SQLiteDatabase) => {
     const start = Date.now();
@@ -97,7 +83,9 @@ export const useAppStore = create<AppState>((set) => ({
         userProfile: profile,
         settings: settings,
         configs: configs,
-        themeObj: theme,
+        themeObj: theme
+          ? { ...theme, color_palette: useAppStore.getState().themeObj?.color_palette ?? lightTheme }
+          : useAppStore.getState().themeObj,
         isLoadingData: false,
         displayLanguage: locale,
       });
@@ -138,3 +126,10 @@ export const useAppStore = create<AppState>((set) => ({
       };
     }),
 }));
+
+/** Ghép khoá file server trả về với media_base_url (đã có http thì dùng nguyên). */
+export const mediaUrl = (key?: string | null) => {
+  if (!key) return undefined;
+  if (/^https?:\/\//.test(key)) return key;
+  return useAppStore.getState().mediaBaseUrl + key;
+};

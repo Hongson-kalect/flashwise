@@ -101,7 +101,7 @@ const CreateSenseExample = ({
   };
 
   return (
-    <CollapseSection title="Example">
+    <CollapseSection title="Ví dụ">
       <View className="pl-1">
         {/* Header */}
         {senseValue.examples.map((example, index) => {
@@ -138,15 +138,16 @@ const CreateSenseExample = ({
                       onPress={() => showEditExampleModel(example)}
                       size="sm"
                       type="warning"
+                      variant="soft"
                     >
                       <AppIcon
-                        name="edit"
+                        name="edit-2"
                         branch="feather"
-                        size={16}
-                        color="white"
+                        size={14}
+                        color="warning"
                       />
-                      <AppText color="white" size={"xs"}>
-                        Edit
+                      <AppText color="warning" weight="semibold" size={"xs"}>
+                        Sửa
                       </AppText>
                     </AppButton>
 
@@ -154,15 +155,16 @@ const CreateSenseExample = ({
                       onPress={() => removeExample(example.id)}
                       size="sm"
                       type="error"
+                      variant="soft"
                     >
                       <AppIcon
-                        name="trash"
+                        name="trash-2"
                         branch="feather"
-                        size={16}
-                        color="white"
+                        size={14}
+                        color="error"
                       />
-                      <AppText color="white" size={"xs"}>
-                        Remove
+                      <AppText color="error" weight="semibold" size={"xs"}>
+                        Xoá
                       </AppText>
                     </AppButton>
                   </View>

@@ -1,14 +1,8 @@
+import AppIcon from "@/components/AppIcon";
 import { useTheme } from "@/providers/Theme";
-import {
-  ScrollView,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import ReactNativeModal from "react-native-modal";
-import { Card } from "react-native-paper";
 import Animated, { LinearTransition } from "react-native-reanimated";
-import { AppDivider } from "../AppDivider";
 import AppText from "../AppText";
 
 type Props = {
@@ -36,84 +30,73 @@ type Props = {
   padding?: number;
   children: React.ReactNode;
 };
+
+/** Khung modal giữa màn hình: thẻ bo 24, backdrop mờ, bàn phím đẩy modal lên. */
 export default function ModalWrapper(props: Props) {
   const { height } = useWindowDimensions();
   const { theme } = useTheme();
 
   return (
-    // <Modal visible={props.show}>
     <ReactNativeModal
-      // key={props.type || "none"}
       onBackButtonPress={props.onCancel}
       animationIn={props.inAnimation || "zoomIn"}
       animationOut={props.outAnimation || "zoomOut"}
+      animationInTiming={220}
+      animationOutTiming={180}
       isVisible={props.show}
       backdropTransitionOutTiming={1}
-      // backdropColor="black"
-      backdropOpacity={0.4}
+      backdropOpacity={0.45}
       onBackdropPress={props.onCancel}
-      style={{ zIndex: 1000 }}
+      useNativeDriverForBackdrop
+      style={{ zIndex: 1000, marginHorizontal: 20 }}
       avoidKeyboard
     >
-      <Animated.View
-        // layout={
-        //   ["prompt", "input"].includes(props?.type)
-        //     ? LinearTransition.mass(0.6)
-        //     : undefined
-        // }
-        layout={LinearTransition.mass(0.6)}
-      >
-        <Card
-          style={{ backgroundColor: theme.background }}
-          className="relative"
+      <Animated.View layout={LinearTransition.mass(0.6)}>
+        <View
+          className="overflow-hidden"
+          style={{ backgroundColor: theme.background, borderRadius: 24 }}
         >
-          <View className="pb-5 pt-3" style={{ maxHeight: (height / 4) * 3 }}>
+          <View style={{ maxHeight: (height / 4) * 3 }}>
             {props.title &&
               (typeof props.title === "string" ? (
-                <View>
+                <View
+                  className="flex-row items-center pl-5 pr-3 pt-4 pb-2"
+                >
                   <AppText
-                    style={{
-                      textAlign: props.titlePosition || "left",
-                      fontFamily: "PlaypenSans-Semibold",
-                      color: theme.text,
-                    }}
-                    className="text-xl p-4"
+                    className="flex-1"
+                    font="MulishBold"
+                    size="xl"
+                    numberOfLines={1}
+                    style={{ textAlign: props.titlePosition || "left" }}
                   >
-                    {props.title || " Title"}
+                    {props.title}
                   </AppText>
-                  <AppDivider />
+                  <Pressable
+                    hitSlop={10}
+                    onPress={props.onCancel}
+                    className="h-8 w-8 rounded-full items-center justify-center"
+                    style={{ backgroundColor: theme.card }}
+                  >
+                    <AppIcon
+                      branch="feather"
+                      name="x"
+                      size={18}
+                      color={theme.subText2}
+                    />
+                  </Pressable>
                 </View>
               ) : (
                 props.title
               ))}
             <ScrollView keyboardShouldPersistTaps="handled">
-              <View style={{ padding: props.padding || 7 }}>
+              <View style={{ padding: props.padding ?? 12 }}>
                 {props.children}
               </View>
             </ScrollView>
-            {props.bottom && (
-              <>
-                <AppDivider />
-                {props.bottom}
-              </>
-            )}
+            {props.bottom && <View className="px-4 pb-4">{props.bottom}</View>}
           </View>
-          {!!props.title && (
-            <TouchableOpacity
-              onPress={props.onCancel}
-              className="absolute top-2 right-2 p-2 rounded-full focus:outline-none focus:ring focus:ring-gray-300"
-            >
-              <AppText
-                style={{ color: theme.subText1 }}
-                className=" text-lg font-semibold"
-              >
-                ×
-              </AppText>
-            </TouchableOpacity>
-          )}
-        </Card>
+        </View>
       </Animated.View>
     </ReactNativeModal>
-    // </Modal>
   );
 }

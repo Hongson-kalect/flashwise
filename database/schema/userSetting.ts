@@ -51,7 +51,7 @@ export const setTranslateLanguage = async (db: SQLiteDatabase, value: string) =>
 export const seedData = /*sql*/ `
 INSERT OR IGNORE INTO user_settings (key, value) VALUES
 
-('theme', '"system"'),
+('theme', '"light"'),
 
 ('translate_language', '"vi"'),
 
@@ -93,3 +93,15 @@ INSERT OR IGNORE INTO user_settings (key, value) VALUES
 
 ('offline_mode', 'true');
 `;
+
+export const setSetting = async (
+  db: SQLiteDatabase,
+  key: string,
+  value: unknown,
+) => {
+  await db.runAsync(
+    `INSERT INTO user_settings (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value;`,
+    [key, JSON.stringify(value)],
+  );
+};

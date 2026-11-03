@@ -1,3 +1,4 @@
+import { useTheme } from "@/providers/Theme";
 import AppAddIcon from "@/components/AppAddIcon";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
@@ -14,7 +15,7 @@ import { AudioType } from "@/stores/recordingStore";
 import { startRecording } from "@/utils/audioRecord";
 import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Image,
   LayoutChangeEvent,
@@ -32,6 +33,10 @@ import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
 import { lightTheme } from "@/configs/theme";
 import { useAppStore } from "@/stores/appStore";
 import { SenseType } from "../../data";
+import AppImage from "@/components/AppImage";
+import { SkeletonReact } from "@/components/skeleton/ReactSkeleton";
+import { findSenseImage, SenseImage } from "@/services/senseImage";
+import { useWordLoading } from "../loadingContext";
 import { getLangTranslate, textToSpeech } from "../utils";
 import WordDefinitions from "./definitions";
 import SenseNote from "./senseNote";
@@ -66,11 +71,8 @@ const BasicInformation = ({
   >(null);
 
   const sound = useState<Audio.Sound | null>(null);
-  const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(
-    () => themeObj?.color_palette || lightTheme,
-    [themeObj],
-  );
+  const { settings, dbService } = useAppStore();
+  const { theme } = useTheme();
   const translations = useMemo(
     () =>
       getLangTranslate(
@@ -86,6 +88,20 @@ const BasicInformation = ({
   const { width } = useWindowDimensions();
   const { present } = useBottomSheet();
   const { setGlobalModal } = useModalStore();
+  const isWordLoading = useWordLoading();
+
+  // Ảnh: server (image_preview) ưu tiên; chưa có thì tạm lấy từ Pixabay theo image_keywords
+  const [fallbackImage, setFallbackImage] = useState<SenseImage | null>(null);
+  const keywords: string[] | undefined = (sense as any)?.metadata?.image_keywords;
+  useEffect(() => {
+    if (sense.image_preview) return;
+    let alive = true;
+    findSenseImage(keywords, word).then((img) => alive && setFallbackImage(img));
+    return () => {
+      alive = false;
+    };
+  }, [sense.image_preview, keywords?.join(","), word]);
+  const imageUri = sense.image_preview || fallbackImage?.url;
 
   // const onShowMoreDefinitions = () => {
   //   present({
@@ -177,99 +193,57 @@ const BasicInformation = ({
 
   return (
     <View>
-      <View className="flex-row items-center gap-2">
-        <View className="flex-row items-center justify-start gap-1">
-          {/* {!recognizing ? (
-            <Button title="Start" onPress={handleStart} />
-          ) : (
-            <Button
-              title="Stop"
-              onPress={() => ExpoSpeechRecognitionModule.stop()}
-            />
-          )}  */}
-
-          {!selectedAudio?.uri ? (
-            <TouchableOpacity
-              onPress={() => textToSpeech(word)}
-              style={{
-                backgroundColor: theme.secondary,
-                width: 40,
-                height: 40,
-              }}
-              className=" border-gray-400 rounded-lg h-16 w-16 items-center justify-center"
-            >
-              <AppIcon
-                name={"volume-2"}
-                branch="feather"
-                color="white"
-                size={32}
-              />
-            </TouchableOpacity>
-          ) : (
-            <PhatAm
-              size="small"
-              audio={selectedAudio}
-              sound={sound}
-              disabled={!selectedAudio?.uri}
-            />
-          )}
-
-          {/* <ScrollView>
-            <Text>{transcript}</Text>
-          </ScrollView> */}
-
-          {/* <AppButton title="Test STT" onPress={handleStartRecording} /> */}
+      <View className="flex-row items-center gap-3">
+        {!selectedAudio?.uri ? (
           <TouchableOpacity
-            onPress={() =>
-              openInputModal({ title: "Phiên âm", field: "phienAm" })
-            }
-            disabled={mode === "view"}
-            // className="flex-1 flex-row"
+            onPress={() => textToSpeech(word)}
+            activeOpacity={0.8}
+            style={{ backgroundColor: theme.primary, width: 44, height: 44 }}
+            className="rounded-full items-center justify-center"
           >
-            <PhienAm> {ipas?.[0].value || "unavailable"}</PhienAm>
+            <AppIcon name={"volume-2"} branch="feather" color="white" size={22} />
           </TouchableOpacity>
-        </View>
+        ) : (
+          <PhatAm
+            size="small"
+            audio={selectedAudio}
+            sound={sound}
+            disabled={!selectedAudio?.uri}
+          />
+        )}
+        <TouchableOpacity
+          onPress={() => openInputModal({ title: "Phiên âm", field: "phienAm" })}
+          disabled={mode === "view"}
+        >
+          <PhienAm> {ipas?.[0]?.value || ""}</PhienAm>
+        </TouchableOpacity>
       </View>
-      <View className="my-4 items-center justify-center">
+
+      <View className="mt-4 mb-2">
         {settings?.show_translation && (
-          <Animated.View
-            entering={FadeInUp}
-            // exiting={FadeOutUp}
-            className="mb-2 w-full"
-          >
-            <View className="flex-row gap-2 items-center flex-wrap mb-1">
+          <Animated.View entering={FadeInUp} className="mb-3 w-full">
+            <View className="flex-row gap-2 items-center flex-wrap">
               {translations?.length ? (
-                translations.map((item, index) => (
+                translations.map((item) => (
                   <View
                     key={item}
-                    className="px-2 py-0.5 rounded"
-                    style={{ backgroundColor: theme.disabled + "30" }}
+                    className="px-3 py-1 rounded-full"
+                    style={{ backgroundColor: theme.primary + "14" }}
                   >
-                    <AppText size={"sm"} font="MulishLightItalic">
+                    <AppText size={"sm"} font="MulishSemiBold" color="primary">
                       {item}
                     </AppText>
                   </View>
                 ))
+              ) : isWordLoading ? (
+                [84, 64, 96].map((w) => (
+                  <SkeletonReact key={w} width={w} height={26} style={{ borderRadius: 13 }} />
+                ))
               ) : (
-                // <View className="flex-row items-center py-0.5">
-                //   <AppText
-                //     numberOfLines={1}
-                //     color="subText1"
-                //     // font="MulishLight"
-                //     size={"sm"}
-                //   >
-                //     {translations.join(", ")}
-                //   </AppText>
-                // </View>
                 <View className="flex-row items-center justify-between w-full">
-                  <AppText
-                    color="subText3"
-                    font="MulishRegularItalic"
-                    size={"sm"}
-                  >
-                    No translations
+                  <AppText color="subText3" font="MulishRegularItalic" size={"sm"}>
+                    Chưa có bản dịch ngắn
                   </AppText>
-
                   <AppAddIcon size="sm" />
                 </View>
               )}
@@ -278,31 +252,42 @@ const BasicInformation = ({
         )}
 
         <Animated.View layout={LinearTransition}>
-          {sense.image_preview ? (
-            <View
-              style={{
-                elevation: 4,
-                overflow: "hidden",
-                width: width - 28,
-                height: ((width - 28) / 16) * 9,
-              }}
-              className="rounded-lg"
-            >
-              <Image
-                source={{
-                  uri: sense.image_preview,
-                }}
-                style={{ width: "100%", height: "100%" }}
-              />
-            </View>
-          ) : (
-            <AppIcon
-              name={"image"}
-              branch="feather"
-              size={140}
-              color="subText3"
-            />
-          )}
+          <View
+            style={{
+              width: width - 28,
+              height: ((width - 28) / 16) * 9,
+              backgroundColor: theme.card,
+            }}
+            className="rounded-2xl overflow-hidden items-center justify-center"
+          >
+            {imageUri ? (
+              <>
+                <AppImage
+                  source={{ uri: imageUri }}
+                  style={{ width: "100%", height: "100%" }}
+                />
+                {!sense.image_preview && fallbackImage && (
+                  <View
+                    className="absolute bottom-2 right-2 px-2 py-0.5 rounded-full"
+                    style={{ backgroundColor: "#00000088" }}
+                  >
+                    <AppText size="tiny" color="white">
+                      {fallbackImage.credit}
+                    </AppText>
+                  </View>
+                )}
+              </>
+            ) : isWordLoading ? (
+              <SkeletonReact width="100%" height="100%" style={{ borderRadius: 0 }} />
+            ) : (
+              <View className="items-center gap-1">
+                <AppIcon name="image" branch="feather" size={36} color={theme.subText3} />
+                <AppText size="xs" color="subText3">
+                  Chưa có hình minh hoạ
+                </AppText>
+              </View>
+            )}
+          </View>
         </Animated.View>
       </View>
       <Animated.View layout={LinearTransition}>
@@ -351,7 +336,7 @@ const BasicInformation = ({
 
       <SenseUsage word={word} usage={sense.contents?.usage} />
 
-      <SenseNote word={word} note={note} />
+      <SenseNote word={word} />
     </View>
   );
 };

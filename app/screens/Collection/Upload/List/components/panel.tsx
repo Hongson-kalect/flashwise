@@ -8,7 +8,7 @@ const UploadPanel = () => {
   return (
     <View className="rounded-xl p-4" style={{ backgroundColor: theme.primary }}>
       <View className="flex-row gap-6">
-        <View className="w-24 h-24 rounded-full bg-white border-2 border-gray-200"></View>
+        <View className="w-24 h-24 rounded-full bg-card border-2 border-border"></View>
         <View className="gap-1">
           <AppText color="white" font="MulishLight">
             Uploaded
@@ -28,7 +28,7 @@ const UploadPanel = () => {
         </View>
       </View>
       <View className="flex-row items-center justify-between mt-6 gap-4">
-        <View className=" bg-white rounded-lg flex-1 px-2 py-1">
+        <View className=" bg-card rounded-lg flex-1 px-2 py-1">
           <AppText size={"xs"} font="MulishLight" color="subText2">
             View
           </AppText>
@@ -38,7 +38,7 @@ const UploadPanel = () => {
             </AppText>
           </View>
         </View>
-        <View className=" bg-white rounded-lg flex-1 px-2 py-1">
+        <View className=" bg-card rounded-lg flex-1 px-2 py-1">
           <AppText size={"xs"} font="MulishLight" color="subText2">
             Like
           </AppText>
@@ -48,7 +48,7 @@ const UploadPanel = () => {
             </AppText>
           </View>
         </View>
-        <View className=" bg-white rounded-lg flex-1 px-2 py-1">
+        <View className=" bg-card rounded-lg flex-1 px-2 py-1">
           <AppText size={"xs"} font="MulishLight" color="subText2">
             Download
           </AppText>

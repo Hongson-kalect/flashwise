@@ -74,13 +74,13 @@ export const LineInput = forwardRef<LineInputRef, LineInputProps>(
               className="gap-1 items-center flex-row"
             >
               <AppText
-                color="secondary"
-                font="MulishLightItalic"
+                color="primary"
+                font="MulishSemiBold"
                 size={props.size}
               >
-                Preset
+                Gợi ý
               </AppText>
-              <AppIcon branch="antd" name="right" size={10} color="secondary" />
+              <AppIcon branch="feather" name="chevron-right" size={12} color="primary" />
             </TouchableOpacity>
           )}
         </View>

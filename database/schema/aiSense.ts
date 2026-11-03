@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS ai_sense (
     -- Trạng thái
     is_official INTEGER DEFAULT 1,
     is_offensive INTEGER DEFAULT 0,
+    quality_status TEXT DEFAULT 'draft',            -- draft | refined | verified (khớp server): draft thì app làm mới nền khi mở từ
+    ai_pass INTEGER DEFAULT 1,                      -- Số lần AI đã xử lý (2 = đã refine)
 
     -- Điểm số
     score INTEGER DEFAULT 0,

@@ -1,3 +1,4 @@
+import { useTheme } from "@/providers/Theme";
 import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
@@ -22,8 +23,8 @@ const CreateExampleForm = (props: Props) => {
   });
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
-  const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(() => themeObj?.color_palette, [themeObj]);
+  const { settings, dbService } = useAppStore();
+  const { theme } = useTheme();
 
   useEffect(() => {
     setTimeout(() => textFocus(), 300);

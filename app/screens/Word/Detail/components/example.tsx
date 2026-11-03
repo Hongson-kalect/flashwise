@@ -1,180 +1,35 @@
-import AppIcon from "@/components/AppIcon";
 import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
 import { BoldText } from "@/components/output/BoldText";
-import { lightTheme } from "@/configs/theme";
+import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
-import useModalStore from "@/stores/modalStore";
 import { useMemo } from "react";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
 import { SenseContentType } from "../../data";
+import { useSenseEditor } from "../senseEdit";
 import { getLangContent } from "../utils";
 
 type Props = {
   bold: number[][] | string;
   example: SenseContentType;
+  /** Vị trí trong danh sách ví dụ của nghĩa, để nhấn giữ sửa đúng ví dụ này. */
+  index: number;
 };
-const WordExample = ({ example, bold }: Props) => {
-  const { themeObj, settings, dbService } = useAppStore();
-  const theme = useMemo(
-    () => themeObj?.color_palette || lightTheme,
-    [themeObj],
-  );
-  const [tExample, nExample] = useMemo(() => {
-    return [
+
+const cap = (s?: string) => `${s?.[0]?.toUpperCase() || ""}${s?.slice(1) || ""}`;
+
+const WordExample = ({ example, bold, index }: Props) => {
+  const settings = useAppStore((s) => s.settings);
+  const { theme } = useTheme();
+  const { edit, canEdit } = useSenseEditor();
+  const [tExample, nExample] = useMemo(
+    () => [
       getLangContent(example, settings?.learning_language),
       getLangContent(example, settings?.translate_language),
-    ];
-  }, [example]);
-  const { setGlobalModal } = useModalStore();
-
-  const showExampleOptions = () => {
-    setGlobalModal({
-      type: "menu",
-      title: "Example options",
-      menuOptions: [
-        {
-          icon: (
-            <AppIcon name="edit" color="warning" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="subText3"
-              size={20}
-            />
-          ),
-          onPress: showEditModal,
-          label: "Edit example",
-        },
-        {
-          icon: (
-            <AppIcon name="plus" color="success" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="subText3"
-              size={20}
-            />
-          ),
-          label: "Add translate",
-          onPress: addExampleModal,
-        },
-        {
-          icon: (
-            <AppIcon name="trash" color="error" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="subText3"
-              size={20}
-            />
-          ),
-          label: "Delete custom example",
-          onPress: deleteExampleModal,
-        },
-      ],
-    });
-  };
-  const showExampleTranslateOption = () => {
-    setGlobalModal({
-      type: "menu",
-      title: "Example translate options",
-      menuOptions: [
-        {
-          icon: (
-            <AppIcon name="edit" color="warning" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="subText3"
-              size={20}
-            />
-          ),
-          onPress: showEditTranslateModal,
-          label: "Edit translate",
-        },
-        {
-          icon: (
-            <AppIcon name="trash" color="error" branch="feather" size={22} />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              color="subText3"
-              size={20}
-            />
-          ),
-          label: "Delete custom translate",
-          onPress: deleteTranslateModal,
-        },
-      ],
-    });
-  };
-
-  const showEditModal = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        title: "Edit example",
-        type: "prompt",
-        defaultValue: tExample?.value,
-      });
-    }, 500);
-  };
-
-  const addExampleModal = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        type: "prompt",
-        subMessage: tExample?.value,
-        title: "Add vietnamese translate",
-      });
-    }, 500);
-  };
-
-  const deleteExampleModal = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        type: "confirm",
-        message: "Do you want to delete this example?",
-        onOk: () => handleDeleteExample(),
-      });
-    }, 500);
-  };
-
-  const showEditTranslateModal = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        title: "Edit example",
-        type: "prompt",
-        defaultValue: nExample?.value,
-      });
-    }, 500);
-  };
-
-  const deleteTranslateModal = () => {
-    setTimeout(() => {
-      setGlobalModal({
-        type: "confirm",
-        message: "Do you want to delete this example?",
-        onOk: () => handleDeleteExample(),
-      });
-    }, 500);
-  };
-
-  const handleDeleteExample = () => {
-    // Chỉ khi definition này được tạo bởi người dùng thì mới có options này, và check lại khi lên server
-    // Chỉ xóa ô definition trong userword
-    Alert.alert("Deleted");
-  };
+    ],
+    [example, settings?.learning_language, settings?.translate_language],
+  );
+  const onHold = canEdit ? () => edit(`example:${index}`) : undefined;
 
   return (
     <View
@@ -186,11 +41,7 @@ const WordExample = ({ example, bold }: Props) => {
         borderBottomRightRadius: 4,
       }}
     >
-      <AppPressable
-        hitSlop={5}
-        className="py-2 pl-2"
-        onLongPress={showExampleOptions}
-      >
+      <AppPressable hitSlop={5} className="py-2 pl-2" onLongPress={onHold}>
         <AppText size={"xs"} font="MulishBold" color="title">
           <BoldText
             size={"sm"}
@@ -198,28 +49,17 @@ const WordExample = ({ example, bold }: Props) => {
             boldColor="text"
             font="MulishRegular"
             boldFont="MulishBoldItalic"
-            text={`${tExample?.value?.[0]?.toUpperCase() || ""}${tExample?.value?.slice(1) || ""}`}
+            text={cap(tExample?.value)}
             bold={bold}
           />
         </AppText>
       </AppPressable>
       {settings?.show_translation && nExample ? (
-        <View>
-          <AppPressable
-            onLongPress={showExampleTranslateOption}
-            hitSlop={{ bottom: 5 }}
-          >
-            <AppText
-              font="MulishLightItalic"
-              color="primary"
-              className="flex-row items-center gap-2 pt-1 pb-2 pl-2"
-            >
-              <AppText size={"xs"} font="MulishLightItalic" color="subText2">
-                {`${nExample?.value?.[0]?.toUpperCase() || ""}${nExample?.value?.slice(1) || ""}`}
-              </AppText>
-            </AppText>
-          </AppPressable>
-        </View>
+        <AppPressable onLongPress={onHold} hitSlop={{ bottom: 5 }}>
+          <AppText font="MulishLightItalic" size={"xs"} color="subText2" className="pt-1 pb-2 pl-2">
+            {cap(nExample?.value)}
+          </AppText>
+        </AppPressable>
       ) : null}
     </View>
   );

@@ -76,7 +76,7 @@ export default function TranslateEdit() {
                   <TouchableOpacity
                     onPress={handlePickAudio}
                     style={{ backgroundColor: theme.secondary }}
-                    className="flex-1 border-gray-400 rounded-lg h-10 px-3 py-2 items-center justify-center"
+                    className="flex-1 border-border rounded-lg h-10 px-3 py-2 items-center justify-center"
                   >
                     <AppText color="white" size={"sm"}>
                       Chọn file
@@ -106,7 +106,7 @@ export default function TranslateEdit() {
                         ? theme.primary
                         : theme.subText3,
                     }}
-                    className=" border-gray-400 rounded-lg h-24 w-full items-center justify-center"
+                    className=" border-border rounded-lg h-24 w-full items-center justify-center"
                   >
                     <AppIcon
                       name={"volume-2"}

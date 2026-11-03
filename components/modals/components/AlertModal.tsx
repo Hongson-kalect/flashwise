@@ -1,14 +1,13 @@
 import AppText from "@/components/AppText";
 import { AlertModalOptions, BasicModalOptions } from "@/providers/Modal";
-import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { TouchableOpacity, View } from "react-native";
+import { View } from "react-native";
+import ModalButton from "../ModalButton";
 
 type Props = AlertModalOptions & BasicModalOptions;
 
 const AlertModal = (modal: Props) => {
   const { setGlobalModal } = useModalStore();
-  const { theme } = useTheme();
   return (
     <View>
       {modal.title && (
@@ -24,22 +23,15 @@ const AlertModal = (modal: Props) => {
       )}
       {modal?.middle}
 
-      <TouchableOpacity
-        style={{ backgroundColor: theme.primary }}
-        className="rounded-lg py-3 mt-5 mx-2"
-        onPress={() => {
-          modal.onOk?.();
-          setGlobalModal(null);
-        }}
-      >
-        <AppText
-          style={{ fontFamily: "PlaypenSans-Semibold" }}
-          className="text-center"
-          color="white"
-        >
-          {modal.okText || "OK"}
-        </AppText>
-      </TouchableOpacity>
+      <View className="mt-6">
+        <ModalButton
+          label={modal.okText || "OK"}
+          onPress={() => {
+            modal.onOk?.();
+            setGlobalModal(null);
+          }}
+        />
+      </View>
     </View>
   );
 };

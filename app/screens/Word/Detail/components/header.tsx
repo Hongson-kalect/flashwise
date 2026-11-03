@@ -14,115 +14,69 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 import { extractObjectByPath, testAPIStreamData } from "../../data";
-import CreateSenseSheet, { SenseType } from "./createSenseSheet";
+import AddSenseSheet from "./addSenseSheet";
+import { useSenseEditor } from "../senseEdit";
 import ToggleWordDisplayMode from "./toggleWordDisplayMode";
 
 type Props = {
   mode?: "create" | "update" | "view";
   word: string;
+  /** id từ (để lấy gợi ý nghĩa cộng đồng); chưa có khi từ còn đang tạo. */
+  wordId?: string;
+  /** Các nghĩa đang có của từ (để người dùng đối chiếu trước khi thêm). */
+  senses?: Record<string, any>;
+  /** Gọi sau khi thêm nghĩa (chính thức hoặc chờ duyệt) để trang tải lại. */
+  onSenseAdded?: () => void;
+  /** Nghĩa đang xem (để "Sửa nghĩa này" mở form đã điền sẵn). */
+  activeSense?: any;
   isLoading: boolean;
   setMode: Dispatch<SetStateAction<"update" | "view">>;
 };
-const WordDetailHeader = ({ word, mode, isLoading, setMode }: Props) => {
+const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mode, isLoading, setMode }: Props) => {
   const { theme } = useTheme();
   const { present } = useBottomSheet();
   const { setGlobalModal } = useModalStore();
   const { settings, dbService } = useAppStore();
 
-  // just use temp. buttom sheet will change this value while editing
-  const [tempSenseValue, setTempSenseValue] = useState<SenseType>({
-    id: new Date().getTime().toString(),
-    definition: "",
-    traslatedDefinition: "",
-    translations: [],
-    examples: [],
-  });
-
   const handleAddSense = () =>
     present({
-      title: `Add sense - ${word[0].toUpperCase() + word.slice(1)}`,
-      size: "full",
+      title: `Thêm nghĩa · ${word[0].toUpperCase() + word.slice(1)}`,
+      size: "long",
       render: () => (
-        <CreateSenseSheet
+        <AddSenseSheet
           word={word}
-          handleAddSense={() => {}}
-          senseValue={tempSenseValue}
-          setSenseValue={setTempSenseValue}
+          wordId={wordId}
+          senses={senses}
+          onAdded={onSenseAdded}
         />
       ),
     });
 
-  const handleEditSense = () =>
-    present({
-      title: `Add sense - (n) ${word[0].toUpperCase() + word.slice(1)}`,
-      size: "full",
-      render: () => (
-        <CreateSenseSheet
-          word={word}
-          handleAddSense={() => {}}
-          // Lấy full sense data , lên sheet thì clone lại
-          senseValue={tempSenseValue}
-          setSenseValue={setTempSenseValue}
-        />
-      ),
-    });
+  const { edit, canEdit } = useSenseEditor({ sense: activeSense, onSaved: onSenseAdded });
 
   const showMoreMenu = () => {
+    const title = word[0].toUpperCase() + word.slice(1);
     setGlobalModal({
       type: "menu",
+      title: `Tuỳ chọn · ${title}`,
       menuOptions: [
         {
-          label: `Edit sense - (n) ${word[0].toUpperCase() + word.slice(1)}`,
-          onPress: () => {
-            handleEditSense();
-          },
-          icon: (
-            <AppIcon name="edit" branch="feather" size={24} color="warning" />
-          ),
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              size={20}
-              color="subText1"
-            />
-          ),
+          label: "Sửa nghĩa này",
+          onPress: () => edit(),
+          disabled: !canEdit,
+          icon: <AppIcon name="edit-2" branch="feather" size={20} color="primary" />,
         },
         {
-          icon: (
-            <AppIcon name="plus" branch="feather" size={24} color="success" />
-          ),
-          label: "Create new sense",
-          onPress: () => {
-            handleAddSense();
-          },
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              size={20}
-              color="subText1"
-            />
-          ),
+          label: "Thêm nghĩa mới",
+          onPress: handleAddSense,
+          icon: <AppIcon name="plus" branch="feather" size={20} color="primary" />,
         },
         {
-          icon: (
-            <AppIcon name="trash" branch="feather" size={20} color="white" />
-          ),
-          label: "Clear custom sense", // Nếu của người dùng thì xóa user đi, còn nếu là official thì sẽ là ẩn,
-          onPress: () => {
-            setMode("update");
-          },
-          rightContent: (
-            <AppIcon
-              name="chevron-right"
-              branch="feather"
-              size={20}
-              color="white"
-            />
-          ),
-          backgroundColor: theme.error,
-          color: theme.white,
+          // Nghĩa của người dùng: xoá; nghĩa chính thức: chỉ ẩn
+          label: "Xoá nghĩa tự thêm",
+          destructive: true,
+          onPress: () => setMode("update"),
+          icon: <AppIcon name="trash-2" branch="feather" size={20} color="error" />,
         },
       ],
     });
@@ -183,26 +137,11 @@ const WordDetailHeader = ({ word, mode, isLoading, setMode }: Props) => {
             <View className="flex-row items-center gap-2">
               <AppText
                 numberOfLines={1}
-                font="MulishSemiBold"
-                // color="primary"
-                size={"2xl"}
+                font="MulishBold"
+                size={"3xl"}
               >
                 {word[0].toUpperCase() + word.slice(1)}
               </AppText>
-              {isLoading && (
-                <Animated.View
-                  entering={FadeIn}
-                  exiting={FadeOut}
-                  className="animate-spin"
-                >
-                  <AppIcon
-                    size={20}
-                    color="secondary"
-                    branch="feather"
-                    name={"loader"}
-                  />
-                </Animated.View>
-              )}
             </View>
           }
           rightElement={
@@ -239,37 +178,10 @@ const WordDetailHeader = ({ word, mode, isLoading, setMode }: Props) => {
               <TouchableOpacity
                 hitSlop={10}
                 onPress={showMoreMenu}
-                className="h-8"
+                className="h-9 w-9 rounded-full items-center justify-center"
+                style={{ backgroundColor: theme.card }}
               >
-                <View className="items-end justify-between h-full">
-                  <View
-                    style={{
-                      height: 4,
-                      elevation: 4,
-                      borderRadius: 100,
-                      width: 28,
-                      backgroundColor: "#555",
-                    }}
-                  />
-                  <View
-                    style={{
-                      height: 4,
-                      elevation: 4,
-                      borderRadius: 100,
-                      width: 20,
-                      backgroundColor: "#555",
-                    }}
-                  />
-                  <View
-                    style={{
-                      height: 4,
-                      elevation: 4,
-                      borderRadius: 100,
-                      width: 12,
-                      backgroundColor: "#555",
-                    }}
-                  />
-                </View>
+                <AppIcon name="more-horizontal" branch="feather" size={20} color="text" />
               </TouchableOpacity>
             </View>
           }

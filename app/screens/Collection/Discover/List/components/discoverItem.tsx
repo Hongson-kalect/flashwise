@@ -4,7 +4,8 @@ import { useTheme } from "@/providers/Theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Image, LayoutChangeEvent, TouchableOpacity, View } from "react-native";
+import AppImage from "@/components/AppImage";
+import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
 
 const DiscoverItem = () => {
   const { theme } = useTheme();
@@ -23,15 +24,14 @@ const DiscoverItem = () => {
         className="rounded-lg overflow-hidden"
       >
         <View
-          className="absolute top-2 right-2 h-6 w-6 rounded-full bg-white"
+          className="absolute top-2 right-2 h-6 w-6 rounded-full bg-card"
           style={{ elevation: 2, zIndex: 1 }}
         ></View>
-        <Image
+        <AppImage
           source={{ uri: "https://picsum.photos/600/400" }}
-          resizeMode="cover"
           onLayout={onLayout}
           style={{ height: imageHeight || "auto" }}
-        ></Image>
+        />
 
         <View className="p-2">
           <AppText font="MulishSemiBold" size={"sm"} className="my-1">
@@ -72,8 +72,8 @@ const DiscoverItem = () => {
                 </AppText>
               </View> */}
             </View>
-            {/* <View className="h-8 w-12 bg-gray-200"></View>
-            <View className="h-8 w-12 bg-gray-200"></View> */}
+            {/* <View className="h-8 w-12 bg-background-2"></View>
+            <View className="h-8 w-12 bg-background-2"></View> */}
           </View>
         </View>
       </TouchableOpacity>
