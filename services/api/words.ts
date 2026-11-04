@@ -17,6 +17,8 @@ export type WordCheck = {
   status: "exists" | "processing" | "rejected" | "invalid" | "unknown";
   /** invalid: sentence | too_long | not_a_word */
   reason?: string;
+  /** exists qua dạng biến cách đã biết: từ gốc sẽ mở khi chạm (bought -> buy). */
+  form_of?: string;
 };
 
 /** Kết quả theo từ đã chuẩn hoá (viết thường, gộp khoảng trắng). */
@@ -40,4 +42,24 @@ export const bulkCreateWords = async (p: { lang: string; userLang: string; words
 export const checkWords = async (p: { lang: string; words: string[] }) => {
   const res = await PostAPI("ai-words/check/", { lang: p.lang, words: p.words }, { timeout: 30_000 });
   return (res.data?.results ?? {}) as WordChecks;
+};
+
+export type WordFormRow = { form: string; pos: string; tag: string; irregular: boolean };
+
+/** Từ này cũng là dạng biến cách của từ khác (own_entry: có mục riêng; candidates: mọi từ gốc có thể). */
+export type FormOf = {
+  form: string;
+  lemma: string;
+  pos: string;
+  tag: string;
+  own_entry: boolean;
+  candidates: { lemma: string; pos: string; tag: string }[];
+};
+
+export type WordForms = { forms: WordFormRow[]; also_form_of: FormOf | null };
+
+/** Các dạng biến cách của 1 từ (cho phần "Biến thể") và gợi ý "cũng là dạng của …". Server dựng lười lần đầu. */
+export const fetchWordForms = async (wordId: string) => {
+  const res = await GetAPI("ai-words/forms/", { word_id: wordId });
+  return res.data as WordForms;
 };

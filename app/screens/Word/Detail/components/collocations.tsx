@@ -1,9 +1,9 @@
-import AppAddIcon from "@/components/AppAddIcon";
+import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 import { useAddItems } from "../addItems";
-import { Divider } from "react-native-paper";
+import SectionHeader from "./sectionHeader";
 
 type Props = {
   list: string[];
@@ -23,35 +23,23 @@ const WordCollocations = (props: Props) => {
   const add = canAdd ? () => open("collocations") : undefined;
 
   return (
-    <View className="mt-2">
-      <View className="flex-row items-center justify-between">
-        <AppText size="md" font="MulishBlack" color="title">
-          Collocations
-        </AppText>
-        {!!props.list?.length && add && (
-          <Pressable onPress={add} hitSlop={10}>
-            <AppText size="sm" color="primary" weight="semibold">
-              + Thêm
-            </AppText>
-          </Pressable>
-        )}
-      </View>
-      <Divider />
+    <View>
+      <SectionHeader
+        icon={<AppIcon branch="fa6" name="quote-left" size={14} color="title" />}
+        title="Collocations"
+        onAdd={add}
+      />
 
-      <View className="flex-row items-center justify-normal flex-wrap gap-3 mt-4">
+      <View className="flex-row items-center flex-wrap gap-2 mt-2">
         {!props.list?.length ? (
-          <View className="flex-row items-center justify-between w-full">
-            <AppText color="subText3" font="MulishRegularItalic" size={"sm"}>
-              No collocations
-            </AppText>
-
-            <AppAddIcon size="sm" onPress={add} />
-          </View>
+          <AppText color="subText3" font="MulishRegularItalic" size={"sm"}>
+            Chưa có.
+          </AppText>
         ) : (
           props.list.map((item, index) => (
             <View
-              style={{ backgroundColor: theme.disabled + 30 }}
-              className="px-4 rounded-lg py-1"
+              style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}
+              className="px-3 rounded-lg py-1.5"
               key={index}
             >
               <AppText font="MulishRegularItalic" size={"sm"} key={index}>

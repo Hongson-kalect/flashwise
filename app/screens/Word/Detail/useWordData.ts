@@ -3,6 +3,7 @@ import { GetAPI } from "@/services/axios";
 import { normalizeWord } from "@/utils/normalizeText";
 import { wordSocket } from "@/utils/socket";
 import { loadLocalWord, needsRefresh, saveWord } from "@/database/queries/words";
+import { LOCAL_WORDS_ENABLED } from "@/configs/local";
 import { onSenseChanged } from "@/services/senseLists";
 import { useSQLiteContext } from "expo-sqlite";
 import { useQueryClient } from "@tanstack/react-query";
@@ -51,8 +52,12 @@ export const useWordData = (word: string) => {
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
   // Sau khi thêm nghĩa mới: bỏ qua bản local, hỏi lại server để thấy nghĩa vừa thêm (server đã xoá cache từ)
   const forceRefresh = useRef(false);
+  // Làm mới âm thầm: giữ nguyên nội dung đang hiện (không RESET, không nạp lại local) rồi thay bằng bản server khi về,
+  // để trang không nháy qua "Đang tải…"; lỗi mạng thì giữ nội dung cũ
+  const silentRefresh = useRef(false);
   const refresh = useCallback(() => {
     forceRefresh.current = true;
+    silentRefresh.current = true;
     setAttempt((n) => n + 1);
   }, []);
 
@@ -67,9 +72,13 @@ export const useWordData = (word: string) => {
   useEffect(() => {
     if (!word || !lang || !userLang) return;
     let alive = true;
-    dispatch({ type: "RESET", payload: {} });
-    setLog([]);
-    setHadLocal(false);
+    const silent = silentRefresh.current;
+    silentRefresh.current = false;
+    if (!silent) {
+      dispatch({ type: "RESET", payload: {} });
+      setLog([]);
+      setHadLocal(false);
+    }
     startRef.current = Date.now();
     localOnly.current = false;
     const force = forceRefresh.current;
@@ -80,7 +89,7 @@ export const useWordData = (word: string) => {
 
     (async () => {
       // 1) Local trước: hiện ngay + dùng được khi offline
-      const local = await loadLocalWord(db, word, lang).catch(() => null);
+      const local = silent || !LOCAL_WORDS_ENABLED ? null : await loadLocalWord(db, word, lang).catch(() => null);
       if (!alive) return;
       if (local) {
         localOnly.current = true;
@@ -117,8 +126,8 @@ export const useWordData = (word: string) => {
         setServerTick((t) => t + 1);
       } catch (e) {
         if (!alive) return;
-        // Đã có bản local thì lỗi mạng chỉ làm chưa làm mới được: giữ bản local, không báo lỗi
-        if (!local) dispatch({ type: "FAILED", payload: toWordError(e) });
+        // Đã có bản local (hoặc đang làm mới âm thầm) thì lỗi mạng chỉ làm chưa làm mới được: giữ nội dung cũ, không báo lỗi
+        if (!local && !silent) dispatch({ type: "FAILED", payload: toWordError(e) });
       }
     })();
 
@@ -131,6 +140,7 @@ export const useWordData = (word: string) => {
   // Từ đã đủ dữ liệu thì lưu vào SQLite (tab Từ vựng, xem lại khi offline). Lưu lại cả khi tin socket
   // muộn (vd PARTIAL_TRANSLATE sau HTTP 206) làm dữ liệu đổi.
   useEffect(() => {
+    if (!LOCAL_WORDS_ENABLED) return;
     if (state.status !== "COMPLETED" || !state.id || !state.value) return;
     if (localOnly.current) return;
     saveWord(db, {

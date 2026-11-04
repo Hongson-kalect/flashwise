@@ -50,21 +50,15 @@ const WordDefinitions = ({ definition, examples, isSimple, word, style }: Props)
             <AppPressable
               onLongPress={hold("translation")}
               touchColor={theme.secondary + "20"}
-              style={{
-                marginHorizontal: -8,
-                marginTop: 4,
-                marginBottom: 8,
-                backgroundColor: theme.secondary + "08",
-                paddingHorizontal: 8,
-              }}
-              className="p-3"
+              style={{ marginTop: 8, backgroundColor: theme.secondary + "0D", borderRadius: 12 }}
+              className="px-3 py-2.5"
             >
               <AppText color="subText1" font="MulishLightItalic" size={"sm"}>
                 {nDefinition.value}
               </AppText>
             </AppPressable>
           ) : isWordLoading ? (
-            <View style={{ marginVertical: 8 }}>
+            <View style={{ marginTop: 8 }}>
               <SkeletonReact width="85%" height={14} style={{ borderRadius: 6 }} />
               <SkeletonReact width="55%" height={14} style={{ borderRadius: 6, marginTop: 6 }} />
             </View>
@@ -72,13 +66,8 @@ const WordDefinitions = ({ definition, examples, isSimple, word, style }: Props)
             <AppPressable
               onPress={hold("translation")}
               touchColor={theme.secondary + "20"}
-              style={{
-                marginHorizontal: -8,
-                marginVertical: 8,
-                backgroundColor: theme.secondary + "15",
-                paddingHorizontal: 8,
-              }}
-              className="py-3 flex-row items-center justify-between"
+              style={{ marginTop: 8, backgroundColor: theme.secondary + "15", borderRadius: 12 }}
+              className="px-3 py-2.5 flex-row items-center justify-between"
             >
               <AppText color="subText2" font="MulishRegularItalic" size={"sm"}>
                 Chưa có bản dịch — chạm để thêm
@@ -90,7 +79,7 @@ const WordDefinitions = ({ definition, examples, isSimple, word, style }: Props)
       )}
 
       {!isSimple && examples?.length > 0 ? (
-        <View className="gap-2 mt-2">
+        <View className="gap-2 mt-3">
           {examples.map((example, index) => (
             <WordExample bold={word} example={example} index={index} key={"a" + index} />
           ))}

@@ -47,6 +47,7 @@ export const senseDataReducer = (
         value: state.value ?? value,
         languageCode: state.languageCode ?? language_code,
         senses: merged,
+        formOf: action.payload.data?.form_of ?? null,
         isLoading: !complete,
         status: complete ? "COMPLETED" : "INITIAL",
         error: null,

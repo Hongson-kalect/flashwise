@@ -2,6 +2,9 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { WordError, WordState } from "../../type";
+import type { FormOf } from "@/services/api/words";
+import { formTagLabel } from "@/utils/formTags";
+import { router } from "expo-router";
 import { ActivityIndicator, Pressable, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 
@@ -35,10 +38,13 @@ const WordStatus = ({
   state,
   hadLocal,
   onRetry,
+  formOf,
 }: {
   state: WordState;
   hadLocal: boolean;
   onRetry: () => void;
+  /** Từ này cũng là dạng biến cách của từ khác (get-word trả cho dạng chưa có mục riêng, hoặc endpoint forms cho từ có mục riêng). */
+  formOf?: FormOf | null;
 }) => {
   const { theme } = useTheme();
 
@@ -71,6 +77,39 @@ const WordStatus = ({
             </AppText>
           </Pressable>
         )}
+      </Animated.View>
+    );
+  }
+
+  if (formOf) {
+    // Gộp các nhãn cùng từ gốc + loại từ: bought = quá khứ, phân từ quá khứ của buy
+    const tags = [...new Set(formOf.candidates.filter((c) => c.lemma === formOf.lemma && c.pos === formOf.pos).map((c) => formTagLabel(c.tag)))];
+    const more = formOf.candidates.filter((c) => c.lemma !== formOf.lemma || c.pos !== formOf.pos).length;
+    const content = (
+      <View className="flex-1">
+        <AppText size="sm" color="primary">
+          “{formOf.form}” {formOf.own_entry ? "cũng là" : "là"} dạng {tags.join(" / ") || "biến cách"} của{" "}
+          <AppText size="sm" font="MulishBold" color="primary">
+            {formOf.lemma}
+          </AppText>
+          {more > 0 ? ` (và ${more} cách hiểu khác)` : ""}
+        </AppText>
+      </View>
+    );
+    // Chạm để sang trang từ gốc: nội dung bên dưới là nghĩa của từ gốc, trang này chỉ nói dạng đang tra là gì
+    return (
+      <Animated.View entering={FadeIn} className="mx-3 mt-2">
+        <Pressable
+          onPress={() => router.push({ pathname: "/screens/Word/Detail/[value]", params: { value: formOf.lemma } })}
+          className="px-4 py-3 rounded-2xl flex-row items-center gap-3"
+          style={{ backgroundColor: theme.primary + "14" }}
+        >
+          {content}
+          <AppText size="sm" color="primary" weight="semibold">
+            Xem {formOf.lemma}
+          </AppText>
+          <AppIcon branch="feather" name="chevron-right" size={16} color={theme.primary} />
+        </Pressable>
       </Animated.View>
     );
   }

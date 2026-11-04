@@ -14,9 +14,13 @@ import { SenseType } from "./data";
 //   note?:string
 // }
 
+import type { FormOf } from "@/services/api/words";
+
 export type WordState = {
   id?: string,
   value?:string,
+  /** Chỉ có khi get-word trả từ gốc cho 1 dạng biến cách chưa có mục riêng (own_entry=false). */
+  formOf?: FormOf | null,
   languageCode?: string,
   senses: {[sense_id:string]:SenseType},
   isLoading: boolean;

@@ -117,6 +117,29 @@ export const updateSense = async (p: {
   return res.data as { id: string; [k: string]: any };
 };
 
+export type VerifiedItemKind = "synonyms" | "antonyms" | "relateds";
+
+export type AddItemsResult = {
+  added: string[];
+  /** reason: mã (sentence | too_long | not_a_word) hoặc câu ngắn tiếng Anh của AI. */
+  rejected: { word: string; reason: string }[];
+  /** Đã có sẵn trong danh sách. */
+  existing: string[];
+};
+
+/**
+ * Thêm từ vào danh sách đồng nghĩa / trái nghĩa / liên quan của 1 nghĩa. Claude + Gemini cùng kiểm tra (~3s),
+ * chỉ từ cả hai chấp nhận mới được ghi thẳng vào nghĩa (chỉ thêm, không xoá). Lỗi dùng proposeErrorKind.
+ */
+export const addSenseItems = async (p: { senseId: string; kind: VerifiedItemKind; words: string[] }) => {
+  const res = await PostAPI(
+    "ai-senses/add-items/",
+    { sense_id: p.senseId, kind: p.kind, words: p.words },
+    { timeout: 60_000 },
+  );
+  return res.data as AddItemsResult;
+};
+
 export type EditErrorKind = "offline" | "invalid" | "not_found" | "unknown";
 
 export const editErrorKind = (e: any): EditErrorKind => {

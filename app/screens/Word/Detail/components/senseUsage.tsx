@@ -12,6 +12,7 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 import { SenseContentType } from "../../data";
 import { useSenseEditor } from "../senseEdit";
 import { getLangContent } from "../utils";
+import SectionHeader from "./sectionHeader";
 
 type Props = {
   word: string;
@@ -34,12 +35,11 @@ const SenseUsage = (props: Props) => {
   const open = canEdit ? () => edit("usage") : undefined;
 
   return (
-    <Animated.View className={"mt-2"} layout={LinearTransition}>
-      <View className="flex-row items-center gap-2 h-8">
-        <FontAwesome style={{ width: 14 }} name="search" size={14} color={theme.title} />
-        <AppTitle title="Usage" />
-      </View>
-      <Divider />
+    <Animated.View className={"mt-6"} layout={LinearTransition}>
+      <SectionHeader
+        icon={<FontAwesome name="search" size={14} color={theme.title} />}
+        title="Usage"
+      />
       {tUsage?.value ? (
         <AppPressable onLongPress={open} hitSlop={8} className="py-2">
           <AppText color="subText1">{tUsage.value}</AppText>
@@ -57,14 +57,8 @@ const SenseUsage = (props: Props) => {
         <AppPressable
           onLongPress={open}
           touchColor={theme.secondary + "20"}
-          style={{
-            marginHorizontal: -8,
-            marginTop: 4,
-            marginBottom: 8,
-            backgroundColor: theme.secondary + "08",
-            paddingHorizontal: 8,
-          }}
-          className="p-3"
+          style={{ marginTop: 8, backgroundColor: theme.secondary + "0D", borderRadius: 12 }}
+          className="px-3 py-2.5"
         >
           <AppText color="subText1" font="MulishLightItalic" size={"sm"}>
             {nUsage.value}

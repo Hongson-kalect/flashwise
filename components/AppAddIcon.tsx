@@ -39,7 +39,7 @@ const AppAddIcon = (props: Props) => {
       <View
         className="items-center justify-center rounded-full"
         style={{
-          backgroundColor: theme.success,
+          backgroundColor: theme.primary + "1F",
           height: height,
           width: height,
         }}
@@ -48,7 +48,7 @@ const AppAddIcon = (props: Props) => {
           name={"plus"}
           branch="antd"
           size={size[props.size || "md"]}
-          color="white"
+          color="primary"
         />
       </View>
     </Pressable>

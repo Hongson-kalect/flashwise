@@ -12,6 +12,7 @@ import { Pressable, TextInput, View } from "react-native";
 import { Divider } from "react-native-paper";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SenseContext } from "../senseEdit";
+import SectionHeader from "./sectionHeader";
 
 const MAX = 1000;
 
@@ -56,12 +57,12 @@ const SenseNote = ({ word }: Props) => {
     });
 
   return (
-    <Animated.View className={"mt-2"} layout={LinearTransition}>
-      <View className="flex-row items-center gap-2 h-8">
-        <FontAwesome style={{ width: 14 }} name="sticky-note" size={14} color={theme.title} />
-        <AppTitle title="Note" />
-      </View>
-      <Divider style={{ marginBottom: 8 }} />
+    <Animated.View className={"mt-6"} layout={LinearTransition}>
+      <SectionHeader
+        icon={<FontAwesome name="sticky-note" size={14} color={theme.title} />}
+        title="Note"
+      />
+      <View style={{ height: 8 }} />
       {note ? (
         <AppPressable onLongPress={open} onPress={open} className="py-2">
           <AppText size={"sm"} color="subText2" font="MulishRegularItalic">

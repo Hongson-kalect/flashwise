@@ -38,6 +38,7 @@ import { SkeletonReact } from "@/components/skeleton/ReactSkeleton";
 import { findSenseImage, SenseImage } from "@/services/senseImage";
 import { useWordLoading } from "../loadingContext";
 import { getLangTranslate, textToSpeech } from "../utils";
+import SectionHeader from "./sectionHeader";
 import WordDefinitions from "./definitions";
 import SenseNote from "./senseNote";
 import SenseUsage from "./senseUsage";
@@ -254,8 +255,9 @@ const BasicInformation = ({
         <Animated.View layout={LinearTransition}>
           <View
             style={{
-              width: width - 28,
-              height: ((width - 28) / 16) * 9,
+              width: "100%",
+              // Có ảnh (hoặc đang tải) giữ khung 16:9; chưa có thì chỉ một dải thấp, khỏi chiếm cả màn hình
+              ...(imageUri || isWordLoading ? { aspectRatio: 16 / 9 } : { height: 56 }),
               backgroundColor: theme.card,
             }}
             className="rounded-2xl overflow-hidden items-center justify-center"
@@ -280,8 +282,8 @@ const BasicInformation = ({
             ) : isWordLoading ? (
               <SkeletonReact width="100%" height="100%" style={{ borderRadius: 0 }} />
             ) : (
-              <View className="items-center gap-1">
-                <AppIcon name="image" branch="feather" size={36} color={theme.subText3} />
+              <View className="flex-row items-center gap-2">
+                <AppIcon name="image" branch="feather" size={18} color={theme.subText3} />
                 <AppText size="xs" color="subText3">
                   Chưa có hình minh hoạ
                 </AppText>
@@ -290,39 +292,11 @@ const BasicInformation = ({
           </View>
         </Animated.View>
       </View>
-      <Animated.View layout={LinearTransition}>
-        <View className="flex-row justify-between items-center h-8">
-          <View className="flex-row items-center gap-2">
-            <AppIcon
-              style={{ width: 14 }}
-              branch="fa6"
-              name={"book"}
-              size={14}
-              color="title"
-            />
-            <AppTitle title="Definition" />
-          </View>
-
-          {/* <View className="flex-row items-center gap-1">
-            <AppText
-              className="h-full"
-              onPress={onShowMoreDefinitions}
-              size="xs"
-              color="primary"
-              font="MulishLightItalic"
-            >
-              Show More
-            </AppText>
-
-            <AppIcon
-              name={"chevron-right"}
-              size={14}
-              color="primary"
-              branch="feather"
-            />
-          </View> */}
-        </View>
-        <Divider />
+      <Animated.View className="mt-4" layout={LinearTransition}>
+        <SectionHeader
+          icon={<AppIcon branch="fa6" name={"book"} size={14} color="title" />}
+          title="Definition"
+        />
         <View>
           <View>
             <WordDefinitions

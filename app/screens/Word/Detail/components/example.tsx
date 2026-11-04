@@ -35,13 +35,13 @@ const WordExample = ({ example, bold, index }: Props) => {
     <View
       style={{
         borderLeftWidth: 2,
-        borderLeftColor: theme.text + "33",
+        borderLeftColor: theme.primary + "55",
         backgroundColor: theme.text + "08",
-        borderTopRightRadius: 4,
-        borderBottomRightRadius: 4,
+        borderRadius: 12,
+        overflow: "hidden",
       }}
     >
-      <AppPressable hitSlop={5} className="py-2 pl-2" onLongPress={onHold}>
+      <AppPressable hitSlop={5} className="pt-2.5 pb-2 px-3" onLongPress={onHold}>
         <AppText size={"xs"} font="MulishBold" color="title">
           <BoldText
             size={"sm"}
@@ -56,7 +56,7 @@ const WordExample = ({ example, bold, index }: Props) => {
       </AppPressable>
       {settings?.show_translation && nExample ? (
         <AppPressable onLongPress={onHold} hitSlop={{ bottom: 5 }}>
-          <AppText font="MulishLightItalic" size={"xs"} color="subText2" className="pt-1 pb-2 pl-2">
+          <AppText font="MulishLightItalic" size={"xs"} color="subText2" className="pb-2.5 px-3">
             {cap(nExample?.value)}
           </AppText>
         </AppPressable>

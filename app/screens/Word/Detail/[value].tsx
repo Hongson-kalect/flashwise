@@ -9,10 +9,10 @@ import {
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
-import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { LayoutChangeEvent, Platform, Pressable, ToastAndroid, View } from "react-native";
-import { MaterialTabBar, Tabs } from "react-native-collapsible-tab-view";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { LayoutChangeEvent, Pressable, View } from "react-native";
+import { CollapsibleRef, Tabs } from "react-native-collapsible-tab-view";
 import Animated, { FadeIn } from "react-native-reanimated";
 import WordSelectForm from "../Create/components/wordSelectForm";
 import { SenseType } from "../data";
@@ -28,6 +28,9 @@ import { mapSenses } from "./utils";
 import { SenseContext, SenseSavedContext } from "./senseEdit";
 import { ItemKind, removeItems } from "@/services/senseLists";
 import { useAppStore } from "@/stores/appStore";
+import { useQuery } from "@tanstack/react-query";
+import { fetchWordForms } from "@/services/api/words";
+import { WordFormsContext } from "./formsContext";
 
 // const DATA: WordType[] = testData;
 
@@ -48,28 +51,50 @@ function WordDetailWrapper() {
 const WordDetail = ({ word }: { word: string }) => {
   const { theme } = useTheme();
   const { state: sensesObj, retry, refresh, hadLocal } = useWordData(word);
-  // Mở từ này từ 1 chip trong danh sách của nghĩa khác (from = id nghĩa, kind = danh sách). Từ bị từ chối thì gỡ khỏi danh sách đó và quay lại
+  // Mở từ này từ 1 chip trong danh sách của nghĩa khác (from = id nghĩa, kind = danh sách). Từ bị từ chối thì gỡ khỏi danh sách đó, trang vẫn báo không hợp lệ như tra từ thường
   const { from, kind } = useLocalSearchParams<{ from?: string; kind?: ItemKind }>();
   const userLang = useAppStore((s) => s.settings?.translate_language) ?? "vi";
   useEffect(() => {
     if (sensesObj.error?.code !== "rejected" || !from || !kind) return;
     removeItems({ senseId: from, kind, words: [word], userLang }); // không gỡ được thì thôi, người dùng tự xoá
-    if (Platform.OS === "android") ToastAndroid.show(`"${word}" không phải từ hợp lệ, đã gỡ khỏi danh sách`, ToastAndroid.LONG);
-    router.back();
   }, [sensesObj.error?.code]);
   const senses = useMemo(() => mapSenses(sensesObj), [sensesObj]);
+  // Dạng biến cách của từ (phần "Biến thể") và gợi ý "cũng là dạng của …": tải riêng, không chặn việc hiện nghĩa
+  const wordId = sensesObj.status === "COMPLETED" ? sensesObj.id : undefined;
+  const { data: wordForms } = useQuery({
+    queryKey: ["word-forms", wordId],
+    queryFn: () => fetchWordForms(wordId as string),
+    enabled: !!wordId,
+    staleTime: 10 * 60_000,
+  });
+  const formOf = sensesObj.formOf ?? wordForms?.also_form_of ?? null;
   const [pageMode, setPageMode] = useState<"view" | "update">("view");
-  const [tabIndex, setTabIndex] = useState(0);
-  // Chỉ số nghĩa đang xem trong từng tab loại từ, để menu 3 chấm sửa đúng nghĩa đang hiện
-  const [senseIdx, setSenseIdx] = useState<Record<number, number>>({});
-  const activeSense = senses?.entries[tabIndex]?.senses[senseIdx[tabIndex] ?? 0];
+  // Mỗi nghĩa là một trang: vuốt trái / phải đi tuyến tính qua mọi nghĩa (hết nghĩa của loại từ này thì sang loại từ kế).
+  // Tên trang = id nghĩa, để sau khi tải lại / thêm nghĩa trang không bị lệch.
+  const pages = useMemo(
+    () =>
+      (senses?.entries ?? []).flatMap((e: { pos: string; senses: SenseType[] }) =>
+        e.senses.map((sense, i) => ({ pos: e.pos, sense, index: i, count: e.senses.length })),
+      ),
+    [senses],
+  );
+  const [pageIndex, setPageIndex] = useState(0);
+  const container = useRef<CollapsibleRef>(null);
+  const goPage = (i: number) => {
+    const target = pages[i];
+    if (target) container.current?.jumpToTab(target.sense.id);
+  };
+  const activeSense = pages[pageIndex]?.sense;
 
   return (
     <WordLoadingContext.Provider value={sensesObj.isLoading}>
+    <WordFormsContext.Provider value={wordForms ?? null}>
     <SenseSavedContext.Provider value={refresh}>
     <Tabs.Container
+      ref={container}
+      lazy
       onTabChange={(props) => {
-        setTabIndex(props.index);
+        setPageIndex(props.index);
       }}
       renderHeader={() => (
         <View className="mb-4">
@@ -83,7 +108,7 @@ const WordDetail = ({ word }: { word: string }) => {
             onSenseAdded={refresh}
             activeSense={activeSense}
           />
-          <WordStatus state={sensesObj} hadLocal={hadLocal} onRetry={retry} />
+          <WordStatus state={sensesObj} hadLocal={hadLocal} onRetry={retry} formOf={formOf} />
 
           {/* <AppText color="primary" size={40} font="MulishSemiBold">
             {word}
@@ -99,51 +124,25 @@ const WordDetail = ({ word }: { word: string }) => {
       )}
       headerContainerStyle={{ backgroundColor: theme.background, shadowOpacity: 0, elevation: 0 }}
       containerStyle={{ backgroundColor: theme.background }}
-      renderTabBar={(props) => (
-        <MaterialTabBar
-          {...props}
-          scrollEnabled
-          style={{ backgroundColor: theme.background, elevation: 0, shadowOpacity: 0 }}
-          indicatorStyle={{ backgroundColor: theme.primary, height: 3, borderRadius: 3 }}
-          activeColor={theme.primary}
-          inactiveColor={theme.subText2}
-          labelStyle={{ fontFamily: "MulishBold", textTransform: "none" }}
-        />
-      )}
+      renderTabBar={() => <PosTabBar pages={pages} pageIndex={pageIndex} onPress={goPage} />}
     >
       {/* {senses ? ( */}
-      {senses && senses.entries.length > 0 ? (
-        senses.entries.map(
-          (item: { pos: string; senses: SenseType[] }, index: number) => {
-            const isActive = index === tabIndex;
-            return (
-              <Tabs.Tab
-                key={index}
-                label={() => (
-                  <AppText
-                    color={isActive ? "primary" : "subText2"}
-                    font={"MulishMedium"}
-                    className="w-full items-center justify-center h-10 px-2"
-                  >
-                    {item.pos[0].toUpperCase() + item.pos.slice(1)}
-                  </AppText>
-                )}
-                name={item.pos.toString()}
-              >
-                <Tabs.ScrollView style={{ backgroundColor: theme.background }}>
-                  {/* <AppText>{JSON.stringify(item.senses)}</AppText> */}
-                  <SensesInfo
-                    word={word}
-                    data={item.senses}
-                    mode={pageMode}
-                    senseIndex={senseIdx[index] ?? 0}
-                    setSenseIndex={(i) => setSenseIdx((m) => ({ ...m, [index]: i }))}
-                  />
-                </Tabs.ScrollView>
-              </Tabs.Tab>
-            );
-          },
-        )
+      {pages.length > 0 ? (
+        pages.map((page, index) => (
+          <Tabs.Tab key={page.sense.id} label={page.pos} name={page.sense.id}>
+            <Tabs.ScrollView style={{ backgroundColor: theme.background }}>
+              <SensesInfo
+                word={word}
+                sense={page.sense}
+                mode={pageMode}
+                senseIndex={page.index}
+                senseCount={page.count}
+                onPrev={index > 0 ? () => goPage(index - 1) : undefined}
+                onNext={index < pages.length - 1 ? () => goPage(index + 1) : undefined}
+              />
+            </Tabs.ScrollView>
+          </Tabs.Tab>
+        ))
       ) : (
         <Tabs.Tab
           label={() => (
@@ -155,7 +154,7 @@ const WordDetail = ({ word }: { word: string }) => {
               {sensesObj.error ? " " : "Đang tải…"}
             </AppText>
           )}
-          name={tabIndex.toString()}
+          name="loading"
         >
           <Tabs.ScrollView style={{ backgroundColor: theme.background }}>
             <View style={{ height: 120 }} />
@@ -201,23 +200,64 @@ const WordDetail = ({ word }: { word: string }) => {
       })} */}
     </Tabs.Container>
     </SenseSavedContext.Provider>
+    </WordFormsContext.Provider>
     </WordLoadingContext.Provider>
+  );
+};
+
+/** Thanh loại từ: gom các trang theo loại từ, chạm để nhảy tới nghĩa đầu tiên của loại từ đó. Chỉ báo bám theo trang đang xem. */
+const PosTabBar = ({
+  pages,
+  pageIndex,
+  onPress,
+}: {
+  pages: { pos: string }[];
+  pageIndex: number;
+  onPress: (index: number) => void;
+}) => {
+  const { theme } = useTheme();
+  const groups = pages.reduce<{ pos: string; start: number; count: number }[]>((acc, p, i) => {
+    const last = acc[acc.length - 1];
+    if (last && last.pos === p.pos) last.count++;
+    else acc.push({ pos: p.pos, start: i, count: 1 });
+    return acc;
+  }, []);
+  if (!groups.length) return <View style={{ height: 8 }} />;
+  return (
+    <View className="flex-row" style={{ backgroundColor: theme.background }}>
+      {groups.map((g) => {
+        const active = pageIndex >= g.start && pageIndex < g.start + g.count;
+        return (
+          <Pressable
+            key={g.pos}
+            onPress={() => onPress(g.start)}
+            className="px-4 h-11 items-center justify-center"
+            style={{ borderBottomWidth: 3, borderBottomColor: active ? theme.primary : "transparent" }}
+          >
+            <AppText color={active ? "primary" : "subText2"} font="MulishBold">
+              {g.pos[0].toUpperCase() + g.pos.slice(1)}
+            </AppText>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 };
 
 type SensesInfoType = {
   word: string;
-  data: SenseType[];
+  sense: SenseType;
   mode?: "create" | "update" | "view";
+  /** Vị trí / tổng số nghĩa trong loại từ của trang này. */
   senseIndex: number;
-  setSenseIndex: (i: number) => void;
+  senseCount: number;
+  /** Chuyển sang trang nghĩa trước / sau (có thể sang loại từ khác); không có = đã ở đầu / cuối. */
+  onPrev?: () => void;
+  onNext?: () => void;
 };
 const SensesInfo = (props: SensesInfoType) => {
-  const { senseIndex, setSenseIndex } = props;
-
-  const activeSense = useMemo(() => {
-    return props.data[senseIndex];
-  }, [props.data, senseIndex]);
+  const { senseIndex, senseCount, onPrev, onNext } = props;
+  const activeSense = props.sense;
 
   return (
     <View>
@@ -229,15 +269,10 @@ const SensesInfo = (props: SensesInfoType) => {
         <Pressable
           hitSlop={20}
           className="h-10 w-10 rounded-lg items-center justify-center"
-          disabled={senseIndex === 0}
-          onPress={() => senseIndex > 0 && setSenseIndex(senseIndex - 1)}
+          disabled={!onPrev}
+          onPress={onPrev}
         >
-          <AppIcon
-            color={senseIndex === 0 ? "subText3" : "primary"}
-            branch="antd"
-            name={"left"}
-            size={20}
-          />
+          <AppIcon color={onPrev ? "primary" : "subText3"} branch="antd" name={"left"} size={20} />
         </Pressable>
         <View className="items-center justify-center">
           <AppText color="primary" font="MulishBold" size={18}>
@@ -246,26 +281,17 @@ const SensesInfo = (props: SensesInfoType) => {
             </AppText>{" "}
             {senseIndex + 1}{" "}
             <AppText color="subText2" size={"sm"}>
-              /{props.data.length}
+              /{senseCount}
             </AppText>
           </AppText>
         </View>
         <Pressable
           className="h-10 w-10 rounded-lg  items-center justify-center"
           hitSlop={20}
-          disabled={senseIndex === props.data.length - 1}
-          onPress={() =>
-            senseIndex < props.data.length - 1 && setSenseIndex(senseIndex + 1)
-          }
+          disabled={!onNext}
+          onPress={onNext}
         >
-          <AppIcon
-            branch="antd"
-            color={
-              senseIndex === props.data.length - 1 ? "subText2" : "primary"
-            }
-            name={"right"}
-            size={20}
-          />
+          <AppIcon color={onNext ? "primary" : "subText3"} branch="antd" name={"right"} size={20} />
         </Pressable>
       </Animated.View>
 
@@ -339,7 +365,7 @@ const SenseInfo = (props: WordInfoType) => {
 
   return (
     <View style={{ backgroundColor: theme.background }}>
-      <View className="px-2">
+      <View className="px-4">
         <View className="mt-2">
           <BasicInformation
             word={props.word}

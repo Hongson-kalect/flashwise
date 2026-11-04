@@ -1,7 +1,8 @@
 import { useTheme } from "@/providers/Theme";
 import { useFocusEffect } from "expo-router";
-import { useCallback } from "react";
-import { RefreshControl, ScrollView, View } from "react-native";
+import { ReactNode, useCallback, useState } from "react";
+import { RefreshControl, View } from "react-native";
+import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
 import HomeHeader from "./components/header";
 import Progress from "./components/progress";
 import HomeSearch from "./components/search";
@@ -20,9 +21,19 @@ export default function HomePage() {
     }, [refetch]),
   );
 
+  // Gợi ý tìm kiếm vẽ ở gốc màn hình (ngoài ScrollView) để nổi lên trên, không đẩy layout bên dưới
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    scrollY.value = e.contentOffset.y;
+  });
+  const [searchY, setSearchY] = useState(0);
+  const [overlay, setOverlay] = useState<ReactNode>(null);
+
   return (
     <View style={{ backgroundColor: theme.background, flex: 1 }}>
-      <ScrollView
+      <Animated.ScrollView
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -33,8 +44,8 @@ export default function HomePage() {
         <View className="px-4">
           <HomeHeader />
         </View>
-        <View className="px-4">
-          <HomeSearch />
+        <View className="px-4" onLayout={(e) => setSearchY(e.nativeEvent.layout.y)}>
+          <HomeSearch anchorY={searchY} scrollY={scrollY} setOverlay={setOverlay} />
         </View>
         <View className="px-4">
           <StudyCard due={data?.due ?? 0} loading={isLoading} />
@@ -47,7 +58,8 @@ export default function HomePage() {
           />
         </View>
         <Suggested />
-      </ScrollView>
+      </Animated.ScrollView>
+      {overlay}
     </View>
   );
 }
