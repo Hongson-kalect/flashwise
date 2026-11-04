@@ -58,6 +58,17 @@ export type FormOf = {
 
 export type WordForms = { forms: WordFormRow[]; also_form_of: FormOf | null };
 
+export type FormExampleData = { form: string; text: string; translate: string | null; created: boolean };
+
+/**
+ * Ví dụ 1 câu riêng của dạng biến cách (buying) dưới nghĩa của từ gốc (buy). Có sẵn thì trả ngay, chưa có thì server nhờ AI viết
+ * (chậm vài giây, mỗi người ≤ 40 lần tạo mới / ngày). Lỗi: 422 no_example, 429 daily_limit, 403 account_required, 503 ai_unavailable.
+ */
+export const fetchFormExample = async (p: { senseId: string; form: string; userLang: string }) => {
+  const res = await PostAPI("ai-senses/form-example/", { sense_id: p.senseId, form: p.form, user_lang: p.userLang }, { timeout: 60_000 });
+  return res.data as FormExampleData;
+};
+
 /** Các dạng biến cách của 1 từ (cho phần "Biến thể") và gợi ý "cũng là dạng của …". Server dựng lười lần đầu. */
 export const fetchWordForms = async (wordId: string) => {
   const res = await GetAPI("ai-words/forms/", { word_id: wordId });

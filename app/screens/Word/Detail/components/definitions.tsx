@@ -11,6 +11,7 @@ import { useWordLoading } from "../loadingContext";
 import { EditFocus, useSenseEditor } from "../senseEdit";
 import { getLangContent } from "../utils";
 import WordExample from "./example";
+import FormExample from "./formExample";
 
 type Props = {
   definition?: SenseContentType;
@@ -78,9 +79,10 @@ const WordDefinitions = ({ definition, examples, isSimple, word, style }: Props)
         </View>
       )}
 
-      {!isSimple && examples?.length > 0 ? (
+      {!isSimple ? (
         <View className="gap-2 mt-3">
-          {examples.map((example, index) => (
+          <FormExample />
+          {examples?.map((example, index) => (
             <WordExample bold={word} example={example} index={index} key={"a" + index} />
           ))}
         </View>

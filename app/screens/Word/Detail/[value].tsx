@@ -34,7 +34,8 @@ import { ItemKind, removeItems } from "@/services/senseLists";
 import { useAppStore } from "@/stores/appStore";
 import { useQuery } from "@tanstack/react-query";
 import { fetchWordForms } from "@/services/api/words";
-import { WordFormsContext } from "./formsContext";
+import { FormFocus, FormFocusContext, WordFormsContext } from "./formsContext";
+import { formTagLabel } from "@/utils/formTags";
 
 // const DATA: WordType[] = testData;
 
@@ -72,6 +73,17 @@ const WordDetail = ({ word }: { word: string }) => {
     staleTime: 10 * 60_000,
   });
   const formOf = sensesObj.formOf ?? wordForms?.also_form_of ?? null;
+  // Chỉ khi nghĩa đang hiện là của từ gốc mà người dùng mở bằng dạng biến cách (get-word trả form_of); dạng có mục riêng hiện nghĩa riêng
+  const formFocus = useMemo<FormFocus | null>(() => {
+    const f = sensesObj.formOf;
+    if (!f || f.own_entry) return null;
+    const own = f.candidates.filter((c) => c.lemma === f.lemma);
+    return {
+      form: f.form,
+      pos: [...new Set(own.map((c) => c.pos))],
+      tags: [...new Set(own.map((c) => formTagLabel(c.tag)))],
+    };
+  }, [sensesObj.formOf]);
   const [pageMode, setPageMode] = useState<"view" | "update">("view");
   // Mỗi nghĩa là một trang: vuốt trái / phải đi tuyến tính qua mọi nghĩa (hết nghĩa của loại từ này thì sang loại từ kế).
   // Tên trang = id nghĩa, để sau khi tải lại / thêm nghĩa trang không bị lệch.
@@ -95,6 +107,7 @@ const WordDetail = ({ word }: { word: string }) => {
   return (
     <WordLoadingContext.Provider value={sensesObj.isLoading}>
     <WordFormsContext.Provider value={wordForms ?? null}>
+    <FormFocusContext.Provider value={formFocus}>
     <SenseSavedContext.Provider value={refresh}>
     <Tabs.Container
       ref={container}
@@ -211,6 +224,7 @@ const WordDetail = ({ word }: { word: string }) => {
       })} */}
     </Tabs.Container>
     </SenseSavedContext.Provider>
+    </FormFocusContext.Provider>
     </WordFormsContext.Provider>
     </WordLoadingContext.Provider>
   );
