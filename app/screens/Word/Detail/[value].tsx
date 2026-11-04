@@ -1,5 +1,4 @@
 import { AppDivider } from "@/components/AppDivider";
-import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import {
   bottomSheetTitle,
@@ -11,9 +10,14 @@ import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { LayoutChangeEvent, Pressable, View } from "react-native";
+import { LayoutChangeEvent, Pressable, ScrollView, View } from "react-native";
 import { CollapsibleRef, Tabs } from "react-native-collapsible-tab-view";
-import Animated, { FadeIn } from "react-native-reanimated";
+import Animated, {
+  Extrapolation,
+  SharedValue,
+  interpolate,
+  useAnimatedStyle,
+} from "react-native-reanimated";
 import WordSelectForm from "../Create/components/wordSelectForm";
 import { SenseType } from "../data";
 import WordAdvanceInformation from "./components/advanceInfomation";
@@ -79,6 +83,8 @@ const WordDetail = ({ word }: { word: string }) => {
     [senses],
   );
   const [pageIndex, setPageIndex] = useState(0);
+  const pagesRef = useRef(pages);
+  pagesRef.current = pages;
   const container = useRef<CollapsibleRef>(null);
   const goPage = (i: number) => {
     const target = pages[i];
@@ -95,6 +101,13 @@ const WordDetail = ({ word }: { word: string }) => {
       lazy
       onTabChange={(props) => {
         setPageIndex(props.index);
+        // Sang loại từ khác thì rung nhẹ (có sau khi build native có expo-haptics; chưa có thì bỏ qua)
+        const list = pagesRef.current;
+        if (list[props.index]?.pos !== list[props.prevIndex]?.pos) {
+          try {
+            require("expo-haptics").selectionAsync().catch(() => {});
+          } catch {}
+        }
       }}
       renderHeader={() => (
         <View className="mb-4">
@@ -124,21 +137,19 @@ const WordDetail = ({ word }: { word: string }) => {
       )}
       headerContainerStyle={{ backgroundColor: theme.background, shadowOpacity: 0, elevation: 0 }}
       containerStyle={{ backgroundColor: theme.background }}
-      renderTabBar={() => <PosTabBar pages={pages} pageIndex={pageIndex} onPress={goPage} />}
+      renderTabBar={(props) => (
+        <PosTabBar pages={pages} pageIndex={pageIndex} indexDecimal={props.indexDecimal} onPress={goPage} />
+      )}
     >
       {/* {senses ? ( */}
       {pages.length > 0 ? (
-        pages.map((page, index) => (
+        pages.map((page) => (
           <Tabs.Tab key={page.sense.id} label={page.pos} name={page.sense.id}>
             <Tabs.ScrollView style={{ backgroundColor: theme.background }}>
               <SensesInfo
                 word={word}
                 sense={page.sense}
                 mode={pageMode}
-                senseIndex={page.index}
-                senseCount={page.count}
-                onPrev={index > 0 ? () => goPage(index - 1) : undefined}
-                onNext={index < pages.length - 1 ? () => goPage(index + 1) : undefined}
               />
             </Tabs.ScrollView>
           </Tabs.Tab>
@@ -205,96 +216,133 @@ const WordDetail = ({ word }: { word: string }) => {
   );
 };
 
-/** Thanh loại từ: gom các trang theo loại từ, chạm để nhảy tới nghĩa đầu tiên của loại từ đó. Chỉ báo bám theo trang đang xem. */
+/**
+ * Thanh loại từ: các trang gom theo loại từ, "viên thuốc" nền trượt theo ngón tay khi vuốt (nội suy theo vị trí cuộn của pager),
+ * chạm tab nhảy tới nghĩa đầu của loại từ. Hàng chấm bên dưới: mỗi nghĩa một chấm, chấm đang xem kéo dài ra, nhóm theo loại từ.
+ */
 const PosTabBar = ({
   pages,
   pageIndex,
+  indexDecimal,
   onPress,
 }: {
   pages: { pos: string }[];
   pageIndex: number;
+  indexDecimal: SharedValue<number>;
   onPress: (index: number) => void;
 }) => {
   const { theme } = useTheme();
+  const [layouts, setLayouts] = useState<Record<number, { x: number; w: number }>>({});
   const groups = pages.reduce<{ pos: string; start: number; count: number }[]>((acc, p, i) => {
     const last = acc[acc.length - 1];
     if (last && last.pos === p.pos) last.count++;
     else acc.push({ pos: p.pos, start: i, count: 1 });
     return acc;
   }, []);
+  const groupOfPage = pages.map((_, i) => groups.findIndex((g) => i >= g.start && i < g.start + g.count));
+  const ready = groups.length > 0 && groups.every((g) => layouts[g.start]);
+  // Vị trí / bề rộng viên thuốc theo từng trang: các trang cùng loại từ cùng một chỗ, nên chỉ trượt khi vuốt qua loại từ khác
+  const xs = pages.map((_, i) => layouts[groups[groupOfPage[i]]?.start]?.x ?? 0);
+  const ws = pages.map((_, i) => layouts[groups[groupOfPage[i]]?.start]?.w ?? 0);
+  const inputs = pages.map((_, i) => i);
+
+  const pill = useAnimatedStyle(() => {
+    if (!ready) return { opacity: 0 };
+    if (pages.length < 2) return { opacity: 1, width: ws[0], transform: [{ translateX: xs[0] }] };
+    return {
+      opacity: 1,
+      width: interpolate(indexDecimal.value, inputs, ws, Extrapolation.CLAMP),
+      transform: [{ translateX: interpolate(indexDecimal.value, inputs, xs, Extrapolation.CLAMP) }],
+    };
+  });
+
   if (!groups.length) return <View style={{ height: 8 }} />;
   return (
-    <View className="flex-row" style={{ backgroundColor: theme.background }}>
-      {groups.map((g) => {
-        const active = pageIndex >= g.start && pageIndex < g.start + g.count;
-        return (
-          <Pressable
-            key={g.pos}
-            onPress={() => onPress(g.start)}
-            className="px-4 h-11 items-center justify-center"
-            style={{ borderBottomWidth: 3, borderBottomColor: active ? theme.primary : "transparent" }}
-          >
-            <AppText color={active ? "primary" : "subText2"} font="MulishBold">
-              {g.pos[0].toUpperCase() + g.pos.slice(1)}
-            </AppText>
-          </Pressable>
-        );
-      })}
+    <View style={{ backgroundColor: theme.background, paddingTop: 4, paddingBottom: 10 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+      >
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            { position: "absolute", left: 16, top: 0, bottom: 0, borderRadius: 18, backgroundColor: theme.primary + "1F" },
+            pill,
+          ]}
+        />
+        {groups.map((g) => {
+          const active = pageIndex >= g.start && pageIndex < g.start + g.count;
+          return (
+            <Pressable
+              key={g.pos}
+              onPress={() => onPress(g.start)}
+              onLayout={(e) => {
+                const { x, width } = e.nativeEvent.layout;
+                setLayouts((m) => (m[g.start]?.x === x - 16 && m[g.start]?.w === width ? m : { ...m, [g.start]: { x: x - 16, w: width } }));
+              }}
+              className="px-4 h-9 flex-row items-center justify-center gap-1.5"
+            >
+              <AppText color={active ? "primary" : "subText2"} font="MulishBold">
+                {g.pos[0].toUpperCase() + g.pos.slice(1)}
+              </AppText>
+              {g.count > 1 && (
+                <AppText size="xs" color={active ? "primary" : "subText3"} font="MulishBold">
+                  {g.count}
+                </AppText>
+              )}
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+      {pages.length > 1 && (
+        <View className="flex-row items-center justify-center mt-2" style={{ gap: 4 }}>
+          {pages.map((_, i) => (
+            <Dot
+              key={i}
+              index={i}
+              indexDecimal={indexDecimal}
+              color={theme.primary}
+              gapBefore={i > 0 && groupOfPage[i] !== groupOfPage[i - 1] ? 8 : 0}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
+};
+
+const Dot = ({
+  index,
+  indexDecimal,
+  color,
+  gapBefore,
+}: {
+  index: number;
+  indexDecimal: SharedValue<number>;
+  color: string;
+  gapBefore: number;
+}) => {
+  const style = useAnimatedStyle(() => {
+    const d = Math.abs(indexDecimal.value - index);
+    return {
+      width: interpolate(d, [0, 1], [18, 6], Extrapolation.CLAMP),
+      opacity: interpolate(d, [0, 1], [1, 0.3], Extrapolation.CLAMP),
+    };
+  });
+  return <Animated.View style={[{ height: 6, borderRadius: 3, backgroundColor: color, marginLeft: gapBefore }, style]} />;
 };
 
 type SensesInfoType = {
   word: string;
   sense: SenseType;
   mode?: "create" | "update" | "view";
-  /** Vị trí / tổng số nghĩa trong loại từ của trang này. */
-  senseIndex: number;
-  senseCount: number;
-  /** Chuyển sang trang nghĩa trước / sau (có thể sang loại từ khác); không có = đã ở đầu / cuối. */
-  onPrev?: () => void;
-  onNext?: () => void;
 };
 const SensesInfo = (props: SensesInfoType) => {
-  const { senseIndex, senseCount, onPrev, onNext } = props;
   const activeSense = props.sense;
 
   return (
     <View>
-      <Animated.View
-        entering={FadeIn}
-        style={{ top: 10, right: 10, zIndex: 1 }}
-        className=" absolute flex-row items-center gap-2"
-      >
-        <Pressable
-          hitSlop={20}
-          className="h-10 w-10 rounded-lg items-center justify-center"
-          disabled={!onPrev}
-          onPress={onPrev}
-        >
-          <AppIcon color={onPrev ? "primary" : "subText3"} branch="antd" name={"left"} size={20} />
-        </Pressable>
-        <View className="items-center justify-center">
-          <AppText color="primary" font="MulishBold" size={18}>
-            <AppText color="subText2" size={"sm"}>
-              sense
-            </AppText>{" "}
-            {senseIndex + 1}{" "}
-            <AppText color="subText2" size={"sm"}>
-              /{senseCount}
-            </AppText>
-          </AppText>
-        </View>
-        <Pressable
-          className="h-10 w-10 rounded-lg  items-center justify-center"
-          hitSlop={20}
-          disabled={!onNext}
-          onPress={onNext}
-        >
-          <AppIcon color={onNext ? "primary" : "subText3"} branch="antd" name={"right"} size={20} />
-        </Pressable>
-      </Animated.View>
-
       {/* <AppText>{JSON.stringify(activeSense)}</AppText> */}
 
       {activeSense?.contents?.definition ? (
