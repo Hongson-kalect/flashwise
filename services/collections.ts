@@ -27,8 +27,9 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Tải (hoặc cập nhật) nội dung 1 bộ về SQLite để học offline. Gửi etag cũ nên không đổi thì gần như không tốn gì.
- * Nghĩa còn chờ dịch sang ngôn ngữ của user (`pending`) thì thử tải lại vài lần, mỗi lần cách vài giây.
- * Trả { pending: số nghĩa còn thiếu bản dịch }.
+ * Tải bộ không kích hoạt dịch (dịch lười khi học tới cụm nào, xem prefetchTranslation); `pending` chỉ là số nghĩa
+ * chưa có bản dịch sang ngôn ngữ của user, lưu ở user_collection.translation_missing để hiện "đã dịch x / n".
+ * Trả { pending }.
  */
 export const downloadBundle = async (
   db: SQLiteDatabase,
@@ -37,7 +38,7 @@ export const downloadBundle = async (
   opts: { force?: boolean; retries?: number } = {},
 ) => {
   let pending = 0;
-  const retries = opts.retries ?? 3;
+  const retries = opts.retries ?? 0;
   for (let attempt = 0; attempt <= retries; attempt++) {
     const etag = opts.force && attempt === 0 ? null : await getCollectionEtag(db, userCollectionId);
     const bundle = await fetchBundle(userCollectionId, userLang, etag);

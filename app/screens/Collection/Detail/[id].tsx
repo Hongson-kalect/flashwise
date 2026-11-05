@@ -156,7 +156,6 @@ const CollectionDetail = () => {
     return () => clearInterval(timer);
   }, [waiting, id]);
 
-  const pending = download.data?.pending ?? 0;
   const pct = c?.total ? Math.min(100, (c.learned / c.total) * 100) : 0;
 
   const header = !c ? null : (
@@ -321,14 +320,14 @@ const CollectionDetail = () => {
               </AppText>
             </Pressable>
           )}
-          {pending > 0 && (
+          {c.translationMissing > 0 && (
             <View
               className="flex-row items-center gap-2 p-3 rounded-2xl"
               style={{ backgroundColor: theme.primary + "14" }}
             >
-              <AppIcon branch="feather" name="loader" size={16} color={theme.primary} />
-              <AppText style={{ flex: 1 }} color="primary">
-                {pending} nghĩa đang được dịch sang ngôn ngữ của bạn. Kéo xuống danh sách sau ít phút để làm mới.
+              <AppIcon branch="feather" name="globe" size={16} color={theme.primary} />
+              <AppText style={{ flex: 1 }} color="primary" size="sm">
+                {`Đã có bản dịch ${Math.max(0, c.total - c.translationMissing)}/${c.total} nghĩa. Phần còn lại sẽ được dịch khi bạn học tới.`}
               </AppText>
             </View>
           )}

@@ -173,6 +173,8 @@ export type MyCollection = {
   invalidWords: string[];
   /** Tác giả của bộ chưa phát hành, đã tải về: được đổi ảnh bìa. */
   canEditCover: boolean;
+  /** Số nghĩa trong bộ chưa có bản dịch sang ngôn ngữ của user (dịch lười khi học tới). */
+  translationMissing: number;
   /** Mình là tác giả (bộ do mình tạo). */
   isAuthor: boolean;
   /** Bộ đã được phát hành công khai. */
@@ -193,7 +195,7 @@ export type MyCollection = {
 
 const COLLECTION_SQL = `
   SELECT uc.id, uc.collection_id, COALESCE(c.name, uc.name) AS name, COALESCE(c.description, uc.description) AS description, uc.learned_count, uc.downloaded_at, uc.version AS uc_version,
-         uc.created_at, uc.is_author, uc.is_released, c.image_url, c.language_code, c.is_official, c.item_count, c.version AS c_version,
+         uc.created_at, uc.is_author, uc.is_released, uc.translation_missing, c.image_url, c.language_code, c.is_official, c.item_count, c.version AS c_version,
          c.pending_words, c.invalid_words, c.metadatas,
          (SELECT COALESCE(s.image_preview, m.image_link) FROM collection_items i
             JOIN ai_sense s ON s.id = i.sense_id LEFT JOIN sense_metadata m ON m.id = s.metadata_id
@@ -218,6 +220,7 @@ const toMyCollection = (r: any): MyCollection => {
   const sep = typeof r.cover_hint === "string" ? r.cover_hint.indexOf("|") : -1;
   return {
     canEditCover: downloaded && !!r.is_author && !r.is_released,
+    translationMissing: r.translation_missing ?? 0,
     isAuthor: !!r.is_author,
     released: !!r.is_released,
     version: r.c_version ?? 0,

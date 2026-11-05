@@ -160,3 +160,12 @@ export const setMainSense = async (senseId: string, want: boolean) => {
   return res.data as { main: boolean; sense_id: string; word_id: string; main_count: number };
 };
 
+/**
+ * Dịch trước cho cụm nghĩa sắp học (5-8 nghĩa): nghĩa thiếu bản dịch sang `userLang` được đẩy vào hàng đợi dịch.
+ * Trả id nghĩa đã đủ (ready) và còn chờ (pending); hỏi lại sau vài giây hoặc tải lại bundle.
+ */
+export const prefetchTranslation = async (senseIds: string[], userLang: string) => {
+  const res = await PostAPI("ai-senses/translate/", { sense_ids: senseIds.slice(0, 30), user_lang: userLang });
+  return res.data as { ready: string[]; pending: string[] };
+};
+

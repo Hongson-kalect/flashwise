@@ -305,6 +305,8 @@ export interface CollectionDetailData {
   view_count: number;
   downloaded_count: number;
   author_id: string | null;
+  /** Đã dịch được bao nhiêu nghĩa sang ngôn ngữ của người xem (có khi gửi user_lang). */
+  translation: { language: string; total: number; missing: number } | null;
   senses: { id: string; word_value: string; pos: string | null; level: string | null; gloss: string; image_preview: string | null }[];
 }
 

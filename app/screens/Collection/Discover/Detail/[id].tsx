@@ -130,6 +130,17 @@ const DiscoverDetail = () => {
         </View>
       )}
 
+      {!!c.translation && (
+        <View className="flex-row items-center gap-2 px-3 py-2 rounded-xl" style={{ backgroundColor: theme.primary + "14" }}>
+          <AppIcon branch="feather" name="globe" size={15} color={theme.primary} />
+          <AppText size="sm" color="primary" style={{ flex: 1 }}>
+            {c.translation.missing === 0
+              ? `Đã có bản dịch cho cả ${c.translation.total} nghĩa`
+              : `Đã có bản dịch ${c.translation.total - c.translation.missing}/${c.translation.total} nghĩa, phần còn lại dịch khi bạn học tới`}
+          </AppText>
+        </View>
+      )}
+
       <AppText size="lg" weight="bold" color="title" style={{ marginTop: 4 }}>
         Xem trước {c.senses.length} nghĩa
       </AppText>
