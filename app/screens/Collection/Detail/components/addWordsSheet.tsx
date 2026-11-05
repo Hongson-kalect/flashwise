@@ -3,7 +3,7 @@ import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import { addWordsToCollection } from "@/services/api/collections";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, TextInput, ToastAndroid, View } from "react-native";
 
 type Props = { userCollectionId: string; userLang: string; onDone: () => void };
 
@@ -23,8 +23,11 @@ const AddWordsSheet = ({ userCollectionId, userLang, onDone }: Props) => {
     setError(null);
     setBusy(true);
     try {
-      await addWordsToCollection(userCollectionId, words, userLang);
+      const res = await addWordsToCollection(userCollectionId, words, userLang);
       onDone();
+      if (res.unavailable?.length) {
+        ToastAndroid.show(`Chưa có nghĩa cho: ${res.unavailable.slice(0, 5).join(", ")}`, ToastAndroid.LONG);
+      }
       close();
     } catch (e: any) {
       const code = e?.response?.data?.errorCode;

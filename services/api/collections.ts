@@ -126,7 +126,8 @@ export const addWordsToCollection = async (userCollectionId: string, words: stri
     { words, user_lang: userLang },
     { timeout: 60_000 },
   );
-  return res.data as { added: string[]; pending_words: string[]; invalid_words: string[] };
+  /** unavailable: chỉ khi không phải tác giả (remix): từ chưa có nghĩa chính thức, không được thêm. */
+  return res.data as { added: string[]; pending_words: string[]; invalid_words: string[]; unavailable: string[] };
 };
 
 /**

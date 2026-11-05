@@ -90,7 +90,7 @@ const CollectionDetail = () => {
   };
 
   const confirmDelete = (itemId: string, value: string) =>
-    Alert.alert(`Xoá "${value}" khỏi bộ?`, c?.publishState === "draft" ? "Nghĩa này bị bỏ khỏi bộ." : "Người đã tải bản đã phát hành vẫn giữ nghĩa này; thay đổi có hiệu lực khi bạn cập nhật bộ.", [
+    Alert.alert(`Xoá "${value}" khỏi bộ?`, !c?.isAuthor ? "Nghĩa này bị bỏ khỏi bản remix của bạn, bộ gốc không đổi." : c?.publishState === "draft" ? "Nghĩa này bị bỏ khỏi bộ." : "Người đã tải bản đã phát hành vẫn giữ nghĩa này; thay đổi có hiệu lực khi bạn cập nhật bộ.", [
       { text: "Huỷ", style: "cancel" },
       {
         text: "Xoá",
@@ -197,6 +197,14 @@ const CollectionDetail = () => {
         <AppText size="2xl" weight="bold" color="title">
           {c.name}
         </AppText>
+        {!!c.remixedFrom && (
+          <View className="flex-row items-center gap-1.5 mt-0.5">
+            <AppIcon branch="feather" name="git-branch" size={13} color={theme.subText2} />
+            <AppText size="xs" color="subText2" numberOfLines={1} style={{ flexShrink: 1 }}>
+              {`Remix từ "${c.remixedFrom}"`}
+            </AppText>
+          </View>
+        )}
         {c.isAuthor && (
           <View className="flex-row items-center gap-1.5 mt-0.5">
             <AppIcon
@@ -330,6 +338,29 @@ const CollectionDetail = () => {
               Học từ mới
             </AppText>
           </AppButton>
+          {c.canRemix && (
+            <View className="p-3 rounded-2xl gap-2" style={{ backgroundColor: theme.primary + "14" }}>
+              <View className="flex-row items-center gap-2">
+                <AppIcon branch="feather" name="git-branch" size={16} color={theme.primary} />
+                <AppText weight="bold" color="primary" style={{ flexShrink: 1 }}>
+                  {`Bạn đã sửa ${c.draftCount} nghĩa`}
+                </AppText>
+              </View>
+              <AppText size="sm" color="subText1">
+                Thay đổi chỉ có ở máy bạn, bộ gốc không đổi. Phát hành để tạo bản remix riêng của bạn.
+              </AppText>
+              <Pressable
+                onPress={() => router.push({ pathname: "/screens/Collection/Publish/[id]", params: { id } })}
+                className="h-12 rounded-2xl flex-row items-center justify-center gap-2"
+                style={{ backgroundColor: theme.primary }}
+              >
+                <AppIcon branch="feather" name="git-branch" size={17} color="white" />
+                <AppText color="white" weight="bold">
+                  Tạo bản remix
+                </AppText>
+              </Pressable>
+            </View>
+          )}
           {c.isAuthor && (
             <View className="flex-row gap-3">
               <Pressable
@@ -375,7 +406,7 @@ const CollectionDetail = () => {
             <AppText size="lg" weight="bold" color="title">
               Danh sách nghĩa
             </AppText>
-            {c.isAuthor && (
+            {(
               <View className="flex-row items-center gap-2">
                 {editing && (
                   <Pressable
@@ -459,10 +490,11 @@ const CollectionDetail = () => {
             <SenseRow
               item={item}
               edit={
-                editing && c.isAuthor
+                editing
                   ? {
-                      onUp: !q && index > 0 ? () => move(index, -1) : undefined,
-                      onDown: !q && index < (senses.data?.length ?? 0) - 1 ? () => move(index, 1) : undefined,
+                      // Người khác chỉ đổi được thứ tự dòng nháp của mình, nên không có mũi tên
+                      onUp: c.isAuthor && !q && index > 0 ? () => move(index, -1) : undefined,
+                      onDown: c.isAuthor && !q && index < (senses.data?.length ?? 0) - 1 ? () => move(index, 1) : undefined,
                       onDelete: () => confirmDelete(item.itemId, item.value),
                     }
                   : undefined

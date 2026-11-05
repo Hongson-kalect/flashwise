@@ -119,6 +119,19 @@ export const saveMyCollections = async (db: SQLiteDatabase, rows: MyCollectionRo
           c.is_official ? 1 : 0,
         ],
       );
+      // Phát hành remix: server chuyển bộ của mình sang bộ mới (cùng id UserCollection, collection_id khác). Chuyển dòng ở máy
+      // theo, bỏ nội dung bộ cũ (bộ gốc vẫn của tác giả) và buộc tải lại bundle của bộ mới.
+      const old = await db.getFirstAsync<{ collection_id: string }>(
+        `SELECT collection_id FROM user_collection WHERE id = ? AND collection_id != ?`,
+        [r.id, c.id],
+      );
+      if (old) {
+        await db.runAsync(`DELETE FROM collection_items WHERE collection_id = ?`, [old.collection_id]);
+        await db.runAsync(
+          `UPDATE user_collection SET collection_id = ?, etag = NULL, downloaded_at = NULL, version = ? WHERE id = ?`,
+          [c.id, c.version ?? 0, r.id],
+        );
+      }
       // `version` của user_collection là bản user đã tải: chỉ đặt khi tạo, sau đó do saveBundle cập nhật
       await db.runAsync(
         `INSERT INTO user_collection (id, collection_id, name, description, learned_count, version, is_active, is_deleted)
@@ -172,12 +185,16 @@ export type MyCollection = {
   publishState: "draft" | "live" | "revoked";
   /** Tác giả, đã tải về: có thể bấm phát hành / cập nhật / tiếp tục phát hành (nút sáng khi có gì để gửi). */
   canPublish: boolean;
+  /** Người khác (đã tải) đã sửa bộ: phát hành sẽ tạo bản remix riêng, bộ gốc không đổi. */
+  canRemix: boolean;
+  /** Bộ này là bản remix từ bộ nào (tên bộ gốc), null nếu không phải remix. */
+  remixedFrom: string | null;
 };
 
 const COLLECTION_SQL = `
   SELECT uc.id, uc.collection_id, COALESCE(c.name, uc.name) AS name, COALESCE(c.description, uc.description) AS description, uc.learned_count, uc.downloaded_at, uc.version AS uc_version,
          uc.created_at, uc.is_author, uc.is_released, c.image_url, c.language_code, c.is_official, c.item_count, c.version AS c_version,
-         c.pending_words, c.invalid_words,
+         c.pending_words, c.invalid_words, c.metadatas,
          (SELECT COALESCE(s.image_preview, m.image_link) FROM collection_items i
             JOIN ai_sense s ON s.id = i.sense_id LEFT JOIN sense_metadata m ON m.id = s.metadata_id
           WHERE i.collection_id = uc.collection_id AND i.is_deleted = 0
@@ -207,6 +224,8 @@ const toMyCollection = (r: any): MyCollection => {
     draftCount: r.draft_count ?? 0,
     publishState: r.is_released ? "live" : (r.c_version ?? 0) > 0 ? "revoked" : "draft",
     canPublish: downloaded && !!r.is_author && (r.is_released ? (r.draft_count ?? 0) > 0 : (r.c_version ?? 0) > 0 || (r.draft_count ?? 0) > 0),
+    canRemix: downloaded && !r.is_author && (r.draft_count ?? 0) > 0,
+    remixedFrom: (parse(r.metadatas, []) as any[]).find((m) => m?.remixed_from?.name)?.remixed_from.name ?? null,
     pendingWords: parse(r.pending_words, []),
     invalidWords: parse(r.invalid_words, []),
     coverUri: r.cover_uri ?? null,

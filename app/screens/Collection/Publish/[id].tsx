@@ -78,7 +78,7 @@ export default function PublishCollection() {
   // Điền sẵn tên / mô tả hiện có, chỉ lần đầu (không ghi đè khi người dùng đang gõ)
   useEffect(() => {
     if (c && !loaded) {
-      setTitle(c.name);
+      setTitle(c.isAuthor ? c.name : `${c.name} (remix)`);
       setDesc(c.description);
       setLoaded(true);
     }
@@ -108,7 +108,7 @@ export default function PublishCollection() {
       await queryClient.invalidateQueries({ queryKey: ["collections"] });
       try {
         ToastAndroid.show(
-          result.changed ? `Đã phát hành phiên bản ${result.current_version}` : c.publishState === "revoked" ? "Bộ đã công khai trở lại" : "Đã cập nhật thông tin bộ",
+          !c.isAuthor ? "Đã tạo bản remix của bạn" : result.changed ? `Đã phát hành phiên bản ${result.current_version}` : c.publishState === "revoked" ? "Bộ đã công khai trở lại" : "Đã cập nhật thông tin bộ",
           ToastAndroid.SHORT,
         );
       } catch {}
@@ -122,7 +122,7 @@ export default function PublishCollection() {
   const ready = !!c && title.trim().length > 0 && !submitting && !picking;
   const hasChanges = (c?.draftCount ?? 0) > 0;
   const nextVersion = (c?.version ?? 0) + (hasChanges ? 1 : 0);
-  const heading = !c || c.publishState === "draft" ? "Phát hành bộ" : c.publishState === "revoked" ? "Tiếp tục phát hành" : "Cập nhật bộ";
+  const heading = !c ? "Phát hành bộ" : !c.isAuthor ? "Tạo bản remix" : c.publishState === "draft" ? "Phát hành bộ" : c.publishState === "revoked" ? "Tiếp tục phát hành" : "Cập nhật bộ";
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -143,7 +143,9 @@ export default function PublishCollection() {
               <View className="flex-row items-center gap-2">
                 <AppIcon branch="feather" name="upload-cloud" size={18} color={theme.primary} />
                 <AppText weight="bold" color="primary">
-                  {c.publishState === "draft"
+                  {!c.isAuthor
+                    ? "Phát hành bản remix"
+                    : c.publishState === "draft"
                     ? "Phát hành lần đầu"
                     : hasChanges
                       ? `Phát hành phiên bản ${nextVersion}`
@@ -153,7 +155,9 @@ export default function PublishCollection() {
                 </AppText>
               </View>
               <AppText size="sm" color="subText1">
-                {hasChanges
+                {!c.isAuthor
+                  ? `${c.draftCount} thay đổi của bạn sẽ thành một bộ mới (phiên bản 1) có ghi nguồn là "${c.name}". Bộ gốc và người đã tải nó không bị ảnh hưởng. `
+                  : hasChanges
                   ? `${c.draftCount} ${c.publishState === "draft" ? "nghĩa" : "thay đổi"} sẽ được phát hành. `
                   : "Không có nghĩa nào đổi nên phiên bản giữ nguyên. "}
                 Bộ hiện công khai trong Khám phá, ai cũng tải và học được. Các nghĩa trong bản phát hành được cố định: bạn sửa nghĩa về
@@ -239,7 +243,7 @@ export default function PublishCollection() {
             >
               {submitting ? <ActivityIndicator color="white" /> : <AppIcon branch="feather" name="upload-cloud" size={18} color="white" />}
               <AppText color="white" size="lg" weight="bold">
-                {submitting ? "Đang xử lý..." : c.publishState === "live" ? "Cập nhật" : "Phát hành công khai"}
+                {submitting ? "Đang xử lý..." : !c.isAuthor ? "Tạo bản remix" : c.publishState === "live" ? "Cập nhật" : "Phát hành công khai"}
               </AppText>
             </Pressable>
           </ScrollView>
