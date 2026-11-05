@@ -41,6 +41,8 @@ export const useReviewRun = () => {
   const [settings, setSettings] = useState<LearnSettings | null>(null);
   const session = useRef<{ id: string; startedAt: number } | null>(null);
   const saving = useRef(false);
+  /** Thẻ đã ôn trong lần mở màn này: thẻ vừa ôn thường hẹn lại sau vài giờ (vẫn trước cuối ngày học) nên không đưa lại ngay. */
+  const reviewed = useRef(new Set<string>());
 
   const resumable = useRef<Snapshot<SavedReview> | null>(null);
 
@@ -65,7 +67,7 @@ export const useReviewRun = () => {
           return;
         }
       }
-      const batch = await pickReviewBatch(db, userLang, s);
+      const batch = await pickReviewBatch(db, userLang, s, new Date(), reviewed.current);
       setRemaining(batch.quickTotal + batch.normalTotal);
       const now = Date.now();
       session.current = { id: uuidv7(), startedAt: now };
@@ -124,8 +126,8 @@ export const useReviewRun = () => {
       // Còn thẻ đến hạn (kể cả thẻ vừa quên hẹn ôn lại trong ngày) thì cho "Ôn tiếp"
       try {
         const s = settings ?? (await loadLearnSettings(db));
-        const next = await pickReviewBatch(db, userLang, s);
-        setRemaining(next.quick.length + next.normal.length);
+        const next = await pickReviewBatch(db, userLang, s, new Date(), reviewed.current);
+        setRemaining(next.quickTotal + next.normalTotal);
       } catch {
         setRemaining(0);
       }
@@ -141,7 +143,8 @@ export const useReviewRun = () => {
       setStatus("saving");
       try {
         const result = await saveReviewResult(db, { sessionId: session.current.id, mode, startedAt: session.current.startedAt, endedAt: Date.now(), results }, settings);
-          await clearSnapshot(db, SCOPE);
+        for (const r of results) reviewed.current.add(r.card.key);
+        await clearSnapshot(db, SCOPE);
         await afterSave(result);
       } catch (e: any) {
         saving.current = false;

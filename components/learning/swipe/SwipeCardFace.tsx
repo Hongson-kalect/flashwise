@@ -31,7 +31,7 @@ const SwipeCardFace = ({ card, flipped, review }: Props) => {
         </View>
       )}
       <WordHeader card={card} />
-      <SenseImage card={card} height={140} />
+      <SenseImage card={card} aspect={4 / 3} />
       {!!card.definition && (
         <AppText color="title" textAlign="center">
           {card.definition}

@@ -57,9 +57,16 @@ const QUICK_COUNT = 30;
  * khả năng nhớ thấp nhất trước, mỗi từ 1 nghĩa mỗi lượt. Chia 2 nhóm theo cấp: vuốt (>= swipe_min_level) và theo cụm (còn lại).
  * Thẻ mà nghĩa chưa có trong máy / chưa có bản dịch thì bỏ qua (chưa ôn được offline).
  */
-export const pickReviewBatch = async (db: SQLiteDatabase, userLang: string, settings: LearnSettings, now = new Date()): Promise<ReviewBatch> => {
+export const pickReviewBatch = async (
+  db: SQLiteDatabase,
+  userLang: string,
+  settings: LearnSettings,
+  now = new Date(),
+  /** original_sense_id đã ôn trong lần mở màn này: không đưa lại (thẻ vừa ôn có thể hẹn lại vài giờ, vẫn nằm trước cuối ngày học). */
+  exclude: ReadonlySet<string> = new Set(),
+): Promise<ReviewBatch> => {
   const cutoff = learningDayBounds(settings.dayStartHour, now).end;
-  const rows = await db.getAllAsync<{ original_sense_id: string; level: number; stability: number; last_reviewed_at: string | null; sense_id: string }>(
+  const allRows = await db.getAllAsync<{ original_sense_id: string; level: number; stability: number; last_reviewed_at: string | null; sense_id: string }>(
     `SELECT p.original_sense_id, p.level, p.stability, p.last_reviewed_at,
             COALESCE((SELECT i.sense_id FROM collection_items i
                       WHERE COALESCE(i.original_id, i.sense_id) = p.original_sense_id AND i.is_deleted = 0
@@ -69,6 +76,7 @@ export const pickReviewBatch = async (db: SQLiteDatabase, userLang: string, sett
        AND NOT (p.state = 0 AND p.repetitions = 0) AND datetime(p.next_review_at) <= datetime(?)`,
     [toDbTime(cutoff)],
   );
+  const rows = allRows.filter((r) => !exclude.has(r.original_sense_id));
   const cards = await fetchSenseCards(db, [...new Set(rows.map((r) => r.sense_id))], userLang);
 
   const due = rows

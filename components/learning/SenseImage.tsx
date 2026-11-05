@@ -7,10 +7,17 @@ import { mediaUrl } from "@/stores/appStore";
 import { useEffect, useState } from "react";
 import { StyleProp, View, ViewStyle } from "react-native";
 
-type Props = { card: LearnCard; height?: number; style?: StyleProp<ViewStyle>; showFallbackLetter?: boolean };
+type Props = {
+  card: LearnCard;
+  /** Chiều cao cố định; không đặt thì theo `aspect` (rộng / cao) nên ảnh không bị cắt mất phần đầu. */
+  height?: number;
+  aspect?: number;
+  style?: StyleProp<ViewStyle>;
+  showFallbackLetter?: boolean;
+};
 
 /** Ảnh minh hoạ của nghĩa: ảnh riêng, không có thì ảnh mở tìm theo từ khoá (như danh sách bộ). Không có ảnh nào thì ẩn. */
-const SenseImage = ({ card, height = 150, style, showFallbackLetter = false }: Props) => {
+const SenseImage = ({ card, height, aspect = 4 / 3, style, showFallbackLetter = false }: Props) => {
   const { theme } = useTheme();
   const own = mediaUrl(card.imageUri);
   const [fallback, setFallback] = useState<string | null>(null);
@@ -27,7 +34,7 @@ const SenseImage = ({ card, height = 150, style, showFallbackLetter = false }: P
   const uri = own ?? fallback;
   if (!uri && !showFallbackLetter) return null;
   return (
-    <View className="rounded-2xl overflow-hidden items-center justify-center" style={[{ height, width: "100%", backgroundColor: theme.background2 }, style]}>
+    <View className="rounded-2xl overflow-hidden items-center justify-center" style={[height ? { height, width: "100%" } : { aspectRatio: aspect, width: "100%" }, { backgroundColor: theme.background2 }, style]}>
       {uri ? (
         <AppImage source={{ uri }} style={{ width: "100%", height: "100%" }} />
       ) : (
