@@ -27,7 +27,7 @@ export default function LearnNewScreen() {
   const leave = useCallback(() => router.back(), []);
   const confirmExit = useCallback(() => {
     if (status !== "running" || !state || state.phase === "summary") return leave();
-    Alert.alert("Thoát phiên học?", "Các từ chưa lưu kết quả sẽ không được tính vào tiến độ.", [
+    Alert.alert("Thoát phiên học?", "Kết quả chưa lưu chưa được tính vào tiến độ. Phiên được giữ 1 giờ, vào lại để học tiếp.", [
       { text: "Ở lại", style: "cancel" },
       { text: "Thoát", style: "destructive", onPress: leave },
     ]);
@@ -67,6 +67,19 @@ export default function LearnNewScreen() {
           title="Không bắt đầu được"
           message={run.error ?? undefined}
           actions={[{ label: "Thử lại", onPress: run.reload, primary: true }, { label: "Quay lại", onPress: leave }]}
+        />
+      );
+    }
+    if (status === "resume") {
+      const info = run.resumeInfo;
+      const minutes = info ? Math.max(1, Math.round((Date.now() - info.savedAt) / 60000)) : 0;
+      return (
+        <StateView
+          icon="rotate-ccw"
+          tone="warning"
+          title="Bạn còn một phiên học dở"
+          message={info ? `Đã làm ${info.doneSteps}/${info.totalSteps} bước, dừng cách đây ${minutes} phút. Học tiếp hay bắt đầu cụm mới?` : undefined}
+          actions={[{ label: "Học tiếp", onPress: run.resume, primary: true }, { label: "Bắt đầu cụm mới", onPress: run.discard }]}
         />
       );
     }

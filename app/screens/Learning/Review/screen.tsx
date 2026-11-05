@@ -30,7 +30,7 @@ export default function ReviewScreen() {
   const leave = useCallback(() => router.back(), []);
   const confirmExit = useCallback(() => {
     if (!midSession) return leave();
-    Alert.alert("Thoát phiên ôn?", "Các thẻ chưa lưu kết quả sẽ không được tính, thẻ vẫn đến hạn ôn.", [
+    Alert.alert("Thoát phiên ôn?", "Kết quả chưa lưu chưa được tính, thẻ vẫn đến hạn ôn. Lượt này được giữ 1 giờ, vào lại để ôn tiếp.", [
       { text: "Ở lại", style: "cancel" },
       { text: "Thoát", style: "destructive", onPress: leave },
     ]);
@@ -63,6 +63,19 @@ export default function ReviewScreen() {
     if (status === "error") {
       return (
         <StateView icon="alert-circle" tone="error" title="Không bắt đầu được" message={r.error ?? undefined} actions={[{ label: "Thử lại", onPress: r.reload, primary: true }, { label: "Quay lại", onPress: leave }]} />
+      );
+    }
+    if (status === "resume") {
+      const info = r.resumeInfo;
+      const minutes = info ? Math.max(1, Math.round((Date.now() - info.savedAt) / 60000)) : 0;
+      return (
+        <StateView
+          icon="rotate-ccw"
+          tone="warning"
+          title="Bạn còn một lượt ôn dở"
+          message={info ? `Lượt ${info.cards} thẻ, dừng cách đây ${minutes} phút. Ôn tiếp hay nạp lượt mới?` : undefined}
+          actions={[{ label: "Ôn tiếp", onPress: r.resume, primary: true }, { label: "Nạp lượt mới", onPress: r.discard }]}
+        />
       );
     }
     if (status === "empty") {

@@ -7,10 +7,22 @@ import { uuidv7 } from "@/utils/uuidv7";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Action, currentQuestion, reduce, resultsOf, RunState, startRun } from "./engine";
+import { clearSnapshot, loadSnapshot, saveSnapshot, Snapshot } from "./snapshot";
 import { reduceSwipe, startSwipe, SwipeAction, SwipeState, swipeResults } from "./swipe";
 import { Grade } from "./types";
 
-export type ReviewStatus = "loading" | "empty" | "swiping" | "cluster" | "saving" | "saved" | "error";
+const SCOPE = "review";
+
+/** Phần lưu để ôn tiếp: chồng vuốt hoặc cụm đang dở, kèm thông tin phiên. */
+interface SavedReview {
+  kind: "swipe" | "cluster";
+  swipe?: SwipeState;
+  run?: RunState;
+  session: { id: string; startedAt: number };
+  remaining: number;
+}
+
+export type ReviewStatus = "loading" | "resume" | "empty" | "swiping" | "cluster" | "saving" | "saved" | "error";
 
 /**
  * Nối phiên ôn tập với SQLite: lấy lượt thẻ đến hạn, thẻ cấp cao ôn bằng vuốt trước (nhanh), rồi thẻ cấp thấp theo cụm.
@@ -29,16 +41,29 @@ export const useReviewRun = () => {
   const session = useRef<{ id: string; startedAt: number } | null>(null);
   const saving = useRef(false);
 
-  const load = useCallback(async () => {
+  const resumable = useRef<Snapshot<SavedReview> | null>(null);
+
+  /** `fresh` = bỏ lượt dở, nạp lượt mới; không thì có lượt dở còn hạn sẽ hỏi ôn tiếp. */
+  const load = useCallback(async (fresh: boolean | unknown = false) => {
     setStatus("loading");
     setError(null);
     setSummary(null);
     setSwipe(null);
     setRun(null);
     saving.current = false;
+    resumable.current = null;
     try {
       const s = await loadLearnSettings(db);
       setSettings(s);
+      if (fresh === true) await clearSnapshot(db, SCOPE);
+      else {
+        const snap = await loadSnapshot<SavedReview>(db, SCOPE);
+        if (snap) {
+          resumable.current = snap;
+          setStatus("resume");
+          return;
+        }
+      }
       const batch = await pickReviewBatch(db, userLang, s);
       setRemaining(batch.quickTotal + batch.normalTotal);
       const now = Date.now();
@@ -64,6 +89,33 @@ export const useReviewRun = () => {
     load();
   }, [load]);
 
+  /** Ôn tiếp lượt dở: dựng lại chồng thẻ vuốt hoặc cụm từ snapshot. */
+  const resume = useCallback(() => {
+    const snap = resumable.current;
+    if (!snap) return;
+    const { kind, swipe: sw, run: r, session: sess, remaining: rem } = snap.data;
+    session.current = sess;
+    setRemaining(rem);
+    if (kind === "swipe" && sw) {
+      setSwipe(sw);
+      setStatus("swiping");
+    } else if (r) {
+      setRun({ ...r, attempt: { ...r.attempt, startedAt: Date.now() } });
+      setStatus("cluster");
+    }
+  }, []);
+
+  const discard = useCallback(() => load(true), [load]);
+
+  // Lưu lượt đang ôn sau mỗi thẻ / bước để thoát giữa chừng vẫn ôn tiếp được
+  useEffect(() => {
+    if (!session.current) return;
+    let data: SavedReview | null = null;
+    if (status === "swiping" && swipe && swipe.phase === "swiping") data = { kind: "swipe", swipe, session: session.current, remaining };
+    else if (status === "cluster" && run) data = { kind: "cluster", run, session: session.current, remaining };
+    if (data) saveSnapshot(db, SCOPE, data).catch(() => {});
+  }, [status, swipe, run]);
+
   const afterSave = useCallback(
     async (result: ReviewSummary) => {
       setSummary(result);
@@ -88,6 +140,7 @@ export const useReviewRun = () => {
       setStatus("saving");
       try {
         const result = await saveReviewResult(db, { sessionId: session.current.id, mode, startedAt: session.current.startedAt, endedAt: Date.now(), results }, settings);
+          await clearSnapshot(db, SCOPE);
         await afterSave(result);
       } catch (e: any) {
         saving.current = false;
@@ -123,6 +176,14 @@ export const useReviewRun = () => {
     next: () => dispatchRun({ type: "next", at: Date.now() }),
     setGrade: (key: string, grade: Grade) => dispatchRun({ type: "setGrade", key, grade }),
     finishCluster,
-    reload: load,
+    resume,
+    discard,
+    resumeInfo: resumable.current
+      ? {
+          savedAt: resumable.current.savedAt,
+          cards: resumable.current.data.kind === "swipe" ? Object.keys(resumable.current.data.swipe?.cards ?? {}).length : Object.keys(resumable.current.data.run?.cards ?? {}).length,
+        }
+      : null,
+    reload: () => load(true),
   };
 };

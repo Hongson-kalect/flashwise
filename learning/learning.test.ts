@@ -73,6 +73,20 @@ test("phiên: làm đúng hết thì không bao giờ hỏi 1 thẻ 2 lần li�
   }
 });
 
+test("học tiếp phiên dở: lưu JSON giữa chừng, dựng lại rồi chạy tiếp ra cùng kết quả", () => {
+  let s = startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded() });
+  let at = T0;
+  for (let i = 0; i < 7; i++) {
+    s = s.phase === "question" ? right(s, (at += 3000)) : reduce(s, { type: "next", at: (at += 500) });
+  }
+  const restored: RunState = JSON.parse(JSON.stringify(s));
+  assert.deepEqual(restored, s);
+  const a = playAll(s).s;
+  const b = playAll(restored).s;
+  assert.deepEqual(resultsOf(b).map((r) => [r.card.key, r.grade, r.logs.length]), resultsOf(a).map((r) => [r.card.key, r.grade, r.logs.length]));
+  assert.equal(progressOf(b), 1);
+});
+
 test("sai 2 lần ở câu chọn: hiện đáp án, làm lại đúng bước đó 1 lần, thẻ bị Khó / Quên", () => {
   let s = startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(3) });
   // Làm đúng bước copy của thẻ đầu, rồi cho tới khi gặp câu chọn của nó

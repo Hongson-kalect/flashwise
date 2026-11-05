@@ -12,7 +12,8 @@ Ghi từ buổi thảo luận ngày 2026-11-01 (phiên backend `flashwise_api`).
 - "Đến hạn" theo server = `next_review_at` trước cuối ngày học, nên thẻ vừa học / vừa quên (hẹn 10 phút hoặc 6 giờ sau) cũng hiện ở lượt "Ôn tiếp" ngay trong ngày. Có thể đổi thành chỉ lấy thẻ đã đến giờ (<= bây giờ) nếu thấy gắt.
 - Đồng bộ (cùng ngày): tiến độ, review_log, phiên, nhật ký ngày, ghi chú, cài đặt tự đẩy lên `sync/push` và kéo về `sync/pull` (xem CLAUDE.md, mục đồng bộ). Server nhận review_log nên thống kê chung của nghĩa (`global_difficulty`, `learner_count`) được cộng.
 - Nghe + nói (cùng ngày): 3 kiểu bước mới trong registry `learning/steps.ts`: `listenChoose` (chỉ nghe, chọn từ), `dictation` (chính tả: nghe, gõ), `speak` (đọc to, nhận dạng trên máy bằng `expo-speech-recognition`, `learning/speechRecognizer.ts`). Có bước hay không do `Capabilities {hear, talk}`: `hear` = cài đặt `hearable`, `talk` = cài đặt `talkable` + máy có nhận dạng. Thứ tự đủ: copy, chọn nghĩa, chọn từ, nghe chọn, gõ, chính tả, nói; rút ngắn theo cấp bỏ chọn từ / nghe chọn / chọn nghĩa trước, giữ gõ + nói. Chấm nói: khớp phương án nào cũng đúng, gần đúng chỉ khi là phương án đầu (Khó), sai 2 lần thì hiện đáp án; tiếng Nhật so không phân biệt hira / kata, bỏ dấu cách. "Không nói được lúc này" bỏ mọi bước nói còn lại (`skipKind`, không chấm). Nghe chậm dùng giọng máy (file âm thanh không đổi tốc độ). Chưa kiểm thử với giọng nói thật trên emulator (chỉ luồng quyền / từ chối / bỏ qua).
-- Chưa có: cloze / chọn ảnh, học tiếp phiên dở, luyện nói riêng (nhại theo, chấm từng âm).
+- Học tiếp phiên dở: có (học mới + ôn, xem 5.7).
+- Chưa có: cloze / chọn ảnh, luyện nói riêng (nhại theo, chấm từng âm).
 
 ## 1. Hiện trạng code app (trước khi làm)
 
@@ -130,7 +131,7 @@ Giới hạn chỉ làm lượng tồn tăng dần. Không có trần ôn / ngà
 - Nghĩa bị quên ≥ 4 lần: đánh dấu "hay quên", gợi ý ghi mẹo nhớ riêng (`user_note`).
 
 ### 5.7 Học tiếp phiên dở
-Thoát giữa chừng / app bị tắt thì lưu `learn_session.snapshot` (chỉ ở máy). Lần sau mở trong vòng **1 giờ** kể từ lúc tạo snapshot thì hỏi "Học tiếp?"; quá 1 giờ thì bỏ snapshot, phiên đó `status=abandoned`. Các bước đã làm vẫn giữ trong `review_log` (`is_fsrs=0`); thẻ chưa có dòng `is_fsrs=1` coi như chưa học.
+Đã làm (`learning/snapshot.ts`): sau mỗi bước, trạng thái máy học (`RunState` / `SwipeState`, thuần JSON) được ghi vào `system_configs` khoá `run_snapshot:learn:<userCollectionId>` hoặc `run_snapshot:review`. Chọn `system_configs` thay vì cột `learn_session.snapshot` vì bảng đó có trigger sync (mỗi lần ghi sẽ đẩy cả phiên chưa xong lên server); cột `snapshot` hiện không dùng. Mở lại trong **1 giờ** thì hỏi "Học tiếp / Bắt đầu cụm mới" (Ôn: "Ôn tiếp / Nạp lượt mới"); quá 1 giờ hoặc JSON hỏng thì bỏ. Lưu kết quả thành công thì xoá snapshot. Chưa lưu kết quả thì chưa có dòng `review_log` / `user_sense_progress`, nên bỏ phiên dở không để lại dữ liệu nửa vời. Bước đang dở được tính giờ lại từ lúc học tiếp.
 
 ### 5.8 Dữ liệu chấm của từng kiểu phiên
 FSRS chỉ cần **1 điểm chấm (Again / Hard / Good / Easy) + thời điểm** cho mỗi thẻ mỗi phiên; mọi thứ khác là để quy ra điểm đó.

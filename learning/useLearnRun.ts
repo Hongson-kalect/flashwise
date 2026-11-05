@@ -7,9 +7,16 @@ import { uuidv7 } from "@/utils/uuidv7";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Action, currentQuestion, reduce, resultsOf, RunState, startRun } from "./engine";
+import { clearSnapshot, loadSnapshot, saveSnapshot, Snapshot } from "./snapshot";
 import { Grade } from "./types";
 
-export type RunStatus = "loading" | "empty" | "error" | "running" | "saving" | "done";
+export type RunStatus = "loading" | "resume" | "empty" | "error" | "running" | "saving" | "done";
+
+/** Phần lưu để học tiếp: trạng thái máy học + thông tin phiên. */
+interface SavedRun {
+  state: RunState;
+  session: { id: string; collectionId: string | null; startedAt: number; settings: LearnSettings };
+}
 
 export interface RunMeta {
   collectionName: string;
@@ -32,15 +39,29 @@ export const useLearnRun = (userCollectionId: string) => {
   const [error, setError] = useState<string | null>(null);
   const session = useRef<{ id: string; collectionId: string | null; startedAt: number; settings: LearnSettings } | null>(null);
 
-  const load = useCallback(async () => {
+  const scope = `learn:${userCollectionId}`;
+  const resumable = useRef<Snapshot<SavedRun> | null>(null);
+
+  /** `fresh` = bỏ phiên dở, bắt đầu cụm mới; không thì có phiên dở còn hạn sẽ hỏi học tiếp. */
+  const load = useCallback(async (fresh: boolean | unknown = false) => {
     setStatus("loading");
     setSummary(null);
     setError(null);
+    resumable.current = null;
     try {
       const [settings, info, median] = await Promise.all([loadLearnSettings(db), getMyCollection(db, userCollectionId), getMedianStepMs(db)]);
       if (!info) throw new Error("Không tìm thấy bộ từ");
       const picked = await pickNewCards(db, userCollectionId, userLang, settings.clusterSize);
       setMeta({ collectionName: info.name, remaining: Math.max(0, picked.available - picked.cards.length), waitingTranslation: picked.waitingTranslation });
+      if (fresh === true) await clearSnapshot(db, scope);
+      else {
+        const snap = await loadSnapshot<SavedRun>(db, scope);
+        if (snap) {
+          resumable.current = snap;
+          setStatus("resume");
+          return;
+        }
+      }
       if (!picked.cards.length) {
         setState(null);
         setStatus("empty");
@@ -54,11 +75,32 @@ export const useLearnRun = (userCollectionId: string) => {
       setError(e?.message ?? "Có lỗi xảy ra");
       setStatus("error");
     }
-  }, [db, userCollectionId, userLang]);
+  }, [db, userCollectionId, userLang, scope]);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  /** Học tiếp phiên dở: dựng lại trạng thái từ snapshot (bước đang dở tính giờ lại từ bây giờ). */
+  const resume = useCallback(() => {
+    const snap = resumable.current;
+    if (!snap) return;
+    const now = Date.now();
+    session.current = snap.data.session;
+    setState({ ...snap.data.state, attempt: { ...snap.data.state.attempt, startedAt: now } });
+    setStatus("running");
+  }, []);
+
+  /** Bỏ phiên dở, bắt đầu cụm mới. */
+  const discard = useCallback(() => load(true), [load]);
+
+  // Lưu phiên đang chạy sau mỗi bước để thoát giữa chừng / app bị tắt vẫn học tiếp được
+  const doneSteps = state?.doneSteps;
+  const phase = state?.phase;
+  useEffect(() => {
+    if (status !== "running" || !state || !session.current) return;
+    saveSnapshot(db, scope, { state, session: session.current } satisfies SavedRun).catch(() => {});
+  }, [status, doneSteps, phase]);
 
   const dispatch = useCallback((action: Action) => setState((prev) => (prev ? reduce(prev, action) : prev)), []);
 
@@ -77,6 +119,7 @@ export const useLearnRun = (userCollectionId: string) => {
     try {
       const s = session.current;
       const result = await saveLearnResult(db, { sessionId: s.id, collectionId: s.collectionId, startedAt: s.startedAt, endedAt: Date.now(), results: resultsOf(state) }, s.settings);
+      await clearSnapshot(db, scope);
       setSummary(result);
       setStatus("done");
       requestSync();
@@ -84,7 +127,11 @@ export const useLearnRun = (userCollectionId: string) => {
       setError(e?.message ?? "Không lưu được phiên học");
       setStatus("error");
     }
-  }, [db, state, status]);
+  }, [db, state, status, scope]);
 
-  return { status, state, meta, summary, error, question: state ? currentQuestion(state) : undefined, userLang, answer, hint, speech, skipSpeak, known, next, setGrade, finish, reload: load };
+  return {
+    status, state, meta, summary, error, question: state ? currentQuestion(state) : undefined, userLang,
+    resumeInfo: resumable.current ? { savedAt: resumable.current.savedAt, doneSteps: resumable.current.data.state.doneSteps, totalSteps: resumable.current.data.state.totalSteps } : null,
+    answer, hint, speech, skipSpeak, known, next, setGrade, finish, resume, discard, reload: () => load(true),
+  };
 };
