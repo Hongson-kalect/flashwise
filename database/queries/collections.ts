@@ -325,3 +325,11 @@ export const setLocalCover = async (db: SQLiteDatabase, collectionId: string, im
   await db.runAsync(`UPDATE collection SET image_url = ?, updated_at = DATETIME('now') WHERE id = ?`, [image, collectionId]);
 };
 
+/** Ghi thứ tự mới của các dòng trong bộ vào máy (sau khi server nhận), theo vị trí trong `itemIds`. */
+export const setLocalOrder = async (db: SQLiteDatabase, itemIds: string[]) => {
+  await db.withTransactionAsync(async () => {
+    for (let i = 0; i < itemIds.length; i++) {
+      await db.runAsync(`UPDATE collection_items SET display_order = ? WHERE id = ?`, [i, itemIds[i]]);
+    }
+  });
+};

@@ -12,7 +12,21 @@ import { Pressable, View } from "react-native";
 const cap = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
 /** 1 nghĩa trong bộ: ảnh (của nghĩa, không có thì ảnh minh hoạ mở), từ, nghĩa ngắn, từ loại. */
-const SenseRow = ({ item }: { item: CollectionSense }) => {
+export type RowEdit = { onUp?: () => void; onDown?: () => void; onDelete: () => void };
+
+const EditButton = ({ icon, onPress, color, disabled }: { icon: any; onPress?: () => void; color: string; disabled?: boolean }) => (
+  <Pressable
+    hitSlop={6}
+    onPress={onPress}
+    disabled={disabled}
+    className="h-9 w-9 rounded-full items-center justify-center"
+    style={{ opacity: disabled ? 0.25 : 1 }}
+  >
+    <AppIcon branch="feather" name={icon} size={18} color={color} />
+  </Pressable>
+);
+
+const SenseRow = ({ item, edit }: { item: CollectionSense; edit?: RowEdit }) => {
   const router = useRouter();
   const { theme } = useTheme();
   const own = mediaUrl(item.imageUri);
@@ -78,6 +92,16 @@ const SenseRow = ({ item }: { item: CollectionSense }) => {
           </AppText>
         ) : null}
       </View>
+
+      {edit && (
+        <View className="items-center">
+          <View className="flex-row">
+            <EditButton icon="arrow-up" onPress={edit.onUp} disabled={!edit.onUp} color={theme.text} />
+            <EditButton icon="arrow-down" onPress={edit.onDown} disabled={!edit.onDown} color={theme.text} />
+          </View>
+          <EditButton icon="trash-2" onPress={edit.onDelete} color={theme.error} />
+        </View>
+      )}
     </Pressable>
   );
 };

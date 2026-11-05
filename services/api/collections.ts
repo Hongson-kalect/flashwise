@@ -256,3 +256,17 @@ export const unpublishCollection = async (userCollectionId: string) => {
   return res.data as { collection_id: string; released: false; version: number };
 };
 
+/** Xoá 1 dòng khỏi bộ của mình (dòng đã phát hành thành "bia mộ" nháp, dòng nháp xoá hẳn). */
+export const deleteCollectionItem = async (userCollectionId: string, itemId: string) => {
+  const res = await PostAPI(`user-collections/${userCollectionId}/delete-sense/`, {
+    user_collection_id: userCollectionId,
+    collection_item_id: itemId,
+  });
+  return res.data;
+};
+
+/** Đổi thứ tự hiển thị (tác giả đổi được cả dòng đã phát hành, thứ tự không tạo version mới). */
+export const reorderCollectionItems = async (userCollectionId: string, items: { item_id: string; display_order: number }[]) => {
+  const res = await PostAPI(`user-collections/${userCollectionId}/reorder/`, { items }, { timeout: 60_000 });
+  return res.data as { updated: number; skipped: string[] };
+};

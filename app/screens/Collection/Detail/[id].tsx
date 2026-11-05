@@ -4,7 +4,8 @@ import AppIcon from "@/components/AppIcon";
 import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
 import SearchBar from "@/components/SearchBar";
-import { getMyCollection, listCollectionSenses, setLocalCover } from "@/database/queries/collections";
+import { getMyCollection, listCollectionSenses, setLocalCover, setLocalOrder } from "@/database/queries/collections";
+import { deleteCollectionItem, reorderCollectionItems } from "@/services/api/collections";
 import { useTheme } from "@/providers/Theme";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { downloadBundle, refreshPending, unpublish } from "@/services/collections";
@@ -17,6 +18,7 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, Pressable, ToastAndroid, View } from "react-native";
 import CollectionCover from "../components/collectionCover";
 import CoverSheet from "./components/coverSheet";
+import AddWordsSheet from "./components/addWordsSheet";
 import SenseRow from "./components/senseRow";
 
 /** Chi tiết 1 bộ: ảnh bìa, tiến độ, tải về học offline, danh sách nghĩa trong bộ. */
@@ -37,6 +39,7 @@ const CollectionDetail = () => {
   });
   const c = info.data;
 
+  const [editing, setEditing] = useState(false);
   const [revoking, setRevoking] = useState(false);
   const confirmRevoke = () =>
     Alert.alert(
@@ -68,6 +71,58 @@ const CollectionDetail = () => {
     queryFn: () => listCollectionSenses(db, c!.collectionId, { q, userLang }),
     enabled: !!c?.downloaded,
   });
+
+  const refreshAll = () => queryClient.invalidateQueries({ queryKey: ["collections"] });
+
+  const move = async (index: number, delta: -1 | 1) => {
+    const list = senses.data ?? [];
+    const target = index + delta;
+    if (target < 0 || target >= list.length) return;
+    const ids = list.map((s) => s.itemId);
+    [ids[index], ids[target]] = [ids[target], ids[index]];
+    try {
+      await reorderCollectionItems(id, ids.map((item_id, i) => ({ item_id, display_order: i })));
+      await setLocalOrder(db, ids);
+      await refreshAll();
+    } catch {
+      ToastAndroid.show("Chưa đổi được thứ tự, thử lại sau", ToastAndroid.SHORT);
+    }
+  };
+
+  const confirmDelete = (itemId: string, value: string) =>
+    Alert.alert(`Xoá "${value}" khỏi bộ?`, c?.publishState === "draft" ? "Nghĩa này bị bỏ khỏi bộ." : "Người đã tải bản đã phát hành vẫn giữ nghĩa này; thay đổi có hiệu lực khi bạn cập nhật bộ.", [
+      { text: "Huỷ", style: "cancel" },
+      {
+        text: "Xoá",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deleteCollectionItem(id, itemId);
+            await downloadBundle(db, id, userLang, { force: true, retries: 0 });
+            await refreshAll();
+          } catch {
+            ToastAndroid.show("Chưa xoá được, thử lại sau", ToastAndroid.SHORT);
+          }
+        },
+      },
+    ]);
+
+  const openAddWords = () =>
+    present({
+      title: "Thêm từ vào bộ",
+      render: () => (
+        <AddWordsSheet
+          userCollectionId={id}
+          userLang={userLang}
+          onDone={async () => {
+            try {
+              await downloadBundle(db, id, userLang, { force: true, retries: 0 });
+            } catch {}
+            refreshAll();
+          }}
+        />
+      ),
+    });
 
   const download = useMutation({
     mutationFn: (force: boolean) => downloadBundle(db, id, userLang, { force }),
@@ -316,9 +371,37 @@ const CollectionDetail = () => {
 
       {c.downloaded && (
         <>
-          <AppText size="lg" weight="bold" color="title" style={{ marginTop: 8 }}>
-            Danh sách nghĩa
-          </AppText>
+          <View className="flex-row items-center justify-between" style={{ marginTop: 8 }}>
+            <AppText size="lg" weight="bold" color="title">
+              Danh sách nghĩa
+            </AppText>
+            {c.isAuthor && (
+              <View className="flex-row items-center gap-2">
+                {editing && (
+                  <Pressable
+                    onPress={openAddWords}
+                    className="flex-row items-center gap-1.5 px-3 h-9 rounded-full"
+                    style={{ backgroundColor: theme.primary }}
+                  >
+                    <AppIcon branch="feather" name="plus" size={15} color="white" />
+                    <AppText size="sm" weight="semibold" color="white">
+                      Thêm từ
+                    </AppText>
+                  </Pressable>
+                )}
+                <Pressable
+                  onPress={() => setEditing((v) => !v)}
+                  className="flex-row items-center gap-1.5 px-3 h-9 rounded-full"
+                  style={{ backgroundColor: editing ? theme.primary + "14" : theme.card, borderWidth: 1, borderColor: editing ? theme.primary : theme.border }}
+                >
+                  <AppIcon branch="feather" name={editing ? "check" : "edit-2"} size={14} color={editing ? theme.primary : theme.text} />
+                  <AppText size="sm" weight="semibold" color={editing ? "primary" : "title"}>
+                    {editing ? "Xong" : "Sửa"}
+                  </AppText>
+                </Pressable>
+              </View>
+            )}
+          </View>
           <SearchBar value={search} onChangeText={setSearch} placeholder="Tìm trong bộ này..." />
         </>
       )}
@@ -372,7 +455,20 @@ const CollectionDetail = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 10 }}
           ListHeaderComponent={header}
-          renderItem={({ item }) => <SenseRow item={item} />}
+          renderItem={({ item, index }) => (
+            <SenseRow
+              item={item}
+              edit={
+                editing && c.isAuthor
+                  ? {
+                      onUp: !q && index > 0 ? () => move(index, -1) : undefined,
+                      onDown: !q && index < (senses.data?.length ?? 0) - 1 ? () => move(index, 1) : undefined,
+                      onDelete: () => confirmDelete(item.itemId, item.value),
+                    }
+                  : undefined
+              }
+            />
+          )}
           ListEmptyComponent={
             c.downloaded && !senses.isLoading ? (
               <AppText color="subText2" textAlign="center" style={{ paddingTop: 24 }}>
