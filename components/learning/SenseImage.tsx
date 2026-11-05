@@ -37,10 +37,10 @@ const SenseImage = ({ card, height, aspect = 4 / 3, style, showFallbackLetter = 
     <View className="rounded-2xl overflow-hidden items-center justify-center" style={[height ? { height, width: "100%" } : { aspectRatio: aspect, width: "100%" }, { backgroundColor: theme.background2 }, style]}>
       {uri ? (
         <>
-          {/* Nền: chính ảnh đó phủ kín khung và làm mờ; ảnh thật nằm giữa, hiện trọn vẹn (không bị cắt) */}
-          <AppImage source={{ uri }} style={{ position: "absolute", width: "100%", height: "100%" }} contentFit="cover" blurRadius={25} transition={0} />
+          {/* Nền: chính ảnh đó phủ kín khung và làm mờ nhẹ; ảnh thật cắt vuông 1:1 (như ảnh bìa bên ngoài) nằm giữa */}
+          <AppImage source={{ uri }} style={{ position: "absolute", width: "100%", height: "100%" }} contentFit="cover" blurRadius={10} transition={0} />
           <View style={{ position: "absolute", width: "100%", height: "100%", backgroundColor: theme.background2 + "55" }} />
-          <AppImage source={{ uri }} style={{ width: "100%", height: "100%" }} contentFit="contain" />
+          <AppImage source={{ uri }} style={{ height: "100%", aspectRatio: 1 }} contentFit="cover" contentPosition="top" />
         </>
       ) : (
         <AppText size="3xl" weight="bold" style={{ color: theme.primary + "99" }}>
