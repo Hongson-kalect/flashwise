@@ -17,7 +17,8 @@ export const autoGrade = (logs: StepLog[], medianMs = DEFAULT_MEDIAN_MS): Grade 
   // Phải hiện đáp án khi gõ (gõ từ / chính tả) hoặc 2 bước hỏng là Quên; nói hỏng 1 lần (nhận dạng hay sai) chỉ tính Khó
   if (failed.some((l) => l.kind === "typeWord" || l.kind === "dictation") || failed.length >= 2) return AGAIN;
   if (failed.length || logs.some((l) => l.rating === HARD || l.hintCount > 0)) return HARD;
-  const timed = logs.filter((l) => l.kind !== "copy" && l.durationMs > 0);
+  // Viết tay chậm vì bản chất, không tính vào tốc độ
+  const timed = logs.filter((l) => l.kind !== "copy" && l.kind !== "handwrite" && l.durationMs > 0);
   if (timed.length && avg(timed.map((l) => l.durationMs)) <= medianMs) return EASY;
   return GOOD;
 };
@@ -36,7 +37,7 @@ export const autoGradeReview = (logs: StepLog[], medianMs = DEFAULT_MEDIAN_MS): 
   const first = logs[0];
   let grade: Grade = first.rating === AGAIN ? AGAIN : first.rating === HARD || first.hintCount > 0 ? HARD : GOOD;
   if (grade === GOOD && logs.every((l) => l.rating === GOOD && l.hintCount === 0)) {
-    const timed = logs.filter((l) => l.durationMs > 0);
+    const timed = logs.filter((l) => l.kind !== "handwrite" && l.durationMs > 0);
     if (timed.length && avg(timed.map((l) => l.durationMs)) <= medianMs) grade = EASY;
   }
   if (logs.slice(1).some((l) => l.rating === AGAIN)) grade = Math.min(grade, HARD) as Grade;

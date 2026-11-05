@@ -24,4 +24,8 @@ export interface AnswerProps {
   onSpeech: (transcripts: string[]) => void;
   /** Không nói được lúc này: bỏ các bước nói còn lại của phiên. */
   onSkipSpeak: () => void;
+  /** Bài viết tay: phương án nhận dạng (tốt nhất trước) của từng ô ký tự. */
+  onWritten: (cells: string[][]) => void;
+  /** Không viết được lúc này: bỏ các bước viết tay còn lại của phiên. */
+  onSkipWrite: () => void;
 }

@@ -117,6 +117,8 @@ export default function ReviewScreen() {
           onHint={r.hint}
           onSpeech={r.speech}
           onSkipSpeak={r.skipSpeak}
+          onWritten={r.written}
+          onSkipWrite={r.skipWrite}
           onKnown={() => {}}
           onNext={r.next}
         />

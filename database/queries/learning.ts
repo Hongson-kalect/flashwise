@@ -21,6 +21,8 @@ export interface LearnSettings {
   hearable: boolean;
   /** Cho luyện nói (bước nói chỉ có khi máy có nhận dạng giọng nói). */
   talkable: boolean;
+  /** Cho bước viết tay (zh / ja / ko, từ ngắn); mặc định bật. */
+  writable: boolean;
   /** Thẻ từ cấp này mới được ôn bằng vuốt (docs 5.2). */
   swipeMinLevel: number;
   swipeRetention: number;
@@ -41,6 +43,7 @@ export const loadLearnSettings = async (db: SQLiteDatabase): Promise<LearnSettin
     dayStartHour: Math.round(num(s.day_start_hour, 4, 0, 12)),
     hearable: s.hearable !== false,
     talkable: s.talkable !== false,
+    writable: s.writable !== false,
     swipeMinLevel: Math.round(num(s.swipe_min_level, 3, 0, 7)),
     swipeRetention: num(s.swipe_retention, 0.93, 0.7, 0.99),
     swipeDirection: typeof s.swipe_direction === "string" ? s.swipe_direction : "left_remember",

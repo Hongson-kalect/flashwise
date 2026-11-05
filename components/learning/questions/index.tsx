@@ -5,6 +5,7 @@ import { ScrollView, View } from "react-native";
 import FeedbackBar from "../FeedbackBar";
 import ChoiceList from "./ChoiceList";
 import { PROMPTS } from "./prompts";
+import HandwriteAnswer from "./HandwriteAnswer";
 import SpeakAnswer from "./SpeakAnswer";
 import TypeAnswer from "./TypeAnswer";
 import { AnswerProps } from "./types";
@@ -14,6 +15,7 @@ const ANSWERS: Record<Question["answerType"], ComponentType<AnswerProps>> = {
   choose: ChoiceList,
   type: TypeAnswer,
   speak: SpeakAnswer,
+  draw: HandwriteAnswer,
 };
 
 type Props = {
@@ -26,12 +28,14 @@ type Props = {
   onHint: () => void;
   onSpeech: (transcripts: string[]) => void;
   onSkipSpeak: () => void;
+  onWritten: (cells: string[][]) => void;
+  onSkipWrite: () => void;
   onKnown: () => void;
   onNext: () => void;
 };
 
 /** Khung 1 câu hỏi: phần đề (cuộn được) ở trên, ô trả lời hoặc thanh kết quả ở dưới. Chọn component theo registry. */
-const QuestionView = ({ card, question, attempt, feedback, hearable, onAnswer, onHint, onSpeech, onSkipSpeak, onKnown, onNext }: Props) => {
+const QuestionView = ({ card, question, attempt, feedback, hearable, onAnswer, onHint, onSpeech, onSkipSpeak, onWritten, onSkipWrite, onKnown, onNext }: Props) => {
   const Prompt = PROMPTS[question.kind];
   const Answer = ANSWERS[question.answerType];
   return (
@@ -41,7 +45,7 @@ const QuestionView = ({ card, question, attempt, feedback, hearable, onAnswer, o
       </ScrollView>
       <View className="px-4 pb-4 pt-2 gap-3">
         {(!feedback || question.answerType === "choose") && (
-          <Answer card={card} question={question} attempt={attempt} feedback={feedback} onAnswer={onAnswer} onHint={onHint} onSpeech={onSpeech} onSkipSpeak={onSkipSpeak} />
+          <Answer card={card} question={question} attempt={attempt} feedback={feedback} onAnswer={onAnswer} onHint={onHint} onSpeech={onSpeech} onSkipSpeak={onSkipSpeak} onWritten={onWritten} onSkipWrite={onSkipWrite} />
         )}
         {feedback && <FeedbackBar feedback={feedback} onNext={onNext} />}
       </View>

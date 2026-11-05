@@ -1,4 +1,5 @@
 import { normalizeAnswer } from "./checker";
+import { baseLang, isHandwritable } from "./handwriting";
 import { ChoiceOption, ClusterStepKind, glossOf, LearnCard, Question } from "./types";
 
 /** Nghĩa của 1 thẻ khác dùng làm đáp án nhiễu (từ chính cụm đang học trước, rồi từ bộ). */
@@ -16,6 +17,8 @@ type Rng = () => number;
 export interface Capabilities {
   hear: boolean;
   talk: boolean;
+  /** Ngôn ngữ (mã gốc) viết tay được ngay trên máy này (module + model đã sẵn); thiếu = không có bước viết. */
+  write?: string[];
 }
 
 const shuffle = <T,>(items: T[], rng: Rng) => {
@@ -111,6 +114,13 @@ const METHODS: StepMethod[] = [
     recall: true,
     needs: (_card, _pool, _rng, caps) => caps.talk,
     build: (card) => ({ kind: "speak", cardKey: card.key, answerType: "speak", answer: card.word, options: [] }),
+  },
+  {
+    // Viết tay từng ký tự bằng ngón tay (zh / ja / ko, từ ngắn)
+    kind: "handwrite",
+    recall: true,
+    needs: (card, _pool, _rng, caps) => !!caps.write?.includes(baseLang(card.lang)) && isHandwritable(card.word, card.lang),
+    build: (card) => ({ kind: "handwrite", cardKey: card.key, answerType: "draw", answer: card.word, options: [] }),
   },
 ];
 

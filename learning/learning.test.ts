@@ -413,3 +413,57 @@ test("tổng bước luôn khớp số bước đã làm khi xong (mọi đườ
     assert.equal(done.doneSteps, done.totalSteps);
   }
 });
+
+// ---------------------------------------------------------------- viết tay
+import { checkWritten, isHandwritable, writeChars } from "./handwriting";
+
+const jaCards = () => ["猫", "日本", "ありがとう", "犬"].map((w, i) => ({ ...makeCard(w, i), lang: "ja" }));
+
+test("viết tay: chỉ zh / ja / ko, 1..3 ký tự, toàn chữ Hán / kana / Hangul", () => {
+  assert.equal(isHandwritable("猫", "ja"), true);
+  assert.equal(isHandwritable("日本", "ja"), true);
+  assert.equal(isHandwritable("ありがとう", "ja"), false); // 5 ký tự
+  assert.equal(isHandwritable("你好", "zh-CN"), true);
+  assert.equal(isHandwritable("한국", "ko"), true);
+  assert.equal(isHandwritable("apple", "en"), false);
+  assert.equal(isHandwritable("a日", "ja"), false);
+  assert.deepEqual(writeChars("日 本"), ["日", "本"]);
+});
+
+test("chấm viết tay: mọi ô đứng đầu = exact, trong top 3 = close, thiếu / sai = wrong", () => {
+  assert.equal(checkWritten([["日"], ["本"]], "日本"), "exact");
+  assert.equal(checkWritten([["目", "日"], ["本"]], "日本"), "close");
+  assert.equal(checkWritten([["目", "白", "百", "日"], ["本"]], "日本"), "wrong"); // hạng 4
+  assert.equal(checkWritten([["日"]], "日本"), "wrong");
+  assert.equal(checkWritten([[], ["本"]], "日本"), "wrong");
+});
+
+test("bước viết tay chỉ có khi ngôn ngữ sẵn sàng và từ đủ ngắn; viết đúng xong thẻ, sai 2 lần hiện đáp án", () => {
+  const caps = { hear: false, talk: false, write: ["ja"] };
+  const s0 = startRun({ cards: jaCards(), clusterSteps: 6, now: T0, rng: seeded(), caps });
+  assert.ok(s0.cards.k0.questions.some((q) => q.kind === "handwrite"));
+  assert.ok(s0.cards.k1.questions.some((q) => q.kind === "handwrite"));
+  assert.ok(!s0.cards.k2.questions.some((q) => q.kind === "handwrite")); // quá dài
+  assert.ok(!startRun({ cards: jaCards(), clusterSteps: 6, now: T0, rng: seeded() }).cards.k0.questions.some((q) => q.kind === "handwrite")); // chưa có model
+
+  let s = s0;
+  let guard = 0;
+  while (currentQuestion(s)!.kind !== "handwrite") {
+    assert.ok(guard++ < 80);
+    s = right(s, T0 + guard * 10);
+    s = reduce(s, { type: "next", at: T0 + guard * 10 + 5 });
+  }
+  const answer = currentQuestion(s)!.answer;
+  const key = s.current!.cardKey;
+  s = reduce(s, { type: "written", cells: [...answer].map(() => ["x"]), at: T0 + 9000 });
+  assert.equal(s.phase, "question"); // sai lần 1: cho viết lại
+  s = reduce(s, { type: "written", cells: [...answer].map((c) => [c]), at: T0 + 9100 });
+  assert.equal(s.phase, "feedback");
+  assert.equal(s.cards[key].logs.at(-1)!.kind, "handwrite");
+  assert.equal(s.cards[key].logs.at(-1)!.rating, 2); // làm lại 1 lần = Khó
+
+  // Bỏ viết tay: các bước viết còn lại biến mất, không chấm
+  let t = reduce(s0, { type: "skipKind", kind: "handwrite", at: T0 + 1 });
+  const done = playAll(t).s;
+  for (const k of done.order) assert.ok(!done.cards[k].logs.some((l) => l.kind === "handwrite"));
+});

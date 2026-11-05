@@ -1,4 +1,5 @@
 import { checkAnswer, checkSpoken } from "./checker";
+import { checkWritten } from "./handwriting";
 import { autoGrade, autoGradeReview, clampGrade, DEFAULT_MEDIAN_MS } from "./grade";
 import { buildQuestions, Capabilities, PoolEntry, poolFromCards, stepCountFor } from "./steps";
 import { AGAIN, ClusterStepKind, GOOD, Grade, HARD, LearnCard, Question, StepLog, Verdict } from "./types";
@@ -74,6 +75,8 @@ export type Action =
   | { type: "hint"; at: number }
   /** Kết quả nhận dạng giọng nói (các phương án, tốt nhất trước) cho bước nói. */
   | { type: "speech"; transcripts: string[]; at: number }
+  /** Bài viết tay: các phương án nhận dạng (tốt nhất trước) của từng ô ký tự. */
+  | { type: "written"; cells: string[][]; at: number }
   /** Bỏ các bước thuộc kiểu này còn lại trong phiên (vd không nói được lúc này): không chấm, không tính điểm. */
   | { type: "skipKind"; kind: ClusterStepKind; at: number }
   | { type: "known"; at: number }
@@ -229,6 +232,17 @@ export const reduce = (state: RunState, action: Action): RunState => {
       if (attempt.tries >= MAX_TRIES) return finalize({ ...state, attempt }, { correct: false, revealed: true, verdict: "wrong" }, action.at);
       return { ...state, attempt };
     }
+    case "written": {
+      if (state.phase !== "question" || !state.current) return state;
+      const question = currentQuestion(state)!;
+      if (question.answerType !== "draw") return state;
+      const attempt = { ...state.attempt, tries: state.attempt.tries + 1 };
+      const verdict = checkWritten(action.cells, question.answer);
+      if (verdict !== "wrong") return finalize({ ...state, attempt }, { correct: true, revealed: false, verdict }, action.at);
+      attempt.lastVerdict = "wrong";
+      if (attempt.tries >= MAX_TRIES) return finalize({ ...state, attempt }, { correct: false, revealed: true, verdict: "wrong" }, action.at);
+      return { ...state, attempt };
+    }
     case "skipKind": {
       if (state.phase !== "question" || !state.current) return state;
       const skipped = state.skipped.includes(action.kind) ? state.skipped : [...state.skipped, action.kind];
@@ -255,7 +269,7 @@ export const reduce = (state: RunState, action: Action): RunState => {
     case "hint": {
       if (state.phase !== "question") return state;
       const question = currentQuestion(state);
-      if (!question || question.answerType !== "type") return state;
+      if (!question || (question.answerType !== "type" && question.answerType !== "draw")) return state;
       const attempt = { ...state.attempt, hints: state.attempt.hints + 1 };
       if (attempt.hints > MAX_HINTS) return finalize({ ...state, attempt }, { correct: false, revealed: true, verdict: null }, action.at);
       return { ...state, attempt };

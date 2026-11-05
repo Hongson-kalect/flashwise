@@ -6,7 +6,7 @@ export const GOOD: Grade = 3;
 export const EASY: Grade = 4;
 
 /** Các kiểu bước của phiên học cụm (docs/learning-design.md 3.1). Thêm kiểu mới = thêm vào registry ở steps.ts + UI ở components/learning. */
-export type StepKind = "copy" | "chooseMeaning" | "chooseWord" | "typeWord" | "listenChoose" | "dictation" | "speak" | "swipe";
+export type StepKind = "copy" | "chooseMeaning" | "chooseWord" | "typeWord" | "listenChoose" | "dictation" | "speak" | "handwrite" | "swipe";
 /** Bước của phiên theo cụm (khác vuốt, vuốt có reducer riêng ở swipe.ts). */
 export type ClusterStepKind = Exclude<StepKind, "swipe">;
 
@@ -48,8 +48,8 @@ export interface ChoiceOption {
 export interface Question {
   kind: ClusterStepKind;
   cardKey: string;
-  /** type = gõ, choose = chọn đáp án, speak = nói vào micro (nhận dạng trên máy). */
-  answerType: "type" | "choose" | "speak";
+  /** type = gõ, choose = chọn đáp án, speak = nói vào micro (nhận dạng trên máy), draw = viết tay từng ký tự. */
+  answerType: "type" | "choose" | "speak" | "draw";
   /** Đáp án chuẩn (để so khi gõ, để hiện khi sai). */
   answer: string;
   options: ChoiceOption[];

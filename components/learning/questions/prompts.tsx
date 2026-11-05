@@ -151,6 +151,15 @@ const SpeakPrompt = ({ card }: PromptProps) => (
   </View>
 );
 
+/** Nhìn nghĩa, viết từ bằng ngón tay (ô vẽ ở phần trả lời bên dưới). */
+const HandwritePrompt = ({ card }: PromptProps) => (
+  <View className="gap-4 pt-2">
+    <Label>Viết từ có nghĩa này</Label>
+    <SenseImage card={card} height={110} />
+    <Meaning card={card} big />
+  </View>
+);
+
 /** Registry: kiểu bước → phần đề. Thêm kiểu bước mới (cloze, nghe, nói...) thì đăng ký thêm ở đây và ở learning/steps.ts. */
 export const PROMPTS: Record<ClusterStepKind, ComponentType<PromptProps>> = {
   copy: CopyPrompt,
@@ -160,4 +169,5 @@ export const PROMPTS: Record<ClusterStepKind, ComponentType<PromptProps>> = {
   listenChoose: ListenChoosePrompt,
   dictation: DictationPrompt,
   speak: SpeakPrompt,
+  handwrite: HandwritePrompt,
 };
