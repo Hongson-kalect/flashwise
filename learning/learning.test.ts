@@ -198,3 +198,119 @@ test("toCard: áp delta (định nghĩa thay hẳn, bản dịch gộp) và lấ
   assert.equal(card.ipa, "/bæŋk/");
   assert.equal(card.pos, "noun");
 });
+
+// ------------------------------------------------------------------ ôn tập + vuốt
+import { autoGradeReview } from "./grade";
+import { nextLevel, retrievability, scheduleReview } from "./fsrsService";
+import { directionFor, reduceSwipe, startSwipe, swipeResults, SwipeState } from "./swipe";
+import { fromDbTime, toDbTime } from "./time";
+
+const swipeCards = () => cards(4);
+const swipeTo = (s: SwipeState, dir: "remember" | "unsure", at: number) => reduceSwipe(s, { type: "swipe", direction: dir, at });
+
+test("vuốt: nhớ ngay = Vừa, không có Dễ", () => {
+  let s = startSwipe({ cards: swipeCards(), now: T0 });
+  let at = T0;
+  while (s.phase === "swiping") s = swipeTo(s, "remember", (at += 2000));
+  const results = swipeResults(s);
+  assert.equal(results.length, 4);
+  assert.ok(results.every((r) => r.grade === 3 && r.steps.length === 0));
+});
+
+test("vuốt: chưa chắc +1, quay lại giữa chồng; nhớ sau đó = Khó; đủ 3 lần = Quên và xem lại 1 lần", () => {
+  let s = startSwipe({ cards: swipeCards(), now: T0 });
+  const first = s.current!.cardKey;
+  s = swipeTo(s, "unsure", T0 + 1000); // điểm 1, chèn lại giữa
+  assert.equal(s.cards[first].score, 1);
+  assert.ok(s.queue.some((i) => i.cardKey === first));
+  assert.notEqual(s.current!.cardKey, first);
+
+  let at = T0 + 1000;
+  let guard = 0;
+  // vuốt nhớ mọi thẻ khác cho tới khi gặp lại thẻ đầu
+  while (s.current!.cardKey !== first) {
+    assert.ok(guard++ < 20);
+    s = swipeTo(s, "remember", (at += 1000));
+  }
+  s = swipeTo(s, "remember", (at += 1000)); // điểm 1 → Khó
+  assert.equal(s.cards[first].grade, 2);
+
+  // thẻ khác: 3 lần "chưa chắc" = Quên, rồi được xem lại ở cuối, vuốt xem lại không chấm
+  let t = startSwipe({ cards: swipeCards(), now: T0 });
+  const key = t.current!.cardKey;
+  let n = 0;
+  while (t.cards[key].grade === null) {
+    assert.ok(n++ < 40);
+    t = t.current!.cardKey === key && !t.current!.review ? swipeTo(t, "unsure", (at += 1000)) : swipeTo(t, "remember", (at += 1000));
+  }
+  assert.equal(t.cards[key].grade, 1);
+  assert.equal(t.cards[key].steps.length, 3 - 0); // 3 lần chưa chắc đều ghi lại
+  while (t.phase === "swiping") t = swipeTo(t, "remember", (at += 1000));
+  assert.equal(swipeResults(t).find((r) => r.card.key === key)!.grade, 1); // xem lại không đổi điểm
+  assert.equal(t.finalized, 4);
+});
+
+test("vuốt: xem nghĩa = Quên ngay, hoàn tác lùi 1 bước", () => {
+  let s = startSwipe({ cards: swipeCards(), now: T0 });
+  const key = s.current!.cardKey;
+  s = reduceSwipe(s, { type: "flip", at: T0 + 500 });
+  assert.equal(s.cards[key].score, 3);
+  s = swipeTo(s, "remember", T0 + 1000); // lật rồi vuốt hướng nào cũng Quên
+  assert.equal(s.cards[key].grade, 1);
+  assert.equal(s.finalized, 1);
+  s = reduceSwipe(s, { type: "undo", at: T0 + 1500 });
+  assert.equal(s.cards[key].grade, null);
+  assert.equal(s.current!.cardKey, key);
+  assert.equal(s.finalized, 0);
+});
+
+test("hướng vuốt theo cài đặt", () => {
+  assert.equal(directionFor("left_remember", "left"), "remember");
+  assert.equal(directionFor(undefined, "right"), "unsure");
+  assert.equal(directionFor("right_remember", "right"), "remember");
+});
+
+test("ôn theo cụm: bỏ bước copy, điểm theo bước đầu, bước sau chỉ hạ khi sai nặng", () => {
+  const s = startRun({ cards: cards(4), mode: "review", levels: { k0: 1 }, clusterSteps: 6, now: T0, rng: seeded() });
+  assert.ok(!s.cards.k0.questions.some((q) => q.kind === "copy"));
+  assert.equal(s.mode, "review");
+  const log = (over: Partial<StepLog>): StepLog => ({ kind: "chooseMeaning", rating: 3, correct: true, hintCount: 0, attempts: 1, durationMs: 2000, at: 0, ...over });
+  assert.equal(autoGradeReview([log({ rating: 1 }), log({}), log({})]), 1);
+  assert.equal(autoGradeReview([log({}), log({ rating: 1 })]), 2); // sau sai nặng: hạ xuống Khó
+  assert.equal(autoGradeReview([log({ rating: 2 }), log({})]), 2);
+  assert.equal(autoGradeReview([log({}), log({ kind: "typeWord" })], 6000), 4);
+  const { s: done } = playAll(s);
+  assert.equal(done.phase, "summary");
+  assert.ok(Object.values(done.autoGrades).every((g) => g >= 3));
+});
+
+test("FSRS ôn: nhớ thì khoảng ôn dài ra, quên thì ôn lại sớm; vuốt dùng mục tiêu nhớ cao nên ngắn hơn", () => {
+  const sched = makeScheduler({ fuzz: false });
+  const long = makeScheduler({ fuzz: false, retention: 0.93 });
+  const at0 = new Date("2026-11-01T08:00:00Z");
+  const base = { level: 2, state: 2, stability: 10, difficulty: 5, learningSteps: 0, repetitions: 3, forgetCount: 0, lastReviewedAt: at0, nextReviewAt: new Date("2026-11-11T08:00:00Z") };
+  const at = new Date("2026-11-11T08:00:00Z");
+  const good = scheduleReview(sched, base, 3, at, "normal");
+  assert.equal(good.state, 2);
+  assert.ok(good.scheduledDays > 10);
+  assert.equal(good.level, 3);
+  const quick = scheduleReview(long, base, 3, at, "quick");
+  assert.ok(quick.scheduledDays < good.scheduledDays);
+  const again = scheduleReview(sched, base, 1, at, "normal");
+  assert.equal(again.lapsed, true);
+  assert.equal(again.level, 0);
+  assert.ok(again.scheduledDays < 1);
+  assert.equal(nextLevel(5, 3, "quick"), 5); // vuốt không vượt cấp 5
+  assert.equal(nextLevel(5, 3, "normal"), 6);
+  assert.equal(nextLevel(1, 1, "normal"), 0);
+  assert.equal(nextLevel(4, 2, "normal"), 4);
+});
+
+test("R giảm theo thời gian và = 0,9 khi t = S; time đọc / ghi đối xứng", () => {
+  assert.ok(Math.abs(retrievability(10, 10) - 0.9) < 1e-6);
+  assert.ok(retrievability(10, 30) < retrievability(10, 5));
+  const d = new Date("2026-11-05T10:20:30Z");
+  assert.equal(toDbTime(d), "2026-11-05 10:20:30");
+  assert.equal(fromDbTime("2026-11-05 10:20:30")!.getTime(), d.getTime());
+  assert.equal(fromDbTime(null), null);
+});

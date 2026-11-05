@@ -1,5 +1,5 @@
 import { normalizeAnswer } from "./checker";
-import { ChoiceOption, glossOf, LearnCard, Question, StepKind } from "./types";
+import { ChoiceOption, ClusterStepKind, glossOf, LearnCard, Question } from "./types";
 
 /** Nghĩa của 1 thẻ khác dùng làm đáp án nhiễu (từ chính cụm đang học trước, rồi từ bộ). */
 export interface PoolEntry {
@@ -40,7 +40,7 @@ const distractors = (card: LearnCard, pool: PoolEntry[], field: "word" | "gloss"
   return result;
 };
 
-const choose = (card: LearnCard, kind: StepKind, answer: string, wrong: string[], rng: Rng): Question => {
+const choose = (card: LearnCard, kind: ClusterStepKind, answer: string, wrong: string[], rng: Rng): Question => {
   const options: ChoiceOption[] = shuffle(
     [{ text: answer, correct: true }, ...wrong.map((text) => ({ text, correct: false }))],
     rng,
@@ -53,7 +53,7 @@ const choose = (card: LearnCard, kind: StepKind, answer: string, wrong: string[]
  * Thêm kiểu mới (cloze, nghe, nói...): thêm vào StepKind, vào đây, và vẽ ở components/learning/questions.
  */
 interface StepMethod {
-  kind: StepKind;
+  kind: ClusterStepKind;
   /** Bước nhớ lại (tự nhớ ra từ) quan trọng hơn bước nhận ra: bị cắt sau cùng khi phải rút ngắn. */
   recall: boolean;
   needs: (card: LearnCard, pool: PoolEntry[], rng: Rng) => boolean;
@@ -91,10 +91,11 @@ const METHODS: StepMethod[] = [
 export const stepCountFor = (level: number, clusterSteps: number) => Math.max(3, clusterSteps - level);
 
 /** Thứ tự bước nhận ra → nhớ lại; rút ngắn thì bỏ bước nhận ra trước, giữ copy và gõ từ. */
-const DROP_ORDER: StepKind[] = ["chooseWord", "chooseMeaning", "copy"];
+const DROP_ORDER: ClusterStepKind[] = ["chooseWord", "chooseMeaning", "copy"];
 
-export const buildQuestions = (card: LearnCard, pool: PoolEntry[], stepCount: number, rng: Rng = Math.random): Question[] => {
-  let methods = METHODS.filter((m) => m.needs(card, pool, rng));
+/** `exclude`: kiểu bước bỏ hẳn (ôn lại không cần bước copy: thẻ không phải mới). */
+export const buildQuestions = (card: LearnCard, pool: PoolEntry[], stepCount: number, rng: Rng = Math.random, exclude: ClusterStepKind[] = []): Question[] => {
+  let methods = METHODS.filter((m) => !exclude.includes(m.kind) && m.needs(card, pool, rng));
   for (const kind of DROP_ORDER) {
     if (methods.length <= stepCount) break;
     methods = methods.filter((m) => m.kind !== kind);
@@ -102,4 +103,4 @@ export const buildQuestions = (card: LearnCard, pool: PoolEntry[], stepCount: nu
   return methods.map((m) => m.build(card, pool, rng));
 };
 
-export const isRecall = (kind: StepKind) => METHODS.find((m) => m.kind === kind)?.recall ?? false;
+export const isRecall = (kind: ClusterStepKind) => METHODS.find((m) => m.kind === kind)?.recall ?? false;

@@ -1,5 +1,5 @@
 import { checkAnswer } from "./checker";
-import { autoGrade, clampGrade, DEFAULT_MEDIAN_MS } from "./grade";
+import { autoGrade, autoGradeReview, clampGrade, DEFAULT_MEDIAN_MS } from "./grade";
 import { buildQuestions, PoolEntry, poolFromCards, stepCountFor } from "./steps";
 import { AGAIN, GOOD, Grade, HARD, LearnCard, Question, StepLog, Verdict } from "./types";
 
@@ -47,7 +47,10 @@ export interface Feedback {
 
 export type Phase = "question" | "feedback" | "summary";
 
+export type RunMode = "learn" | "review";
+
 export interface RunState {
+  mode: RunMode;
   phase: Phase;
   cards: Record<string, CardRun>;
   order: string[];
@@ -73,6 +76,10 @@ export type Action =
 
 export interface StartInput {
   cards: LearnCard[];
+  /** learn = học mới (bước đầu là copy, có "Đã biết"); review = ôn thẻ đã học theo cụm (bỏ copy, điểm theo bước đầu). */
+  mode?: RunMode;
+  /** Cấp hiện tại của từng thẻ (review): quyết định số bước, thẻ cấp cao ít bước hơn. */
+  levels?: Record<string, number>;
   /** Thẻ khác trong bộ làm đáp án nhiễu (ngoài chính cụm). */
   extraPool?: PoolEntry[];
   clusterSteps: number;
@@ -83,16 +90,18 @@ export interface StartInput {
 
 const freshAttempt = (at: number): Attempt => ({ tries: 0, hints: 0, wrongOptionIds: [], startedAt: at, lastVerdict: null });
 
-export const startRun = ({ cards, extraPool = [], clusterSteps, now, medianMs = DEFAULT_MEDIAN_MS, rng = Math.random }: StartInput): RunState => {
+export const startRun = ({ cards, mode = "learn", levels = {}, extraPool = [], clusterSteps, now, medianMs = DEFAULT_MEDIAN_MS, rng = Math.random }: StartInput): RunState => {
   const pool = [...poolFromCards(cards), ...extraPool];
   const runs: Record<string, CardRun> = {};
   for (const card of cards) {
-    runs[card.key] = { card, questions: buildQuestions(card, pool, stepCountFor(0, clusterSteps), rng), logs: [], known: false };
+    const exclude = mode === "review" ? (["copy"] as const) : [];
+    runs[card.key] = { card, questions: buildQuestions(card, pool, stepCountFor(levels[card.key] ?? 0, clusterSteps), rng, [...exclude]), logs: [], known: false };
   }
   const order = cards.map((c) => c.key);
   const queue: Item[] = order.map((cardKey) => ({ cardKey, stepIdx: 0, pass: 1 }));
   const totalSteps = order.reduce((n, key) => n + runs[key].questions.length, 0);
   const state: RunState = {
+    mode,
     phase: "question", cards: runs, order, queue, current: null, attempt: freshAttempt(now), feedback: null,
     lastCardKey: null, totalSteps, doneSteps: 0, autoGrades: {}, grades: {}, medianMs, startedAt: now,
   };
@@ -115,7 +124,7 @@ const advance = (state: RunState, at: number): RunState => {
     const autoGrades: Record<string, Grade> = {};
     for (const key of state.order) {
       const run = state.cards[key];
-      autoGrades[key] = run.known ? 4 : autoGrade(run.logs, state.medianMs);
+      autoGrades[key] = run.known ? 4 : (state.mode === "review" ? autoGradeReview : autoGrade)(run.logs, state.medianMs);
     }
     return { ...state, phase: "summary", current: null, feedback: null, autoGrades, grades: { ...autoGrades } };
   }

@@ -44,7 +44,7 @@ const StudyCard = ({ due, loading }: { due: number; loading: boolean }) => {
       <Pressable
         onPress={() =>
           hasDue
-            ? router.push("/screens/Practice/screen")
+            ? router.push("/screens/Learning/Review/screen")
             : router.push("/screens/Collection/Discover/List/screen")
         }
         className="mt-5 h-12 rounded-2xl flex-row items-center justify-center gap-2"

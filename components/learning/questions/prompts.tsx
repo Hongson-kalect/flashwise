@@ -2,7 +2,7 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import SenseImage from "@/components/learning/SenseImage";
 import WordHeader from "@/components/learning/WordHeader";
-import { LearnCard, StepKind } from "@/learning/types";
+import { ClusterStepKind, LearnCard } from "@/learning/types";
 import { glossOf } from "@/learning/types";
 import { useTheme } from "@/providers/Theme";
 import { ComponentType } from "react";
@@ -98,7 +98,7 @@ const TypeWordPrompt = ({ card }: PromptProps) => (
 );
 
 /** Registry: kiểu bước → phần đề. Thêm kiểu bước mới (cloze, nghe, nói...) thì đăng ký thêm ở đây và ở learning/steps.ts. */
-export const PROMPTS: Record<StepKind, ComponentType<PromptProps>> = {
+export const PROMPTS: Record<ClusterStepKind, ComponentType<PromptProps>> = {
   copy: CopyPrompt,
   chooseMeaning: ChooseMeaningPrompt,
   chooseWord: ChooseWordPrompt,

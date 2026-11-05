@@ -3,6 +3,7 @@ import QuestionView from "@/components/learning/questions";
 import StateView from "@/components/learning/StateView";
 import SummaryView from "@/components/learning/SummaryView";
 import { progressOf } from "@/learning/engine";
+import { useAutoAdvance } from "@/learning/useAutoAdvance";
 import { useLearnRun } from "@/learning/useLearnRun";
 import { useTheme } from "@/providers/Theme";
 import useUserStateStore from "@/stores/userStateStore";
@@ -10,8 +11,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect } from "react";
 import { ActivityIndicator, Alert, BackHandler, KeyboardAvoidingView, Platform, View } from "react-native";
-
-const AUTO_NEXT_MS = 650;
 
 /**
  * Học từ mới của 1 bộ (param `id` = id UserCollection): 1 cụm vài nghĩa, mỗi nghĩa đi qua các bước (xem thẻ + gõ lại, chọn nghĩa,
@@ -46,13 +45,7 @@ export default function LearnNewScreen() {
     return () => sub.remove();
   }, [status, state, confirmExit]);
 
-  // Đúng ngay (không gợi ý, không làm lại): tự sang câu kế sau một nhịp ngắn
-  const quick = !!state && state.phase === "feedback" && !!state.feedback?.correct && state.feedback.verdict !== "close" && state.attempt.tries === 1 && state.attempt.hints === 0;
-  useEffect(() => {
-    if (!quick) return;
-    const t = setTimeout(run.next, AUTO_NEXT_MS);
-    return () => clearTimeout(t);
-  }, [quick, state?.doneSteps]);
+  useAutoAdvance(state, run.next);
 
   useEffect(() => {
     if (status === "done") queryClient.invalidateQueries({ queryKey: ["collections"] });

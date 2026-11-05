@@ -4,13 +4,13 @@ import { DEFAULT_MEDIAN_MS } from "@/learning/grade";
 import { makeScheduler, MAX_LEVEL, scheduleNew } from "@/learning/fsrsService";
 import { PoolEntry } from "@/learning/steps";
 import { AGAIN, glossOf, LearnCard } from "@/learning/types";
+import { toDbTime } from "@/learning/time";
 import { uuidv7 } from "@/utils/uuidv7";
 import { SQLiteDatabase } from "expo-sqlite";
 import { dateKey, learningDayBounds } from "./home";
 import { getUserSettings } from "../schema/userSetting";
 
-/** 'YYYY-MM-DD HH:MM:SS' theo UTC, định dạng mọi cột thời gian của SQLite (so sánh bằng datetime()). */
-export const toDbTime = (d: Date | number) => new Date(d).toISOString().replace("T", " ").slice(0, 19);
+export { toDbTime };
 
 export interface LearnSettings {
   clusterSize: number;
@@ -19,6 +19,11 @@ export interface LearnSettings {
   firstReviewHours: number;
   dayStartHour: number;
   hearable: boolean;
+  /** Thẻ từ cấp này mới được ôn bằng vuốt (docs 5.2). */
+  swipeMinLevel: number;
+  swipeRetention: number;
+  /** "left_remember" (vuốt trái = nhớ) hoặc "right_remember". */
+  swipeDirection: string;
 }
 
 const num = (v: unknown, fallback: number, lo: number, hi: number) =>
@@ -33,6 +38,9 @@ export const loadLearnSettings = async (db: SQLiteDatabase): Promise<LearnSettin
     firstReviewHours: num(s.first_review_hours, 6, 1, 24),
     dayStartHour: Math.round(num(s.day_start_hour, 4, 0, 12)),
     hearable: s.hearable !== false,
+    swipeMinLevel: Math.round(num(s.swipe_min_level, 3, 0, 7)),
+    swipeRetention: num(s.swipe_retention, 0.93, 0.7, 0.99),
+    swipeDirection: typeof s.swipe_direction === "string" ? s.swipe_direction : "left_remember",
   };
 };
 

@@ -6,7 +6,9 @@ export const GOOD: Grade = 3;
 export const EASY: Grade = 4;
 
 /** Các kiểu bước của phiên học cụm (docs/learning-design.md 3.1). Thêm kiểu mới = thêm vào registry ở steps.ts + UI ở components/learning. */
-export type StepKind = "copy" | "chooseMeaning" | "chooseWord" | "typeWord";
+export type StepKind = "copy" | "chooseMeaning" | "chooseWord" | "typeWord" | "swipe";
+/** Bước của phiên theo cụm (khác vuốt, vuốt có reducer riêng ở swipe.ts). */
+export type ClusterStepKind = Exclude<StepKind, "swipe">;
 
 /** Dữ liệu 1 thẻ (1 nghĩa) đã gộp từ SQLite: contents + delta, đúng ngôn ngữ của từ / của người học. */
 export interface LearnCard {
@@ -44,7 +46,7 @@ export interface ChoiceOption {
 
 /** 1 câu hỏi của 1 bước. UI chọn cách vẽ theo `kind`, ô trả lời theo `answerType`. */
 export interface Question {
-  kind: StepKind;
+  kind: ClusterStepKind;
   cardKey: string;
   answerType: "type" | "choose";
   /** Đáp án chuẩn (để so khi gõ, để hiện khi sai). */
