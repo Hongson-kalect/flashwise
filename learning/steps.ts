@@ -12,6 +12,12 @@ export const poolFromCards = (cards: LearnCard[]): PoolEntry[] => cards.map((c) 
 
 type Rng = () => number;
 
+/** Thiết bị / cài đặt có cho nghe (loa, `hearable`) và nói (micro + nhận dạng, `talkable`) không; thiếu thì bước tương ứng bị bỏ. */
+export interface Capabilities {
+  hear: boolean;
+  talk: boolean;
+}
+
 const shuffle = <T,>(items: T[], rng: Rng) => {
   const a = [...items];
   for (let i = a.length - 1; i > 0; i--) {
@@ -56,7 +62,7 @@ interface StepMethod {
   kind: ClusterStepKind;
   /** Bước nhớ lại (tự nhớ ra từ) quan trọng hơn bước nhận ra: bị cắt sau cùng khi phải rút ngắn. */
   recall: boolean;
-  needs: (card: LearnCard, pool: PoolEntry[], rng: Rng) => boolean;
+  needs: (card: LearnCard, pool: PoolEntry[], rng: Rng, caps: Capabilities) => boolean;
   build: (card: LearnCard, pool: PoolEntry[], rng: Rng) => Question;
 }
 
@@ -80,10 +86,31 @@ const METHODS: StepMethod[] = [
     build: (card, pool, rng) => choose(card, "chooseWord", card.word, distractors(card, pool, "word", rng), rng),
   },
   {
+    // Nghe (không thấy chữ), chọn từ đúng
+    kind: "listenChoose",
+    recall: false,
+    needs: (card, pool, rng, caps) => caps.hear && distractors(card, pool, "word", rng).length >= MIN_DISTRACTORS,
+    build: (card, pool, rng) => choose(card, "listenChoose", card.word, distractors(card, pool, "word", rng), rng),
+  },
+  {
     kind: "typeWord",
     recall: true,
     needs: () => true,
     build: (card) => ({ kind: "typeWord", cardKey: card.key, answerType: "type", answer: card.word, options: [] }),
+  },
+  {
+    // Chính tả: nghe rồi gõ lại từ
+    kind: "dictation",
+    recall: true,
+    needs: (_card, _pool, _rng, caps) => caps.hear,
+    build: (card) => ({ kind: "dictation", cardKey: card.key, answerType: "type", answer: card.word, options: [] }),
+  },
+  {
+    // Đọc to từ, nhận dạng giọng nói trên máy
+    kind: "speak",
+    recall: true,
+    needs: (_card, _pool, _rng, caps) => caps.talk,
+    build: (card) => ({ kind: "speak", cardKey: card.key, answerType: "speak", answer: card.word, options: [] }),
   },
 ];
 
@@ -91,11 +118,18 @@ const METHODS: StepMethod[] = [
 export const stepCountFor = (level: number, clusterSteps: number) => Math.max(3, clusterSteps - level);
 
 /** Thứ tự bước nhận ra → nhớ lại; rút ngắn thì bỏ bước nhận ra trước, giữ copy và gõ từ. */
-const DROP_ORDER: ClusterStepKind[] = ["chooseWord", "chooseMeaning", "copy"];
+const DROP_ORDER: ClusterStepKind[] = ["chooseWord", "listenChoose", "chooseMeaning", "copy", "dictation"];
 
 /** `exclude`: kiểu bước bỏ hẳn (ôn lại không cần bước copy: thẻ không phải mới). */
-export const buildQuestions = (card: LearnCard, pool: PoolEntry[], stepCount: number, rng: Rng = Math.random, exclude: ClusterStepKind[] = []): Question[] => {
-  let methods = METHODS.filter((m) => !exclude.includes(m.kind) && m.needs(card, pool, rng));
+export const buildQuestions = (
+  card: LearnCard,
+  pool: PoolEntry[],
+  stepCount: number,
+  rng: Rng = Math.random,
+  exclude: ClusterStepKind[] = [],
+  caps: Capabilities = { hear: false, talk: false },
+): Question[] => {
+  let methods = METHODS.filter((m) => !exclude.includes(m.kind) && m.needs(card, pool, rng, caps));
   for (const kind of DROP_ORDER) {
     if (methods.length <= stepCount) break;
     methods = methods.filter((m) => m.kind !== kind);

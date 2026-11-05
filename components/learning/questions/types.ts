@@ -20,4 +20,8 @@ export interface AnswerProps {
   feedback: Feedback | null;
   onAnswer: (value: string) => void;
   onHint: () => void;
+  /** Kết quả nhận dạng giọng nói (phương án tốt nhất trước) cho bước nói. */
+  onSpeech: (transcripts: string[]) => void;
+  /** Không nói được lúc này: bỏ các bước nói còn lại của phiên. */
+  onSkipSpeak: () => void;
 }

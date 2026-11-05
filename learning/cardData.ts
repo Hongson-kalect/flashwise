@@ -58,7 +58,7 @@ export const toCard = (r: CardRow, userLang: string): LearnCard => {
   const examples: any[] = Array.isArray(contents.examples) ? contents.examples : [];
   const found = examples.find((e) => text(e?.[lang]));
   const rawIpa: string = parse<any[]>(r.ipas, [])[0]?.value || parse<any[]>(r.word_ipas, [])[0]?.value || "";
-  const ipa = rawIpa.replace(/[/\[\]]/g, "").trim() ? rawIpa : ""; // dữ liệu có phiên âm chỉ là "/" thì bỏ
+  const ipa = /\p{L}/u.test(rawIpa) ? rawIpa : ""; // phiên âm không có chữ nào (vd chỉ "/") thì bỏ
 
   return {
     key: String(r.original_id || r.sense_id),

@@ -24,6 +24,7 @@ const T0 = 1_000_000;
 /** Trả lời đúng câu hiện tại. */
 const right = (s: RunState, at: number) => {
   const q = currentQuestion(s)!;
+  if (q.answerType === "speak") return reduce(s, { type: "speech", transcripts: [q.answer], at });
   const value = q.answerType === "choose" ? q.options.find((o) => o.correct)!.id : q.answer;
   return reduce(s, { type: "answer", value, at });
 };
@@ -313,4 +314,88 @@ test("R giảm theo thời gian và = 0,9 khi t = S; time đọc / ghi đối x�
   assert.equal(toDbTime(d), "2026-11-05 10:20:30");
   assert.equal(fromDbTime("2026-11-05 10:20:30")!.getTime(), d.getTime());
   assert.equal(fromDbTime(null), null);
+});
+
+
+// ------------------------------------------------------------------ nghe + nói
+import { checkSpoken, normalizeAnswer, toHiragana } from "./checker";
+
+const VOICE = { hear: true, talk: true };
+const kinds = (s: RunState, key = "k0") => s.cards[key].questions.map((q) => q.kind);
+
+test("chấm câu nói: khớp phương án nào cũng được, gần đúng chỉ khi là phương án đầu, tiếng Nhật không phân biệt hira / kata và dấu cách", () => {
+  assert.equal(checkSpoken(["apple"], "apple"), "exact");
+  assert.equal(checkSpoken(["apel", "apple"], "apple"), "exact"); // phương án sau khớp
+  assert.equal(checkSpoken(["aple"], "apple"), "close");
+  assert.equal(checkSpoken(["xyz", "aple"], "apple"), "wrong"); // gần đúng nhưng không phải phương án đầu
+  assert.equal(checkSpoken(["banana"], "apple"), "wrong");
+  assert.equal(checkSpoken([], "apple"), "wrong");
+  assert.equal(toHiragana("ネコ"), "ねこ");
+  assert.equal(checkSpoken(["ネコ"], "ねこ", "ja"), "exact");
+  assert.equal(checkSpoken(["ね こ"], "ねこ", "ja"), "exact");
+  assert.equal(normalizeAnswer("New York", "en"), "new york"); // tiếng Anh giữ dấu cách
+});
+
+test("khả năng nghe / nói quyết định bước: có đủ thì thêm nghe chọn, chính tả, nói (rút ngắn bỏ chọn từ trước)", () => {
+  assert.deepEqual(kinds(startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(), caps: VOICE })), ["copy", "chooseMeaning", "listenChoose", "typeWord", "dictation", "speak"]);
+  assert.deepEqual(kinds(startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(), caps: { hear: true, talk: false } })), ["copy", "chooseMeaning", "chooseWord", "listenChoose", "typeWord", "dictation"]);
+  assert.deepEqual(kinds(startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded() })), ["copy", "chooseMeaning", "chooseWord", "typeWord"]); // mặc định không nghe / nói
+});
+
+test("bước nói: đọc đúng là xong, sai 2 lần thì hiện đáp án và hỏi lại, gần đúng tính Khó", () => {
+  let s = startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(), caps: VOICE });
+  let guard = 0;
+  while (currentQuestion(s)!.kind !== "speak") {
+    assert.ok(guard++ < 80);
+    s = right(s, T0 + guard * 10);
+    s = reduce(s, { type: "next", at: T0 + guard * 10 + 5 });
+  }
+  const key = s.current!.cardKey;
+  const before = s.totalSteps;
+  s = reduce(s, { type: "speech", transcripts: ["zzz"], at: T0 + 9000 });
+  assert.equal(s.phase, "question");
+  assert.equal(s.attempt.lastVerdict, "wrong");
+  s = reduce(s, { type: "speech", transcripts: ["qqq"], at: T0 + 9500 });
+  assert.equal(s.feedback!.revealed, true);
+  assert.equal(s.totalSteps, before + 1);
+  assert.equal(s.cards[key].logs.at(-1)!.rating, 1);
+  assert.equal(s.cards[key].logs.at(-1)!.kind, "speak");
+  // câu nói không dùng cho bước gõ
+  const typing = startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(), caps: VOICE });
+  assert.equal(reduce(typing, { type: "speech", transcripts: ["x"], at: T0 }), typing);
+});
+
+test("'Không nói được lúc này': bỏ mọi bước nói, tổng bước khớp, phiên vẫn xong và không có log nói", () => {
+  let s = startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(), caps: VOICE });
+  const total = s.totalSteps;
+  s = reduce(s, { type: "skipKind", kind: "speak", at: T0 + 1 }); // bước đầu là copy, các bước nói còn phía sau
+  assert.equal(s.totalSteps, total - 4);
+  const { s: done } = playAll(s);
+  assert.equal(done.phase, "summary");
+  assert.equal(done.doneSteps, done.totalSteps);
+  for (const key of done.order) assert.ok(!done.cards[key].logs.some((l) => l.kind === "speak"));
+  assert.ok(done.cards.k0.logs.some((l) => l.kind === "dictation"));
+});
+
+test("bỏ bước nói ngay khi đang hỏi bước nói: chuyển sang bước kế của thẻ đó", () => {
+  let s = startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(), caps: VOICE });
+  let guard = 0;
+  while (currentQuestion(s)!.kind !== "speak") {
+    assert.ok(guard++ < 80);
+    s = right(s, T0 + guard * 10);
+    s = reduce(s, { type: "next", at: T0 + guard * 10 + 5 });
+  }
+  const stuck = s.current!.cardKey;
+  s = reduce(s, { type: "skipKind", kind: "speak", at: T0 + 5000 });
+  assert.notEqual(currentQuestion(s)?.kind, "speak");
+  const { s: done } = playAll(s);
+  assert.equal(done.doneSteps, done.totalSteps);
+  assert.ok(done.cards[stuck].logs.length >= 1);
+});
+
+test("tổng bước luôn khớp số bước đã làm khi xong (mọi đường: đúng hết, sai, đã biết)", () => {
+  for (const make of [() => playAll(startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(5), caps: VOICE })).s, () => playAll(startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(6), caps: VOICE }), wrongOne).s]) {
+    const done = make();
+    assert.equal(done.doneSteps, done.totalSteps);
+  }
 });

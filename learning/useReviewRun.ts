@@ -2,6 +2,7 @@ import { getMedianStepMs, loadLearnSettings, LearnSettings } from "@/database/qu
 import { pickReviewBatch, reviewResultsFromCluster, ReviewSummary, saveReviewResult } from "@/database/queries/review";
 import { useAppStore } from "@/stores/appStore";
 import { requestSync } from "@/services/sync/bus";
+import { voiceCapabilities } from "./speechRecognizer";
 import { uuidv7 } from "@/utils/uuidv7";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -48,7 +49,7 @@ export const useReviewRun = () => {
         setStatus("swiping");
       } else if (batch.normal.length) {
         const median = await getMedianStepMs(db);
-        setRun(startRun({ cards: batch.normal.map((c) => c.card), mode: "review", levels: levels(batch.normal), extraPool: batch.pool, clusterSteps: s.clusterSteps, now, medianMs: median }));
+        setRun(startRun({ cards: batch.normal.map((c) => c.card), mode: "review", levels: levels(batch.normal), extraPool: batch.pool, clusterSteps: s.clusterSteps, now, medianMs: median, caps: voiceCapabilities(s) }));
         setStatus("cluster");
       } else {
         setStatus("empty");
@@ -117,6 +118,8 @@ export const useReviewRun = () => {
     undo: () => dispatchSwipe({ type: "undo", at: Date.now() }),
     answer: (value: string) => dispatchRun({ type: "answer", value, at: Date.now() }),
     hint: () => dispatchRun({ type: "hint", at: Date.now() }),
+    speech: (transcripts: string[]) => dispatchRun({ type: "speech", transcripts, at: Date.now() }),
+    skipSpeak: () => dispatchRun({ type: "skipKind", kind: "speak", at: Date.now() }),
     next: () => dispatchRun({ type: "next", at: Date.now() }),
     setGrade: (key: string, grade: Grade) => dispatchRun({ type: "setGrade", key, grade }),
     finishCluster,

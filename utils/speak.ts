@@ -5,12 +5,12 @@ import * as Speech from "expo-speech";
 let current: Audio.Sound | null = null;
 
 /** Đọc 1 từ: file âm thanh của nghĩa / từ nếu có, không thì giọng máy theo ngôn ngữ của từ. Lỗi thì im lặng (không chặn việc học). */
-export const speakWord = async (card: { word: string; lang: string; audio: string | null }) => {
+export const speakWord = async (card: { word: string; lang: string; audio: string | null }, opts: { slow?: boolean } = {}) => {
   try {
     Speech.stop();
     await current?.unloadAsync();
     current = null;
-    const uri = mediaUrl(card.audio);
+    const uri = opts.slow ? null : mediaUrl(card.audio); // nghe chậm: chỉ giọng máy (file âm thanh không đổi tốc độ được)
     if (uri) {
       const { sound } = await Audio.Sound.createAsync({ uri }, { shouldPlay: true });
       current = sound;
@@ -20,6 +20,6 @@ export const speakWord = async (card: { word: string; lang: string; audio: strin
     // rơi xuống giọng máy
   }
   try {
-    Speech.speak(card.word, { language: card.lang });
+    Speech.speak(card.word, { language: card.lang, rate: opts.slow ? 0.5 : 1 });
   } catch {}
 };

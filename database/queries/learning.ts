@@ -19,6 +19,8 @@ export interface LearnSettings {
   firstReviewHours: number;
   dayStartHour: number;
   hearable: boolean;
+  /** Cho luyện nói (bước nói chỉ có khi máy có nhận dạng giọng nói). */
+  talkable: boolean;
   /** Thẻ từ cấp này mới được ôn bằng vuốt (docs 5.2). */
   swipeMinLevel: number;
   swipeRetention: number;
@@ -38,6 +40,7 @@ export const loadLearnSettings = async (db: SQLiteDatabase): Promise<LearnSettin
     firstReviewHours: num(s.first_review_hours, 6, 1, 24),
     dayStartHour: Math.round(num(s.day_start_hour, 4, 0, 12)),
     hearable: s.hearable !== false,
+    talkable: s.talkable !== false,
     swipeMinLevel: Math.round(num(s.swipe_min_level, 3, 0, 7)),
     swipeRetention: num(s.swipe_retention, 0.93, 0.7, 0.99),
     swipeDirection: typeof s.swipe_direction === "string" ? s.swipe_direction : "left_remember",

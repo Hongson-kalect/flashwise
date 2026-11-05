@@ -1,12 +1,20 @@
 import { Verdict } from "./types";
 
 /** Ngôn ngữ mà dấu là một phần của chữ (không bỏ dấu khi so). */
+/** Katakana -> hiragana để so tiếng Nhật không phân biệt hai bảng chữ (bộ nhận dạng giọng nói hay trả kiểu khác với đáp án). */
+export const toHiragana = (s: string) => s.replace(/[\u30A1-\u30F6]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60));
+
+/** Tiếng không dùng dấu cách giữa các chữ: bộ nhận dạng chèn / bỏ dấu cách tuỳ ý nên bỏ hết khi so. */
+const NO_SPACE = new Set(["ja", "zh", "zh-CN", "zh-TW", "ko", "th"]);
+
 const KEEP_MARKS = new Set(["ja", "ko", "zh", "zh-CN", "zh-TW", "th", "hi", "ar", "he", "ru", "uk"]);
 
 export const normalizeAnswer = (text: string, lang = "en") => {
   let s = text.normalize("NFKC").toLowerCase().trim().replace(/\s+/g, " ");
   s = s.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""); // dấu câu 2 đầu
   if (!KEEP_MARKS.has(lang)) s = s.normalize("NFD").replace(/\p{M}/gu, "").normalize("NFC");
+  if (lang === "ja") s = toHiragana(s);
+  if (NO_SPACE.has(lang)) s = s.replace(/\s+/g, "");
   return s;
 };
 
@@ -40,4 +48,15 @@ export const hintText = (answer: string, level: number) => {
   if (level <= 0) return "";
   if (level === 1) return `${chars[0]}…`;
   return chars.map((c, i) => (i === 0 || c === " " ? c : "_")).join(" ");
+};
+
+/**
+ * Chấm câu nói: bộ nhận dạng trả vài phương án (`maxAlternatives`), chấm theo phương án tốt nhất.
+ * Khớp hẳn thì đúng; "gần đúng" (sai 1 ký tự, từ đủ dài) chỉ nhận khi là phương án đầu tiên (kết quả tin cậy nhất).
+ */
+export const checkSpoken = (transcripts: string[], answer: string, lang = "en"): Verdict => {
+  const verdicts = transcripts.map((t) => checkAnswer(t, answer, lang));
+  if (verdicts.includes("exact")) return "exact";
+  if (verdicts[0] === "close") return "close";
+  return "wrong";
 };

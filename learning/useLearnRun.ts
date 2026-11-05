@@ -2,6 +2,7 @@ import { getMyCollection } from "@/database/queries/collections";
 import { getMedianStepMs, loadLearnSettings, pickNewCards, saveLearnResult, SaveSummary, LearnSettings } from "@/database/queries/learning";
 import { useAppStore } from "@/stores/appStore";
 import { requestSync } from "@/services/sync/bus";
+import { voiceCapabilities } from "./speechRecognizer";
 import { uuidv7 } from "@/utils/uuidv7";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -47,7 +48,7 @@ export const useLearnRun = (userCollectionId: string) => {
       }
       const now = Date.now();
       session.current = { id: uuidv7(), collectionId: info.collectionId, startedAt: now, settings };
-      setState(startRun({ cards: picked.cards, extraPool: picked.pool, clusterSteps: settings.clusterSteps, now, medianMs: median }));
+      setState(startRun({ cards: picked.cards, extraPool: picked.pool, clusterSteps: settings.clusterSteps, now, medianMs: median, caps: voiceCapabilities(settings) }));
       setStatus("running");
     } catch (e: any) {
       setError(e?.message ?? "Có lỗi xảy ra");
@@ -63,6 +64,8 @@ export const useLearnRun = (userCollectionId: string) => {
 
   const answer = useCallback((value: string) => dispatch({ type: "answer", value, at: Date.now() }), [dispatch]);
   const hint = useCallback(() => dispatch({ type: "hint", at: Date.now() }), [dispatch]);
+  const speech = useCallback((transcripts: string[]) => dispatch({ type: "speech", transcripts, at: Date.now() }), [dispatch]);
+  const skipSpeak = useCallback(() => dispatch({ type: "skipKind", kind: "speak", at: Date.now() }), [dispatch]);
   const known = useCallback(() => dispatch({ type: "known", at: Date.now() }), [dispatch]);
   const next = useCallback(() => dispatch({ type: "next", at: Date.now() }), [dispatch]);
   const setGrade = useCallback((key: string, grade: Grade) => dispatch({ type: "setGrade", key, grade }), [dispatch]);
@@ -83,5 +86,5 @@ export const useLearnRun = (userCollectionId: string) => {
     }
   }, [db, state, status]);
 
-  return { status, state, meta, summary, error, question: state ? currentQuestion(state) : undefined, userLang, answer, hint, known, next, setGrade, finish, reload: load };
+  return { status, state, meta, summary, error, question: state ? currentQuestion(state) : undefined, userLang, answer, hint, speech, skipSpeak, known, next, setGrade, finish, reload: load };
 };

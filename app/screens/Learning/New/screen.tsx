@@ -119,6 +119,8 @@ export default function LearnNewScreen() {
         hearable={hearable}
         onAnswer={run.answer}
         onHint={run.hint}
+        onSpeech={run.speech}
+        onSkipSpeak={run.skipSpeak}
         onKnown={run.known}
         onNext={run.next}
       />

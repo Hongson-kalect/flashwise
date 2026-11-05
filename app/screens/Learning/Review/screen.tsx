@@ -102,6 +102,8 @@ export default function ReviewScreen() {
           hearable={hearable}
           onAnswer={r.answer}
           onHint={r.hint}
+          onSpeech={r.speech}
+          onSkipSpeak={r.skipSpeak}
           onKnown={() => {}}
           onNext={r.next}
         />

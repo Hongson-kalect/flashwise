@@ -6,6 +6,8 @@ import { ClusterStepKind, LearnCard } from "@/learning/types";
 import { glossOf } from "@/learning/types";
 import { useTheme } from "@/providers/Theme";
 import { ComponentType } from "react";
+import { speakWord } from "@/utils/speak";
+import { useEffect } from "react";
 import { Pressable, View } from "react-native";
 import { PromptProps } from "./types";
 
@@ -97,10 +99,65 @@ const TypeWordPrompt = ({ card }: PromptProps) => (
   </View>
 );
 
+/** Nút nghe lại / nghe chậm cho bước nghe; tự phát 1 lần khi câu hỏi hiện. */
+const ListenControl = ({ card }: { card: LearnCard }) => {
+  const { theme } = useTheme();
+  useEffect(() => {
+    speakWord(card);
+  }, [card.key]);
+  return (
+    <View className="items-center gap-3 py-6">
+      <Pressable
+        onPress={() => speakWord(card)}
+        className="h-28 w-28 rounded-full items-center justify-center"
+        style={{ backgroundColor: theme.primary + "14", borderWidth: 2, borderColor: theme.primary }}
+        accessibilityLabel="Nghe lại"
+      >
+        <AppIcon branch="feather" name="volume-2" size={44} color={theme.primary} />
+      </Pressable>
+      <Pressable onPress={() => speakWord(card, { slow: true })} hitSlop={8} className="flex-row items-center gap-1.5 px-4 h-9 rounded-full" style={{ borderWidth: 1, borderColor: theme.border }}>
+        <AppIcon branch="feather" name="rotate-cw" size={14} color={theme.text} />
+        <AppText size="sm" weight="semibold" color="subText1">
+          Nghe chậm
+        </AppText>
+      </Pressable>
+    </View>
+  );
+};
+
+/** Chỉ có âm thanh, chọn từ nghe được. */
+const ListenChoosePrompt = ({ card }: PromptProps) => (
+  <View className="gap-2 pt-4">
+    <Label>Nghe và chọn từ đúng</Label>
+    <ListenControl card={card} />
+  </View>
+);
+
+/** Chính tả: nghe rồi gõ lại từ. */
+const DictationPrompt = ({ card }: PromptProps) => (
+  <View className="gap-2 pt-4">
+    <Label>Nghe và gõ lại từ</Label>
+    <ListenControl card={card} />
+  </View>
+);
+
+/** Nhìn từ và nghĩa, đọc to (nhận dạng ở ô trả lời bên dưới). */
+const SpeakPrompt = ({ card }: PromptProps) => (
+  <View className="gap-4 pt-2">
+    <Label>Đọc to từ này</Label>
+    <WordHeader card={card} />
+    <SenseImage card={card} height={120} />
+    <Meaning card={card} />
+  </View>
+);
+
 /** Registry: kiểu bước → phần đề. Thêm kiểu bước mới (cloze, nghe, nói...) thì đăng ký thêm ở đây và ở learning/steps.ts. */
 export const PROMPTS: Record<ClusterStepKind, ComponentType<PromptProps>> = {
   copy: CopyPrompt,
   chooseMeaning: ChooseMeaningPrompt,
   chooseWord: ChooseWordPrompt,
   typeWord: TypeWordPrompt,
+  listenChoose: ListenChoosePrompt,
+  dictation: DictationPrompt,
+  speak: SpeakPrompt,
 };

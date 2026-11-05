@@ -14,7 +14,8 @@ const avg = (values: number[]) => values.reduce((a, b) => a + b, 0) / values.len
 export const autoGrade = (logs: StepLog[], medianMs = DEFAULT_MEDIAN_MS): Grade => {
   if (!logs.length) return GOOD;
   const failed = logs.filter((l) => l.rating === AGAIN);
-  if (failed.some((l) => l.kind === "typeWord") || failed.length >= 2) return AGAIN;
+  // Phải hiện đáp án khi gõ (gõ từ / chính tả) hoặc 2 bước hỏng là Quên; nói hỏng 1 lần (nhận dạng hay sai) chỉ tính Khó
+  if (failed.some((l) => l.kind === "typeWord" || l.kind === "dictation") || failed.length >= 2) return AGAIN;
   if (failed.length || logs.some((l) => l.rating === HARD || l.hintCount > 0)) return HARD;
   const timed = logs.filter((l) => l.kind !== "copy" && l.durationMs > 0);
   if (timed.length && avg(timed.map((l) => l.durationMs)) <= medianMs) return EASY;
