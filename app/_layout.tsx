@@ -23,6 +23,7 @@ import { DATABASE_NAME } from "@/configs/database";
 import { fonts } from "@/configs/fonts";
 import { initDatabase } from "@/database/schema";
 import { BottomSheetProvider } from "@/providers/BottomSheet";
+import { SyncProvider } from "@/providers/Sync";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SQLiteProvider } from "expo-sqlite";
 import { Suspense, useEffect, useState } from "react";
@@ -90,6 +91,7 @@ export default function RootLayout() {
                       databaseName={DATABASE_NAME}
                       onInit={initDatabase}
                     >
+                      <SyncProvider>
                       <AppWrapper>
                         <Stack
                           screenOptions={{ headerShown: false }}
@@ -108,6 +110,7 @@ export default function RootLayout() {
                           <Stack.Screen name="+not-found" />
                         </Stack>
                       </AppWrapper>
+                      </SyncProvider>
                     </SQLiteProvider>
                   </Suspense>
                 </BottomSheetProvider>

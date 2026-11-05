@@ -10,7 +10,8 @@ Ghi từ buổi thảo luận ngày 2026-11-01 (phiên backend `flashwise_api`).
 - Có: 4 bước (copy + "Đã biết", chọn nghĩa, chọn từ, gõ từ), giãn cách tăng dần, gợi ý, tổng kết chọn mức nhớ, ghi tiến độ offline.
 - Lát 2 (cùng ngày): **Ôn tập** (`app/screens/Learning/Review/screen.tsx`, từ "Ôn tập ngay" ở Home). `database/queries/review.ts`: `pickReviewBatch` (thẻ đến hạn trước cuối ngày học, R thấp nhất trước, mỗi từ 1 nghĩa; chia 2 nhóm theo `swipe_min_level`: vuốt tối đa 30 thẻ, cụm tối đa `cluster_size`) và `saveReviewResult` (chấm tiếp FSRS, vuốt dùng `swipe_retention`, cấp thẻ, review_log, learn_session type `review`, day_learn_log). `learning/swipe.ts`: reducer vuốt (điểm khó 0..3, nhớ / chưa chắc / xem nghĩa = quên, thẻ quên xem lại 1 lần ở cuối, hoàn tác 1 bước, không có Dễ). Ôn theo cụm dùng lại `engine.ts` với `mode: "review"` (bỏ bước copy, số bước theo cấp, điểm theo bước đầu: `autoGradeReview`). UI vuốt ở `components/learning/swipe/` (kéo ngang bằng gesture-handler + reanimated, có nút bấm tương đương, hướng theo `swipe_direction`).
 - "Đến hạn" theo server = `next_review_at` trước cuối ngày học, nên thẻ vừa học / vừa quên (hẹn 10 phút hoặc 6 giờ sau) cũng hiện ở lượt "Ôn tiếp" ngay trong ngày. Có thể đổi thành chỉ lấy thẻ đã đến giờ (<= bây giờ) nếu thấy gắt.
-- Chưa có: nghe / nói / cloze / ảnh, học tiếp phiên dở, đẩy lên server (worker sync).
+- Đồng bộ (cùng ngày): tiến độ, review_log, phiên, nhật ký ngày, ghi chú, cài đặt tự đẩy lên `sync/push` và kéo về `sync/pull` (xem CLAUDE.md, mục đồng bộ). Server nhận review_log nên thống kê chung của nghĩa (`global_difficulty`, `learner_count`) được cộng.
+- Chưa có: nghe / nói / cloze / ảnh, học tiếp phiên dở.
 
 ## 1. Hiện trạng code app (trước khi làm)
 

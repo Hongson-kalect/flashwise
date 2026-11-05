@@ -1,6 +1,7 @@
 import { getMedianStepMs, loadLearnSettings, LearnSettings } from "@/database/queries/learning";
 import { pickReviewBatch, reviewResultsFromCluster, ReviewSummary, saveReviewResult } from "@/database/queries/review";
 import { useAppStore } from "@/stores/appStore";
+import { requestSync } from "@/services/sync/bus";
 import { uuidv7 } from "@/utils/uuidv7";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -65,6 +66,7 @@ export const useReviewRun = () => {
   const afterSave = useCallback(
     async (result: ReviewSummary) => {
       setSummary(result);
+      requestSync();
       // Còn thẻ đến hạn (kể cả thẻ vừa quên hẹn ôn lại trong ngày) thì cho "Ôn tiếp"
       try {
         const s = settings ?? (await loadLearnSettings(db));

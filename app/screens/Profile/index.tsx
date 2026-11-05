@@ -2,6 +2,7 @@ import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
+import SyncStatus from "@/components/SyncStatus";
 import { useTheme } from "@/providers/Theme";
 import Slider from "@react-native-community/slider";
 import { router } from "expo-router";
@@ -29,6 +30,9 @@ export default function ProfilePage() {
       }}
     >
       <ScrollView className="px-2" showsVerticalScrollIndicator={false}>
+        <View className="pt-4">
+          <SyncStatus />
+        </View>
         <View style={{ marginTop: 24 }} className="">
           <View className="w-full items-center">
             {/* <View

@@ -1,6 +1,7 @@
 import { getMyCollection } from "@/database/queries/collections";
 import { getMedianStepMs, loadLearnSettings, pickNewCards, saveLearnResult, SaveSummary, LearnSettings } from "@/database/queries/learning";
 import { useAppStore } from "@/stores/appStore";
+import { requestSync } from "@/services/sync/bus";
 import { uuidv7 } from "@/utils/uuidv7";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -75,6 +76,7 @@ export const useLearnRun = (userCollectionId: string) => {
       const result = await saveLearnResult(db, { sessionId: s.id, collectionId: s.collectionId, startedAt: s.startedAt, endedAt: Date.now(), results: resultsOf(state) }, s.settings);
       setSummary(result);
       setStatus("done");
+      requestSync();
     } catch (e: any) {
       setError(e?.message ?? "Không lưu được phiên học");
       setStatus("error");
