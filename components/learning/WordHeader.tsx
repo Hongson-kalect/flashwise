@@ -16,35 +16,34 @@ const WordHeader = ({ card, autoPlay = false }: Props) => {
   }, [card.key, autoPlay]);
 
   return (
-    <View className="flex-row items-center justify-center gap-3">
-      <View className="items-center">
-        <View className="flex-row items-center gap-2">
-          <AppText size="3xl" weight="bold" color="primary" textAlign="center">
-            {card.word}
-          </AppText>
-          {!!card.pos && (
-            <View className="px-2 h-5 rounded-md items-center justify-center" style={{ backgroundColor: theme.primary + "14" }}>
-              <AppText size="xs" weight="semibold" color="primary">
-                {card.pos}
-              </AppText>
-            </View>
-          )}
-        </View>
+    // Từ ở giữa cả dòng; từ loại, phiên âm và nút nghe xếp thành 1 hàng phụ ngay dưới
+    <View className="items-center gap-2">
+      <AppText size="3xl" weight="bold" color="primary" textAlign="center">
+        {card.word}
+      </AppText>
+      <View className="flex-row items-center justify-center gap-2">
+        {!!card.pos && (
+          <View className="px-2 h-6 rounded-md items-center justify-center" style={{ backgroundColor: theme.primary + "14" }}>
+            <AppText size="xs" weight="semibold" color="primary">
+              {card.pos}
+            </AppText>
+          </View>
+        )}
         {!!card.ipa && (
           <AppText size="sm" color="subText2">
             {card.ipa}
           </AppText>
         )}
+        <Pressable
+          onPress={() => speakWord(card)}
+          hitSlop={8}
+          className="h-8 w-8 rounded-full items-center justify-center"
+          style={{ backgroundColor: theme.primary + "14" }}
+          accessibilityLabel="Nghe phát âm"
+        >
+          <AppIcon branch="feather" name="volume-2" size={16} color={theme.primary} />
+        </Pressable>
       </View>
-      <Pressable
-        onPress={() => speakWord(card)}
-        hitSlop={8}
-        className="h-11 w-11 rounded-full items-center justify-center"
-        style={{ backgroundColor: theme.primary + "14" }}
-        accessibilityLabel="Nghe phát âm"
-      >
-        <AppIcon branch="feather" name="volume-2" size={20} color={theme.primary} />
-      </Pressable>
     </View>
   );
 };
