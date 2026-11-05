@@ -4,7 +4,10 @@ import { MyCollection } from "@/database/queries/collections";
 import { useTheme } from "@/providers/Theme";
 import { useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
-import CollectionCover from "../../components/collectionCover";
+import CollectionCover, { CollectionCoverWide } from "../../components/collectionCover";
+
+/** TẠM: hiện song song ảnh bìa 1:1 hiện tại và 16:9 mới (cùng chiều cao) để so sánh; xoá khi chọn xong. */
+const SHOW_COVER_COMPARE = true;
 
 /** Thẻ 1 bộ trong "Bộ của tôi": ảnh bìa, tên, tiến độ, trạng thái đã tải / cần cập nhật. */
 const CollectionCard = ({ item }: { item: MyCollection }) => {
@@ -13,6 +16,7 @@ const CollectionCard = ({ item }: { item: MyCollection }) => {
   const pct = item.total ? Math.min(100, (item.learned / item.total) * 100) : 0;
 
   return (
+    <View>
     <Pressable
       android_ripple={{ color: theme.primary + "14" }}
       onPress={() =>
@@ -71,6 +75,19 @@ const CollectionCard = ({ item }: { item: MyCollection }) => {
         </View>
       </View>
     </Pressable>
+    {SHOW_COVER_COMPARE && (
+      <View className="flex-row items-end gap-3 px-3 pt-2">
+        <View className="items-center gap-1">
+          <CollectionCover collection={item} style={{ height: 90, width: 90 }} radius={12} />
+          <AppText size="xs" color="subText2">1:1 hiện tại</AppText>
+        </View>
+        <View className="items-center gap-1">
+          <CollectionCoverWide collection={item} style={{ height: 90, width: 160 }} radius={12} />
+          <AppText size="xs" color="subText2">16:9 mới</AppText>
+        </View>
+      </View>
+    )}
+    </View>
   );
 };
 

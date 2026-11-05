@@ -1,28 +1,26 @@
-import AppImage from "@/components/AppImage";
 import AppText from "@/components/AppText";
+import WideImage from "@/components/WideImage";
 import { useTheme } from "@/providers/Theme";
 import { LearnCard } from "@/learning/types";
 import { findSenseImage } from "@/services/senseImage";
 import { mediaUrl } from "@/stores/appStore";
 import { useEffect, useState } from "react";
-import { StyleProp, View, ViewStyle } from "react-native";
+import { StyleProp, ViewStyle } from "react-native";
 
 type Props = {
   card: LearnCard;
-  /** Chiều cao cố định; không đặt thì theo `aspect` (rộng / cao) nên ảnh không bị cắt mất phần đầu. */
+  /** Chiều cao cố định; không đặt thì theo `aspect` (rộng / cao). */
   height?: number;
   aspect?: number;
   style?: StyleProp<ViewStyle>;
   showFallbackLetter?: boolean;
 };
 
-/** Ảnh minh hoạ của nghĩa: ảnh riêng, không có thì ảnh mở tìm theo từ khoá (như danh sách bộ). Không có ảnh nào thì ẩn. */
-const SenseImage = ({ card, height, aspect = 4 / 3, style, showFallbackLetter = false }: Props) => {
+/** Ảnh minh hoạ của nghĩa: ảnh riêng, không có thì ảnh mở tìm theo từ khoá (như danh sách bộ). Không có ảnh nào thì ẩn. Khung vẽ ở `WideImage`. */
+const SenseImage = ({ card, height, aspect = 16 / 9, style, showFallbackLetter = false }: Props) => {
   const { theme } = useTheme();
   const own = mediaUrl(card.imageUri);
   const [fallback, setFallback] = useState<string | null>(null);
-  // Tỉ lệ rộng / cao của ảnh thật (đọc khi tải xong): ảnh giữa không bao giờ cao hơn rộng và không rộng hơn khung
-  const [ratio, setRatio] = useState(1);
 
   useEffect(() => {
     if (own) return;
@@ -34,29 +32,19 @@ const SenseImage = ({ card, height, aspect = 4 / 3, style, showFallbackLetter = 
   }, [own, card.word, card.keywords.join("|")]);
 
   const uri = own ?? fallback;
-  useEffect(() => setRatio(1), [uri]);
   if (!uri && !showFallbackLetter) return null;
   return (
-    <View className="rounded-2xl overflow-hidden items-center justify-center" style={[height ? { height, width: "100%" } : { aspectRatio: aspect, width: "100%" }, { backgroundColor: theme.background2 }, style]}>
-      {uri ? (
-        <>
-          {/* Nền: chính ảnh đó phủ kín khung và làm mờ nhẹ; ảnh thật nằm giữa, cắt theo tỉ lệ ảnh nhưng kẹp trong [1:1, tỉ lệ khung] */}
-          <AppImage source={{ uri }} style={{ position: "absolute", width: "100%", height: "100%" }} contentFit="cover" blurRadius={15} transition={0} />
-          <View style={{ position: "absolute", width: "100%", height: "100%", backgroundColor: theme.background2 + "55" }} />
-          <AppImage
-            source={{ uri }}
-            style={{ height: "100%", aspectRatio: Math.min(Math.max(ratio, 1), aspect) }}
-            contentFit="cover"
-            contentPosition="top"
-            onLoad={(e) => e.source.width && e.source.height && setRatio(e.source.width / e.source.height)}
-          />
-        </>
-      ) : (
+    <WideImage
+      uri={uri}
+      aspect={aspect}
+      height={height}
+      style={[{ backgroundColor: theme.background2 }, style]}
+      fallback={
         <AppText size="3xl" weight="bold" style={{ color: theme.primary + "99" }}>
           {card.word[0]?.toUpperCase()}
         </AppText>
-      )}
-    </View>
+      }
+    />
   );
 };
 
