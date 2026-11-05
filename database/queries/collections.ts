@@ -160,10 +160,20 @@ export type MyCollection = {
   invalidWords: string[];
   /** Tác giả của bộ chưa phát hành, đã tải về: được đổi ảnh bìa. */
   canEditCover: boolean;
+  /** Mình là tác giả (bộ do mình tạo). */
+  isAuthor: boolean;
+  /** Bộ đã được phát hành công khai. */
+  released: boolean;
+  /** Phiên bản đã phát hành (0 = chưa phát hành lần nào). */
+  version: number;
+  /** Số dòng nháp chưa phát hành (nghĩa mới thêm / đổi / xoá). Server loại dòng không đổi gì khi phát hành. */
+  draftCount: number;
+  /** Tác giả, đã tải về, còn nháp: được phát hành. */
+  canPublish: boolean;
 };
 
 const COLLECTION_SQL = `
-  SELECT uc.id, uc.collection_id, uc.name, uc.description, uc.learned_count, uc.downloaded_at, uc.version AS uc_version,
+  SELECT uc.id, uc.collection_id, COALESCE(c.name, uc.name) AS name, COALESCE(c.description, uc.description) AS description, uc.learned_count, uc.downloaded_at, uc.version AS uc_version,
          uc.created_at, uc.is_author, uc.is_released, c.image_url, c.language_code, c.is_official, c.item_count, c.version AS c_version,
          c.pending_words, c.invalid_words,
          (SELECT COALESCE(s.image_preview, m.image_link) FROM collection_items i
@@ -175,6 +185,7 @@ const COLLECTION_SQL = `
           WHERE i.collection_id = uc.collection_id AND i.is_deleted = 0
           ORDER BY (COALESCE(s.image_preview, m.image_link) IS NULL), i.display_order LIMIT 1) AS cover_hint,
          (SELECT COUNT(*) FROM collection_items i WHERE i.collection_id = uc.collection_id AND i.is_deleted = 0) AS local_items,
+         (SELECT COUNT(*) FROM collection_items i WHERE i.collection_id = uc.collection_id AND i.released = 0) AS draft_count,
          (SELECT COUNT(*) FROM collection_items i
             JOIN ai_sense s ON s.id = i.sense_id
             JOIN user_sense_progress p ON p.original_sense_id = COALESCE(s.original_id, s.id)
@@ -188,6 +199,11 @@ const toMyCollection = (r: any): MyCollection => {
   const sep = typeof r.cover_hint === "string" ? r.cover_hint.indexOf("|") : -1;
   return {
     canEditCover: downloaded && !!r.is_author && !r.is_released,
+    isAuthor: !!r.is_author,
+    released: !!r.is_released,
+    version: r.c_version ?? 0,
+    draftCount: r.draft_count ?? 0,
+    canPublish: downloaded && !!r.is_author && (r.draft_count ?? 0) > 0,
     pendingWords: parse(r.pending_words, []),
     invalidWords: parse(r.invalid_words, []),
     coverUri: r.cover_uri ?? null,
@@ -215,9 +231,9 @@ export const listMyCollections = async (
   opts: { q?: string; sort?: CollectionSort } = {},
 ): Promise<MyCollection[]> => {
   const q = opts.q?.trim();
-  const order = opts.sort === "alpha" ? "uc.name COLLATE NOCASE" : "uc.created_at DESC";
+  const order = opts.sort === "alpha" ? "COALESCE(c.name, uc.name) COLLATE NOCASE" : "uc.created_at DESC";
   const rows = await db.getAllAsync<any>(
-    `${COLLECTION_SQL} ${q ? "AND uc.name LIKE ?" : ""} ORDER BY ${order}`,
+    `${COLLECTION_SQL} ${q ? "AND COALESCE(c.name, uc.name) LIKE ?" : ""} ORDER BY ${order}`,
     q ? [`%${q}%`] : [],
   );
   const list = rows.map(toMyCollection);

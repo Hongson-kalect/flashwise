@@ -116,6 +116,23 @@ const CollectionDetail = () => {
         <AppText size="2xl" weight="bold" color="title">
           {c.name}
         </AppText>
+        {c.isAuthor && (
+          <View className="flex-row items-center gap-1.5 mt-0.5">
+            <AppIcon
+              branch="feather"
+              name={c.released ? (c.draftCount > 0 ? "edit-3" : "globe") : "lock"}
+              size={13}
+              color={c.released && c.draftCount === 0 ? theme.success : theme.subText2}
+            />
+            <AppText size="xs" color="subText2">
+              {!c.released
+                ? "Bản nháp, chỉ mình bạn thấy"
+                : c.draftCount > 0
+                  ? `Đã phát hành v${c.version} · có ${c.draftCount} thay đổi chưa phát hành`
+                  : `Đã phát hành công khai · v${c.version}`}
+            </AppText>
+          </View>
+        )}
         {!!c.description && (
           <AppText color="subText1" numberOfLines={3}>
             {c.description}
@@ -230,6 +247,18 @@ const CollectionDetail = () => {
               Học từ mới
             </AppText>
           </AppButton>
+          {c.canPublish && (
+            <AppButton
+              variant="soft"
+              size="lg"
+              onPress={() => router.push({ pathname: "/screens/Collection/Publish/[id]", params: { id } })}
+            >
+              <AppIcon branch="feather" name="upload-cloud" size={18} color={theme.primary} />
+              <AppText color="primary" weight="bold" size="lg">
+                {c.released ? "Phát hành thay đổi" : "Phát hành bộ"}
+              </AppText>
+            </AppButton>
+          )}
         </View>
       )}
 

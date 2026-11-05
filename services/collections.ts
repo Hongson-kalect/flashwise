@@ -11,6 +11,7 @@ import {
   downloadCollection,
   fetchBundle,
   fetchMyCollections,
+  publishCollection,
   resolvePendingWords,
 } from "./api/collections";
 
@@ -95,3 +96,19 @@ export const refreshPending = async (db: SQLiteDatabase, userCollectionId: strin
   await resolvePendingWords(collectionId);
   return downloadBundle(db, userCollectionId, userLang, { retries: 0 });
 };
+
+/** Phát hành bộ rồi tải lại nội dung để máy thấy trạng thái mới (đã phát hành, version, dòng nháp thành bản phát hành). */
+export const publish = async (
+  db: SQLiteDatabase,
+  userCollectionId: string,
+  userLang: string,
+  p: { title: string; desc: string; image?: string },
+) => {
+  const result = await publishCollection(userCollectionId, p);
+  try {
+    await syncMyCollections(db);
+    await downloadBundle(db, userCollectionId, userLang, { force: true, retries: 0 });
+  } catch {} // đã phát hành; mở lại bộ sẽ tải lại
+  return result;
+};
+

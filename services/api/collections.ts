@@ -187,3 +187,64 @@ export const setCollectionCover = async (userCollectionId: string, image: string
   return (res.data?.image_url ?? null) as string | null;
 };
 
+/**
+ * Phát hành bộ (công khai): các dòng nháp của tác giả thành bản phát hành mới (version + 1), tên / mô tả / ảnh gửi kèm
+ * thành thông tin của bản đó. Không còn gì thật sự đổi: 400 `no_changes`. Ảnh = khoá file đã tải lên qua POST media/ (hoặc URL).
+ */
+export const publishCollection = async (
+  userCollectionId: string,
+  p: { title: string; desc: string; image?: string },
+) => {
+  const res = await PostAPI(
+    `user-collections/${userCollectionId}/upload/`,
+    {
+      user_collection_id: userCollectionId,
+      title: p.title,
+      desc: p.desc,
+      ...(p.image ? { image: p.image } : {}),
+    },
+    { timeout: 60_000 },
+  );
+  return res.data as {
+    collection_id: string;
+    user_collection_id: string;
+    current_version: number;
+    changelog: { added: string[]; updated: string[]; deleted: string[] };
+  };
+};
+
+export type PublishError = "no_changes" | "banned" | "invalid" | "offline" | "unknown";
+
+export const publishErrorKind = (e: any): PublishError => {
+  if (!e?.response) return "offline";
+  const data = e.response.data;
+  if (e.response.status === 400) return data?.errorCode === "no_changes" ? "no_changes" : "invalid";
+  if (e.response.status === 403 && data?.errorCode === "user_banned") return "banned";
+  return "unknown";
+};
+
+export interface MyUploads {
+  collection_count: number;
+  view_count: number;
+  like_count: number;
+  downloaded_count: number;
+  collections: {
+    id: string;
+    name: string;
+    image_url: string | null;
+    version: number;
+    is_active: boolean;
+    view_count: number;
+    like_count: number;
+    downloaded_count: number;
+    item_count: number;
+    created_at: string;
+  }[];
+}
+
+/** Thống kê các bộ mình đã phát hành (lượt xem, thích, tải) và từng bộ, mới nhất trước. */
+export const fetchMyUploads = async () => {
+  const res = await GetAPI("me/uploads/");
+  return res.data as MyUploads;
+};
+

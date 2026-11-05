@@ -54,6 +54,7 @@ const CollectionListScreen = () => {
       total: all.reduce((n, c) => n + c.total, 0),
     };
   }, [list.data]);
+  const publishedCount = useMemo(() => (list.data ?? []).filter((c) => c.isAuthor && c.released).length, [list.data]);
   const pct = totals.total ? Math.min(100, (totals.learned / totals.total) * 100) : 0;
   const empty = !list.isLoading && !list.data?.length;
 
@@ -131,6 +132,19 @@ const CollectionListScreen = () => {
                   onChangeText={setSearch}
                   placeholder="Tìm trong bộ của bạn..."
                 />
+                {publishedCount > 0 && (
+                  <Pressable
+                    onPress={() => routerPush("/screens/Collection/Upload/List/screen")}
+                    className="flex-row items-center gap-2 px-4 h-12 rounded-2xl"
+                    style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}
+                  >
+                    <AppIcon branch="feather" name="upload-cloud" size={16} color={theme.primary} />
+                    <AppText weight="semibold" color="title" style={{ flex: 1 }}>
+                      {`Bộ đã phát hành của tôi (${publishedCount})`}
+                    </AppText>
+                    <AppIcon branch="feather" name="chevron-right" size={18} color={theme.subText3} />
+                  </Pressable>
+                )}
                 <View className="flex-row gap-2">
                   {SORTS.map((s) => (
                     <AppChip
