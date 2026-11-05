@@ -5,10 +5,6 @@ import { useTheme } from "@/providers/Theme";
 import { useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 import CollectionCover from "../../components/collectionCover";
-import CollectionCardWide from "./collectionCardWide";
-
-/** TẠM: dưới thẻ hiện tại hiện thêm thẻ bố cục 16:9 mới để so sánh; xoá khi chọn xong. */
-const SHOW_COVER_COMPARE = true;
 
 /** Thẻ 1 bộ trong "Bộ của tôi": ảnh bìa, tên, tiến độ, trạng thái đã tải / cần cập nhật. */
 const CollectionCard = ({ item }: { item: MyCollection }) => {
@@ -17,7 +13,6 @@ const CollectionCard = ({ item }: { item: MyCollection }) => {
   const pct = item.total ? Math.min(100, (item.learned / item.total) * 100) : 0;
 
   return (
-    <View>
     <Pressable
       android_ripple={{ color: theme.primary + "14" }}
       onPress={() =>
@@ -76,13 +71,6 @@ const CollectionCard = ({ item }: { item: MyCollection }) => {
         </View>
       </View>
     </Pressable>
-    {SHOW_COVER_COMPARE && (
-      <View className="pt-2 gap-1">
-        <AppText size="xs" color="subText2" style={{ paddingLeft: 4 }}>Bố cục 16:9 (thử)</AppText>
-        <CollectionCardWide item={item} />
-      </View>
-    )}
-    </View>
   );
 };
 

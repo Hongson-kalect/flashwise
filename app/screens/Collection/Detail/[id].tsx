@@ -19,9 +19,7 @@ import { ActivityIndicator, Alert, FlatList, Pressable, ToastAndroid, View } fro
 import CollectionCover from "../components/collectionCover";
 import CoverSheet from "./components/coverSheet";
 import AddWordsSheet from "./components/addWordsSheet";
-import SenseCardWide from "./components/senseCardWide";
 import SenseRow from "./components/senseRow";
-import { CollectionCoverWide } from "../components/collectionCover";
 
 /** Chi tiết 1 bộ: ảnh bìa, tiến độ, tải về học offline, danh sách nghĩa trong bộ. */
 const CollectionDetail = () => {
@@ -158,16 +156,12 @@ const CollectionDetail = () => {
     return () => clearInterval(timer);
   }, [waiting, id]);
 
-  // TẠM: chuyển giữa bố cục hiện tại (hàng + bìa cao 180) và bố cục 16:9 (bìa 16:9 + lưới 2 cột) để so sánh
-  const [wide, setWide] = useState(false);
-  const grid = wide && !editing;
-
   const pct = c?.total ? Math.min(100, (c.learned / c.total) * 100) : 0;
 
   const header = !c ? null : (
     <View className="gap-4 pb-2">
       <View>
-        {wide ? <CollectionCoverWide collection={c} radius={20} /> : <CollectionCover collection={c} radius={20} style={{ height: 180, width: "100%" }} />}
+        <CollectionCover collection={c} radius={20} style={{ height: 180, width: "100%" }} />
         {c.canEditCover && (
           <Pressable
             onPress={() =>
@@ -197,13 +191,6 @@ const CollectionDetail = () => {
           </Pressable>
         )}
       </View>
-
-      <Pressable onPress={() => setWide((v) => !v)} className="self-start flex-row items-center gap-1.5 px-3 h-8 rounded-full" style={{ borderWidth: 1, borderColor: theme.border }}>
-        <AppIcon branch="feather" name="layout" size={13} color={theme.text} />
-        <AppText size="xs" weight="semibold" color="title">
-          Bố cục 16:9 (thử): {wide ? "đang bật" : "đang tắt"}
-        </AppText>
-      </Pressable>
 
       <View className="gap-1">
         <AppText size="2xl" weight="bold" color="title">
@@ -492,18 +479,13 @@ const CollectionDetail = () => {
         </View>
       ) : (
         <FlatList
-          key={grid ? "grid" : "list"}
-          numColumns={grid ? 2 : 1}
-          columnWrapperStyle={grid ? { gap: 10 } : undefined}
           data={c.downloaded ? (senses.data ?? []) : []}
           keyExtractor={(s) => s.itemId}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 10 }}
           ListHeaderComponent={header}
-          renderItem={({ item, index }) => grid ? (
-            <SenseCardWide item={item} />
-          ) : (
+          renderItem={({ item, index }) => (
             <SenseRow
               item={item}
               edit={
