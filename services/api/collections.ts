@@ -1,4 +1,4 @@
-import { GetAPI, PostAPI } from "../axios";
+import { GetAPI, PostAPI, serverInstance } from "../axios";
 
 export interface CollectionSummary {
   id: string;
@@ -271,3 +271,58 @@ export const reorderCollectionItems = async (userCollectionId: string, items: { 
   const res = await PostAPI(`user-collections/${userCollectionId}/reorder/`, { items }, { timeout: 60_000 });
   return res.data as { updated: number; skipped: string[] };
 };
+
+export type DiscoverOrdering = "popular" | "newest" | "-downloaded_count";
+
+export interface DiscoverPage {
+  results: CollectionSummary[];
+  next: string | null;
+  count: number;
+}
+
+/** Khám phá bộ công khai: lọc theo ngôn ngữ học, chủ đề (tag), từ khoá; phân trang 50 bộ / trang. */
+export const fetchDiscover = async (p: { lang: string; q?: string; tags?: string[]; ordering?: DiscoverOrdering; page?: number }) => {
+  const res = await GetAPI("collections/", {
+    lang: p.lang,
+    q: p.q || undefined,
+    tag: p.tags?.length ? p.tags.join(",") : undefined,
+    ordering: p.ordering,
+    page: p.page && p.page > 1 ? p.page : undefined,
+  });
+  return res.data as DiscoverPage;
+};
+
+export interface CollectionDetailData {
+  id: string;
+  name: string;
+  description: string;
+  image_url: string | null;
+  is_official: boolean;
+  item_count: number;
+  language_code: string;
+  version: number;
+  like_count: number;
+  view_count: number;
+  downloaded_count: number;
+  author_id: string | null;
+  senses: { id: string; word_value: string; pos: string | null; level: string | null; gloss: string; image_preview: string | null }[];
+}
+
+/** Chi tiết bộ công khai (xem trước nghĩa). Mỗi lần xem cộng 1 lượt xem (1 lần / người / ngày). */
+export const fetchCollectionDetail = async (id: string, userLang: string) => {
+  const res = await GetAPI(`collections/${id}/`, { user_lang: userLang });
+  return res.data as CollectionDetailData;
+};
+
+/** Danh sách version đã thích của mình + tổng thích. */
+export const fetchCollectionLikes = async (id: string) => {
+  const res = await GetAPI(`collections/${id}/versions/`);
+  return { version: res.data.version as number, likedVersions: (res.data.liked_versions ?? []) as number[], likeCount: res.data.like_count as number };
+};
+
+/** Thích / bỏ thích bản hiện tại của bộ. Cần tài khoản đăng nhập. */
+export const setCollectionLike = async (id: string, want: boolean) => {
+  const res = want ? await PostAPI(`collections/${id}/like/`, {}) : await serverInstance.delete(`collections/${id}/like/`);
+  return res.data as { liked: boolean; like_count: number };
+};
+

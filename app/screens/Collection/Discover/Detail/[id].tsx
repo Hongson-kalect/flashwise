@@ -1,241 +1,194 @@
-import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
+import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
-import AppTitle from "@/components/AppTitle";
-import TagItem from "@/components/TagItem";
 import { useTheme } from "@/providers/Theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
-import { useState } from "react";
-import { ScrollView, TextInput, View } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import CollectionImage from "../../components/image";
-import CollectionWordList from "../../components/wordList";
-import DiscoverDetailHeader from "./components/header";
+import { fetchCollectionDetail, fetchCollectionLikes, setCollectionLike } from "@/services/api/collections";
+import { addAndDownload } from "@/services/collections";
+import { useAppStore } from "@/stores/appStore";
+import { Skeleton } from "@/ui";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router, useLocalSearchParams } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import { ActivityIndicator, FlatList, Pressable, ToastAndroid, View } from "react-native";
+import CollectionCover from "../../components/collectionCover";
 
-const DiscoverDetail = () => {
-  const { id } = useLocalSearchParams();
+const Stat = ({ icon, value, label }: { icon: any; value: number; label: string }) => {
   const { theme } = useTheme();
-  const [mode, setMode] = useState<"view" | "update">("view");
-
-  //Cái chi tiết upload collection này có khác so với cái collection bình thường không nhể?
-  //Khi tạo thì chỉ đơn giản là upload, không có thêm bớt gì cả. Có sửa thì sửa tên, mô tả, tags,còn về word thì sẽ không thể chủ động thêm sửa
-  //Nếu sửa các trường field thì sẽ thay đổi trực tiếp, còn để có thể thay đổi word thì chỉ có thể sync với collection mới được tạo và tạo thành version mới
-  //Sau khi tạo thành version mới thì sẽ tạo bản mới trong db. Thêm note bản mới, sync chỉ có thay đổi về chữ hay là nhặt luôn các thông tin text field?
   return (
-    <View className="flex-1" style={{ backgroundColor: theme.background }}>
-      <View>
-        <DiscoverDetailHeader mode={mode} setMode={(mode) => setMode(mode)} />
+    <View className="flex-1 items-center gap-1">
+      <AppIcon branch="feather" name={icon} size={16} color={theme.primary} />
+      <AppText size="lg" weight="bold" color="title">
+        {value}
+      </AppText>
+      <AppText size="xs" color="subText2">
+        {label}
+      </AppText>
+    </View>
+  );
+};
+
+/** Xem trước 1 bộ công khai: thông tin, thống kê, danh sách từ; thích; thêm vào thư viện và tải về học offline. */
+const DiscoverDetail = () => {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { theme } = useTheme();
+  const db = useSQLiteContext();
+  const queryClient = useQueryClient();
+  const userLang = useAppStore((s) => s.settings?.translate_language) ?? "vi";
+
+  const detail = useQuery({ queryKey: ["collections", "discover", "detail", id, userLang], queryFn: () => fetchCollectionDetail(id, userLang), retry: false });
+  const likes = useQuery({ queryKey: ["collections", "discover", "likes", id], queryFn: () => fetchCollectionLikes(id), retry: false });
+  const owned = useQuery({
+    queryKey: ["collections", "owned", id],
+    queryFn: () => db.getFirstAsync<{ id: string }>(`SELECT id FROM user_collection WHERE collection_id = ? AND is_deleted = 0`, [id]),
+  });
+  const c = detail.data;
+
+  const add = useMutation({
+    mutationFn: () => addAndDownload(db, id, userLang),
+    onSuccess: (ucId) => {
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      router.replace({ pathname: "/screens/Collection/Detail/[id]", params: { id: ucId } });
+    },
+  });
+
+  const liked = !!likes.data && likes.data.likedVersions.includes(likes.data.version);
+  const like = useMutation({
+    mutationFn: () => setCollectionLike(id, !liked),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["collections", "discover"] });
+    },
+    onError: (e: any) => {
+      const code = e?.response?.data?.errorCode;
+      ToastAndroid.show(code === "account_required" ? "Đăng nhập để thích bộ từ" : "Chưa thích được, thử lại sau", ToastAndroid.SHORT);
+    },
+  });
+
+  const header = !c ? null : (
+    <View className="gap-4 pb-3">
+      <CollectionCover
+        collection={{ name: c.name, imageUrl: c.image_url, coverUri: null, coverWord: c.senses[0]?.word_value ?? null, coverKeywords: [] }}
+        radius={20}
+        style={{ height: 180, width: "100%" }}
+      />
+      <View className="gap-1">
+        <View className="flex-row items-center justify-between gap-3">
+          <AppText size="2xl" weight="bold" color="title" style={{ flex: 1 }}>
+            {c.name}
+          </AppText>
+          <Pressable
+            onPress={() => like.mutate()}
+            disabled={like.isPending}
+            hitSlop={8}
+            className="h-11 w-11 rounded-full items-center justify-center"
+            style={{ backgroundColor: liked ? theme.error + "1F" : theme.card, borderWidth: 1, borderColor: liked ? theme.error : theme.border }}
+          >
+            <AppIcon branch="antd" name={liked ? "heart" : "hearto"} size={18} color={liked ? theme.error : theme.text} />
+          </Pressable>
+        </View>
+        <AppText size="xs" color="subText2">
+          {c.is_official ? "Bộ chính thức" : "Do cộng đồng chia sẻ"} · phiên bản {c.version}
+        </AppText>
+        {!!c.description && <AppText color="subText1">{c.description}</AppText>}
       </View>
 
-      <KeyboardAwareScrollView style={{ paddingHorizontal: 12 }}>
-        <View className="flex-row items-center gap-2">
-          <View className="w-6 h-6 rounded-full bg-background-2 items-center justify-center">
-            <AppIcon name="user" branch="feather" size={12} color="subText3" />
-          </View>
-          <AppText size={"xs"} color="subText2">
-            Hồng Sơn
+      <View className="flex-row p-4 rounded-2xl" style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}>
+        <Stat icon="book-open" value={c.item_count} label="Nghĩa" />
+        <Stat icon="download" value={c.downloaded_count} label="Lượt tải" />
+        <Stat icon="heart" value={likes.data?.likeCount ?? c.like_count} label="Thích" />
+        <Stat icon="eye" value={c.view_count} label="Lượt xem" />
+      </View>
+
+      {owned.data ? (
+        <Pressable
+          onPress={() => router.replace({ pathname: "/screens/Collection/Detail/[id]", params: { id: owned.data!.id } })}
+          className="h-14 rounded-2xl flex-row items-center justify-center gap-2"
+          style={{ backgroundColor: theme.success }}
+        >
+          <AppIcon branch="feather" name="check-circle" size={18} color="white" />
+          <AppText color="white" weight="bold" size="lg">
+            Đã có trong thư viện, mở bộ
           </AppText>
-        </View>
-
-        <TextInput
-          value={"Bảng Cửu Chương"}
-          multiline
-          readOnly
-          // submitBehavior="done"
-          returnKeyType="done"
-          placeholder="Collection Name"
-          onChangeText={(name) => {}}
-          style={{
-            fontSize: 28,
-            fontFamily: "MulishBold",
-            color: theme.primary,
-            textAlign: "center",
-          }}
-          placeholderTextColor={"#C4C4C4"}
-        />
-        <View>
-          <CollectionImage source="https://picsum.photos/1200/800" />
-        </View>
-
-        <View className="flex-row gap-2 items-center justify-between mt-2">
-          <ScrollView
-            showsHorizontalScrollIndicator={false}
-            horizontal
-            contentContainerStyle={{
-              gap: 8,
-              alignItems: "center",
-            }}
-            className=" flex-1"
+        </Pressable>
+      ) : (
+        <View className="gap-2">
+          <Pressable
+            onPress={() => add.mutate()}
+            disabled={add.isPending}
+            className="h-14 rounded-2xl flex-row items-center justify-center gap-2"
+            style={{ backgroundColor: theme.primary, opacity: add.isPending ? 0.7 : 1 }}
           >
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item, index) => (
-              <TagItem key={index}>{"item " + item}</TagItem>
-            ))}
-          </ScrollView>
-
-          <View
-            style={{
-              backgroundColor: "red",
-              borderRightWidth: 0.5,
-              borderColor: theme.subText3,
-            }}
-            className="h-full  border-r border-border"
-          ></View>
-
-          <View>
-            <AppButton size="xs" type="secondary" outline onPress={() => {}}>
-              <AppIcon
-                branch="feather"
-                name="star"
-                size={12}
-                color="secondary"
-              />
-              <AppText size={"xs"} font="MulishBold" color="secondary">
-                12k4
-              </AppText>
-            </AppButton>
-          </View>
+            {add.isPending ? <ActivityIndicator color="white" /> : <AppIcon branch="feather" name="download" size={18} color="white" />}
+            <AppText color="white" weight="bold" size="lg">
+              {add.isPending ? "Đang tải..." : "Thêm & tải về để học offline"}
+            </AppText>
+          </Pressable>
+          {add.isError && (
+            <AppText size="sm" style={{ color: theme.error }} textAlign="center">
+              Không tải được. Kiểm tra mạng rồi thử lại.
+            </AppText>
+          )}
         </View>
+      )}
 
-        <View className="mt-8">
-          <AppTitle title="Detail" />
-          <AppText size={"sm"} color="subText2">
-            Lorem ipsum dolor sit amet consectetur adipiscing elit adipiscing
-            elit adipiscing elit. sit amet consectetur adipiscing elit
-            adipiscing elit adipiscing elit
+      <AppText size="lg" weight="bold" color="title" style={{ marginTop: 4 }}>
+        Xem trước {c.senses.length} nghĩa
+      </AppText>
+    </View>
+  );
+
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <AppReturnHeader title="Bộ từ" />
+      {detail.isLoading ? (
+        <View className="px-4 gap-4 pt-2">
+          <Skeleton width="100%" height={180} radius={20} />
+          <Skeleton width="60%" height={24} />
+          <Skeleton width="100%" height={80} radius={20} />
+        </View>
+      ) : !c ? (
+        <View className="flex-1 items-center justify-center px-8 gap-2">
+          <AppText size="lg" weight="bold" color="title">
+            Không mở được bộ này
+          </AppText>
+          <AppText color="subText2" textAlign="center">
+            Bộ đã bị thu hồi hoặc bạn không có mạng.
           </AppText>
         </View>
-
-        {/* <View className="mt-4">
-          <CollectionTags />
-        </View> */}
-
-        {/* <CollectionCreateOptions /> */}
-
-        {/* Word list */}
-        {/* <AppDivider style={{ marginTop: 16 }} /> */}
-
-        <View className="mt-8">
-          <AppTitle title="Word Sumary" />
-
-          <View className="rounded-lg mt-3">
-            {/* <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center gap-2">
-                <AppText size={"lg"} font="MulishBold" color="subText1">
-                  123
-                </AppText>
-                <AppText size={"lg"} font="MulishBold" color="subText1">
-                  words
-                </AppText>
+      ) : (
+        <FlatList
+          data={c.senses}
+          keyExtractor={(s) => s.id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 8 }}
+          ListHeaderComponent={header}
+          renderItem={({ item }) => (
+            <View
+              className="flex-row items-center gap-2 p-3 rounded-2xl"
+              style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}
+            >
+              <View className="flex-1">
+                <View className="flex-row items-center gap-2">
+                  <AppText weight="bold" size="lg" color="title" style={{ flexShrink: 1 }}>
+                    {item.word_value}
+                  </AppText>
+                  {!!item.pos && (
+                    <View className="px-2 h-5 rounded-md items-center justify-center" style={{ backgroundColor: theme.primary + "14" }}>
+                      <AppText size="xs" weight="semibold" color="primary">
+                        {String(item.pos).toLowerCase()}
+                      </AppText>
+                    </View>
+                  )}
+                </View>
+                {!!item.gloss && (
+                  <AppText numberOfLines={2} size="sm" color="subText1">
+                    {item.gloss}
+                  </AppText>
+                )}
               </View>
-            </View> */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 12 }}
-            >
-              {[1, 2, 3, 4, 9, 5, 6, 7, 8].map((item, index) => {
-                return (
-                  <View
-                    key={index}
-                    className="flex-row items-center gap-2"
-                    style={{
-                      backgroundColor: theme.primary + "22",
-                      borderRadius: 999,
-                      paddingHorizontal: 10,
-                      paddingVertical: 6,
-                    }}
-                  >
-                    <View className="h-7 w-7 rounded-full bg-card"></View>
-                    <AppText size={"xs"} font="MulishBold" color="subText1">
-                      123
-                    </AppText>
-
-                    <MaterialCommunityIcons
-                      name="cards"
-                      size={14}
-                      color={theme.subText2}
-                    />
-                  </View>
-                );
-              })}
-            </ScrollView>
-            {/* <View className="flex-row items-center justify-between mt-4">
-              <View className="flex-row items-center gap-2">
-                <AppText size={"lg"} font="MulishBold" color="subText1">
-                  123
-                </AppText>
-                <AppText size={"lg"} font="MulishBold" color="subText1">
-                  Translated
-                </AppText>
-              </View>
-            </View> */}
-            <AppText
-              size={"xs"}
-              className="mt-4"
-              font="MulishBold"
-              color="subText1"
-            >
-              Translate
-            </AppText>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 8, padding: 4, marginTop: 8 }}
-            >
-              {[1, 2, 3, 4, 9, 5, 6, 7, 8].map((item, index) => {
-                return (
-                  <View
-                    key={index}
-                    className="flex-row items-center gap-2"
-                    style={{
-                      backgroundColor: theme.secondary + "22",
-                      borderRadius: 999,
-                      paddingHorizontal: 10,
-                      paddingVertical: 6,
-                    }}
-                  >
-                    <View className="h-7 w-7 rounded-full bg-card"></View>
-                    <AppText size={"xs"} font="MulishBold" color="subText1">
-                      123
-                    </AppText>
-
-                    <MaterialCommunityIcons
-                      name="cards"
-                      size={14}
-                      color={theme.subText2}
-                    />
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
-        </View>
-        <View className="mt-8">
-          <CollectionWordList />
-        </View>
-
-        <View className="h-10"></View>
-      </KeyboardAwareScrollView>
-
-      {/* 
-        options: save + options(report | copy id) | remove | edit + options ( delete | sync | un-upload | copy id | update log | update request) | edit complete + delete | unshare + sync + edit,
-        copy collection code
-        update request if that is protected
-        update log
-
-        ower | contributed
-
-        likes,
-        name
-        image
-        tags
-        description
-        words
-
-
-      */}
-      {/* <AppButton onPress={() => {}} title="Sync" size="xl" /> */}
+            </View>
+          )}
+        />
+      )}
     </View>
   );
 };
