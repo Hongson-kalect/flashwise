@@ -4,17 +4,19 @@ import AppIcon from "@/components/AppIcon";
 import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
 import SearchBar from "@/components/SearchBar";
-import { getMyCollection, listCollectionSenses } from "@/database/queries/collections";
+import { getMyCollection, listCollectionSenses, setLocalCover } from "@/database/queries/collections";
 import { useTheme } from "@/providers/Theme";
-import { downloadBundle } from "@/services/collections";
+import { useBottomSheet } from "@/providers/BottomSheet";
+import { downloadBundle, refreshPending } from "@/services/collections";
 import { useAppStore } from "@/stores/appStore";
 import { ProgressRing, Skeleton, useDebounce } from "@/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
-import { FlatList, Pressable, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
 import CollectionCover from "../components/collectionCover";
+import CoverSheet from "./components/coverSheet";
 import SenseRow from "./components/senseRow";
 
 /** Chi tiết 1 bộ: ảnh bìa, tiến độ, tải về học offline, danh sách nghĩa trong bộ. */
@@ -23,6 +25,7 @@ const CollectionDetail = () => {
   const { theme } = useTheme();
   const router = useRouter();
   const db = useSQLiteContext();
+  const { present } = useBottomSheet();
   const queryClient = useQueryClient();
   const userLang = useAppStore((s) => s.settings?.translate_language) ?? "vi";
   const [search, setSearch] = useState("");
@@ -54,6 +57,24 @@ const CollectionDetail = () => {
     }
   }, [c?.downloaded]);
 
+  // Còn từ đang chờ AI tạo: hỏi lại mỗi vài giây (tối đa ~2 phút) để từ xong tự vào bộ
+  const waiting = c?.downloaded ? c.pendingWords.length : 0;
+  useEffect(() => {
+    if (!waiting || !c) return;
+    let tries = 0;
+    let busy = false;
+    const timer = setInterval(async () => {
+      if (busy || ++tries > 20) return clearInterval(timer);
+      busy = true;
+      try {
+        await refreshPending(db, id, c.collectionId, userLang);
+        await queryClient.invalidateQueries({ queryKey: ["collections"] });
+      } catch {}
+      busy = false;
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [waiting, id]);
+
   const pending = download.data?.pending ?? 0;
   const pct = c?.total ? Math.min(100, (c.learned / c.total) * 100) : 0;
 
@@ -61,6 +82,34 @@ const CollectionDetail = () => {
     <View className="gap-4 pb-2">
       <View>
         <CollectionCover collection={c} radius={20} style={{ height: 180, width: "100%" }} />
+        {c.canEditCover && (
+          <Pressable
+            onPress={() =>
+              present({
+                title: "Ảnh bìa",
+                render: () => (
+                  <CoverSheet
+                    userCollectionId={id}
+                    hasOwnCover={!!c.imageUrl}
+                    onApplied={async (image) => {
+                      await setLocalCover(db, c.collectionId, image);
+                      await queryClient.invalidateQueries({ queryKey: ["collections"] });
+                    }}
+                  />
+                ),
+              })
+            }
+            hitSlop={8}
+            className="absolute flex-row items-center gap-1.5 px-3 h-9 rounded-full"
+            style={{ right: 12, bottom: 12, backgroundColor: theme.card + "E6", borderWidth: 1, borderColor: theme.border }}
+            accessibilityLabel="Đổi ảnh bìa"
+          >
+            <AppIcon branch="feather" name="camera" size={15} color={theme.text} />
+            <AppText size="xs" weight="semibold" color="title">
+              Đổi ảnh
+            </AppText>
+          </Pressable>
+        )}
       </View>
 
       <View className="gap-1">
@@ -97,6 +146,39 @@ const CollectionDetail = () => {
           </View>
         </View>
       </AppCard>
+
+      {(c.pendingWords.length > 0 || c.invalidWords.length > 0) && (
+        <View className="gap-2">
+          {c.pendingWords.length > 0 && (
+            <View className="p-3 rounded-2xl gap-1" style={{ backgroundColor: theme.primary + "14" }}>
+              <View className="flex-row items-center gap-2">
+                <ActivityIndicator size="small" color={theme.primary} />
+                <AppText weight="bold" color="primary" style={{ flexShrink: 1 }}>
+                  {`Đang tạo ${c.pendingWords.length} từ`}
+                </AppText>
+              </View>
+              <AppText size="sm" color="subText1">
+                {c.pendingWords.slice(0, 12).join(", ")}
+                {c.pendingWords.length > 12 ? "…" : ""}. Từ nào xong sẽ tự vào bộ, bạn có thể học các từ khác trước.
+              </AppText>
+            </View>
+          )}
+          {c.invalidWords.length > 0 && (
+            <View className="p-3 rounded-2xl gap-1" style={{ backgroundColor: theme.warning + "1F" }}>
+              <View className="flex-row items-center gap-2">
+                <AppIcon branch="feather" name="alert-circle" size={16} color={theme.warning} />
+                <AppText weight="bold" style={{ color: theme.warning, flexShrink: 1 }}>
+                  {`${c.invalidWords.length} từ không dùng được`}
+                </AppText>
+              </View>
+              <AppText size="sm" color="subText1">
+                {c.invalidWords.slice(0, 12).join(", ")}
+                {c.invalidWords.length > 12 ? "…" : ""}. Từ sai chính tả hoặc không phải mục từ nên không được thêm vào bộ.
+              </AppText>
+            </View>
+          )}
+        </View>
+      )}
 
       {!c.downloaded ? (
         <View className="gap-2">

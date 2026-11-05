@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS user_collection (
     version INTEGER DEFAULT 0,                      -- Phiên bản tiến độ để so khớp khi đồng bộ Cloud
     etag TEXT,                                      -- etag gói học offline lần tải gần nhất (chỉ ở máy, không sync)
     downloaded_at TEXT,                             -- NULL = chưa tải nội dung bộ về máy (chỉ ở máy, không sync)
+    is_author INTEGER DEFAULT 0,                    -- 1: mình là tác giả của bộ (bundle trả về, chỉ ở máy)
+    is_released INTEGER DEFAULT 0,                  -- 1: bộ đã phát hành (bundle trả về, chỉ ở máy)
     
     -- Trạng thái Local-First (Ép cứng thành INTEGER)
     is_active INTEGER DEFAULT 1,                    -- 1: Đang học | 0: Đã lưu trữ (Archive) không hiện ở màn hình chính

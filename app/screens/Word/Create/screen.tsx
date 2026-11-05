@@ -3,30 +3,11 @@ import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
+import { entryProblem, MAX_ENTRY_CHARS } from "@/utils/entryProblem";
 import { router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-// Khớp bộ lọc của server (utils/utils/normalize.lookup_entry_problem): chỉ từ, cụm từ, thành ngữ, tục ngữ
-const MAX_TOKENS = 12;
-const MAX_CJK_CHARS = 14;
-const MAX_CHARS = 100;
-
-/** Lỗi nhìn thấy ngay ở máy; còn lại (từ sai chính tả, câu ngắn...) do AI quyết định ở bước tạo từ. */
-const entryProblem = (raw: string, lang: string): string | null => {
-  const word = raw.trim().replace(/\s+/g, " ");
-  if (!word) return "Hãy nhập một từ hoặc cụm từ.";
-  if (!/[\p{L}\p{N}]/u.test(word)) return "Hãy nhập một từ hoặc cụm từ.";
-  if (word.length > MAX_CHARS) return `Tối đa ${MAX_CHARS} ký tự.`;
-  const cjk = ["ja", "zh"].includes(lang.split("-")[0]);
-  const tooLong = cjk ? word.length > MAX_CJK_CHARS : word.split(" ").length > MAX_TOKENS;
-  const body = word.replace(/[.!?。！？ ]+$/u, "");
-  if (tooLong || /[.!?。！？]\s*\S/u.test(body)) {
-    return "Đây giống một câu hơn là một mục từ. Chỉ thêm từ, cụm từ, thành ngữ hoặc tục ngữ.";
-  }
-  return null;
-};
 
 /**
  * Tìm kiếm từ mới: chỉ nhập từ rồi Enter. Từ chưa có sẽ được AI tạo ngay ở trang từ (tiến độ hiện dần, báo rõ nếu bị từ chối);
@@ -80,7 +61,7 @@ export default function CreateWord() {
               autoCapitalize="none"
               autoCorrect={false}
               returnKeyType="go"
-              maxLength={MAX_CHARS}
+              maxLength={MAX_ENTRY_CHARS}
               placeholder="vd: break the ice"
               placeholderTextColor={theme.subText3}
               style={{

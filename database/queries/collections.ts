@@ -155,11 +155,17 @@ export type MyCollection = {
   coverUri: string | null;
   coverWord: string | null;
   coverKeywords: string[];
+  /** Từ đang chờ AI tạo (tự vào bộ khi xong) và từ bị từ chối / không dùng được. */
+  pendingWords: string[];
+  invalidWords: string[];
+  /** Tác giả của bộ chưa phát hành, đã tải về: được đổi ảnh bìa. */
+  canEditCover: boolean;
 };
 
 const COLLECTION_SQL = `
   SELECT uc.id, uc.collection_id, uc.name, uc.description, uc.learned_count, uc.downloaded_at, uc.version AS uc_version,
-         uc.created_at, c.image_url, c.language_code, c.is_official, c.item_count, c.version AS c_version,
+         uc.created_at, uc.is_author, uc.is_released, c.image_url, c.language_code, c.is_official, c.item_count, c.version AS c_version,
+         c.pending_words, c.invalid_words,
          (SELECT COALESCE(s.image_preview, m.image_link) FROM collection_items i
             JOIN ai_sense s ON s.id = i.sense_id LEFT JOIN sense_metadata m ON m.id = s.metadata_id
           WHERE i.collection_id = uc.collection_id AND i.is_deleted = 0
@@ -181,6 +187,9 @@ const toMyCollection = (r: any): MyCollection => {
   const downloaded = !!r.downloaded_at;
   const sep = typeof r.cover_hint === "string" ? r.cover_hint.indexOf("|") : -1;
   return {
+    canEditCover: downloaded && !!r.is_author && !r.is_released,
+    pendingWords: parse(r.pending_words, []),
+    invalidWords: parse(r.invalid_words, []),
     coverUri: r.cover_uri ?? null,
     coverWord: sep > 0 ? r.cover_hint.slice(0, sep) : null,
     coverKeywords: sep > 0 ? parse(r.cover_hint.slice(sep + 1), []) : [],
@@ -291,3 +300,9 @@ export const listCollectionSenses = async (
     };
   });
 };
+
+/** Ghi ảnh bìa mới vào máy ngay sau khi server nhận (null = về ảnh tự động). */
+export const setLocalCover = async (db: SQLiteDatabase, collectionId: string, image: string | null) => {
+  await db.runAsync(`UPDATE collection SET image_url = ?, updated_at = DATETIME('now') WHERE id = ?`, [image, collectionId]);
+};
+

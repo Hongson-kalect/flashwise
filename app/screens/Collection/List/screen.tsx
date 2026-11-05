@@ -63,16 +63,28 @@ const CollectionListScreen = () => {
         <AppText size="3xl" weight="bold" color="title">
           Bộ từ
         </AppText>
-        <Pressable
-          onPress={() => routerPush("/screens/Collection/Discover/List/screen")}
-          className="flex-row items-center gap-1.5 h-10 px-4 rounded-full"
-          style={{ backgroundColor: theme.primary }}
-        >
-          <AppIcon name="compass" branch="feather" color="white" size={18} />
-          <AppText weight="bold" color="white" size="sm">
-            Khám phá
-          </AppText>
-        </Pressable>
+        <View className="flex-row items-center gap-2">
+          <Pressable
+            onPress={() => routerPush("/screens/Collection/Create/screen")}
+            className="flex-row items-center gap-1.5 h-10 px-4 rounded-full"
+            style={{ backgroundColor: theme.primary + "14" }}
+          >
+            <AppIcon name="plus" branch="feather" color={theme.primary} size={18} />
+            <AppText weight="bold" color="primary" size="sm">
+              Tạo
+            </AppText>
+          </Pressable>
+          <Pressable
+            onPress={() => routerPush("/screens/Collection/Discover/List/screen")}
+            className="flex-row items-center gap-1.5 h-10 px-4 rounded-full"
+            style={{ backgroundColor: theme.primary }}
+          >
+            <AppIcon name="compass" branch="feather" color="white" size={18} />
+            <AppText weight="bold" color="white" size="sm">
+              Khám phá
+            </AppText>
+          </Pressable>
+        </View>
       </View>
 
       <FlatList
@@ -173,6 +185,18 @@ const CollectionListScreen = () => {
                   ? "Thử tên khác."
                   : "Thêm một bộ từ để học theo từng chủ đề. Bộ đã tải học được cả khi không có mạng."}
               </AppText>
+              {!search && (
+                <Pressable
+                  onPress={() => routerPush("/screens/Collection/Create/screen")}
+                  className="mt-2 h-11 px-5 rounded-2xl flex-row items-center justify-center gap-2"
+                  style={{ backgroundColor: theme.primary + "14" }}
+                >
+                  <AppIcon branch="feather" name="plus" size={16} color={theme.primary} />
+                  <AppText color="primary" weight="bold">
+                    Tạo bộ đầu tiên của bạn
+                  </AppText>
+                </Pressable>
+              )}
             </View>
           )
         }

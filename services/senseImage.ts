@@ -57,23 +57,30 @@ const fromCommons = async (q: string): Promise<SenseImage | null> => {
  * Pixabay nếu có EXPO_PUBLIC_PIXABAY_API_KEY, không thì Wikimedia Commons.
  * Chỉ là giải pháp tạm phía app cho tới khi server tự chọn ảnh (PARTIAL_IMAGE).
  */
-export const findSenseImage = (
-  keywords: string[] | undefined,
-  word: string,
-): Promise<SenseImage | null> => {
-  const q = (keywords?.length ? keywords.slice(0, 2).join(" ") : word).trim();
-  if (!q) return Promise.resolve(null);
-
+const lookup = (q: string): Promise<SenseImage | null> => {
   if (!cache.has(q)) {
     const load = PIXABAY_KEY ? fromPixabay : fromCommons;
     cache.set(
       q,
-      load(q)
-        .catch(() => {
-          cache.delete(q);
-          return null;
-        }),
+      load(q).catch(() => {
+        cache.delete(q);
+        return null;
+      }),
     );
   }
   return cache.get(q)!;
+};
+
+export const findSenseImage = async (
+  keywords: string[] | undefined,
+  word: string,
+): Promise<SenseImage | null> => {
+  // Cụ thể trước (2 từ khoá đầu), không có ảnh thì nới dần: từ khoá đầu, rồi chính từ đó
+  const first = (keywords ?? []).slice(0, 2).map((k) => k.trim()).filter(Boolean);
+  const queries = [...new Set([first.join(" "), first[0], word.trim()].filter(Boolean))];
+  for (const q of queries) {
+    const img = await lookup(q);
+    if (img) return img;
+  }
+  return null;
 };
