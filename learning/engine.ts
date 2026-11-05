@@ -1,0 +1,222 @@
+import { checkAnswer } from "./checker";
+import { autoGrade, clampGrade, DEFAULT_MEDIAN_MS } from "./grade";
+import { buildQuestions, PoolEntry, poolFromCards, stepCountFor } from "./steps";
+import { AGAIN, GOOD, Grade, HARD, LearnCard, Question, StepLog, Verdict } from "./types";
+
+/**
+ * Máy trạng thái của 1 phiên học cụm: thuần (không đụng React / SQLite), chạy bằng reducer.
+ * Mỗi thẻ có chuỗi bước (copy → chọn nghĩa → chọn từ → gõ từ); hàng đợi xếp xen kẽ, bước kế của 1 thẻ được chèn lại
+ * sau 1, 3, 5... thẻ khác (giãn cách tăng dần), không bao giờ 2 bước liền của cùng 1 thẻ. Sai 2 lần thì hiện đáp án và
+ * làm lại đúng bước đó 1 lần nữa sau vài thẻ.
+ */
+
+export const MAX_HINTS = 2; // lần xin gợi ý thứ MAX_HINTS + 1 là hiện đáp án
+const GAPS = [1, 3, 5, 5];
+const RETRY_GAP = 3;
+const MAX_TRIES = 2;
+
+export interface Item {
+  cardKey: string;
+  stepIdx: number;
+  /** 1 = lần đầu, 2 = làm lại sau khi bị hiện đáp án (không làm lại nữa dù sai tiếp). */
+  pass: 1 | 2;
+}
+
+export interface CardRun {
+  card: LearnCard;
+  questions: Question[];
+  logs: StepLog[];
+  known: boolean;
+}
+
+export interface Attempt {
+  tries: number;
+  hints: number;
+  wrongOptionIds: string[];
+  startedAt: number;
+  /** Lần gõ sai gần nhất (để UI rung / báo), reset khi gõ lại. */
+  lastVerdict: Verdict | null;
+}
+
+export interface Feedback {
+  correct: boolean;
+  revealed: boolean;
+  verdict: Verdict | null;
+  answer: string;
+}
+
+export type Phase = "question" | "feedback" | "summary";
+
+export interface RunState {
+  phase: Phase;
+  cards: Record<string, CardRun>;
+  order: string[];
+  queue: Item[];
+  current: Item | null;
+  attempt: Attempt;
+  feedback: Feedback | null;
+  lastCardKey: string | null;
+  totalSteps: number;
+  doneSteps: number;
+  autoGrades: Record<string, Grade>;
+  grades: Record<string, Grade>;
+  medianMs: number;
+  startedAt: number;
+}
+
+export type Action =
+  | { type: "answer"; value: string; at: number }
+  | { type: "hint"; at: number }
+  | { type: "known"; at: number }
+  | { type: "next"; at: number }
+  | { type: "setGrade"; key: string; grade: Grade };
+
+export interface StartInput {
+  cards: LearnCard[];
+  /** Thẻ khác trong bộ làm đáp án nhiễu (ngoài chính cụm). */
+  extraPool?: PoolEntry[];
+  clusterSteps: number;
+  now: number;
+  medianMs?: number;
+  rng?: () => number;
+}
+
+const freshAttempt = (at: number): Attempt => ({ tries: 0, hints: 0, wrongOptionIds: [], startedAt: at, lastVerdict: null });
+
+export const startRun = ({ cards, extraPool = [], clusterSteps, now, medianMs = DEFAULT_MEDIAN_MS, rng = Math.random }: StartInput): RunState => {
+  const pool = [...poolFromCards(cards), ...extraPool];
+  const runs: Record<string, CardRun> = {};
+  for (const card of cards) {
+    runs[card.key] = { card, questions: buildQuestions(card, pool, stepCountFor(0, clusterSteps), rng), logs: [], known: false };
+  }
+  const order = cards.map((c) => c.key);
+  const queue: Item[] = order.map((cardKey) => ({ cardKey, stepIdx: 0, pass: 1 }));
+  const totalSteps = order.reduce((n, key) => n + runs[key].questions.length, 0);
+  const state: RunState = {
+    phase: "question", cards: runs, order, queue, current: null, attempt: freshAttempt(now), feedback: null,
+    lastCardKey: null, totalSteps, doneSteps: 0, autoGrades: {}, grades: {}, medianMs, startedAt: now,
+  };
+  return advance(state, now);
+};
+
+/** Câu hỏi đang hiện (undefined khi hết). */
+export const currentQuestion = (state: RunState): Question | undefined =>
+  state.current ? state.cards[state.current.cardKey].questions[state.current.stepIdx] : undefined;
+
+const insertAt = (queue: Item[], item: Item, gap: number) => {
+  const q = [...queue];
+  q.splice(Math.min(gap, q.length), 0, item);
+  return q;
+};
+
+/** Lấy bước kế từ hàng đợi (tránh cùng thẻ vừa hỏi nếu còn thẻ khác); hết thì sang tổng kết. */
+const advance = (state: RunState, at: number): RunState => {
+  if (!state.queue.length) {
+    const autoGrades: Record<string, Grade> = {};
+    for (const key of state.order) {
+      const run = state.cards[key];
+      autoGrades[key] = run.known ? 4 : autoGrade(run.logs, state.medianMs);
+    }
+    return { ...state, phase: "summary", current: null, feedback: null, autoGrades, grades: { ...autoGrades } };
+  }
+  let idx = state.queue.findIndex((item) => item.cardKey !== state.lastCardKey);
+  if (idx < 0) idx = 0;
+  const queue = [...state.queue];
+  const [current] = queue.splice(idx, 1);
+  return { ...state, phase: "question", queue, current, feedback: null, attempt: freshAttempt(at) };
+};
+
+const ratingFor = (attempt: Attempt, revealed: boolean, verdict: Verdict | null): Grade => {
+  if (revealed) return AGAIN;
+  return attempt.hints > 0 || attempt.tries > 1 || verdict === "close" ? HARD : GOOD;
+};
+
+/** Chốt 1 bước (đúng hoặc phải hiện đáp án): ghi log, chèn bước kế / bước làm lại, sang phase feedback. */
+const finalize = (state: RunState, opts: { correct: boolean; revealed: boolean; verdict: Verdict | null }, at: number): RunState => {
+  const item = state.current!;
+  const run = state.cards[item.cardKey];
+  const question = run.questions[item.stepIdx];
+  const rating = ratingFor(state.attempt, opts.revealed, opts.verdict);
+  const log: StepLog = {
+    kind: question.kind, rating, correct: opts.correct, hintCount: state.attempt.hints,
+    attempts: Math.max(1, state.attempt.tries), durationMs: Math.max(0, at - state.attempt.startedAt), at,
+  };
+  const cards = { ...state.cards, [item.cardKey]: { ...run, logs: [...run.logs, log] } };
+
+  let queue = state.queue;
+  let totalSteps = state.totalSteps;
+  if (opts.revealed && item.pass === 1) {
+    queue = insertAt(queue, { ...item, pass: 2 }, RETRY_GAP);
+    totalSteps += 1;
+  } else if (item.stepIdx + 1 < run.questions.length) {
+    queue = insertAt(queue, { cardKey: item.cardKey, stepIdx: item.stepIdx + 1, pass: 1 }, GAPS[Math.min(item.stepIdx, GAPS.length - 1)]);
+  }
+  return {
+    ...state, cards, queue, totalSteps, doneSteps: state.doneSteps + 1, lastCardKey: item.cardKey, phase: "feedback",
+    feedback: { correct: opts.correct, revealed: opts.revealed, verdict: opts.verdict, answer: question.answer },
+  };
+};
+
+export const reduce = (state: RunState, action: Action): RunState => {
+  switch (action.type) {
+    case "answer": {
+      if (state.phase !== "question" || !state.current) return state;
+      const question = currentQuestion(state)!;
+      const lang = state.cards[state.current.cardKey].card.lang;
+      const attempt = { ...state.attempt, tries: state.attempt.tries + 1 };
+      if (question.answerType === "choose") {
+        const option = question.options.find((o) => o.id === action.value);
+        if (!option) return state;
+        if (option.correct) return finalize({ ...state, attempt }, { correct: true, revealed: false, verdict: null }, action.at);
+        attempt.wrongOptionIds = [...attempt.wrongOptionIds, option.id];
+        if (attempt.tries >= MAX_TRIES) return finalize({ ...state, attempt }, { correct: false, revealed: true, verdict: "wrong" }, action.at);
+        return { ...state, attempt };
+      }
+      const verdict = checkAnswer(action.value, question.answer, lang);
+      if (verdict !== "wrong") return finalize({ ...state, attempt }, { correct: true, revealed: false, verdict }, action.at);
+      attempt.lastVerdict = "wrong";
+      if (attempt.tries >= MAX_TRIES) return finalize({ ...state, attempt }, { correct: false, revealed: true, verdict: "wrong" }, action.at);
+      return { ...state, attempt };
+    }
+    case "hint": {
+      if (state.phase !== "question") return state;
+      const question = currentQuestion(state);
+      if (!question || question.answerType !== "type") return state;
+      const attempt = { ...state.attempt, hints: state.attempt.hints + 1 };
+      if (attempt.hints > MAX_HINTS) return finalize({ ...state, attempt }, { correct: false, revealed: true, verdict: null }, action.at);
+      return { ...state, attempt };
+    }
+    case "known": {
+      if (state.phase !== "question" || !state.current) return state;
+      const key = state.current.cardKey;
+      const run = state.cards[key];
+      const remaining = run.questions.length - run.logs.length; // bước chưa làm của thẻ này (kể cả bước đang hiện)
+      const cards = { ...state.cards, [key]: { ...run, known: true } };
+      const queue = state.queue.filter((i) => i.cardKey !== key);
+      return advance({ ...state, cards, queue, totalSteps: state.totalSteps - remaining, lastCardKey: key }, action.at);
+    }
+    case "next":
+      return state.phase === "feedback" ? advance(state, action.at) : state;
+    case "setGrade": {
+      const auto = state.autoGrades[action.key];
+      if (state.phase !== "summary" || !auto || state.cards[action.key]?.known) return state;
+      return { ...state, grades: { ...state.grades, [action.key]: clampGrade(auto, action.grade) } };
+    }
+  }
+};
+
+/** Kết quả phiên để ghi DB: mỗi thẻ 1 điểm chấm + các bước đã làm. */
+export interface CardResult {
+  card: LearnCard;
+  grade: Grade;
+  known: boolean;
+  logs: StepLog[];
+}
+
+export const resultsOf = (state: RunState): CardResult[] =>
+  state.order.map((key) => {
+    const run = state.cards[key];
+    return { card: run.card, grade: state.grades[key] ?? GOOD, known: run.known, logs: run.logs };
+  });
+
+export const progressOf = (state: RunState) => (state.totalSteps ? Math.min(1, state.doneSteps / state.totalSteps) : 1);

@@ -2,6 +2,13 @@
 
 Ghi từ buổi thảo luận ngày 2026-11-01 (phiên backend `flashwise_api`). Phần cấp / độ khó / thuật toán ngắt quãng chi tiết **chưa chốt**, làm sau.
 
+## 0. Cập nhật 2026-11-05: lát 1 (học cụm, offline) đã chạy
+
+- Logic thuần ở `learning/` (có test `npx tsx --test learning/learning.test.ts`): `engine.ts` (máy trạng thái phiên bằng reducer), `steps.ts` (registry kiểu bước + đáp án nhiễu), `checker.ts` (chấm gõ, gợi ý), `grade.ts` (quy điểm FSRS, chỉnh ±1), `fsrsService.ts` (ts-fsrs, cùng luật server), `cardData.ts` (dòng SQL → thẻ, áp delta), `useLearnRun.ts` (nối SQLite + React).
+- SQLite: `database/queries/learning.ts` (`pickNewCards` theo luật server, `saveLearnResult` ghi progress / review_log / learn_session / day_learn_log trong 1 giao dịch).
+- UI: `components/learning/` (SessionHeader, WordHeader, SenseImage, FeedbackBar, SummaryView, StateView) và `questions/` (registry `PROMPTS` theo kiểu bước, `ANSWERS` theo cách trả lời: chọn / gõ). Màn `app/screens/Learning/New/screen.tsx` (param `id` = UserCollection) chỉ ghép; vào từ nút "Học từ mới" ở chi tiết bộ.
+- Có: 4 bước (copy + "Đã biết", chọn nghĩa, chọn từ, gõ từ), giãn cách tăng dần, gợi ý, tổng kết chọn mức nhớ, ghi tiến độ offline. Chưa có: ôn tập / vuốt, nghe / nói / cloze / ảnh, học tiếp phiên dở, đẩy lên server (worker sync). "Ôn tập ngay" ở Home vẫn mở màn Practice dữ liệu giả cũ.
+
 ## 1. Hiện trạng code app (trước khi làm)
 
 - Mọi nút học (Home "Học từ mới" / "Ôn tập ngay", Collection Detail) đều mở `app/screens/Practice/screen.tsx`, chạy trên dữ liệu giả `testData` (`Practice/example.ts`, khác hình dạng AISense thật). Chưa chọn bộ từ, chưa có thư viện FSRS, chưa ghi `user_sense_progress` / `learn_session`. `app/screens/Learning` trống.

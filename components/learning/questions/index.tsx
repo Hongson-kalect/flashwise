@@ -1,0 +1,48 @@
+import { Attempt, Feedback } from "@/learning/engine";
+import { LearnCard, Question } from "@/learning/types";
+import { ComponentType } from "react";
+import { ScrollView, View } from "react-native";
+import FeedbackBar from "../FeedbackBar";
+import ChoiceList from "./ChoiceList";
+import { PROMPTS } from "./prompts";
+import TypeAnswer from "./TypeAnswer";
+import { AnswerProps } from "./types";
+
+/** Registry: cách trả lời → component (chọn / gõ). Thêm cách trả lời mới (nói, ghép chữ...) thì đăng ký ở đây. */
+const ANSWERS: Record<Question["answerType"], ComponentType<AnswerProps>> = {
+  choose: ChoiceList,
+  type: TypeAnswer,
+};
+
+type Props = {
+  card: LearnCard;
+  question: Question;
+  attempt: Attempt;
+  feedback: Feedback | null;
+  hearable: boolean;
+  onAnswer: (value: string) => void;
+  onHint: () => void;
+  onKnown: () => void;
+  onNext: () => void;
+};
+
+/** Khung 1 câu hỏi: phần đề (cuộn được) ở trên, ô trả lời hoặc thanh kết quả ở dưới. Chọn component theo registry. */
+const QuestionView = ({ card, question, attempt, feedback, hearable, onAnswer, onHint, onKnown, onNext }: Props) => {
+  const Prompt = PROMPTS[question.kind];
+  const Answer = ANSWERS[question.answerType];
+  return (
+    <View className="flex-1">
+      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 8 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        <Prompt card={card} question={question} attempt={attempt} hearable={hearable} onKnown={onKnown} />
+      </ScrollView>
+      <View className="px-4 pb-4 pt-2 gap-3">
+        {(!feedback || question.answerType === "choose") && (
+          <Answer card={card} question={question} attempt={attempt} feedback={feedback} onAnswer={onAnswer} onHint={onHint} />
+        )}
+        {feedback && <FeedbackBar feedback={feedback} onNext={onNext} />}
+      </View>
+    </View>
+  );
+};
+
+export default QuestionView;

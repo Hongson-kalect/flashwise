@@ -331,7 +331,7 @@ const CollectionDetail = () => {
               </AppText>
             </View>
           )}
-          <AppButton type="success" size="lg" onPress={() => router.push("/screens/Practice/screen")}>
+          <AppButton type="success" size="lg" onPress={() => router.push({ pathname: "/screens/Learning/New/screen", params: { id } })}>
             <AppIcon branch="feather" name="feather" size={18} color="white" />
             <AppText color="white" weight="bold" size="lg">
               Học từ mới
