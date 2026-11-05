@@ -40,7 +40,8 @@ const WideImage = ({ uri, aspect = 16 / 9, height, radius = 16, blur = 15, style
           <View style={{ position: "absolute", width: "100%", height: "100%", backgroundColor: theme.background2 + "55" }} />
           <AppImage
             source={{ uri }}
-            style={{ height: "100%", aspectRatio: Math.min(Math.max(ratio, 1), aspect) }}
+            // top/bottom cố định để chiều cao luôn xác định (khung chỉ có tỉ lệ), chiều rộng theo tỉ lệ ảnh
+            style={{ position: "absolute", top: 0, bottom: 0, aspectRatio: Math.min(Math.max(ratio, 1), aspect) }}
             contentFit="cover"
             contentPosition="top"
             onLoad={(e) => e.source.width && e.source.height && setRatio(e.source.width / e.source.height)}

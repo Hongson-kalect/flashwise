@@ -4,9 +4,10 @@ import { MyCollection } from "@/database/queries/collections";
 import { useTheme } from "@/providers/Theme";
 import { useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
-import CollectionCover, { CollectionCoverWide } from "../../components/collectionCover";
+import CollectionCover from "../../components/collectionCover";
+import CollectionCardWide from "./collectionCardWide";
 
-/** TẠM: hiện song song ảnh bìa 1:1 hiện tại và 16:9 mới (cùng chiều cao) để so sánh; xoá khi chọn xong. */
+/** TẠM: dưới thẻ hiện tại hiện thêm thẻ bố cục 16:9 mới để so sánh; xoá khi chọn xong. */
 const SHOW_COVER_COMPARE = true;
 
 /** Thẻ 1 bộ trong "Bộ của tôi": ảnh bìa, tên, tiến độ, trạng thái đã tải / cần cập nhật. */
@@ -76,15 +77,9 @@ const CollectionCard = ({ item }: { item: MyCollection }) => {
       </View>
     </Pressable>
     {SHOW_COVER_COMPARE && (
-      <View className="flex-row items-end gap-3 px-3 pt-2">
-        <View className="items-center gap-1">
-          <CollectionCover collection={item} style={{ height: 90, width: 90 }} radius={12} />
-          <AppText size="xs" color="subText2">1:1 hiện tại</AppText>
-        </View>
-        <View className="items-center gap-1">
-          <CollectionCoverWide collection={item} style={{ height: 90, width: 160 }} radius={12} />
-          <AppText size="xs" color="subText2">16:9 mới</AppText>
-        </View>
+      <View className="pt-2 gap-1">
+        <AppText size="xs" color="subText2" style={{ paddingLeft: 4 }}>Bố cục 16:9 (thử)</AppText>
+        <CollectionCardWide item={item} />
       </View>
     )}
     </View>
