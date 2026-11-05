@@ -40,6 +40,7 @@ import { useWordLoading } from "../loadingContext";
 import { getLangTranslate, textToSpeech } from "../utils";
 import SectionHeader from "./sectionHeader";
 import WordDefinitions from "./definitions";
+import MainSenseButton from "./mainSenseButton";
 import SenseNote from "./senseNote";
 import SenseUsage from "./senseUsage";
 
@@ -218,6 +219,9 @@ const BasicInformation = ({
         >
           <PhienAm> {ipas?.[0]?.value || ""}</PhienAm>
         </TouchableOpacity>
+        <View className="flex-1 items-end">
+          <MainSenseButton sense={sense} />
+        </View>
       </View>
 
       <View className="mt-4 mb-2">

@@ -1279,6 +1279,10 @@ export type SenseType = {
   };
   image_preview?: string;
   score?: number;
+  /** Admin / seeder đề xuất nghĩa này (server). */
+  recommended?: boolean;
+  /** Nghĩa chính do chính người dùng đặt (server chỉ gắn cho người đang đăng nhập). */
+  is_main?: boolean;
   isUser?: boolean;
 
   ipas?: {

@@ -1,4 +1,4 @@
-import { GetAPI, PostAPI, PutAPI } from "../axios";
+import { DeleteAPI, GetAPI, PostAPI, PutAPI } from "../axios";
 
 export interface CommunitySense {
   id: string;
@@ -149,3 +149,14 @@ export const editErrorKind = (e: any): EditErrorKind => {
   if (status === 404) return "not_found";
   return "unknown";
 };
+
+/**
+ * Đặt (want = true) hoặc bỏ nghĩa chính của từ cho riêng mình: nghĩa chính đứng đầu trang từ của mình, mỗi từ một nghĩa
+ * (đặt nghĩa khác thì nghĩa cũ bị thu hồi). Tài khoản thật còn cộng vào điểm chung của nghĩa; khách chỉ có tác dụng riêng.
+ */
+export const setMainSense = async (senseId: string, want: boolean) => {
+  const url = `ai-senses/${senseId}/main/`;
+  const res = want ? await PostAPI(url, {}) : await DeleteAPI(url);
+  return res.data as { main: boolean; sense_id: string; word_id: string; main_count: number };
+};
+

@@ -102,6 +102,25 @@ const WordDetail = ({ word }: { word: string }) => {
     const target = pages[i];
     if (target) container.current?.jumpToTab(target.sense.id);
   };
+  // Thứ tự nghĩa đổi (đặt nghĩa chính, thêm nghĩa...): giữ người dùng ở đúng nghĩa đang xem thay vì ở cùng vị trí số
+  const viewingId = useRef<string | null>(null);
+  // Thư viện tab báo onTabChange ngay sau khi trang bị sắp lại (giữ nguyên vị trí số, nghĩa khác): bỏ qua trong lúc đó
+  // để không ghi đè nghĩa đang xem. Lần đầu có nghĩa (từ "Đang tải…") không tính là đổi thứ tự.
+  const orderSig = useRef("");
+  const reorderUntil = useRef(0);
+  const sig = pages.map((p) => p.sense.id).join(",");
+  if (orderSig.current !== sig) {
+    if (orderSig.current) reorderUntil.current = Date.now() + 1000;
+    orderSig.current = sig;
+  }
+  useEffect(() => {
+    const id = viewingId.current;
+    if (!id || pages[pageIndex]?.sense.id === id) return;
+    if (!pages.some((p) => p.sense.id === id)) return;
+    // Chờ thư viện tab nhận danh sách trang mới rồi mới nhảy (nhảy ngay thì bị bỏ qua)
+    const t = setTimeout(() => container.current?.jumpToTab(id), 120);
+    return () => clearTimeout(t);
+  }, [pages]);
   const activeSense = pages[pageIndex]?.sense;
 
   return (
@@ -114,6 +133,7 @@ const WordDetail = ({ word }: { word: string }) => {
       lazy
       onTabChange={(props) => {
         setPageIndex(props.index);
+        if (Date.now() > reorderUntil.current) viewingId.current = pagesRef.current[props.index]?.sense.id ?? null;
         // Sang loại từ khác thì rung nhẹ (có sau khi build native có expo-haptics; chưa có thì bỏ qua)
         const list = pagesRef.current;
         if (list[props.index]?.pos !== list[props.prevIndex]?.pos) {
