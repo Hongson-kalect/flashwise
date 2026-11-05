@@ -42,7 +42,7 @@ const Meaning = ({ card, big = false }: { card: LearnCard; big?: boolean }) => (
     <AppText size={big ? "2xl" : "lg"} weight="bold" color="title" textAlign="center">
       {glossOf(card)}
     </AppText>
-    {!!card.definition && (
+    {!!card.definition && card.definition.trim() !== card.word && (
       <AppText size="sm" color="subText1" textAlign="center">
         {card.definition}
       </AppText>
@@ -54,10 +54,10 @@ const Meaning = ({ card, big = false }: { card: LearnCard; big?: boolean }) => (
 const CopyPrompt = ({ card, hearable, onKnown }: PromptProps) => {
   const { theme } = useTheme();
   return (
-    <View className="gap-4">
+    <View className="gap-3">
       <Label>Từ mới, đọc kỹ rồi gõ lại từ này</Label>
       <WordHeader card={card} autoPlay={hearable} />
-      <SenseImage card={card} aspect={4 / 3} />
+      <SenseImage card={card} aspect={16 / 10} />
       <Meaning card={card} />
       <Example card={card} />
       <Pressable onPress={onKnown} className="self-center flex-row items-center gap-1.5 px-4 h-10 rounded-full" style={{ borderWidth: 1, borderColor: theme.border }}>
@@ -72,7 +72,7 @@ const CopyPrompt = ({ card, hearable, onKnown }: PromptProps) => {
 
 /** Nhìn từ, chọn nghĩa. */
 const ChooseMeaningPrompt = ({ card, hearable }: PromptProps) => (
-  <View className="gap-5 pt-4">
+  <View className="gap-3 pt-1">
     <Label>Chọn nghĩa đúng</Label>
     <WordHeader card={card} autoPlay={hearable} />
     <Example card={card} />
@@ -81,7 +81,7 @@ const ChooseMeaningPrompt = ({ card, hearable }: PromptProps) => (
 
 /** Nhìn định nghĩa / ảnh, chọn từ. */
 const ChooseWordPrompt = ({ card }: PromptProps) => (
-  <View className="gap-4 pt-2">
+  <View className="gap-3">
     <Label>Từ nào có nghĩa này?</Label>
     <SenseImage card={card} aspect={16 / 10} />
     <Meaning card={card} big />
@@ -91,7 +91,7 @@ const ChooseWordPrompt = ({ card }: PromptProps) => (
 
 /** Nhìn nghĩa, gõ từ. */
 const TypeWordPrompt = ({ card }: PromptProps) => (
-  <View className="gap-4 pt-2">
+  <View className="gap-3">
     <Label>Gõ từ có nghĩa này</Label>
     <SenseImage card={card} aspect={16 / 10} />
     <Meaning card={card} big />
@@ -143,7 +143,7 @@ const DictationPrompt = ({ card }: PromptProps) => (
 
 /** Nhìn từ và nghĩa, đọc to (nhận dạng ở ô trả lời bên dưới). */
 const SpeakPrompt = ({ card }: PromptProps) => (
-  <View className="gap-4 pt-2">
+  <View className="gap-3">
     <Label>Đọc to từ này</Label>
     <WordHeader card={card} />
     <SenseImage card={card} aspect={16 / 10} />
@@ -153,7 +153,7 @@ const SpeakPrompt = ({ card }: PromptProps) => (
 
 /** Nhìn nghĩa, viết từ bằng ngón tay (ô vẽ ở phần trả lời bên dưới). */
 const HandwritePrompt = ({ card }: PromptProps) => (
-  <View className="gap-4 pt-2">
+  <View className="gap-3">
     <Label>Viết từ có nghĩa này</Label>
     <SenseImage card={card} aspect={16 / 9} />
     <Meaning card={card} big />

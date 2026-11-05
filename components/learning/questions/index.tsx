@@ -40,10 +40,10 @@ const QuestionView = ({ card, question, attempt, feedback, hearable, onAnswer, o
   const Answer = ANSWERS[question.answerType];
   return (
     <View className="flex-1">
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 8 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 4 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Prompt card={card} question={question} attempt={attempt} hearable={hearable} onKnown={onKnown} />
       </ScrollView>
-      <View className="px-4 pb-4 pt-2 gap-3">
+      <View className="px-4 pb-3 pt-1 gap-2">
         {(!feedback || question.answerType === "choose") && (
           <Answer card={card} question={question} attempt={attempt} feedback={feedback} onAnswer={onAnswer} onHint={onHint} onSpeech={onSpeech} onSkipSpeak={onSkipSpeak} onWritten={onWritten} onSkipWrite={onSkipWrite} />
         )}

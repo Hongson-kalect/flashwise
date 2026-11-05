@@ -36,7 +36,7 @@ const SenseImage = ({ card, height, aspect = 4 / 3, style, showFallbackLetter = 
   return (
     <View className="rounded-2xl overflow-hidden items-center justify-center" style={[height ? { height, width: "100%" } : { aspectRatio: aspect, width: "100%" }, { backgroundColor: theme.background2 }, style]}>
       {uri ? (
-        <AppImage source={{ uri }} style={{ width: "100%", height: "100%" }} />
+        <AppImage source={{ uri }} style={{ width: "100%", height: "100%" }} contentPosition="top" />
       ) : (
         <AppText size="3xl" weight="bold" style={{ color: theme.primary + "99" }}>
           {card.word[0]?.toUpperCase()}
