@@ -1,150 +1,224 @@
 import AppButton from "@/components/AppButton";
-import { AppContainer } from "@/components/AppContainer";
-import { AppDivider } from "@/components/AppDivider";
-import AppInput from "@/components/AppInput";
+import AppCard from "@/components/AppCard";
+import AppIcon from "@/components/AppIcon";
+import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
-import TagItem from "@/components/TagItem";
+import SearchBar from "@/components/SearchBar";
+import { getMyCollection, listCollectionSenses } from "@/database/queries/collections";
 import { useTheme } from "@/providers/Theme";
-import { Entypo } from "@expo/vector-icons";
-import { useState } from "react";
-import { View } from "react-native";
-import { ScrollView } from "react-native-gesture-handler";
-import { Divider } from "react-native-paper";
-import WordList from "../../Word/List/components/list";
-import ItemListHeader from "../../Word/List/components/listHeader";
-import ListSumary from "../../Word/List/components/sumary";
-import CollectionDetailHeader from "./components/header";
-import Relearn from "./components/relearn";
+import { downloadBundle } from "@/services/collections";
+import { useAppStore } from "@/stores/appStore";
+import { ProgressRing, Skeleton, useDebounce } from "@/ui";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import { useEffect, useState } from "react";
+import { FlatList, Pressable, View } from "react-native";
+import CollectionCover from "../components/collectionCover";
+import SenseRow from "./components/senseRow";
 
+/** Chi tiết 1 bộ: ảnh bìa, tiến độ, tải về học offline, danh sách nghĩa trong bộ. */
 const CollectionDetail = () => {
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { theme } = useTheme();
-  const [mode, setMode] = useState<"view" | "update">("view");
-  const [collectionInfo, setCelectionInfo] = useState({
-    name: "Collection 1",
-    description: "Description 1",
-    tags: ["Tag 1", "Tag 2", "Tag 3"],
+  const router = useRouter();
+  const db = useSQLiteContext();
+  const queryClient = useQueryClient();
+  const userLang = useAppStore((s) => s.settings?.translate_language) ?? "vi";
+  const [search, setSearch] = useState("");
+  const q = useDebounce(search, 250);
+
+  const info = useQuery({
+    queryKey: ["collections", "detail", id],
+    queryFn: () => getMyCollection(db, id),
+  });
+  const c = info.data;
+
+  const senses = useQuery({
+    queryKey: ["collections", "senses", id, q, userLang],
+    queryFn: () => listCollectionSenses(db, c!.collectionId, { q, userLang }),
+    enabled: !!c?.downloaded,
   });
 
-  const changeInfo = (
-    field: keyof typeof collectionInfo,
-    value: string | string[]
-  ) => {
-    setCelectionInfo({
-      ...collectionInfo,
-      [field]: value,
-    });
-  };
+  const download = useMutation({
+    mutationFn: (force: boolean) => downloadBundle(db, id, userLang, { force }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["collections"] }),
+  });
 
-  // Dùng selectWordModal để thêm từ mới
-  return (
-    <View className="flex-1" style={{ backgroundColor: theme.background }}>
+  // Bộ đã có trong máy: hỏi server có bản mới không ở nền (gửi etag nên rẻ). Bộ chưa tải: chờ user bấm.
+  const [checked, setChecked] = useState(false);
+  useEffect(() => {
+    if (c?.downloaded && !checked) {
+      setChecked(true);
+      download.mutate(false);
+    }
+  }, [c?.downloaded]);
+
+  const pending = download.data?.pending ?? 0;
+  const pct = c?.total ? Math.min(100, (c.learned / c.total) * 100) : 0;
+
+  const header = !c ? null : (
+    <View className="gap-4 pb-2">
       <View>
-        <CollectionDetailHeader mode={mode} setMode={(mode) => setMode(mode)} />
+        <CollectionCover collection={c} radius={20} style={{ height: 180, width: "100%" }} />
       </View>
 
-      <Divider />
+      <View className="gap-1">
+        <AppText size="2xl" weight="bold" color="title">
+          {c.name}
+        </AppText>
+        {!!c.description && (
+          <AppText color="subText1" numberOfLines={3}>
+            {c.description}
+          </AppText>
+        )}
+      </View>
 
-      <View className="flex-1">
-        <ScrollView>
-          <AppContainer>
-            {/* <View className="gap-4 mt-8"></View> */}
-
-            <View className="mb-8 items-center mt-12">
-              <AppText
-                font="MulishBold"
-                style={{ textAlign: "center" }}
-                size={28}
-                // color=""
-              >
-                Giao tiếp cơ bản
-              </AppText>
-
-              <View className="flex-row gap-2 flex-wrap items-center justify-center mt-2">
-                <TagItem>Tag 1</TagItem>
-              </View>
-            </View>
-
-            <View>
-              <ListSumary />
-            </View>
-
-            <View className="mt-8">
-              <Relearn />
-            </View>
-
-            <View className="mt-8">
-              <AppButton type="success" size="lg" onPress={() => {}}>
-                <Entypo name="feather" size={20} color="white" />
-                <AppText size={"lg"} color="white" font="MulishBold">
-                  Học từ mới
+      <AppCard>
+        <View className="flex-row items-center gap-5">
+          <ProgressRing value={pct} size={72} strokeWidth={8} color="primary">
+            <AppText weight="bold">{Math.round(pct)}%</AppText>
+          </ProgressRing>
+          <View className="flex-row flex-1">
+            {[
+              { v: c.total, l: "Nghĩa" },
+              { v: c.learned, l: "Đã học" },
+              { v: Math.max(0, c.total - c.learned), l: "Chưa học" },
+            ].map((s) => (
+              <View key={s.l} className="flex-1">
+                <AppText size="xl" weight="bold" color="title">
+                  {s.v}
                 </AppText>
-              </AppButton>
-            </View>
-
-            <AppDivider style={{ marginTop: 40 }} />
-
-            <View className="mt-4">
-              <ItemListHeader isSelecting={false} />
-            </View>
-
-            <View className="mt-2">
-              <WordList />
-            </View>
-            {/* <View>
-            <AppText>Empty List Image</AppText>
-          </View> */}
-
-            <View className="mt-8 gap-4">
-              <AppInput
-                value={collectionInfo.name}
-                onChangeText={(value) => changeInfo("name", value)}
-                label="Name"
-                size={"lg"}
-              />
-              <AppInput
-                value={collectionInfo.description}
-                onChangeText={(value) => changeInfo("description", value)}
-                label="Description"
-                size={"lg"}
-              />
-              <View>
-                <AppText>Tags</AppText>
-                <View className="flex-row gap-2 flex-wrap">
-                  {["Tag 1", "Tag 2", "Tag 3"].map((tag) => (
-                    <TagItem key={tag}>{tag}</TagItem>
-                  ))}
-                </View>
+                <AppText size="xs" color="subText2">
+                  {s.l}
+                </AppText>
               </View>
-            </View>
+            ))}
+          </View>
+        </View>
+      </AppCard>
 
-            <AppText>CollectionDetail</AppText>
-            <AppText>ý tưởng:</AppText>
-            <AppText>
-              Hiển thị dashboard các từ đã học và level của các từ đó bằng biểu
-              đồ tròn và biểu đồ cột
+      {!c.downloaded ? (
+        <View className="gap-2">
+          <AppButton
+            size="lg"
+            onPress={() => download.mutate(true)}
+            isLoading={download.isPending}
+            disabled={download.isPending}
+          >
+            <AppIcon branch="feather" name="download" size={18} color="white" />
+            <AppText color="white" weight="bold" size="lg">
+              Tải về để học offline
             </AppText>
-            <AppText>
-              Hiển thị danh sách các từ trong collection cùng với ô search,
-              filter, tạo component cho ô search với nhập chữ, onSearchChange,
-              clearable, filter, onFilterChange
+          </AppButton>
+          {download.isError && (
+            <AppText size="sm" style={{ color: theme.error }} textAlign="center">
+              Không tải được. Kiểm tra mạng rồi thử lại.
             </AppText>
-            <AppText>
-              Edit mode? Những thứ cần trong edit mode: Thêm từ, xóa từ, hiển
-              thị ô checkbox cho từng từ, sửa tên, tiêu đề, tag cho collection
+          )}
+        </View>
+      ) : (
+        <View className="gap-2">
+          {c.needsUpdate && (
+            <Pressable
+              onPress={() => download.mutate(true)}
+              className="flex-row items-center gap-2 p-3 rounded-2xl"
+              style={{ backgroundColor: theme.warning + "1F" }}
+            >
+              <AppIcon branch="feather" name="refresh-cw" size={16} color={theme.warning} />
+              <AppText style={{ flex: 1, color: theme.warning }} weight="semibold">
+                Có bản mới của bộ này. Chạm để cập nhật.
+              </AppText>
+            </Pressable>
+          )}
+          {pending > 0 && (
+            <View
+              className="flex-row items-center gap-2 p-3 rounded-2xl"
+              style={{ backgroundColor: theme.primary + "14" }}
+            >
+              <AppIcon branch="feather" name="loader" size={16} color={theme.primary} />
+              <AppText style={{ flex: 1 }} color="primary">
+                {pending} nghĩa đang được dịch sang ngôn ngữ của bạn. Kéo xuống danh sách sau ít phút để làm mới.
+              </AppText>
+            </View>
+          )}
+          <AppButton type="success" size="lg" onPress={() => router.push("/screens/Practice/screen")}>
+            <AppIcon branch="feather" name="feather" size={18} color="white" />
+            <AppText color="white" weight="bold" size="lg">
+              Học từ mới
             </AppText>
-            <AppText>
-              Hiển thị list từ hiện tại với filter, search, order và add, và nút
-              add, Khi bấm vào mở bottomshet full tương tự phần select word,
-              Nhưng dữ liệu khác (Từ trong danh sách có sẵn)
-            </AppText>
-            <AppText>
-              Khi longpress: Select từ đang chọn, bật select mode: Hiển thị
-              check box cho toàn bộ từ và nút add thành nút delete
-            </AppText>
-          </AppContainer>
-          <View className="h-10"></View>
-        </ScrollView>
-      </View>
+          </AppButton>
+        </View>
+      )}
+
+      {c.downloaded && (
+        <>
+          <AppText size="lg" weight="bold" color="title" style={{ marginTop: 8 }}>
+            Danh sách nghĩa
+          </AppText>
+          <SearchBar value={search} onChangeText={setSearch} placeholder="Tìm trong bộ này..." />
+        </>
+      )}
+    </View>
+  );
+
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      <AppReturnHeader
+        title="Bộ từ"
+        rightElement={
+          c?.downloaded ? (
+            <Pressable
+              hitSlop={8}
+              onPress={() => download.mutate(true)}
+              disabled={download.isPending}
+              className="h-10 w-10 rounded-full items-center justify-center"
+              style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}
+            >
+              <AppIcon
+                branch="feather"
+                name="refresh-cw"
+                size={18}
+                color={download.isPending ? theme.subText3 : theme.text}
+              />
+            </Pressable>
+          ) : undefined
+        }
+      />
+
+      {info.isLoading ? (
+        <View className="px-4 gap-4 pt-2">
+          <Skeleton width="100%" height={180} radius={20} />
+          <Skeleton width="60%" height={24} />
+          <Skeleton width="100%" height={100} radius={20} />
+        </View>
+      ) : !c ? (
+        <View className="flex-1 items-center justify-center px-8 gap-2">
+          <AppText size="lg" weight="bold" color="title">
+            Không tìm thấy bộ từ
+          </AppText>
+          <AppText color="subText2" textAlign="center">
+            Bộ này không còn trong thư viện của bạn.
+          </AppText>
+        </View>
+      ) : (
+        <FlatList
+          data={c.downloaded ? (senses.data ?? []) : []}
+          keyExtractor={(s) => s.itemId}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 10 }}
+          ListHeaderComponent={header}
+          renderItem={({ item }) => <SenseRow item={item} />}
+          ListEmptyComponent={
+            c.downloaded && !senses.isLoading ? (
+              <AppText color="subText2" textAlign="center" style={{ paddingTop: 24 }}>
+                {search ? "Không có từ nào khớp." : "Bộ này chưa có nghĩa nào."}
+              </AppText>
+            ) : null
+          }
+        />
+      )}
     </View>
   );
 };

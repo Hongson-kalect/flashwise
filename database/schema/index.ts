@@ -87,39 +87,28 @@ ${userProfileseedData}
 ${userSettingseedData}
 `;
 
+/** Băm chuỗi schema + seed (djb2, 31 bit) để biết schema có đổi không. */
+const hashText = (text: string) => {
+  let h = 5381;
+  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) & 0x7fffffff;
+  return h;
+};
+// Seed chứa id ngẫu nhiên nên không đưa vào hash; đổi seed (theme, setting mặc định) thì tăng SEED_VERSION để DB tạo lại.
+const SEED_VERSION = 1;
+const SCHEMA_HASH = hashText(generateSchema + SEED_VERSION);
+
+/**
+ * Giữ nguyên dữ liệu giữa các lần mở app (cần cho bộ từ tải về học offline). Chỉ xoá và tạo lại DB khi
+ * schema đổi hoặc SEED_VERSION đổi (hash lưu ở PRAGMA user_version), nên sửa schema trong lúc dev vẫn không cần migration.
+ */
 export const initDatabase = async (db: SQLiteDatabase) => {
-  const DATABASE_VERSION = 1; // get from server
-  // clearDatabase(db);
-  let version = 0;
+  const row = await db.getFirstAsync<{ user_version: number }>("PRAGMA user_version");
+  if (row?.user_version === SCHEMA_HASH) return;
+
   await clearDatabase(db);
-  try {
-    const db_version = await db.getFirstAsync<{ key: string; value: string }>(
-      `select * from system_config where key='db_version'`,
-    );
-    if (db_version) {
-      version = Number(db_version.value);
-    }
-  } catch {
-    console.log("no system_config");
-  }
-
-  // if(version==DATABASE_VERSION){
-  if (version >= 1) {
-    return;
-  }
-
-  let { user_version: currentDbVersion } = { user_version: 0 };
-  if (version >= DATABASE_VERSION) {
-    return;
-  }
-
-  if (version === 0) {
-    await db.execAsync(generateSchema);
-    console.log("qq");
-    await db.execAsync(generateSeedData);
-  }
-
-  await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
+  await db.execAsync(generateSchema);
+  await db.execAsync(generateSeedData);
+  await db.execAsync(`PRAGMA user_version = ${SCHEMA_HASH}`);
 };
 
 export const clearDatabase = async (db: SQLite.SQLiteDatabase) => {

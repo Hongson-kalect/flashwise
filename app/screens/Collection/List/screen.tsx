@@ -1,134 +1,187 @@
-import AppButton from "@/components/AppButton";
-import { AppContainer } from "@/components/AppContainer";
+import AppCard from "@/components/AppCard";
+import AppChip from "@/components/AppChip";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import SearchBar from "@/components/SearchBar";
+import { CollectionSort, listMyCollections } from "@/database/queries/collections";
+import { useAppNavigation } from "@/hooks/useNavigation";
 import { useTheme } from "@/providers/Theme";
-import { router } from "expo-router";
-import React, { useState } from "react";
-import {
-  Animated,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import CollectionListHeader from "./components/header";
-import CollectionList from "./components/list";
-import ItemListHeader from "./components/listHeader";
+import { syncMyCollections } from "@/services/collections";
+import { ProgressRing, Skeleton, useDebounce } from "@/ui";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSQLiteContext } from "expo-sqlite";
+import { useEffect, useMemo, useState } from "react";
+import { FlatList, Pressable, RefreshControl, View } from "react-native";
+import CollectionCard from "./components/collectionCard";
+import Suggestions from "./components/suggestions";
 
+const SORTS: { key: CollectionSort; label: string }[] = [
+  { key: "recent", label: "Mới nhất" },
+  { key: "alpha", label: "A–Z" },
+  { key: "progress", label: "Tiến độ" },
+];
+
+/** Tab Bộ từ: các bộ của mình (kéo từ server, nội dung tải về SQLite để học offline). */
 const CollectionListScreen = () => {
   const { theme } = useTheme();
-  const scrollRef = React.useRef<ScrollView>(null);
-  const [showScrollTop, setShowScrollTop] = useState(false);
-  const scrollY = new Animated.Value(0);
+  const db = useSQLiteContext();
+  const { routerPush } = useAppNavigation();
+  const queryClient = useQueryClient();
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<CollectionSort>("recent");
+  const [refreshing, setRefreshing] = useState(false);
+  const q = useDebounce(search, 250);
 
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { contentOffset, layoutMeasurement } = event.nativeEvent;
-    setShowScrollTop(contentOffset.y > layoutMeasurement.height);
-    scrollY.setValue(contentOffset.y);
+  const list = useQuery({
+    queryKey: ["collections", "mine", q, sort],
+    queryFn: () => listMyCollections(db, { q, sort }),
+  });
+
+  const refresh = async () => {
+    await syncMyCollections(db).catch(() => {}); // offline: giữ bản trong máy
+    await queryClient.invalidateQueries({ queryKey: ["collections"] });
   };
 
-  const scrollToTop = () => {
-    if (scrollRef.current) {
-      scrollY.setValue(0);
-      scrollRef.current.scrollTo({ y: 0, animated: true });
-    }
-  };
+  // Mở tab thì kéo danh sách mới nhất ở nền
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  const totals = useMemo(() => {
+    const all = list.data ?? [];
+    return {
+      learned: all.reduce((n, c) => n + c.learned, 0),
+      total: all.reduce((n, c) => n + c.total, 0),
+    };
+  }, [list.data]);
+  const pct = totals.total ? Math.min(100, (totals.learned / totals.total) * 100) : 0;
+  const empty = !list.isLoading && !list.data?.length;
 
   return (
     <View style={{ backgroundColor: theme.background }} className="flex-1">
-      <View className="px-2 pb-1" style={{ backgroundColor: theme.background }}>
-        <CollectionListHeader />
+      <View className="px-4 flex-row justify-between items-center h-16">
+        <AppText size="3xl" weight="bold" color="title">
+          Bộ từ
+        </AppText>
+        <Pressable
+          onPress={() => routerPush("/screens/Collection/Discover/List/screen")}
+          className="flex-row items-center gap-1.5 h-10 px-4 rounded-full"
+          style={{ backgroundColor: theme.primary }}
+        >
+          <AppIcon name="compass" branch="feather" color="white" size={18} />
+          <AppText weight="bold" color="white" size="sm">
+            Khám phá
+          </AppText>
+        </Pressable>
       </View>
 
-      {/* <View>
-        <AppDivider />
-      </View> */}
-
-      <ScrollView
-        ref={scrollRef}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-      >
-        {/* <View className="my-4 px-3">
-          <CollectionSumary />
-        </View> */}
-        <AppContainer>
-          <View className="items-center mt-2">
-            <AppText font="MulishExtraBold" size={56} color="primary">
-              14
-              <AppText font="MulishExtraBold" size={42} color="primary">
-                {" "}
-                📚
-              </AppText>
-              {/* <AppText font="MulishExtraBold" size={32} color="primary">
-                {" Collection(s)"}
-              </AppText> */}
-            </AppText>
-
-            {/* <MaterialCommunityIcons
-              name="cards"
-              size={64}
-              color={theme.subText3}
-            /> */}
-          </View>
-
-          <View className="flex-row justify-center gap-8 mt-2 items-center">
-            <AppButton
-              onPress={() => {
-                router.push("/screens/Collection/Discover/List/screen");
-              }}
-              type="primary"
-            >
-              <AppIcon
-                name="external-link"
-                branch="feather"
-                size={16}
-                color="white"
-              />
-              <AppText color="white">Discover</AppText>
-            </AppButton>
-            <AppButton
-              onPress={() => {
-                router.push("/screens/Collection/Create/screen");
-              }}
-              type="success"
-            >
-              <AppIcon name="plus" branch="antd" size={16} color="white" />
-              <AppText color="white">Create</AppText>
-            </AppButton>
-          </View>
-          <View className="mt-8">
-            <ItemListHeader isSelecting={false} />
-          </View>
-
-          <View>
-            <CollectionList />
-          </View>
-        </AppContainer>
-      </ScrollView>
-
-      {showScrollTop && (
-        <TouchableOpacity
-          style={{
-            position: "absolute",
-            bottom: 20,
-            right: 20,
-            backgroundColor: theme.subText1,
-            padding: 10,
-            borderRadius: 50,
-          }}
-          onPress={scrollToTop}
-        >
-          <AppIcon
-            branch="feather"
-            name="arrow-up"
-            size={24}
-            color={theme.background}
+      <FlatList
+        data={list.data ?? []}
+        keyExtractor={(c) => c.id}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={async () => {
+              setRefreshing(true);
+              await refresh();
+              setRefreshing(false);
+            }}
+            colors={[theme.primary]}
           />
-        </TouchableOpacity>
-      )}
+        }
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 12 }}
+        ListHeaderComponent={
+          <View className="gap-4 pb-2">
+            {!empty && (
+              <AppCard>
+                <View className="flex-row items-center gap-5">
+                  <ProgressRing value={pct} size={72} strokeWidth={8} color="primary">
+                    <AppText weight="bold">{Math.round(pct)}%</AppText>
+                  </ProgressRing>
+                  <View className="flex-1">
+                    <AppText size="sm" color="subText2">
+                      {list.data?.length ?? 0} bộ từ
+                    </AppText>
+                    <AppText size="2xl" weight="bold">
+                      {totals.learned}
+                      <AppText size="md" color="subText2">{` / ${totals.total} nghĩa đã học`}</AppText>
+                    </AppText>
+                  </View>
+                </View>
+              </AppCard>
+            )}
+            {(!empty || !!search) && (
+              <>
+                <SearchBar
+                  value={search}
+                  onChangeText={setSearch}
+                  placeholder="Tìm trong bộ của bạn..."
+                />
+                <View className="flex-row gap-2">
+                  {SORTS.map((s) => (
+                    <AppChip
+                      key={s.key}
+                      label={s.label}
+                      size="sm"
+                      selected={sort === s.key}
+                      onPress={() => setSort(s.key)}
+                    />
+                  ))}
+                </View>
+              </>
+            )}
+          </View>
+        }
+        renderItem={({ item }) => <CollectionCard item={item} />}
+        ListEmptyComponent={
+          list.isLoading ? (
+            <View className="gap-3">
+              {[0, 1, 2].map((i) => (
+                <View
+                  key={i}
+                  className="flex-row items-center gap-3 p-3 rounded-2xl"
+                  style={{
+                    backgroundColor: theme.card,
+                    borderWidth: 1,
+                    borderColor: theme.border,
+                  }}
+                >
+                  <Skeleton width={96} height={76} radius={12} />
+                  <View className="flex-1 gap-2">
+                    <Skeleton width="60%" height={16} />
+                    <Skeleton width="45%" height={12} />
+                    <Skeleton width="100%" height={8} />
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View className="items-center pt-6 px-6 gap-3">
+              <View
+                className="h-16 w-16 rounded-full items-center justify-center"
+                style={{ backgroundColor: theme.primary + "14" }}
+              >
+                <AppIcon branch="feather" name="layers" size={28} color={theme.primary} />
+              </View>
+              <AppText size="lg" weight="bold" color="title">
+                {search ? "Không tìm thấy bộ nào" : "Chưa có bộ từ nào"}
+              </AppText>
+              <AppText color="subText2" textAlign="center">
+                {search
+                  ? "Thử tên khác."
+                  : "Thêm một bộ từ để học theo từng chủ đề. Bộ đã tải học được cả khi không có mạng."}
+              </AppText>
+            </View>
+          )
+        }
+        ListFooterComponent={
+          <View className="pt-4">
+            <Suggestions />
+          </View>
+        }
+      />
     </View>
   );
 };
