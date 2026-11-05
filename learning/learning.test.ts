@@ -467,3 +467,18 @@ test("bước viết tay chỉ có khi ngôn ngữ sẵn sàng và từ đủ ng
   const done = playAll(t).s;
   for (const k of done.order) assert.ok(!done.cards[k].logs.some((l) => l.kind === "handwrite"));
 });
+
+test("không tiện nghe / nói: bước còn lại đổi sang dạng gõ / chọn, số bước không đổi, không còn bước nghe / nói", () => {
+  const start = startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(), caps: VOICE });
+  const total = start.totalSteps;
+  let s = reduce(start, { type: "fallbackKind", kinds: ["speak", "listenChoose", "dictation"], at: T0 + 1 });
+  assert.equal(s.totalSteps, total);
+  for (const key of s.order) {
+    const ks = s.cards[key].questions.map((q) => q.kind);
+    assert.ok(!ks.includes("speak") && !ks.includes("dictation") && !ks.includes("listenChoose"));
+    assert.ok(s.cards[key].questions.every((q) => (q.answerType === "choose" ? q.options.length >= 3 : true)));
+  }
+  assert.ok(s.cards.k0.questions.filter((q) => q.kind === "typeWord").length >= 2); // chính tả + nói thành gõ từ
+  const done = playAll(s).s;
+  assert.equal(done.doneSteps, done.totalSteps);
+});

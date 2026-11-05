@@ -3,12 +3,13 @@ import AppText from "@/components/AppText";
 import { useSpeechRecognizer } from "@/learning/speechRecognizer";
 import { useTheme } from "@/providers/Theme";
 import { speakWord } from "@/utils/speak";
+import { useEffect } from "react";
 import { Pressable, View } from "react-native";
 import { AnswerProps } from "./types";
 
 /**
  * Trả lời bằng giọng nói: bấm micro, nói, bộ nhận dạng trên máy trả kết quả (tạm thời hiện ngay). Sai 1 lần được nói lại.
- * Không có micro / không nhận dạng được thì "Không nói được lúc này" bỏ các bước nói còn lại, không ảnh hưởng điểm.
+ * Micro bị chặn / không nhận dạng được (hoặc bấm "Không tiện nói") thì các bước nói còn lại tự đổi sang dạng gõ.
  */
 const SpeakAnswer = ({ card, question, attempt, onSpeech, onSkipSpeak }: AnswerProps) => {
   const { theme } = useTheme();
@@ -17,6 +18,10 @@ const SpeakAnswer = ({ card, question, attempt, onSpeech, onSkipSpeak }: AnswerP
   // Từ chối quyền vẫn cho bấm lại (hỏi lại được, hoặc báo bật trong Cài đặt); chỉ máy không hỗ trợ mới khoá hẳn
   const blocked = rec.status === "unavailable";
   const denied = rec.status === "denied";
+  // Micro bị chặn (từ chối quyền / máy không nhận dạng được): tự chuyển các bước nói còn lại sang dạng gõ
+  useEffect(() => {
+    if (blocked || denied) onSkipSpeak();
+  }, [blocked, denied]);
   const wrong = attempt.lastVerdict === "wrong" && attempt.tries > 0 && !listening;
   const color = blocked ? theme.subText3 : listening ? theme.error : theme.primary;
 
@@ -64,7 +69,7 @@ const SpeakAnswer = ({ card, question, attempt, onSpeech, onSkipSpeak }: AnswerP
       </View>
       <Pressable onPress={onSkipSpeak} hitSlop={8}>
         <AppText size="sm" weight="semibold" style={{ color: blocked || denied ? theme.primary : theme.subText2 }}>
-          Không nói được lúc này
+          Không tiện nói, chuyển sang gõ
         </AppText>
       </Pressable>
     </View>

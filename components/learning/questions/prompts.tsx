@@ -20,7 +20,7 @@ const Label = ({ children }: { children: string }) => (
   </AppText>
 );
 
-const Example = ({ card, mask = false }: { card: LearnCard; mask?: boolean }) => {
+const Example = ({ card, mask = false, hideNative = false }: { card: LearnCard; mask?: boolean; hideNative?: boolean }) => {
   const { theme } = useTheme();
   if (!card.example) return null;
   return (
@@ -28,7 +28,7 @@ const Example = ({ card, mask = false }: { card: LearnCard; mask?: boolean }) =>
       <AppText color="title" style={{ fontStyle: "italic" }}>
         {mask ? maskWord(card.example.text, card.word) : card.example.text}
       </AppText>
-      {!!card.example.native && !mask && (
+      {!!card.example.native && !mask && !hideNative && (
         <AppText size="sm" color="subText2">
           {card.example.native}
         </AppText>
@@ -75,7 +75,8 @@ const ChooseMeaningPrompt = ({ card, hearable }: PromptProps) => (
   <View className="gap-3 pt-1">
     <Label>Chọn nghĩa đúng</Label>
     <WordHeader card={card} autoPlay={hearable} />
-    <Example card={card} />
+    {/* Bản dịch ví dụ chứa luôn đáp án nên không hiện ở bước này */}
+    <Example card={card} hideNative />
   </View>
 );
 
@@ -100,7 +101,7 @@ const TypeWordPrompt = ({ card }: PromptProps) => (
 );
 
 /** Nút nghe lại / nghe chậm cho bước nghe; tự phát 1 lần khi câu hỏi hiện. */
-const ListenControl = ({ card }: { card: LearnCard }) => {
+const ListenControl = ({ card, onSkip }: { card: LearnCard; onSkip: () => void }) => {
   const { theme } = useTheme();
   useEffect(() => {
     speakWord(card);
@@ -121,23 +122,28 @@ const ListenControl = ({ card }: { card: LearnCard }) => {
           Nghe chậm
         </AppText>
       </Pressable>
+      <Pressable onPress={onSkip} hitSlop={8}>
+        <AppText size="sm" weight="semibold" color="subText2">
+          Không tiện nghe, chuyển sang dạng khác
+        </AppText>
+      </Pressable>
     </View>
   );
 };
 
 /** Chỉ có âm thanh, chọn từ nghe được. */
-const ListenChoosePrompt = ({ card }: PromptProps) => (
+const ListenChoosePrompt = ({ card, onSkipListen }: PromptProps) => (
   <View className="gap-2 pt-4">
     <Label>Nghe và chọn từ đúng</Label>
-    <ListenControl card={card} />
+    <ListenControl card={card} onSkip={onSkipListen} />
   </View>
 );
 
 /** Chính tả: nghe rồi gõ lại từ. */
-const DictationPrompt = ({ card }: PromptProps) => (
+const DictationPrompt = ({ card, onSkipListen }: PromptProps) => (
   <View className="gap-2 pt-4">
     <Label>Nghe và gõ lại từ</Label>
-    <ListenControl card={card} />
+    <ListenControl card={card} onSkip={onSkipListen} />
   </View>
 );
 

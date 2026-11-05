@@ -108,7 +108,8 @@ export const useLearnRun = (userCollectionId: string) => {
   const answer = useCallback((value: string) => dispatch({ type: "answer", value, at: Date.now() }), [dispatch]);
   const hint = useCallback(() => dispatch({ type: "hint", at: Date.now() }), [dispatch]);
   const speech = useCallback((transcripts: string[]) => dispatch({ type: "speech", transcripts, at: Date.now() }), [dispatch]);
-  const skipSpeak = useCallback(() => dispatch({ type: "skipKind", kind: "speak", at: Date.now() }), [dispatch]);
+  const skipSpeak = useCallback(() => dispatch({ type: "fallbackKind", kinds: ["speak"], at: Date.now() }), [dispatch]);
+  const skipListen = useCallback(() => dispatch({ type: "fallbackKind", kinds: ["listenChoose", "dictation"], at: Date.now() }), [dispatch]);
   const written = useCallback((cells: string[][]) => dispatch({ type: "written", cells, at: Date.now() }), [dispatch]);
   const skipWrite = useCallback(() => dispatch({ type: "skipKind", kind: "handwrite", at: Date.now() }), [dispatch]);
   const known = useCallback(() => dispatch({ type: "known", at: Date.now() }), [dispatch]);
@@ -135,6 +136,6 @@ export const useLearnRun = (userCollectionId: string) => {
   return {
     status, state, meta, summary, error, question: state ? currentQuestion(state) : undefined, userLang,
     resumeInfo: resumable.current ? { savedAt: resumable.current.savedAt, doneSteps: resumable.current.data.state.doneSteps, totalSteps: resumable.current.data.state.totalSteps } : null,
-    answer, hint, speech, skipSpeak, written, skipWrite, known, next, setGrade, finish, resume, discard, reload: () => load(true),
+    answer, hint, speech, skipSpeak, skipListen, written, skipWrite, known, next, setGrade, finish, resume, discard, reload: () => load(true),
   };
 };

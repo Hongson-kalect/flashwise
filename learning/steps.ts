@@ -147,4 +147,21 @@ export const buildQuestions = (
   return methods.map((m) => m.build(card, pool, rng));
 };
 
-export const isRecall = (kind: ClusterStepKind) => METHODS.find((m) => m.kind === kind)?.recall ?? false;
+/**
+ * Câu thay thế khi 1 kiểu bước không dùng được lúc này (không nghe / nói / viết được): vẫn giữ 1 bước ôn nhưng ở dạng gõ hoặc chọn.
+ * nghe chọn → chọn từ (cùng đáp án), chính tả / nói / viết tay → gõ từ. Kiểu khác thì giữ nguyên.
+ */
+export const fallbackQuestion = (q: Question): Question => {
+  switch (q.kind) {
+    case "listenChoose":
+      return { ...q, kind: "chooseWord" };
+    case "dictation":
+    case "speak":
+    case "handwrite":
+      return { ...q, kind: "typeWord", answerType: "type", options: [] };
+    default:
+      return q;
+  }
+};
+
+export const isRecall =(kind: ClusterStepKind) => METHODS.find((m) => m.kind === kind)?.recall ?? false;

@@ -31,17 +31,18 @@ type Props = {
   onWritten: (cells: string[][]) => void;
   onSkipWrite: () => void;
   onKnown: () => void;
+  onSkipListen: () => void;
   onNext: () => void;
 };
 
 /** Khung 1 câu hỏi: phần đề (cuộn được) ở trên, ô trả lời hoặc thanh kết quả ở dưới. Chọn component theo registry. */
-const QuestionView = ({ card, question, attempt, feedback, hearable, onAnswer, onHint, onSpeech, onSkipSpeak, onWritten, onSkipWrite, onKnown, onNext }: Props) => {
+const QuestionView = ({ card, question, attempt, feedback, hearable, onAnswer, onHint, onSpeech, onSkipSpeak, onWritten, onSkipWrite, onKnown, onSkipListen, onNext }: Props) => {
   const Prompt = PROMPTS[question.kind];
   const Answer = ANSWERS[question.answerType];
   return (
     <View className="flex-1">
       <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 4 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-        <Prompt card={card} question={question} attempt={attempt} hearable={hearable} onKnown={onKnown} />
+        <Prompt card={card} question={question} attempt={attempt} hearable={hearable} onKnown={onKnown} onSkipListen={onSkipListen} />
       </ScrollView>
       <View className="px-4 pb-3 pt-1 gap-2">
         {(!feedback || question.answerType === "choose") && (

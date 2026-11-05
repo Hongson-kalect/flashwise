@@ -1,7 +1,7 @@
 import { checkAnswer, checkSpoken } from "./checker";
 import { checkWritten } from "./handwriting";
 import { autoGrade, autoGradeReview, clampGrade, DEFAULT_MEDIAN_MS } from "./grade";
-import { buildQuestions, Capabilities, PoolEntry, poolFromCards, stepCountFor } from "./steps";
+import { buildQuestions, Capabilities, fallbackQuestion, PoolEntry, poolFromCards, stepCountFor } from "./steps";
 import { AGAIN, ClusterStepKind, GOOD, Grade, HARD, LearnCard, Question, StepLog, Verdict } from "./types";
 
 /**
@@ -77,6 +77,8 @@ export type Action =
   | { type: "speech"; transcripts: string[]; at: number }
   /** Bài viết tay: các phương án nhận dạng (tốt nhất trước) của từng ô ký tự. */
   | { type: "written"; cells: string[][]; at: number }
+  /** Các kiểu bước này không dùng được lúc này (không nghe / nói được): các bước còn lại của chúng đổi sang dạng gõ / chọn thay vì bị bỏ. */
+  | { type: "fallbackKind"; kinds: ClusterStepKind[]; at: number }
   /** Bỏ các bước thuộc kiểu này còn lại trong phiên (vd không nói được lúc này): không chấm, không tính điểm. */
   | { type: "skipKind"; kind: ClusterStepKind; at: number }
   | { type: "known"; at: number }
@@ -242,6 +244,21 @@ export const reduce = (state: RunState, action: Action): RunState => {
       attempt.lastVerdict = "wrong";
       if (attempt.tries >= MAX_TRIES) return finalize({ ...state, attempt }, { correct: false, revealed: true, verdict: "wrong" }, action.at);
       return { ...state, attempt };
+    }
+    case "fallbackKind": {
+      if (state.phase !== "question" || !state.current) return state;
+      const pendingIdx = (key: string) => (state.current!.cardKey === key ? state.current!.stepIdx : state.queue.find((i) => i.cardKey === key)?.stepIdx);
+      const cards = { ...state.cards };
+      for (const key of state.order) {
+        const from = pendingIdx(key);
+        if (from === undefined) continue;
+        const run = cards[key];
+        const questions = run.questions.map((q, i) => (i >= from && action.kinds.includes(q.kind) ? fallbackQuestion(q) : q));
+        if (questions.some((q, i) => q !== run.questions[i])) cards[key] = { ...run, questions };
+      }
+      // Câu đang hỏi bị thay thì bắt đầu lại lượt trả lời (số bước không đổi nên không cần đếm lại)
+      const replaced = cards[state.current.cardKey] !== state.cards[state.current.cardKey] && cards[state.current.cardKey].questions[state.current.stepIdx] !== state.cards[state.current.cardKey].questions[state.current.stepIdx];
+      return { ...state, cards, attempt: replaced ? freshAttempt(action.at) : state.attempt };
     }
     case "skipKind": {
       if (state.phase !== "question" || !state.current) return state;

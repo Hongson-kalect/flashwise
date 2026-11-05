@@ -10,6 +10,8 @@ export interface PromptProps {
   hearable: boolean;
   /** Chỉ bước copy có: bấm "Đã biết" để bỏ cả thẻ. */
   onKnown: () => void;
+  /** Bước nghe: không tiện nghe thì các bước nghe còn lại đổi sang dạng chọn / gõ. */
+  onSkipListen: () => void;
 }
 
 /** Phần trả lời (nửa dưới): theo `answerType` của câu hỏi (chọn / gõ). */
