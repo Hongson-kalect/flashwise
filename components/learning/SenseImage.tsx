@@ -21,6 +21,8 @@ const SenseImage = ({ card, height, aspect = 4 / 3, style, showFallbackLetter = 
   const { theme } = useTheme();
   const own = mediaUrl(card.imageUri);
   const [fallback, setFallback] = useState<string | null>(null);
+  // Tỉ lệ rộng / cao của ảnh thật (đọc khi tải xong): ảnh giữa không bao giờ cao hơn rộng và không rộng hơn khung
+  const [ratio, setRatio] = useState(1);
 
   useEffect(() => {
     if (own) return;
@@ -32,15 +34,22 @@ const SenseImage = ({ card, height, aspect = 4 / 3, style, showFallbackLetter = 
   }, [own, card.word, card.keywords.join("|")]);
 
   const uri = own ?? fallback;
+  useEffect(() => setRatio(1), [uri]);
   if (!uri && !showFallbackLetter) return null;
   return (
     <View className="rounded-2xl overflow-hidden items-center justify-center" style={[height ? { height, width: "100%" } : { aspectRatio: aspect, width: "100%" }, { backgroundColor: theme.background2 }, style]}>
       {uri ? (
         <>
-          {/* Nền: chính ảnh đó phủ kín khung và làm mờ nhẹ; ảnh thật cắt vuông 1:1 (như ảnh bìa bên ngoài) nằm giữa */}
-          <AppImage source={{ uri }} style={{ position: "absolute", width: "100%", height: "100%" }} contentFit="cover" blurRadius={10} transition={0} />
+          {/* Nền: chính ảnh đó phủ kín khung và làm mờ nhẹ; ảnh thật nằm giữa, cắt theo tỉ lệ ảnh nhưng kẹp trong [1:1, tỉ lệ khung] */}
+          <AppImage source={{ uri }} style={{ position: "absolute", width: "100%", height: "100%" }} contentFit="cover" blurRadius={15} transition={0} />
           <View style={{ position: "absolute", width: "100%", height: "100%", backgroundColor: theme.background2 + "55" }} />
-          <AppImage source={{ uri }} style={{ height: "100%", aspectRatio: 1 }} contentFit="cover" contentPosition="top" />
+          <AppImage
+            source={{ uri }}
+            style={{ height: "100%", aspectRatio: Math.min(Math.max(ratio, 1), aspect) }}
+            contentFit="cover"
+            contentPosition="top"
+            onLoad={(e) => e.source.width && e.source.height && setRatio(e.source.width / e.source.height)}
+          />
         </>
       ) : (
         <AppText size="3xl" weight="bold" style={{ color: theme.primary + "99" }}>
