@@ -168,7 +168,9 @@ export type MyCollection = {
   version: number;
   /** Số dòng nháp chưa phát hành (nghĩa mới thêm / đổi / xoá). Server loại dòng không đổi gì khi phát hành. */
   draftCount: number;
-  /** Tác giả, đã tải về, còn nháp: được phát hành. */
+  /** draft = chưa từng phát hành; live = đang công khai; revoked = đã phát hành rồi thu hồi (giữ version, chỉ mình thấy). */
+  publishState: "draft" | "live" | "revoked";
+  /** Tác giả, đã tải về: có thể bấm phát hành / cập nhật / tiếp tục phát hành (nút sáng khi có gì để gửi). */
   canPublish: boolean;
 };
 
@@ -203,7 +205,8 @@ const toMyCollection = (r: any): MyCollection => {
     released: !!r.is_released,
     version: r.c_version ?? 0,
     draftCount: r.draft_count ?? 0,
-    canPublish: downloaded && !!r.is_author && (r.draft_count ?? 0) > 0,
+    publishState: r.is_released ? "live" : (r.c_version ?? 0) > 0 ? "revoked" : "draft",
+    canPublish: downloaded && !!r.is_author && (r.is_released ? (r.draft_count ?? 0) > 0 : (r.c_version ?? 0) > 0 || (r.draft_count ?? 0) > 0),
     pendingWords: parse(r.pending_words, []),
     invalidWords: parse(r.invalid_words, []),
     coverUri: r.cover_uri ?? null,

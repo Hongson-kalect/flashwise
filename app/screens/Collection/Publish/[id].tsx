@@ -27,7 +27,7 @@ import {
 import CollectionCover from "../components/collectionCover";
 
 const ERROR_TEXT = {
-  no_changes: "Không có thay đổi mới để phát hành. Thêm hoặc sửa nghĩa trong bộ rồi thử lại.",
+  no_changes: "Bộ chưa có nghĩa nào để phát hành. Thêm nghĩa vào bộ rồi thử lại.",
   banned: "Tài khoản của bạn đang bị hạn chế nên chưa phát hành được.",
   invalid: "Thông tin chưa hợp lệ. Kiểm tra lại tên, mô tả và ảnh.",
   offline: "Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.",
@@ -107,7 +107,10 @@ export default function PublishCollection() {
       const result = await publish(db, id, userLang, { title: title.trim(), desc: desc.trim(), image: image?.key });
       await queryClient.invalidateQueries({ queryKey: ["collections"] });
       try {
-        ToastAndroid.show(`Đã phát hành phiên bản ${result.current_version}`, ToastAndroid.SHORT);
+        ToastAndroid.show(
+          result.changed ? `Đã phát hành phiên bản ${result.current_version}` : c.publishState === "revoked" ? "Bộ đã công khai trở lại" : "Đã cập nhật thông tin bộ",
+          ToastAndroid.SHORT,
+        );
       } catch {}
       router.back();
     } catch (e) {
@@ -117,11 +120,13 @@ export default function PublishCollection() {
   };
 
   const ready = !!c && title.trim().length > 0 && !submitting && !picking;
-  const nextVersion = (c?.version ?? 0) + 1;
+  const hasChanges = (c?.draftCount ?? 0) > 0;
+  const nextVersion = (c?.version ?? 0) + (hasChanges ? 1 : 0);
+  const heading = !c || c.publishState === "draft" ? "Phát hành bộ" : c.publishState === "revoked" ? "Tiếp tục phát hành" : "Cập nhật bộ";
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <AppReturnHeader title="Phát hành bộ" />
+      <AppReturnHeader title={heading} />
       {info.isLoading || !c ? (
         <View className="px-4 gap-4 pt-2">
           <Skeleton width="100%" height={160} radius={20} />
@@ -138,12 +143,21 @@ export default function PublishCollection() {
               <View className="flex-row items-center gap-2">
                 <AppIcon branch="feather" name="upload-cloud" size={18} color={theme.primary} />
                 <AppText weight="bold" color="primary">
-                  {c.released ? `Phát hành phiên bản ${nextVersion}` : "Phát hành lần đầu"}
+                  {c.publishState === "draft"
+                    ? "Phát hành lần đầu"
+                    : hasChanges
+                      ? `Phát hành phiên bản ${nextVersion}`
+                      : c.publishState === "revoked"
+                        ? `Công khai lại phiên bản ${c.version}`
+                        : `Cập nhật thông tin phiên bản ${c.version}`}
                 </AppText>
               </View>
               <AppText size="sm" color="subText1">
-                {c.draftCount} {c.released ? "thay đổi" : "nghĩa"} sẽ được phát hành. Bộ hiện công khai trong Khám phá, ai cũng tải và
-                học được. Các nghĩa trong bản phát hành được cố định: bạn sửa nghĩa về sau thì bộ của người khác không đổi theo.
+                {hasChanges
+                  ? `${c.draftCount} ${c.publishState === "draft" ? "nghĩa" : "thay đổi"} sẽ được phát hành. `
+                  : "Không có nghĩa nào đổi nên phiên bản giữ nguyên. "}
+                Bộ hiện công khai trong Khám phá, ai cũng tải và học được. Các nghĩa trong bản phát hành được cố định: bạn sửa nghĩa về
+                sau thì bộ của người khác không đổi theo.
               </AppText>
               {c.pendingWords.length > 0 && (
                 <AppText size="sm" style={{ color: theme.warning }}>
@@ -225,7 +239,7 @@ export default function PublishCollection() {
             >
               {submitting ? <ActivityIndicator color="white" /> : <AppIcon branch="feather" name="upload-cloud" size={18} color="white" />}
               <AppText color="white" size="lg" weight="bold">
-                {submitting ? "Đang phát hành..." : "Phát hành công khai"}
+                {submitting ? "Đang xử lý..." : c.publishState === "live" ? "Cập nhật" : "Phát hành công khai"}
               </AppText>
             </Pressable>
           </ScrollView>

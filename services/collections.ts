@@ -13,6 +13,7 @@ import {
   fetchMyCollections,
   publishCollection,
   resolvePendingWords,
+  unpublishCollection,
 } from "./api/collections";
 
 /** Kéo danh sách bộ của mình từ server về SQLite (chưa kèm nội dung nghĩa). Lỗi mạng thì giữ bản local. */
@@ -110,5 +111,14 @@ export const publish = async (
     await downloadBundle(db, userCollectionId, userLang, { force: true, retries: 0 });
   } catch {} // đã phát hành; mở lại bộ sẽ tải lại
   return result;
+};
+
+/** Thu hồi bộ rồi tải lại để máy thấy trạng thái mới (không còn công khai). */
+export const unpublish = async (db: SQLiteDatabase, userCollectionId: string, userLang: string) => {
+  await unpublishCollection(userCollectionId);
+  try {
+    await syncMyCollections(db);
+    await downloadBundle(db, userCollectionId, userLang, { force: true, retries: 0 });
+  } catch {} // đã thu hồi; mở lại bộ sẽ tải lại
 };
 

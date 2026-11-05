@@ -209,6 +209,8 @@ export const publishCollection = async (
     collection_id: string;
     user_collection_id: string;
     current_version: number;
+    /** false: không nghĩa nào đổi nên version giữ nguyên (chỉ cập nhật tên / mô tả / ảnh hoặc công khai lại). */
+    changed: boolean;
     changelog: { added: string[]; updated: string[]; deleted: string[] };
   };
 };
@@ -246,5 +248,11 @@ export interface MyUploads {
 export const fetchMyUploads = async () => {
   const res = await GetAPI("me/uploads/");
   return res.data as MyUploads;
+};
+
+/** Thu hồi bộ đã phát hành: không còn công khai (người đã tải học tiếp). Phát hành lại bằng publishCollection. */
+export const unpublishCollection = async (userCollectionId: string) => {
+  const res = await PostAPI(`user-collections/${userCollectionId}/unpublish/`, {});
+  return res.data as { collection_id: string; released: false; version: number };
 };
 

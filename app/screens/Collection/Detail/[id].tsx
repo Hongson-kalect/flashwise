@@ -7,14 +7,14 @@ import SearchBar from "@/components/SearchBar";
 import { getMyCollection, listCollectionSenses, setLocalCover } from "@/database/queries/collections";
 import { useTheme } from "@/providers/Theme";
 import { useBottomSheet } from "@/providers/BottomSheet";
-import { downloadBundle, refreshPending } from "@/services/collections";
+import { downloadBundle, refreshPending, unpublish } from "@/services/collections";
 import { useAppStore } from "@/stores/appStore";
 import { ProgressRing, Skeleton, useDebounce } from "@/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Pressable, ToastAndroid, View } from "react-native";
 import CollectionCover from "../components/collectionCover";
 import CoverSheet from "./components/coverSheet";
 import SenseRow from "./components/senseRow";
@@ -36,6 +36,32 @@ const CollectionDetail = () => {
     queryFn: () => getMyCollection(db, id),
   });
   const c = info.data;
+
+  const [revoking, setRevoking] = useState(false);
+  const confirmRevoke = () =>
+    Alert.alert(
+      "Thu hồi bộ này?",
+      "Bộ không còn công khai: người chưa tải sẽ không thấy nữa. Người đã tải vẫn học tiếp. Bạn có thể bấm Tiếp tục phát hành bất cứ lúc nào.",
+      [
+        { text: "Huỷ", style: "cancel" },
+        {
+          text: "Thu hồi",
+          style: "destructive",
+          onPress: async () => {
+            setRevoking(true);
+            try {
+              await unpublish(db, id, userLang);
+              await queryClient.invalidateQueries({ queryKey: ["collections"] });
+              ToastAndroid.show("Đã thu hồi bộ", ToastAndroid.SHORT);
+            } catch {
+              ToastAndroid.show("Chưa thu hồi được, thử lại sau", ToastAndroid.SHORT);
+            } finally {
+              setRevoking(false);
+            }
+          },
+        },
+      ],
+    );
 
   const senses = useQuery({
     queryKey: ["collections", "senses", id, q, userLang],
@@ -120,16 +146,18 @@ const CollectionDetail = () => {
           <View className="flex-row items-center gap-1.5 mt-0.5">
             <AppIcon
               branch="feather"
-              name={c.released ? (c.draftCount > 0 ? "edit-3" : "globe") : "lock"}
+              name={c.publishState === "live" ? (c.draftCount > 0 ? "edit-3" : "globe") : "lock"}
               size={13}
-              color={c.released && c.draftCount === 0 ? theme.success : theme.subText2}
+              color={c.publishState === "live" && c.draftCount === 0 ? theme.success : theme.subText2}
             />
             <AppText size="xs" color="subText2">
-              {!c.released
+              {c.publishState === "draft"
                 ? "Bản nháp, chỉ mình bạn thấy"
-                : c.draftCount > 0
-                  ? `Đã phát hành v${c.version} · có ${c.draftCount} thay đổi chưa phát hành`
-                  : `Đã phát hành công khai · v${c.version}`}
+                : c.publishState === "revoked"
+                  ? `Đã thu hồi (v${c.version}), chỉ người đã tải còn học được`
+                  : c.draftCount > 0
+                    ? `Đã phát hành v${c.version} · có ${c.draftCount} thay đổi chưa phát hành`
+                    : `Đã phát hành công khai · v${c.version}`}
             </AppText>
           </View>
         )}
@@ -247,17 +275,41 @@ const CollectionDetail = () => {
               Học từ mới
             </AppText>
           </AppButton>
-          {c.canPublish && (
-            <AppButton
-              variant="soft"
-              size="lg"
-              onPress={() => router.push({ pathname: "/screens/Collection/Publish/[id]", params: { id } })}
-            >
-              <AppIcon branch="feather" name="upload-cloud" size={18} color={theme.primary} />
-              <AppText color="primary" weight="bold" size="lg">
-                {c.released ? "Phát hành thay đổi" : "Phát hành bộ"}
-              </AppText>
-            </AppButton>
+          {c.isAuthor && (
+            <View className="flex-row gap-3">
+              <Pressable
+                disabled={!c.canPublish}
+                onPress={() => router.push({ pathname: "/screens/Collection/Publish/[id]", params: { id } })}
+                className="flex-1 h-14 rounded-2xl flex-row items-center justify-center gap-2"
+                style={{
+                  backgroundColor: c.canPublish ? theme.primary : theme.card,
+                  borderWidth: 1,
+                  borderColor: c.canPublish ? theme.primary : theme.border,
+                }}
+              >
+                <AppIcon branch="feather" name="upload-cloud" size={18} color={c.canPublish ? "white" : theme.subText3} />
+                <AppText color={c.canPublish ? "white" : "subText3"} weight="bold" size="lg">
+                  {c.publishState === "draft" ? "Phát hành bộ" : c.publishState === "revoked" ? "Tiếp tục phát hành" : "Cập nhật"}
+                </AppText>
+              </Pressable>
+              {c.publishState === "live" && (
+                <Pressable
+                  disabled={revoking}
+                  onPress={confirmRevoke}
+                  className="h-14 px-5 rounded-2xl flex-row items-center justify-center gap-2"
+                  style={{ borderWidth: 1.5, borderColor: theme.error, opacity: revoking ? 0.5 : 1 }}
+                >
+                  {revoking ? (
+                    <ActivityIndicator size="small" color={theme.error} />
+                  ) : (
+                    <AppIcon branch="feather" name="eye-off" size={18} color={theme.error} />
+                  )}
+                  <AppText weight="bold" size="lg" style={{ color: theme.error }}>
+                    Thu hồi
+                  </AppText>
+                </Pressable>
+              )}
+            </View>
           )}
         </View>
       )}
