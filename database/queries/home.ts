@@ -66,3 +66,33 @@ export const getRecentLogs = async (
     );
   });
 };
+
+export interface MistakeWord {
+  original_sense_id: string;
+  word: string;
+  lang: string;
+  wrong: number;
+  total: number;
+}
+
+/**
+ * Từ hay sai (Home): nghĩa bị chấm "Again" (rating 1) nhiều nhất trong `days` ngày gần nhất, từ review_log ở máy.
+ * Cần sai ít nhất `minWrong` lần mới tính; nghĩa đã ẩn / bỏ qua / xoá thì loại.
+ */
+export const getMistakeWords = async (db: SQLiteDatabase, days = 30, minWrong = 2, limit = 10): Promise<MistakeWord[]> => {
+  const since = new Date(Date.now() - days * 86_400_000).toISOString().replace("T", " ").slice(0, 19);
+  return db.getAllAsync<MistakeWord>(
+    `SELECT l.original_sense_id, s.word_value AS word, s.language_code AS lang,
+            SUM(CASE WHEN l.rating = 1 THEN 1 ELSE 0 END) AS wrong, COUNT(*) AS total
+     FROM review_log l
+     JOIN ai_sense s ON s.id = l.original_sense_id AND s.is_deleted = 0
+     LEFT JOIN user_sense_progress p ON p.original_sense_id = l.original_sense_id
+     WHERE datetime(l.reviewed_at) >= datetime(?)
+       AND COALESCE(p.is_hidden, 0) = 0 AND COALESCE(p.is_avoid, 0) = 0 AND COALESCE(p.is_deleted, 0) = 0
+     GROUP BY l.original_sense_id
+     HAVING wrong >= ?
+     ORDER BY wrong DESC, total ASC
+     LIMIT ?`,
+    [since, minWrong, limit],
+  );
+};

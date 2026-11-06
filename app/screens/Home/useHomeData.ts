@@ -1,6 +1,7 @@
 import {
   dateKey,
   getDueCount,
+  getMistakeWords,
   getRecentLogs,
   learningDayBounds,
 } from "@/database/queries/home";
@@ -18,13 +19,14 @@ export const useHomeData = () => {
   const q = useQuery({
     queryKey: ["home", dayStartHour],
     queryFn: async () => {
-      const [due, week] = await Promise.all([
+      const [due, week, mistakes] = await Promise.all([
         getDueCount(db, dayStartHour),
         getRecentLogs(db, 7, dayStartHour),
+        getMistakeWords(db),
       ]);
       const todayKey = dateKey(learningDayBounds(dayStartHour).start);
       const today = week.find((d) => d.date === todayKey) ?? week[week.length - 1];
-      return { due, week, today };
+      return { due, week, today, mistakes };
     },
     staleTime: 0,
   });

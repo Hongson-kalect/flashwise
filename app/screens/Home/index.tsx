@@ -4,6 +4,7 @@ import { ReactNode, useCallback, useState } from "react";
 import { RefreshControl, View } from "react-native";
 import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
 import HomeHeader from "./components/header";
+import Mistakes from "./components/mistakes";
 import Progress from "./components/progress";
 import HomeSearch from "./components/search";
 import StudyCard from "./components/studyCard";
@@ -57,6 +58,7 @@ export default function HomePage() {
             goal={dailyGoal}
           />
         </View>
+        <Mistakes items={data?.mistakes ?? []} />
         <Suggested />
       </Animated.ScrollView>
       {overlay}
