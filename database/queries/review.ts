@@ -6,7 +6,7 @@ import { fromDbTime, toDbTime } from "@/learning/time";
 import { AGAIN, glossOf, Grade, LearnCard, StepLog } from "@/learning/types";
 import { uuidv7 } from "@/utils/uuidv7";
 import { SQLiteDatabase } from "expo-sqlite";
-import { dateKey, learningDayBounds } from "./home";
+import { DUE_SQL, dateKey, learningDayBounds } from "./home";
 import { LearnSettings } from "./learning";
 
 const SENSE_SQL = `
@@ -72,9 +72,8 @@ export const pickReviewBatch = async (
                       WHERE COALESCE(i.original_id, i.sense_id) = p.original_sense_id AND i.is_deleted = 0
                       ORDER BY i.updated_at DESC LIMIT 1), p.original_sense_id) AS sense_id
      FROM user_sense_progress p
-     WHERE p.is_deleted = 0 AND p.is_hidden = 0 AND p.is_avoid = 0 AND p.next_review_at IS NOT NULL
-       AND NOT (p.state = 0 AND p.repetitions = 0) AND datetime(p.next_review_at) <= datetime(?)`,
-    [toDbTime(cutoff)],
+     WHERE ${DUE_SQL}`,
+    [toDbTime(cutoff), toDbTime(now)],
   );
   const rows = allRows.filter((r) => !exclude.has(r.original_sense_id));
   const cards = await fetchSenseCards(db, [...new Set(rows.map((r) => r.sense_id))], userLang);

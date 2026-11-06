@@ -15,15 +15,24 @@ const pad = (n: number) => String(n).padStart(2, "0");
 export const dateKey = (d: Date) =>
   `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-/** Số thẻ đến hạn ôn: next_review_at <= cuối ngày học hiện tại (docs 5.5). */
-export const getDueCount = async (db: SQLiteDatabase, dayStartHour = 4) => {
-  const { end } = learningDayBounds(dayStartHour);
+/**
+ * Điều kiện "đến hạn" (bảng user_sense_progress alias `p`), dùng chung cho số đếm ở Home và lượt ôn (`pickReviewBatch`) để hai bên khớp.
+ * Thẻ ôn thường (state 2) đến hạn khi `next_review_at` trước cuối ngày học (docs 5.5, như server). Thẻ đang học / học lại
+ * (state 1, 3: vừa học hoặc vừa quên, hẹn lại sau vài phút đến vài giờ) chỉ tính khi đã tới giờ, không thì vừa ôn xong Home lại báo "đến hạn".
+ * Tham số theo thứ tự: cuối ngày học, bây giờ (dạng toDbTime).
+ */
+export const DUE_SQL = `p.is_deleted = 0 AND p.is_hidden = 0 AND p.is_avoid = 0 AND p.next_review_at IS NOT NULL
+  AND NOT (p.state = 0 AND p.repetitions = 0)
+  AND datetime(p.next_review_at) <= CASE WHEN p.state IN (1, 3) THEN datetime(?2) ELSE datetime(?1) END`;
+
+const dbTime = (d: Date) => d.toISOString().replace("T", " ").slice(0, 19);
+
+/** Số thẻ đến hạn ôn (xem DUE_SQL). */
+export const getDueCount = async (db: SQLiteDatabase, dayStartHour = 4, now = new Date()) => {
+  const { end } = learningDayBounds(dayStartHour, now);
   const row = await db.getFirstAsync<{ n: number }>(
-    `SELECT COUNT(*) AS n FROM user_sense_progress
-     WHERE is_mastered = 0 AND is_hidden = 0 AND is_avoid = 0 AND is_deleted = 0
-       AND next_review_at IS NOT NULL
-       AND datetime(next_review_at) <= datetime(?)`,
-    [end.toISOString().replace("T", " ").slice(0, 19)],
+    `SELECT COUNT(*) AS n FROM user_sense_progress p WHERE p.is_mastered = 0 AND ${DUE_SQL}`,
+    [dbTime(end), dbTime(now)],
   );
   return row?.n ?? 0;
 };
