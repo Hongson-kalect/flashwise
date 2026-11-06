@@ -6,6 +6,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { useGuardedPress } from "../../hooks/useGuardedPress";
 import { haptic } from "../feedback";
 import { useUITheme } from "../theme/ThemeProvider";
 import { TokenKey } from "../tokens";
@@ -30,7 +31,8 @@ export type ButtonType =
   | "disabled";
 
 type Props = {
-  onPress: () => void;
+  /** Trả Promise thì nút bị khoá (vòng xoay) tới khi xong; hàm đồng bộ bị khoá ngắn để chặn bấm đúp. */
+  onPress: () => void | Promise<void>;
   title?: string;
   size?: Size;
   type?: ButtonType;
@@ -72,6 +74,11 @@ const Button = ({
   isLoading,
 }: Props) => {
   const { theme } = useUITheme();
+  const { press, busy } = useGuardedPress(() => {
+    haptic("light");
+    return onPress();
+  }, 350);
+  const loading = !!isLoading || busy;
   const scale = useRef(new Animated.Value(1)).current;
   const { px, py, font } = SIZES[size];
   const v = variant ?? (outline ? "outline" : "solid");
@@ -103,13 +110,10 @@ const Button = ({
       ]}
     >
       <Pressable
-        onPress={() => {
-          haptic("light");
-          onPress();
-        }}
+        onPress={() => press()}
         onPressIn={() => spring(0.97)}
         onPressOut={() => spring(1)}
-        disabled={disabled || isLoading}
+        disabled={disabled || loading}
         android_ripple={{ color: "#ffffff22" }}
         hitSlop={8}
         style={[
@@ -136,12 +140,12 @@ const Button = ({
           style,
         ]}
       >
-        {isLoading && (
+        {loading && (
           <View className="absolute inset-0 items-center justify-center">
             <ActivityIndicator size="small" color={fg} />
           </View>
         )}
-        <View style={{ opacity: isLoading ? 0 : 1 }}>
+        <View style={{ opacity: loading ? 0 : 1 }}>
           {children ? (
             <View className="flex-row items-center gap-2">{children}</View>
           ) : (

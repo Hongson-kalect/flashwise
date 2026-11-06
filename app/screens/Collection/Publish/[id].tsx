@@ -21,10 +21,10 @@ import {
   Pressable,
   ScrollView,
   TextInput,
-  ToastAndroid,
   View,
 } from "react-native";
 import CollectionCover from "../components/collectionCover";
+import toast from "@/utils/toast";
 
 const ERROR_TEXT = {
   no_changes: "Bộ chưa có nghĩa nào để phát hành. Thêm nghĩa vào bộ rồi thử lại.",
@@ -107,9 +107,8 @@ export default function PublishCollection() {
       const result = await publish(db, id, userLang, { title: title.trim(), desc: desc.trim(), image: image?.key });
       await queryClient.invalidateQueries({ queryKey: ["collections"] });
       try {
-        ToastAndroid.show(
+        toast.success(
           !c.isAuthor ? "Đã tạo bản remix của bạn" : result.changed ? `Đã phát hành phiên bản ${result.current_version}` : c.publishState === "revoked" ? "Bộ đã công khai trở lại" : "Đã cập nhật thông tin bộ",
-          ToastAndroid.SHORT,
         );
       } catch {}
       router.back();

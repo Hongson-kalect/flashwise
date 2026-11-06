@@ -5,9 +5,10 @@ import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
 import { useAppStore } from "@/stores/appStore";
 import { useMemo, useState } from "react";
-import { ToastAndroid, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SenseType } from "./createSenseSheet";
+import toast from "@/utils/toast";
 
 type Props = {
   senseValue: SenseType;
@@ -27,7 +28,7 @@ const CreateSenseBasicInfo = ({ senseValue, setSenseValue, onSuggest }: Props) =
     if (translation === "") return;
     const trans = translation.trim();
     if (senseValue.translations.includes(trans)) {
-      ToastAndroid.show("Translation already exists", ToastAndroid.SHORT);
+      toast.warning("Translation already exists");
       return;
     }
 

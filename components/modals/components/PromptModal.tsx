@@ -3,6 +3,7 @@ import ModalButton from "../ModalButton";
 import { BasicModalOptions, PromptModalOptions } from "@/providers/Modal";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
+import { useGuardedPress } from "@/hooks/useGuardedPress";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 
@@ -15,6 +16,11 @@ const PromptModal = (modal: Props) => {
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
   const { theme } = useTheme();
+
+  const { press: submit, busy } = useGuardedPress(async () => {
+    await modal.onOk?.(value);
+    closeCurrentModal();
+  }, 400);
 
   useEffect(() => {
     currentModal && setTimeout(() => textFocus(), 300);
@@ -81,9 +87,9 @@ const PromptModal = (modal: Props) => {
         )}
         <ModalButton
           label={modal.okText || "OK"}
+          loading={busy}
           onPress={() => {
-            modal.onOk?.(value);
-            closeCurrentModal();
+            submit();
           }}
         />
       </View>

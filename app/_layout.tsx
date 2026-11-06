@@ -9,6 +9,7 @@ import "@/configs/ui";
 
 import { AppWrapper } from "@/components/AppWrapper";
 import { LanguageProvider } from "@/providers/Language";
+import ToastHost from "@/components/ToastHost";
 import { GlobalModal } from "@/providers/Modal";
 import { ThemeProvider } from "@/providers/Theme";
 import * as Font from "expo-font";
@@ -120,6 +121,7 @@ export default function RootLayout() {
                 <Portal>
                   <GlobalModal />
                 </Portal>
+                <ToastHost />
                 {/* <StatusBar style="auto" /> */}
               </LanguageProvider>
             </>

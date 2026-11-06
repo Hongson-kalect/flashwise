@@ -3,6 +3,7 @@ import { fontFamily } from "@/configs/fonts";
 import { BasicModalOptions, InputModalOptions } from "@/providers/Modal";
 import { useTheme } from "@/providers/Theme";
 import useModalStore from "@/stores/modalStore";
+import { useGuardedPress } from "@/hooks/useGuardedPress";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import ModalButton from "../ModalButton";
@@ -17,10 +18,11 @@ const InputModal = (modal: Props) => {
   const textFocus = () => textRef.current?.focus();
   const { theme } = useTheme();
 
-  const submit = () => {
-    modal.onOk?.(value);
+  // Hàm onOk có thể async (gọi API): khoá tới khi xong, rồi mới đóng
+  const { press: submit, busy } = useGuardedPress(async () => {
+    await modal.onOk?.(value);
     closeCurrentModal();
-  };
+  }, 400);
 
   useEffect(() => {
     currentModal && setTimeout(() => textFocus(), 300);
@@ -61,7 +63,7 @@ const InputModal = (modal: Props) => {
           //   style={{ textAlignVertical: "top", height: 90 }}
           className="text-xl h-14 px-1"
           ref={textRef}
-          onSubmitEditing={submit}
+          onSubmitEditing={() => submit()}
           value={value}
           onChangeText={setValue}
           placeholder={modal.placeholder}
@@ -81,7 +83,7 @@ const InputModal = (modal: Props) => {
             }}
           />
         )}
-        <ModalButton label={modal.okText || "OK"} onPress={submit} />
+        <ModalButton label={modal.okText || "OK"} loading={busy} onPress={() => { submit(); }} />
       </View>
     </View>
   );

@@ -1,10 +1,12 @@
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
+import { useGuardedPress } from "@/hooks/useGuardedPress";
 import { ActivityIndicator, Pressable } from "react-native";
 
 type Props = {
   label: string;
-  onPress: () => void;
+  /** Trả Promise thì nút khoá + hiện vòng xoay tới khi xong (chống bấm nhiều lần). */
+  onPress: () => void | Promise<void>;
   variant?: "primary" | "ghost" | "danger";
   disabled?: boolean;
   loading?: boolean;
@@ -22,19 +24,21 @@ const ModalButton = ({
   flex = true,
 }: Props) => {
   const { theme } = useTheme();
+  const { press, busy } = useGuardedPress(onPress, 400);
+  const isLoading = loading || busy;
   const filled = variant !== "ghost";
   const bg =
     variant === "danger" ? theme.error : variant === "primary" ? theme.primary : theme.card;
 
   return (
     <Pressable
-      disabled={disabled || loading}
-      onPress={onPress}
+      disabled={disabled || isLoading}
+      onPress={() => press()}
       android_ripple={{ color: "#00000014" }}
       className="h-12 rounded-2xl items-center justify-center px-5"
       style={{ backgroundColor: bg, opacity: disabled ? 0.5 : 1, flex: flex ? 1 : undefined }}
     >
-      {loading ? (
+      {isLoading ? (
         <ActivityIndicator color={filled ? "white" : theme.text} />
       ) : (
         <AppText font="MulishBold" color={filled ? "white" : "subText1"}>

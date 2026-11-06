@@ -10,13 +10,14 @@ import { AudioType as AppAudioType } from "@/stores/recordingStore";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
 import { useEffect, useMemo, useState } from "react";
-import { Keyboard, ToastAndroid, View } from "react-native";
+import { Keyboard, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { LineInput } from "../../Create/components/lineInput";
 import CreateSenseBasicInfo from "./createSenseBasic";
 import CreateSenseExample from "./createSenseExample";
 import CreateSenseHeader from "./createSenseHeader";
 import CreateSenseMoreInfo from "./createSenseMoreInfo";
+import toast from "@/utils/toast";
 
 export type SenseType = {
   word?: string;
@@ -82,7 +83,7 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
                 const { next, filled, skipped } = applyCommunitySense(senseValue, picked, wordLang, userLang);
                 setSenseValue(next);
                 closeCurrentModal();
-                ToastAndroid.show(applySummary({ filled, skipped }), ToastAndroid.LONG);
+                toast.success(applySummary({ filled, skipped }), { long: true });
               }}
             />
           ),

@@ -2,6 +2,7 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { BasicModalOptions, MenuModalOptions } from "@/providers/Modal";
 import { useTheme } from "@/providers/Theme";
+import { useGuardedPress } from "@/hooks/useGuardedPress";
 import useModalStore from "@/stores/modalStore";
 import { Pressable, ScrollView, View } from "react-native";
 import ModalButton from "../ModalButton";
@@ -59,7 +60,7 @@ type AppMenuType = {
   /** Cũ: màu chữ / nền tuỳ chỉnh. */
   color?: string;
   backgroundColor?: string;
-  onPress?: () => void;
+  onPress?: () => void | Promise<void>;
   icon?: React.ReactNode;
   label?: string | React.ReactNode;
   rightContent?: React.ReactNode;
@@ -70,6 +71,7 @@ type AppMenuType = {
 
 export const AppMenu = (props: AppMenuType) => {
   const { theme } = useTheme();
+  const { press } = useGuardedPress(() => props.onPress?.(), 500);
   const tone = props.destructive ? theme.error : theme.primary;
 
   return (
@@ -88,7 +90,7 @@ export const AppMenu = (props: AppMenuType) => {
           ? theme.error + "12"
           : props.backgroundColor || "transparent",
       }}
-      onPress={() => props.onPress?.()}
+      onPress={() => press()}
     >
       {props.icon ? (
         <View

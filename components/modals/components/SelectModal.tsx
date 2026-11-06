@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/providers/Modal";
 import { useTheme } from "@/providers/Theme";
+import { useGuardedPress } from "@/hooks/useGuardedPress";
 import useModalStore from "@/stores/modalStore";
 import { useEffect, useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
@@ -89,10 +90,11 @@ const Header = ({ title, message }: { title?: string; message?: string }) => (
 export const RadioModal = (modal: RadioModalOptions & BasicModalOptions) => {
   const closeCurrentModal = useModalStore((state) => state.closeCurrentModal);
 
-  const select = (value: SelectValue) => {
-    if (value !== modal.value) modal.onSelect(value);
+  // Chặn chạm đúp: onSelect chỉ chạy 1 lần
+  const { press: select } = useGuardedPress(async (value: SelectValue) => {
+    if (value !== modal.value) await modal.onSelect(value);
     closeCurrentModal();
-  };
+  }, 400);
 
   return (
     <View>

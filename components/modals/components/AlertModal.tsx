@@ -26,8 +26,8 @@ const AlertModal = (modal: Props) => {
       <View className="mt-6">
         <ModalButton
           label={modal.okText || "OK"}
-          onPress={() => {
-            modal.onOk?.();
+          onPress={async () => {
+            await modal.onOk?.();
             closeCurrentModal();
           }}
         />

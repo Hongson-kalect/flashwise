@@ -5,7 +5,8 @@ import { useTheme } from "@/providers/Theme";
 import { editErrorKind, EditErrorKind, SenseDelta, updateSense } from "@/services/api/senses";
 import { useAppStore } from "@/stores/appStore";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { ActivityIndicator, Platform, Pressable, TextInput, ToastAndroid, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, TextInput, View } from "react-native";
+import toast from "@/utils/toast";
 
 /** Mục được nhấn giữ. Không truyền = mở form đầy đủ (3 chấm → Sửa nghĩa này). */
 export type EditFocus = "definition" | "translation" | "usage" | `example:${number}`;
@@ -114,7 +115,7 @@ export const EditSenseSheet = ({ sense, wordLang, userLang, focus, onSaved }: Pr
       const saved = await updateSense({ senseId: sense.id, userLang, delta });
       const forked = saved?.id && saved.id !== sense.id;
       const msg = forked ? "Đã lưu thành bản riêng của bạn" : "Đã lưu";
-      if (Platform.OS === "android") ToastAndroid.show(msg, ToastAndroid.SHORT);
+      toast.success(msg);
       close();
       onSaved();
     } catch (e) {

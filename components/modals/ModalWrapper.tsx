@@ -4,6 +4,7 @@ import { Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 import ReactNativeModal from "react-native-modal";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import AppText from "../AppText";
+import ToastHost from "../ToastHost";
 
 type Props = {
   show: boolean;
@@ -97,6 +98,7 @@ export default function ModalWrapper(props: Props) {
           </View>
         </View>
       </Animated.View>
+      <ToastHost inModal />
     </ReactNativeModal>
   );
 }

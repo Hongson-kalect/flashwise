@@ -30,8 +30,8 @@ const ConfirmModal = (modal: Props) => {
         />
         <ModalButton
           label={modal.okText || "OK"}
-          onPress={() => {
-            modal.onOk?.();
+          onPress={async () => {
+            await modal.onOk?.();
             closeCurrentModal();
           }}
         />

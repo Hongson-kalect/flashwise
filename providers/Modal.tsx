@@ -11,8 +11,9 @@ import {
 import TabsModal from "@/components/modals/components/TabModal";
 import ModalWrapper from "@/components/modals/ModalWrapper";
 import useModalStore from "@/stores/modalStore";
+import toast from "@/utils/toast";
 import React, { memo, useEffect, useState } from "react";
-import { Alert, Platform, ToastAndroid, View } from "react-native";
+import { View } from "react-native";
 import { useShallow } from "zustand/react/shallow";
 
 export type AlertModalOptions = {
@@ -21,7 +22,7 @@ export type AlertModalOptions = {
   message?: string;
   subMessage?: string;
   okText?: string;
-  onOk?: () => void;
+  onOk?: () => void | Promise<void>;
   onClose?: () => void;
 };
 export type ConfirmModalOptions = {
@@ -31,7 +32,7 @@ export type ConfirmModalOptions = {
   subMessage?: string;
   okText?: string;
   cancelText?: string;
-  onOk?: () => void;
+  onOk?: () => void | Promise<void>;
   onCancel?: () => void;
 };
 export type InputModalOptions = {
@@ -45,7 +46,7 @@ export type InputModalOptions = {
   textOuterFooter?: React.ReactNode;
   okText?: string;
   cancelText?: string;
-  onOk?: (value: string) => void;
+  onOk?: (value: string) => void | Promise<void>;
   onCancel?: () => void;
 };
 
@@ -60,7 +61,7 @@ export type PromptModalOptions = {
   textOuterFooter?: React.ReactNode;
   okText?: string;
   cancelText?: string;
-  onOk?: (value: string) => void;
+  onOk?: (value: string) => void | Promise<void>;
   onCancel?: () => void;
 };
 
@@ -112,7 +113,7 @@ export type RadioModalOptions = {
   type: "radio";
   options: SelectOption[];
   value?: SelectValue;
-  onSelect: (value: SelectValue) => void;
+  onSelect: (value: SelectValue) => void | Promise<void>;
 };
 
 /** Chọn nhiều: đánh dấu rồi bấm OK để gọi onConfirm. */
@@ -192,8 +193,7 @@ const GlobalModalComponent = () => {
   const closeModal = () => {
     if (!currentModal) return;
     if (currentModal.closable === false) {
-      const msg = "Hãy chọn một nút trong hộp thoại để tiếp tục.";
-      return Platform.OS === "android" ? ToastAndroid.show(msg, ToastAndroid.SHORT) : Alert.alert(msg);
+      return toast.warning("Hãy chọn một nút trong hộp thoại để tiếp tục.");
     }
     currentModal.onDismiss?.();
     closeCurrentModal();

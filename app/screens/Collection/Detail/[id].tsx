@@ -15,11 +15,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Pressable, ToastAndroid, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Pressable, View } from "react-native";
 import CollectionCover from "../components/collectionCover";
 import CoverSheet from "./components/coverSheet";
 import AddWordsSheet from "./components/addWordsSheet";
 import SenseRow from "./components/senseRow";
+import toast from "@/utils/toast";
 
 /** Chi tiết 1 bộ: ảnh bìa, tiến độ, tải về học offline, danh sách nghĩa trong bộ. */
 const CollectionDetail = () => {
@@ -55,9 +56,9 @@ const CollectionDetail = () => {
             try {
               await unpublish(db, id, userLang);
               await queryClient.invalidateQueries({ queryKey: ["collections"] });
-              ToastAndroid.show("Đã thu hồi bộ", ToastAndroid.SHORT);
+              toast.success("Đã thu hồi bộ");
             } catch {
-              ToastAndroid.show("Chưa thu hồi được, thử lại sau", ToastAndroid.SHORT);
+              toast.error("Chưa thu hồi được, thử lại sau");
             } finally {
               setRevoking(false);
             }
@@ -85,7 +86,7 @@ const CollectionDetail = () => {
       await setLocalOrder(db, ids);
       await refreshAll();
     } catch {
-      ToastAndroid.show("Chưa đổi được thứ tự, thử lại sau", ToastAndroid.SHORT);
+      toast.error("Chưa đổi được thứ tự, thử lại sau");
     }
   };
 
@@ -101,7 +102,7 @@ const CollectionDetail = () => {
             await downloadBundle(db, id, userLang, { force: true, retries: 0 });
             await refreshAll();
           } catch {
-            ToastAndroid.show("Chưa xoá được, thử lại sau", ToastAndroid.SHORT);
+            toast.error("Chưa xoá được, thử lại sau");
           }
         },
       },

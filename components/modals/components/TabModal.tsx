@@ -1,5 +1,6 @@
 import AppText from "@/components/AppText";
 import { BasicModalOptions, TabsModalOptions } from "@/providers/Modal";
+import { useGuardedPress } from "@/hooks/useGuardedPress";
 import useModalStore from "@/stores/modalStore";
 import { useState } from "react";
 import { FlatList, TouchableOpacity, View } from "react-native";
@@ -10,6 +11,10 @@ const TabsModal = (modal: Props) => {
   const [width, setWidth] = useState(0);
   const closeCurrentModal = useModalStore((state) => state.closeCurrentModal);
   const [tabIndex, setTabIndex] = useState(0);
+  const { press: ok } = useGuardedPress(async () => {
+    await modal.onOk?.();
+    closeCurrentModal();
+  }, 400);
   return (
     <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
       {modal.title && (
@@ -69,10 +74,7 @@ const TabsModal = (modal: Props) => {
           className={`bg-blue-600 rounded-lg py-3 items-center justify-center ${
             modal.isShowCancelButton === false ? "w-full" : ""
           } min-w-28`}
-          onPress={() => {
-            modal.onOk?.();
-            closeCurrentModal();
-          }}
+          onPress={() => ok()}
         >
           <AppText className="text-white">{modal.okText || "OK"}</AppText>
         </TouchableOpacity>

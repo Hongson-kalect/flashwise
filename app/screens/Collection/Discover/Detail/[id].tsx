@@ -9,8 +9,9 @@ import { Skeleton } from "@/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { ActivityIndicator, FlatList, Pressable, ToastAndroid, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
 import CollectionCover from "../../components/collectionCover";
+import toast from "@/utils/toast";
 
 const Stat = ({ icon, value, label }: { icon: any; value: number; label: string }) => {
   const { theme } = useTheme();
@@ -59,7 +60,7 @@ const DiscoverDetail = () => {
     },
     onError: (e: any) => {
       const code = e?.response?.data?.errorCode;
-      ToastAndroid.show(code === "account_required" ? "Đăng nhập để thích bộ từ" : "Chưa thích được, thử lại sau", ToastAndroid.SHORT);
+      code === "account_required" ? toast.info("Đăng nhập để thích bộ từ") : toast.error("Chưa thích được, thử lại sau");
     },
   });
 

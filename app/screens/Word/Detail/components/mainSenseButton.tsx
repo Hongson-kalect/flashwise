@@ -3,9 +3,10 @@ import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { setMainSense } from "@/services/api/senses";
 import { useContext, useEffect, useState } from "react";
-import { Pressable, ToastAndroid, View } from "react-native";
+import { Pressable, View } from "react-native";
 import { SenseSavedContext } from "../senseEdit";
 import { SenseType } from "../../data";
+import toast from "@/utils/toast";
 
 /**
  * Dấu sao "nghĩa chính của tôi" + huy hiệu "Đề xuất" khi admin đã đề xuất nghĩa này.
@@ -29,12 +30,12 @@ const MainSenseButton = ({ sense }: { sense: SenseType }) => {
       await setMainSense(sense.id, want);
       refresh();
       try {
-        ToastAndroid.show(want ? "Đã đặt làm nghĩa chính của bạn" : "Đã bỏ nghĩa chính", ToastAndroid.SHORT);
+        toast.success(want ? "Đã đặt làm nghĩa chính của bạn" : "Đã bỏ nghĩa chính");
       } catch {}
     } catch {
       setMain(!want);
       try {
-        ToastAndroid.show("Không đặt được, kiểm tra mạng", ToastAndroid.SHORT);
+        toast.error("Không đặt được, kiểm tra mạng");
       } catch {}
     } finally {
       setBusy(false);

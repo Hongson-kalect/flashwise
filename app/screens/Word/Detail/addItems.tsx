@@ -7,8 +7,9 @@ import { ItemKind, itemsOfMetadata, saveItems, VERIFIED_KINDS } from "@/services
 import { useAppStore } from "@/stores/appStore";
 import { router } from "expo-router";
 import { useContext, useMemo, useState } from "react";
-import { ActivityIndicator, Platform, Pressable, TextInput, ToastAndroid, View } from "react-native";
+import { ActivityIndicator, Platform, Pressable, TextInput, View } from "react-native";
 import { SenseContext, SenseSavedContext } from "./senseEdit";
+import toast from "@/utils/toast";
 
 export type { ItemKind };
 
@@ -120,13 +121,11 @@ export const AddItemsSheet = ({ kind, sense, onSaved }: Props) => {
     ? items.length >= MAX_ROUND || existing.length + items.length >= MAX_LIST
     : existing.length + items.length >= MAX_TOTAL;
 
-  const toast = (msg: string) => Platform.OS === "android" && ToastAndroid.show(msg, ToastAndroid.SHORT);
-
   const saveVerified = async () => {
     const res = await addSenseItems({ senseId: sense.id, kind: kind as VerifiedItemKind, words: items });
     if (res.added.length) onSaved(); // danh sách đã đổi trên server: trang tải lại 1 lần
     if (!res.rejected.length) {
-      toast(res.added.length ? `Đã thêm ${res.added.length} mục` : "Các mục này đã có trong danh sách");
+      res.added.length ? toast.success(`Đã thêm ${res.added.length} mục`) : toast.info("Các mục này đã có trong danh sách");
       close();
       return;
     }
@@ -136,7 +135,7 @@ export const AddItemsSheet = ({ kind, sense, onSaved }: Props) => {
 
   const saveOwn = async () => {
     await saveItems({ sense, userLang, kind, items });
-    toast(`Đã thêm ${items.length} mục`);
+    toast.success(`Đã thêm ${items.length} mục`);
     close();
     onSaved();
   };
