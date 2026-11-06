@@ -63,14 +63,14 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
   useEffect(() => props.setSenseValue(senseValue), [senseValue]);
 
   // Gợi ý nghĩa từ cộng đồng: chọn 1 nghĩa thì chỉ điền các ô đang trống, ô đã có dữ liệu giữ nguyên
-  const { setGlobalModal } = useModalStore();
+  const { addModal, closeCurrentModal } = useModalStore();
   const wordLang: string = settings?.learning_language ?? "en";
   const userLang: string = settings?.translate_language ?? "vi";
   const openSuggestions = props.wordId
     ? () => {
         const wordId = props.wordId as string;
         Keyboard.dismiss();
-        setGlobalModal({
+        addModal({
           type: "custom",
           modalTitle: "Gợi ý từ cộng đồng",
           render: (
@@ -81,7 +81,7 @@ const CreateSenseSheet = (props: AddSenseSheetProps) => {
               onPick={(picked) => {
                 const { next, filled, skipped } = applyCommunitySense(senseValue, picked, wordLang, userLang);
                 setSenseValue(next);
-                setGlobalModal(null);
+                closeCurrentModal();
                 ToastAndroid.show(applySummary({ filled, skipped }), ToastAndroid.LONG);
               }}
             />

@@ -35,7 +35,7 @@ type Props = {
 const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mode, isLoading, setMode }: Props) => {
   const { theme } = useTheme();
   const { present } = useBottomSheet();
-  const { setGlobalModal } = useModalStore();
+  const addModal = useModalStore((state) => state.addModal);
   const { settings, dbService } = useAppStore();
 
   const handleAddSense = () =>
@@ -56,7 +56,7 @@ const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mod
 
   const showMoreMenu = () => {
     const title = word[0].toUpperCase() + word.slice(1);
-    setGlobalModal({
+    addModal({
       type: "menu",
       title: `Tuỳ chọn · ${title}`,
       menuOptions: [

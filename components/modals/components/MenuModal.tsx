@@ -10,7 +10,7 @@ type Props = MenuModalOptions & BasicModalOptions;
 
 /** Danh sách hành động: mỗi dòng có ô icon bo tròn, nhãn, mũi tên; hành động nguy hiểm tô đỏ nhạt. */
 const MenuModal = (modal: Props) => {
-  const { setGlobalModal } = useModalStore();
+  const closeCurrentModal = useModalStore((state) => state.closeCurrentModal);
 
   return (
     <View>
@@ -30,7 +30,7 @@ const MenuModal = (modal: Props) => {
               disabled={menu.disabled}
               onPress={() => {
                 menu.onPress?.();
-                if (menu.isCloseAfterPress !== false) setGlobalModal(null);
+                if (menu.isCloseAfterPress !== false) closeCurrentModal();
               }}
               icon={menu.icon}
               label={menu.label}
@@ -44,7 +44,7 @@ const MenuModal = (modal: Props) => {
           <ModalButton
             variant="ghost"
             label={modal.cancelText}
-            onPress={() => setGlobalModal(null)}
+            onPress={() => closeCurrentModal()}
           />
         </View>
       )}

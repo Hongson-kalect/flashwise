@@ -1,21 +1,88 @@
-import { GlobalModalOptions, ListModalOptions } from "@/providers/Modal";
+import { GlobalModalOptions } from "@/providers/Modal";
 import { create } from "zustand";
 
-interface ModalProps {
-  globalModal: GlobalModalOptions | null;
-  setGlobalModal: (modal: GlobalModalOptions | null) => void;
+const MODAL_TRANSITION_DELAY = 500;
 
-  listModal: ListModalOptions | null;
-  setListModal: (modal: ListModalOptions | null) => void;
+interface ModalState {
+  currentModal: GlobalModalOptions | null;
+  modalQueue: GlobalModalOptions[];
+
+  addModal: (modal: GlobalModalOptions) => void;
+  closeCurrentModal: () => void;
+  clearModalQueue: () => void;
 }
 
-const useModalStore = create<ModalProps>((set) => ({
-  globalModal: null,
-  setGlobalModal: (modal: GlobalModalOptions | null) =>
-    set({ globalModal: modal }),
+const useModalStore = create<ModalState>((set, get) => ({
+  currentModal: null,
+  modalQueue: [],
 
-  listModal: null,
-  setListModal: (modal: ListModalOptions | null) => set({ listModal: modal }),
+  /**
+   * Add a modal to the global modal system.
+   *
+   * If no modal is currently displayed and none is waiting, show it
+   * immediately. Otherwise, append it to the queue (a non-empty queue with
+   * no current modal means one is closing and the next is about to show).
+   */
+  addModal: (modal) => {
+    set((state) => {
+      if (state.currentModal || state.modalQueue.length > 0) {
+        return {
+          modalQueue: [...state.modalQueue, modal],
+        };
+      }
+
+      return {
+        currentModal: modal,
+      };
+    });
+  },
+
+  /**
+   * Close the currently displayed modal.
+   *
+   * The next modal is displayed after the close animation
+   * has had enough time to finish.
+   */
+  closeCurrentModal: () => {
+    const nextModal = get().modalQueue[0];
+
+    set({
+      currentModal: null,
+    });
+
+    if (!nextModal) {
+      return;
+    }
+
+    setTimeout(() => {
+      set((state) => {
+        // Queue may have changed while the closing animation
+        // was running. Always consume the current first item.
+        const next = state.modalQueue[0];
+
+        // Something else became current in the meantime: keep the queue as is
+        if (!next || state.currentModal) {
+          return {};
+        }
+
+        return {
+          currentModal: next,
+          modalQueue: state.modalQueue.slice(1),
+        };
+      });
+    }, MODAL_TRANSITION_DELAY);
+  },
+
+  /**
+   * Immediately close the current modal and discard
+   * every queued modal.
+   */
+  clearModalQueue: () => {
+    set({
+      currentModal: null,
+      modalQueue: [],
+    });
+  },
 }));
 
 export default useModalStore;

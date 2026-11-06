@@ -14,10 +14,10 @@ type Props = {
 const CreateSenseHeader = ({
   setSenseValue,
 }: Props) => {
-  const { setGlobalModal } = useModalStore();
+  const addModal = useModalStore((state) => state.addModal);
 
   const clearSense = () => {
-    setGlobalModal({
+    addModal({
       type: "confirm",
       title: "Xoá toàn bộ nội dung?",
       message: "Các trường đã nhập sẽ bị xoá.",

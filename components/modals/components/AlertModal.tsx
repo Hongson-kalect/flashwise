@@ -7,7 +7,7 @@ import ModalButton from "../ModalButton";
 type Props = AlertModalOptions & BasicModalOptions;
 
 const AlertModal = (modal: Props) => {
-  const { setGlobalModal } = useModalStore();
+  const closeCurrentModal = useModalStore((state) => state.closeCurrentModal);
   return (
     <View>
       {modal.title && (
@@ -28,7 +28,7 @@ const AlertModal = (modal: Props) => {
           label={modal.okText || "OK"}
           onPress={() => {
             modal.onOk?.();
-            setGlobalModal(null);
+            closeCurrentModal();
           }}
         />
       </View>

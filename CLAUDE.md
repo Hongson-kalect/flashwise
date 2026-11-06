@@ -10,6 +10,7 @@ App học từ vựng bằng flashcard, Expo 53 + React Native 0.79 + expo-route
 - `database/schema/*.ts`: câu `CREATE TABLE` SQLite từng bảng, gộp trong `index.ts`. `initDatabase` giữ nguyên dữ liệu giữa các lần mở app và chỉ xoá + tạo lại DB khi schema đổi (hash schema + `SEED_VERSION` lưu ở `PRAGMA user_version`), nên sửa schema chỉ cần sửa file, chưa có migration. Đổi seed (theme, setting mặc định) thì tăng `SEED_VERSION` trong `database/schema/index.ts`.
 - `services/axios.ts`: `serverInstance` gắn Bearer token, tự gọi `${baseURL}/refresh-token` khi 401. `stores/useAuthStore.ts`: token trong SecureStore.
 - `hooks/` (useDatabase, useWebSocket, useSSE...), `providers/`, `interfaces/`, `locales/`
+- Modal toàn cục (bản của Fastfast): `providers/Modal.tsx` (kiểu `GlobalModalOptions`: alert / confirm / input / prompt / menu / tabs / custom / radio / checkbox, `closable: false` chặn đóng bằng backdrop / back) + `stores/modalStore.ts` (`addModal`, `closeCurrentModal`, `clearModalQueue`). Mở khi đang có modal thì xếp hàng, hiện sau 500ms khi modal trước đóng xong (từ trong `onOk` / `onPress` của modal này mở tiếp modal khác là an toàn). Component nội dung ở `components/modals/components/` tự gọi `closeCurrentModal` khi bấm nút. Test hàng đợi: `npx tsx --test stores/modalStore.test.ts`.
 
 ## Quy ước
 - Tên cột bảng nào sync với server phải giống tên trường model Django (vd `user_sense_progress`: state, stability, difficulty, next_review_at; `collection_items.display_order`).

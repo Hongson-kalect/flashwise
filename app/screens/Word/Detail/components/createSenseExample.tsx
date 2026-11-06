@@ -22,10 +22,10 @@ const CreateSenseExample = ({
   senseValue,
   setSenseValue,
 }: Props) => {
-  const { setGlobalModal } = useModalStore();
+  const { addModal, closeCurrentModal } = useModalStore();
   const showEditExampleModel = (example: SenseExample) => {
     Keyboard.dismiss();
-    setGlobalModal({
+    addModal({
       type: "custom",
       // defaultValue: "cc",
       render: (
@@ -33,7 +33,7 @@ const CreateSenseExample = ({
           example={example}
           onChange={(val) => {
             editExample(val);
-            setGlobalModal(null);
+            closeCurrentModal();
           }}
         />
       ),
@@ -50,7 +50,7 @@ const CreateSenseExample = ({
     //   examples: prev.examples.filter((ex) => ex.id !== example.id),
     // }));
 
-    // setGlobalModal({
+    // addModal({
     //   type: "confirm",
     //   message: "Do you want to edit this example?",
     //   onOk: () => {
@@ -87,7 +87,7 @@ const CreateSenseExample = ({
   const removeExample = (id: string) => {
     const Example = senseValue.examples.find((ex) => ex.id === id);
     if (Example) {
-      setGlobalModal({
+      addModal({
         type: "confirm",
         message: "Do you want to delete this example?",
         onOk: () => {

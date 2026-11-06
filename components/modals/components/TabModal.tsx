@@ -8,7 +8,7 @@ type Props = TabsModalOptions & BasicModalOptions;
 
 const TabsModal = (modal: Props) => {
   const [width, setWidth] = useState(0);
-  const { setGlobalModal } = useModalStore();
+  const closeCurrentModal = useModalStore((state) => state.closeCurrentModal);
   const [tabIndex, setTabIndex] = useState(0);
   return (
     <View onLayout={(event) => setWidth(event.nativeEvent.layout.width)}>
@@ -57,7 +57,7 @@ const TabsModal = (modal: Props) => {
             className="bg-disabled rounded-lg py-3 px-4"
             onPress={() => {
               modal.onCancel?.();
-              setGlobalModal(null);
+              closeCurrentModal();
             }}
           >
             <AppText className="text-sub-2">
@@ -71,7 +71,7 @@ const TabsModal = (modal: Props) => {
           } min-w-28`}
           onPress={() => {
             modal.onOk?.();
-            setGlobalModal(null);
+            closeCurrentModal();
           }}
         >
           <AppText className="text-white">{modal.okText || "OK"}</AppText>

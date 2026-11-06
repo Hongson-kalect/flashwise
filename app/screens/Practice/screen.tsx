@@ -265,7 +265,7 @@ export default function PracticePage() {
 
   const Finish = () => {
     // Gọi api gửi đã hoàn tất luyện tập với ids
-    setGlobalModal({
+    addModal({
       type: "confirm",
       modalTitle: "Hoàn tất",
       message: "Bạn có muốn tiếp tục luyện tập?",
@@ -322,9 +322,9 @@ export default function PracticePage() {
     getQuestion(false);
   }, [questions]);
 
-  const { setGlobalModal } = useModalStore();
+  const addModal = useModalStore((state) => state.addModal);
   const handleInputResult = () => {
-    setGlobalModal({
+    addModal({
       type: "input",
       message: "Từ của cái của nợ này là?",
       inAnimation: "slideInDown",
@@ -347,7 +347,7 @@ export default function PracticePage() {
   }, [questionState]);
 
   const backAction = () => {
-    setGlobalModal({
+    addModal({
       type: "confirm",
       title: "Huỷ phiên học",
       message: "Tiến trình của bạn sẽ không được bảo lưu, xác nhận muốn thoát?",

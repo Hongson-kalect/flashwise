@@ -8,7 +8,6 @@ import "./globals.css";
 import "@/configs/ui";
 
 import { AppWrapper } from "@/components/AppWrapper";
-import { ListModal } from "@/components/modals/OptionModal";
 import { LanguageProvider } from "@/providers/Language";
 import { GlobalModal } from "@/providers/Modal";
 import { ThemeProvider } from "@/providers/Theme";
@@ -119,7 +118,6 @@ export default function RootLayout() {
                 {/* <AppUsageTracker /> */}
                 <AppRecording />
                 <Portal>
-                  <ListModal />
                   <GlobalModal />
                 </Portal>
                 {/* <StatusBar style="auto" /> */}

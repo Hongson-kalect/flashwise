@@ -9,14 +9,15 @@ import { Pressable, TextInput, View } from "react-native";
 type Props = PromptModalOptions & BasicModalOptions;
 
 const PromptModal = (modal: Props) => {
-  const { setGlobalModal, globalModal } = useModalStore();
+  const closeCurrentModal = useModalStore((state) => state.closeCurrentModal);
+  const currentModal = useModalStore((state) => state.currentModal);
   const [value, setValue] = useState("");
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
   const { theme } = useTheme();
 
   useEffect(() => {
-    globalModal && setTimeout(() => textFocus(), 300);
+    currentModal && setTimeout(() => textFocus(), 300);
   }, []);
 
   useEffect(() => {
@@ -74,7 +75,7 @@ const PromptModal = (modal: Props) => {
             label={modal.cancelText || "Đóng"}
             onPress={() => {
               modal.onCancel?.();
-              setGlobalModal(null);
+              closeCurrentModal();
             }}
           />
         )}
@@ -82,7 +83,7 @@ const PromptModal = (modal: Props) => {
           label={modal.okText || "OK"}
           onPress={() => {
             modal.onOk?.(value);
-            setGlobalModal(null);
+            closeCurrentModal();
           }}
         />
       </View>

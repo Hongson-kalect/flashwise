@@ -7,7 +7,7 @@ import ModalButton from "../ModalButton";
 type Props = ConfirmModalOptions & BasicModalOptions;
 
 const ConfirmModal = (modal: Props) => {
-  const { setGlobalModal } = useModalStore();
+  const closeCurrentModal = useModalStore((state) => state.closeCurrentModal);
   return (
     <View>
       {modal.title && (
@@ -25,14 +25,14 @@ const ConfirmModal = (modal: Props) => {
           label={modal.cancelText || "Huỷ"}
           onPress={() => {
             modal.onCancel?.();
-            setGlobalModal(null);
+            closeCurrentModal();
           }}
         />
         <ModalButton
           label={modal.okText || "OK"}
           onPress={() => {
             modal.onOk?.();
-            setGlobalModal(null);
+            closeCurrentModal();
           }}
         />
       </View>

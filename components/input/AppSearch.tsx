@@ -75,9 +75,9 @@ const AppSearch = forwardRef((props: Props, ref) => {
   };
 
   const { present } = useBottomSheet();
-  const { setGlobalModal, setListModal } = useModalStore();
+  const addModal = useModalStore((state) => state.addModal);
   const showFilterModal = () => {
-    setGlobalModal({
+    addModal({
       type: "menu",
       // render: <FilterModal />,
       title: "Filter",
@@ -89,8 +89,7 @@ const AppSearch = forwardRef((props: Props, ref) => {
               English
             </AppText>
           ),
-          isCloseAfterPress: false,
-          onPress: showLanguageModal,
+          onPress: showLanguageModal, // menu đóng rồi mới tới modal chọn (hàng đợi)
         },
         {
           label: "Từ loại",
@@ -99,7 +98,6 @@ const AppSearch = forwardRef((props: Props, ref) => {
               All
             </AppText>
           ),
-          isCloseAfterPress: false,
           onPress: showWordTypeModal,
         },
       ],
@@ -107,21 +105,23 @@ const AppSearch = forwardRef((props: Props, ref) => {
   };
 
   const showLanguageModal = () => {
-    setListModal({
+    addModal({
+      type: "radio",
       title: "Language",
       options: [
         { label: "All", value: "all" },
         { label: "English", value: "en" },
         { label: "Vietnamese", value: "vi" },
       ],
-      onSubmit: () => {
+      onSelect: () => {
         // Cài vào biển
       },
       value: "en",
     });
   };
   const showWordTypeModal = () => {
-    setListModal({
+    addModal({
+      type: "radio",
       title: "Word Type",
       options: [
         { label: "All", value: "all" }, // danh từ
@@ -138,7 +138,7 @@ const AppSearch = forwardRef((props: Props, ref) => {
         { label: "Expression", value: "expr" }, // cụm cố định: idioms, phrasal verbs, proverbs...
         { label: "Other", value: "other" }, // loại không xác định, không phổ biến
       ],
-      onSubmit: () => {},
+      onSelect: () => {},
       value: "en",
     });
   };

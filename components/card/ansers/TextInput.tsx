@@ -19,7 +19,7 @@ type Props = {
 
 const CardTextInput = (props: Props) => {
   const { theme } = useTheme();
-  const { setGlobalModal } = useModalStore();
+  const addModal = useModalStore((state) => state.addModal);
   const [modalInput, setModalInput] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const [value, setValue] = useState("");
@@ -53,7 +53,7 @@ const CardTextInput = (props: Props) => {
   }, []);
 
   const handleInput = () => {
-    setGlobalModal({
+    addModal({
       type: "input",
       message: "Từ của cái của nợ này là?",
       inAnimation: "slideInDown",

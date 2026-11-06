@@ -15,7 +15,7 @@ type Props = {
 };
 const EditExampleForm = (props: Props) => {
   const [example, setExample] = useState(props.example);
-  const { globalModal, setGlobalModal } = useModalStore();
+  const currentModal = useModalStore((state) => state.currentModal);
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
   const { settings, dbService } = useAppStore();
@@ -25,7 +25,7 @@ const EditExampleForm = (props: Props) => {
     dbService?.setShowTranslation(!settings?.show_translation);
 
   useEffect(() => {
-    globalModal && setTimeout(() => textFocus(), 300);
+    currentModal && setTimeout(() => textFocus(), 300);
     // textFocus();
   }, []);
 

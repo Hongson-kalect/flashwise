@@ -10,7 +10,6 @@ import {
   CreateWordRadioModalProps,
 } from "@/interfaces/word";
 import { useBottomSheet } from "@/providers/BottomSheet";
-import useModalStore from "@/stores/modalStore";
 import { AudioType } from "@/stores/recordingStore";
 import { startRecording } from "@/utils/audioRecord";
 import { Audio } from "expo-av";
@@ -89,7 +88,6 @@ const BasicInformation = ({
   const ipas = useMemo(() => sense?.ipas, [sense?.ipas]);
   const { width } = useWindowDimensions();
   const { present } = useBottomSheet();
-  const { setGlobalModal } = useModalStore();
   const isWordLoading = useWordLoading();
 
   // Ảnh: server (image_preview) ưu tiên; chưa có thì tạm lấy từ Pixabay theo image_keywords

@@ -1,4 +1,3 @@
-import { GlobalModalOptions, ListModalOptions } from "@/providers/Modal";
 import { create } from "zustand";
 
 interface UserStateProps {

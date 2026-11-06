@@ -10,7 +10,8 @@ import ModalButton from "../ModalButton";
 type Props = InputModalOptions & BasicModalOptions;
 
 const InputModal = (modal: Props) => {
-  const { setGlobalModal, globalModal } = useModalStore();
+  const closeCurrentModal = useModalStore((state) => state.closeCurrentModal);
+  const currentModal = useModalStore((state) => state.currentModal);
   const [value, setValue] = useState("");
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
@@ -18,11 +19,11 @@ const InputModal = (modal: Props) => {
 
   const submit = () => {
     modal.onOk?.(value);
-    setGlobalModal(null);
+    closeCurrentModal();
   };
 
   useEffect(() => {
-    globalModal && setTimeout(() => textFocus(), 300);
+    currentModal && setTimeout(() => textFocus(), 300);
   }, []);
 
   useEffect(() => {
@@ -76,7 +77,7 @@ const InputModal = (modal: Props) => {
             label={modal.cancelText || "Đóng"}
             onPress={() => {
               modal.onCancel?.();
-              setGlobalModal(null);
+              closeCurrentModal();
             }}
           />
         )}

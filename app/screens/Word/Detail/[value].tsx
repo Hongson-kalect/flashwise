@@ -399,7 +399,7 @@ type WordInfoType = {
 };
 const SenseInfo = (props: WordInfoType) => {
   const { theme } = useTheme();
-  const { setGlobalModal, setListModal } = useModalStore();
+  const addModal = useModalStore((state) => state.addModal);
   const { present } = useBottomSheet();
   const [labelWidth, setLabelWidth] = useState(0);
   const onLabelLayout = (event: LayoutChangeEvent) => {
@@ -412,7 +412,7 @@ const SenseInfo = (props: WordInfoType) => {
     field,
     type = "input",
   }: CreateWordInputModalProps) => {
-    setGlobalModal({
+    addModal({
       type: type,
       title: title,
     });
@@ -423,12 +423,12 @@ const SenseInfo = (props: WordInfoType) => {
     field,
     options,
   }: CreateWordRadioModalProps) => {
-    setListModal({
-      onSubmit: () => {},
-      options,
+    addModal({
+      type: "radio",
       title,
-
+      options,
       value: "1",
+      onSelect: () => {},
     });
   };
 

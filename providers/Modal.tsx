@@ -4,12 +4,16 @@ import CustomModal from "@/components/modals/components/CustomModal";
 import InputModal from "@/components/modals/components/InputModal";
 import MenuModal from "@/components/modals/components/MenuModal";
 import PromptModal from "@/components/modals/components/PromptModal";
+import {
+  CheckboxModal,
+  RadioModal,
+} from "@/components/modals/components/SelectModal";
 import TabsModal from "@/components/modals/components/TabModal";
 import ModalWrapper from "@/components/modals/ModalWrapper";
-import { useDebounce } from "@/hooks/useDebouce";
 import useModalStore from "@/stores/modalStore";
-import React, { memo, useEffect, useMemo, useState } from "react";
-import { View } from "react-native";
+import React, { memo, useEffect, useState } from "react";
+import { Alert, Platform, ToastAndroid, View } from "react-native";
+import { useShallow } from "zustand/react/shallow";
 
 export type AlertModalOptions = {
   type: "alert";
@@ -94,6 +98,37 @@ export type TabsModalOptions = {
   onCancel?: () => void;
 };
 
+export type SelectValue = string | number;
+
+export type SelectOption = {
+  label: string;
+  value: SelectValue;
+  description?: string;
+  icon?: React.ReactNode;
+};
+
+/** Chọn một: bấm vào lựa chọn là gọi onSelect (khi đổi giá trị) và đóng modal. */
+export type RadioModalOptions = {
+  type: "radio";
+  options: SelectOption[];
+  value?: SelectValue;
+  onSelect: (value: SelectValue) => void;
+};
+
+/** Chọn nhiều: đánh dấu rồi bấm OK để gọi onConfirm. */
+export type CheckboxModalOptions = {
+  type: "checkbox";
+  options: SelectOption[];
+  values?: SelectValue[];
+  // Số lựa chọn tối thiểu để bật nút OK / tối đa được đánh dấu
+  min?: number;
+  max?: number;
+  okText?: string;
+  cancelText?: string;
+  onConfirm: (values: SelectValue[]) => void;
+  onCancel?: () => void;
+};
+
 export type CustomModalOptions = {
   type: "custom";
 };
@@ -105,6 +140,8 @@ export type BasicModalOptions = {
   modalTitle?: string;
   render?: React.ReactNode;
   onDismiss?: () => void; // lúc đóng modal
+  /** false: backdrop / nút back không đóng được (phải bấm nút trong modal). */
+  closable?: boolean;
   header?: React.ReactNode;
   footer?: React.ReactNode;
   middle?: React.ReactNode;
@@ -131,88 +168,44 @@ export type GlobalModalOptions = BasicModalOptions &
     | MenuModalOptions
     | CustomModalOptions
     | TabsModalOptions
+    | RadioModalOptions
+    | CheckboxModalOptions
   );
-
-export type ListModalOptions = {
-  title: string;
-  value: number | string;
-  type?: "checkbox" | "radio";
-  options: { label: string; value: number | string }[];
-  onDismiss?: () => void;
-  onSubmit: (val: number | string) => void;
-  inAnimation?:
-    | "fadeIn"
-    | "slideInDown"
-    | "slideInUp"
-    | "slideInUp"
-    | "zoomIn"
-    | "zoomInDown";
-  outAnimation?:
-    | "fadeOut"
-    | "slideOutDown"
-    | "slideOutUp"
-    | "zoomOut"
-    | "zoomOutDown";
-};
 
 const GlobalModalComponent = () => {
-  const { globalModal, setGlobalModal } = useModalStore();
-
-  // Modal sẽ ẩn khi props = null => Dữ liệu bị mất ngay lập tức
-  // Animation out sẽ thực hiện với màn trắng => dùng cái này để cache dữ liệu trước đó
-  const [placeholder, setPlaceholder] = useState(globalModal);
-  useEffect(() => {
-    globalModal && setPlaceholder(globalModal);
-  }, [globalModal]);
-
-  // Khi hủy global để ẩn model thì cái đang hiển thị sẽ biến mất => cache lại dữ liệu trước đó
-  // hoặc chỉ set globalModal.show = null. Mà thôi 3 dòng này ngắn hơn
-  const showValue = useMemo(
-    () => (globalModal ? globalModal : placeholder),
-    [placeholder, globalModal]
+  const { currentModal, closeCurrentModal } = useModalStore(
+    useShallow((state) => ({
+      currentModal: state.currentModal,
+      closeCurrentModal: state.closeCurrentModal,
+    })),
   );
 
-  const outAnimation = useDebounce(globalModal?.outAnimation, 200); // when close all modal will be null, include outAnimation, so keep this to close it correctly
+  // Khi đóng, currentModal thành null ngay nên nội dung biến mất trước khi animation out chạy xong:
+  // giữ bản trước đó để vẽ nốt animation.
+  const [placeholder, setPlaceholder] = useState<GlobalModalOptions | null>(currentModal);
+  useEffect(() => {
+    if (currentModal) setPlaceholder(currentModal);
+  }, [currentModal]);
+
+  const showValue = currentModal ?? placeholder;
 
   const closeModal = () => {
-    globalModal?.onDismiss?.();
-    setGlobalModal(null);
-  };
-
-  const RenderContent = ({ modal }: { modal: typeof globalModal }) => {
-    if (!modal) return null;
-
-    switch (modal.type) {
-      case "alert":
-        return <AlertModal {...modal} />;
-
-      case "confirm":
-        return <ConfirmModal {...modal} />;
-
-      case "menu":
-        return <MenuModal {...modal} />;
-
-      case "input":
-        return <InputModal {...modal} />;
-
-      case "prompt":
-        return <PromptModal {...modal} />;
-
-      case "tabs":
-        return <TabsModal {...modal} />;
-
-      case "custom":
-        return <CustomModal {...modal} />;
+    if (!currentModal) return;
+    if (currentModal.closable === false) {
+      const msg = "Hãy chọn một nút trong hộp thoại để tiếp tục.";
+      return Platform.OS === "android" ? ToastAndroid.show(msg, ToastAndroid.SHORT) : Alert.alert(msg);
     }
+    currentModal.onDismiss?.();
+    closeCurrentModal();
   };
 
   return (
     <ModalWrapper
       title={showValue?.modalTitle}
-      show={!!globalModal}
+      show={!!currentModal}
       onCancel={closeModal}
       inAnimation={showValue?.inAnimation}
-      outAnimation={outAnimation}
+      outAnimation={showValue?.outAnimation}
       type={showValue?.type}
     >
       <View className="px-3 rounded-lg">
@@ -224,4 +217,31 @@ const GlobalModalComponent = () => {
   );
 };
 
+const RenderContent = ({ modal }: { modal: GlobalModalOptions }) => {
+  switch (modal.type) {
+    case "alert":
+      return <AlertModal {...modal} />;
+    case "confirm":
+      return <ConfirmModal {...modal} />;
+    case "menu":
+      return <MenuModal {...modal} />;
+    case "input":
+      return <InputModal {...modal} />;
+    case "prompt":
+      return <PromptModal {...modal} />;
+    case "tabs":
+      return <TabsModal {...modal} />;
+    case "custom":
+      return <CustomModal {...modal} />;
+    case "radio":
+      return <RadioModal {...modal} />;
+    case "checkbox":
+      return <CheckboxModal {...modal} />;
+    default:
+      return null;
+  }
+};
+
 export const GlobalModal = memo(GlobalModalComponent);
+
+export default GlobalModal;
