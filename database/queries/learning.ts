@@ -73,6 +73,8 @@ export interface NewCards {
   waitingTranslation: number;
   /** Nghĩa khác trong bộ để làm đáp án nhiễu. */
   pool: PoolEntry[];
+  /** Nghĩa mới kế tiếp (tối đa `count`, mỗi từ 1 nghĩa) còn thiếu bản dịch: gửi đi dịch trước (prefetchTranslation). */
+  missingSenseIds: string[];
 }
 
 /** Luật như server (tracking/learn.py pick_new): nghĩa chưa học, bỏ nghĩa đã ẩn, mỗi từ 1 nghĩa, theo thứ tự hiển thị của bộ. */
@@ -87,6 +89,8 @@ export const pickNewCards = async (db: SQLiteDatabase, userCollectionId: string,
   const keys = new Set<string>();
   let available = 0;
   let waitingTranslation = 0;
+  const missingSenseIds: string[] = [];
+  const missingWords = new Set<string>();
 
   for (const row of rows) {
     if (row.p_hidden || row.p_avoid) continue;
@@ -97,7 +101,13 @@ export const pickNewCards = async (db: SQLiteDatabase, userCollectionId: string,
     const ready = isReady(card, userLang);
     if (isNew) {
       available += 1;
-      if (!ready) waitingTranslation += 1;
+      if (!ready) {
+        waitingTranslation += 1;
+        if (missingSenseIds.length < count && !missingWords.has(card.wordId)) {
+          missingWords.add(card.wordId);
+          missingSenseIds.push(card.senseId);
+        }
+      }
     }
     if (isNew && ready && cards.length < count && !words.has(card.wordId)) {
       words.add(card.wordId);
@@ -106,7 +116,7 @@ export const pickNewCards = async (db: SQLiteDatabase, userCollectionId: string,
       pool.push({ key: card.key, word: card.word, gloss: glossOf(card) });
     }
   }
-  return { cards, available, waitingTranslation, pool };
+  return { cards, available, waitingTranslation, pool, missingSenseIds };
 };
 
 /** Thời gian trung vị (ms) của các bước trả lời gần đây của user; ít dữ liệu thì dùng mặc định. */

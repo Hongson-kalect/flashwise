@@ -2,6 +2,8 @@ import { getMyCollection } from "@/database/queries/collections";
 import { getMedianStepMs, loadLearnSettings, pickNewCards, saveLearnResult, SaveSummary, LearnSettings } from "@/database/queries/learning";
 import { useAppStore } from "@/stores/appStore";
 import { requestSync } from "@/services/sync/bus";
+import { prefetchTranslation } from "@/services/api/senses";
+import { downloadBundle } from "@/services/collections";
 import { readyWriteLangs } from "./inkAvailability";
 import { voiceCapabilities } from "./speechRecognizer";
 import { uuidv7 } from "@/utils/uuidv7";
@@ -42,6 +44,8 @@ export const useLearnRun = (userCollectionId: string) => {
 
   const scope = `learn:${userCollectionId}`;
   const resumable = useRef<Snapshot<SavedRun> | null>(null);
+  /** Nghĩa mới kế tiếp còn thiếu bản dịch (gửi dịch trước). */
+  const missing = useRef<string[]>([]);
 
   /** `fresh` = bỏ phiên dở, bắt đầu cụm mới; không thì có phiên dở còn hạn sẽ hỏi học tiếp. */
   const load = useCallback(async (fresh: boolean | unknown = false) => {
@@ -53,6 +57,7 @@ export const useLearnRun = (userCollectionId: string) => {
       const [settings, info, median] = await Promise.all([loadLearnSettings(db), getMyCollection(db, userCollectionId), getMedianStepMs(db)]);
       if (!info) throw new Error("Không tìm thấy bộ từ");
       const picked = await pickNewCards(db, userCollectionId, userLang, settings.clusterSize);
+      missing.current = picked.missingSenseIds;
       setMeta({ collectionName: info.name, remaining: Math.max(0, picked.available - picked.cards.length), waitingTranslation: picked.waitingTranslation });
       if (fresh === true) await clearSnapshot(db, scope);
       else {
@@ -81,6 +86,41 @@ export const useLearnRun = (userCollectionId: string) => {
   useEffect(() => {
     load();
   }, [load]);
+
+  /** Nghĩa mới kế tiếp thiếu bản dịch: nhờ server dịch trước; có nghĩa đã đủ thì tải lại bộ để máy thấy. Trả có nghĩa mới đủ không. */
+  const prefetch = useCallback(async (ids: string[]) => {
+    try {
+      const { ready } = await prefetchTranslation(ids, userLang);
+      if (!ready.length) return false;
+      await downloadBundle(db, userCollectionId, userLang, { force: true, retries: 0 });
+      return true;
+    } catch {
+      return false; // offline / chưa đăng nhập: bỏ qua, lần mở sau thử lại
+    }
+  }, [db, userCollectionId, userLang]);
+
+  // Cụm kế tiếp thiếu bản dịch: dịch nền khi đang học (không chặn)
+  useEffect(() => {
+    if (status === "running" && missing.current.length) prefetch(missing.current);
+  }, [status, prefetch]);
+
+  // Hết nghĩa sẵn sàng mà còn nghĩa chờ dịch: hỏi lại mỗi 5 giây (tối đa 6 lần), có bản dịch thì nạp cụm ngay
+  useEffect(() => {
+    if (status !== "empty" || !missing.current.length) return;
+    let cancelled = false;
+    let tries = 0;
+    const timer = setInterval(async () => {
+      if (++tries > 6) return clearInterval(timer);
+      if (await prefetch(missing.current)) {
+        clearInterval(timer);
+        if (!cancelled) load();
+      }
+    }, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [status, prefetch, load]);
 
   /** Học tiếp phiên dở: dựng lại trạng thái từ snapshot (bước đang dở tính giờ lại từ bây giờ). */
   const resume = useCallback(() => {
