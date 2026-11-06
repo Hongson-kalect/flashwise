@@ -8,7 +8,7 @@ import { swipeProgress } from "@/learning/swipe";
 import { useAutoAdvance } from "@/learning/useAutoAdvance";
 import { useReviewRun } from "@/learning/useReviewRun";
 import { useTheme } from "@/providers/Theme";
-import useUserStateStore from "@/stores/userStateStore";
+import { useAppStore } from "@/stores/appStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useCallback, useEffect } from "react";
@@ -21,7 +21,7 @@ import { ActivityIndicator, Alert, BackHandler, KeyboardAvoidingView, Platform, 
 export default function ReviewScreen() {
   const { theme } = useTheme();
   const queryClient = useQueryClient();
-  const hearable = useUserStateStore((s) => s.hearable);
+  const hearable = useAppStore((s) => s.settings?.hearable) !== false;
   const r = useReviewRun();
   const { status, swipe, run } = r;
   useAutoAdvance(run, r.next);

@@ -4,6 +4,7 @@ import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import SyncStatus from "@/components/SyncStatus";
 import { useTheme } from "@/providers/Theme";
+import { useAppStore } from "@/stores/appStore";
 import Slider from "@react-native-community/slider";
 import { router } from "expo-router";
 import React from "react";
@@ -21,6 +22,16 @@ export default function ProfilePage() {
   // Các dạng click: toggle, range, list modal, new page, disable, feedback modal
   // Mũi tên, switch/ external link/ range/ modal
   const { theme } = useTheme();
+  const settings = useAppStore((s) => s.settings);
+  const dbService = useAppStore((s) => s.dbService);
+  const updateSetting = useAppStore((s) => s.updateSetting);
+
+  // Công tắc các bước học: ghi user_settings (đồng bộ lên server) và RAM; phiên học sau đọc lại từ DB
+  const toggleLearnSetting = async (key: "hearable" | "talkable" | "writable") => {
+    const next = settings?.[key] === false;
+    updateSetting({ [key]: next });
+    await dbService?.setSetting(key, next);
+  };
 
   return (
     <View
@@ -159,6 +170,35 @@ export default function ProfilePage() {
           rightContent="newPage"
         />
 
+        <Divider />
+
+        <AppTitle
+          style={{ marginVertical: 16, paddingLeft: 4 }}
+          title="Học tập"
+        />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="headphones" size={20} color="subText3" />}
+          label="Bước nghe"
+          rightContent="toggle"
+          value={settings?.hearable !== false}
+          onPress={() => toggleLearnSetting("hearable")}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="mic" size={20} color="subText3" />}
+          label="Bước nói"
+          rightContent="toggle"
+          value={settings?.talkable !== false}
+          onPress={() => toggleLearnSetting("talkable")}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="edit-3" size={20} color="subText3" />}
+          label="Bước viết tay (Trung, Nhật, Hàn)"
+          rightContent="toggle"
+          value={settings?.writable !== false}
+          onPress={() => toggleLearnSetting("writable")}
+        />
         <Divider />
 
         <AppTitle

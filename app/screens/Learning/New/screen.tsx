@@ -6,7 +6,7 @@ import { progressOf } from "@/learning/engine";
 import { useAutoAdvance } from "@/learning/useAutoAdvance";
 import { useLearnRun } from "@/learning/useLearnRun";
 import { useTheme } from "@/providers/Theme";
-import useUserStateStore from "@/stores/userStateStore";
+import { useAppStore } from "@/stores/appStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect } from "react";
@@ -20,7 +20,7 @@ export default function LearnNewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { theme } = useTheme();
   const queryClient = useQueryClient();
-  const hearable = useUserStateStore((s) => s.hearable);
+  const hearable = useAppStore((s) => s.settings?.hearable) !== false;
   const run = useLearnRun(id);
   const { state, status } = run;
 
