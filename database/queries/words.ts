@@ -44,10 +44,10 @@ export const saveWord = async (
       }
       await db.runAsync(
         `INSERT OR REPLACE INTO ai_sense
-           (id, word_id, word_value, original_id, delta, metadata_id, language_code, image_preview, contents, ipas,
+           (id, word_id, word_value, original_id, delta, metadata_id, language_code, image_preview, concept, contents, ipas,
             audio, pos, level, register, is_official, quality_status, ai_pass, like_count, global_difficulty,
             learner_count, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATETIME('now'))`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, DATETIME('now'))`,
         [
           s.id,
           word.id,
@@ -57,6 +57,7 @@ export const saveWord = async (
           m?.id ?? null,
           lang,
           s.image_preview ?? null,
+          s.concept ? JSON.stringify(s.concept) : null,
           j(s.contents, {}),
           j(s.ipas, []),
           s.audio ?? null,
@@ -209,6 +210,7 @@ export const loadLocalWord = async (
       ipas: parse(r.ipas, []),
       audio: r.audio,
       image_preview: r.image_preview,
+      concept: parse(r.concept, null),
       contents: parse(r.contents, {}),
       delta: parse(r.delta, {}),
       is_official: !!r.is_official,

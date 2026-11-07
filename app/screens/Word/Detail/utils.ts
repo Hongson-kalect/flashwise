@@ -10,6 +10,7 @@ type ActionType =
   | "PARTIAL_SENSE"
   | "PARTIAL_METADATA"
   | "PARTIAL_IMAGE"
+  | "PARTIAL_LINKS"
   | "PARTIAL_TRANSLATE"
   | "SENSE_REMOVED"
   | "FULL_SENSE"
@@ -164,6 +165,16 @@ export const senseDataReducer = (
         ...state,
         senses: updatedSenses,
       };
+    }
+    // Server nối nghĩa vào concept sau khi từ đã lưu: payload {senseId: {id, label, status, equivalents}}
+    case "PARTIAL_LINKS": {
+      const linksObj = action.payload ?? {};
+      const updatedSenses = { ...state.senses };
+      Object.keys(linksObj).forEach((senseId) => {
+        const currentSense = updatedSenses[senseId];
+        if (currentSense) updatedSenses[senseId] = { ...currentSense, concept: linksObj[senseId] };
+      });
+      return { ...state, senses: updatedSenses };
     }
     case "PARTIAL_METADATA": {
       const metadataObj = action.payload;

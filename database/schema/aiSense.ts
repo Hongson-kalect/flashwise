@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS ai_sense (
     -- Khối nội dung hiển thị dạng JSON Text
     preview TEXT DEFAULT '{}',                      -- Định nghĩa nhanh, ảnh preview, audio thô
     image_preview TEXT,                             
+    concept TEXT,                                   -- JSON {id, label, status, equivalents[]}: nghĩa giống hệt ở ngôn ngữ khác (server nối, null = chưa nối)
     contents TEXT DEFAULT '{}',                     -- Cấu trúc chi tiết giải nghĩa
     ipas TEXT DEFAULT '[]',                         -- Phiên âm riêng của nghĩa; rỗng thì dùng ai_word.ipas
     audio TEXT,                                     -- Âm thanh riêng của nghĩa; thứ tự dùng: sense.audio > word.audio > giọng máy

@@ -23,6 +23,7 @@ import { SenseType } from "../data";
 import WordAdvanceInformation from "./components/advanceInfomation";
 import BasicInformation from "./components/basicInformation";
 import WordCollocations from "./components/collocations";
+import WordEquivalents from "./components/equivalents";
 import WordDetailHeader from "./components/header";
 import SenseSkeleton from "@/components/skeleton/SenseSkeleton";
 import { WordLoadingContext } from "./loadingContext";
@@ -474,6 +475,10 @@ const SenseInfo = (props: WordInfoType) => {
           <WordCollocations
             list={props.data.metadata?.advanced?.collocations || []}
           />
+        </View>
+
+        <View className="mt-6">
+          <WordEquivalents concept={props.data.concept} />
         </View>
 
         {/* <AppDivider style={{ marginTop: 8, marginBottom: 12 }} /> */}

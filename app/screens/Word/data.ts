@@ -1265,6 +1265,13 @@ export type SenseContentType = {
   };
 };
 
+export type SenseConcept = {
+  id: string;
+  label: string;
+  status: "anchored" | "provisional" | "lexical_gap";
+  equivalents: { id: string; word_id: string; word: string; language_code: string; pos?: string | null }[];
+};
+
 export type SenseType = {
   id: string;
   value?: string;
@@ -1278,6 +1285,8 @@ export type SenseType = {
     image?: string;
   };
   image_preview?: string;
+  /** Server nối nghĩa này vào concept: các nghĩa giống hệt ở ngôn ngữ khác. null / thiếu = chưa nối. */
+  concept?: SenseConcept | null;
   score?: number;
   /** Admin / seeder đề xuất nghĩa này (server). */
   recommended?: boolean;
