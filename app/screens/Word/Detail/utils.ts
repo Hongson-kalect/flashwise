@@ -57,12 +57,18 @@ export const senseDataReducer = (
     // Bản cuối từ socket (như get-word 200): thay toàn bộ, lưu được
     case "FULL_SENSE": {
       const data = action.payload ?? {};
+      // Socket gửi `senses` là MẢNG (get-word và local là object theo id): luôn đưa về object khoá theo sense.id, nếu không
+      // khoá thành 0, 1, 2... và PARTIAL_IMAGE / PARTIAL_TRANSLATE tới sau (khoá theo id) tạo mục thứ hai cùng id -> trùng tên tab
+      const bySenseId: Record<string, SenseType> = {};
+      Object.values<SenseType>(data.senses ?? {}).forEach((sense) => {
+        if (sense?.id) bySenseId[sense.id] = sense;
+      });
       return {
         ...state,
         id: data.id ?? state.id,
         value: data.value ?? state.value,
         languageCode: data.language_code ?? state.languageCode,
-        senses: { ...(data.senses ?? {}) },
+        senses: bySenseId,
         isLoading: false,
         status: "COMPLETED",
         error: null,

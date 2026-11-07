@@ -30,7 +30,7 @@ import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
 // } from "expo-speech-recognition";
 // import { initWhisper } from "whisper.rn";
 import { lightTheme } from "@/configs/theme";
-import { useAppStore } from "@/stores/appStore";
+import { mediaUrl, useAppStore } from "@/stores/appStore";
 import { SenseType } from "../../data";
 import AppImage from "@/components/AppImage";
 import { SkeletonReact } from "@/components/skeleton/ReactSkeleton";
@@ -101,7 +101,18 @@ const BasicInformation = ({
       alive = false;
     };
   }, [sense.image_preview, keywords?.join(","), word]);
-  const imageUri = sense.image_preview || fallbackImage?.url;
+  // image_preview là khoá tương đối (images/v1/...): phải ghép media_base_url bằng mediaUrl() mới tải được
+  const serverImage = mediaUrl(sense.image_preview);
+  const imageUri = serverImage || fallbackImage?.url;
+  // Server vẽ ảnh SAU khi từ xong (mọi nghĩa đều được vẽ): chưa có ảnh thì hiện "đang tạo" tối đa 90 giây, quá hạn mới báo chưa có
+  const [imageWaitOver, setImageWaitOver] = useState(false);
+  useEffect(() => {
+    setImageWaitOver(false);
+    if (imageUri) return;
+    const timer = setTimeout(() => setImageWaitOver(true), 90000);
+    return () => clearTimeout(timer);
+  }, [sense.id, imageUri]);
+  const waitingImage = !imageUri && !isWordLoading && !imageWaitOver;
 
   // const onShowMoreDefinitions = () => {
   //   present({
@@ -259,7 +270,7 @@ const BasicInformation = ({
             style={{
               width: "100%",
               // Có ảnh (hoặc đang tải) giữ khung 16:9; chưa có thì chỉ một dải thấp, khỏi chiếm cả màn hình
-              ...(imageUri || isWordLoading ? { aspectRatio: 16 / 9 } : { height: 56 }),
+              ...(imageUri || isWordLoading || waitingImage ? { aspectRatio: 16 / 9 } : { height: 56 }),
               backgroundColor: theme.card,
             }}
             className="rounded-2xl overflow-hidden items-center justify-center"
@@ -269,6 +280,8 @@ const BasicInformation = ({
                 <AppImage
                   source={{ uri: imageUri }}
                   style={{ width: "100%", height: "100%" }}
+                  // Ảnh minh hoạ của server có nền trong suốt, giữ nguyên tỉ lệ; ảnh stock tạm thì phủ kín khung
+                  contentFit={serverImage ? "contain" : "cover"}
                 />
                 {!sense.image_preview && fallbackImage && (
                   <View
@@ -281,8 +294,18 @@ const BasicInformation = ({
                   </View>
                 )}
               </>
-            ) : isWordLoading ? (
-              <SkeletonReact width="100%" height="100%" style={{ borderRadius: 0 }} />
+            ) : isWordLoading || waitingImage ? (
+              <>
+                <SkeletonReact width="100%" height="100%" style={{ borderRadius: 0 }} />
+                {waitingImage && (
+                  <View className="absolute flex-row items-center gap-2">
+                    <AppIcon name="image" branch="feather" size={18} color={theme.subText3} />
+                    <AppText size="xs" color="subText3">
+                      Đang tạo hình minh hoạ…
+                    </AppText>
+                  </View>
+                )}
+              </>
             ) : (
               <View className="flex-row items-center gap-2">
                 <AppIcon name="image" branch="feather" size={18} color={theme.subText3} />

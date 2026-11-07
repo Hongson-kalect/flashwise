@@ -240,6 +240,8 @@ const lastRefresh = new Map<string, number>();
  * Bản lưu có cần hỏi lại server không: còn là draft (server có thể đã refine / xác minh)
  * hoặc thiếu bản dịch sang ngôn ngữ người dùng hiện tại (đổi tiếng mẹ đẻ sau khi lưu).
  */
+// Thêm: nghĩa chưa có ảnh cũng đáng hỏi lại. Ảnh AI do server gắn SAU khi từ lưu xong (vài chục giây tới vài phút) mà app
+// chỉ lưu bản cuối nên bản lưu lúc đó chưa có ảnh. Nghĩa server chủ ý không vẽ cũng vào đây, bị chặn bởi REFRESH_COOLDOWN_MS.
 export const needsRefresh = (
   word: LocalWord,
   userLang: string | undefined,
@@ -248,6 +250,7 @@ export const needsRefresh = (
   const senses = Object.values(word.senses);
   const stale =
     senses.some((s) => s.quality_status === "draft") ||
+    senses.some((s) => !s.image_preview) ||
     (!!userLang &&
       userLang !== word.language_code &&
       senses.some((s) => !s.contents?.definition?.[userLang]));

@@ -71,10 +71,17 @@ const lookup = (q: string): Promise<SenseImage | null> => {
   return cache.get(q)!;
 };
 
+/**
+ * Anh ngoai (Pixabay / Wikimedia) chi dung khi bat EXPO_PUBLIC_EXTERNAL_IMAGE_FALLBACK=true. Mac dinh TAT: anh minh hoa
+ * do server ve (image_preview); nghia server chu y khong ve (nghia bong, truu tuong) thi hien chu cai dau thay vi anh stock lech nghia.
+ */
+const EXTERNAL_FALLBACK = process.env.EXPO_PUBLIC_EXTERNAL_IMAGE_FALLBACK === "true";
+
 export const findSenseImage = async (
   keywords: string[] | undefined,
   word: string,
 ): Promise<SenseImage | null> => {
+  if (!EXTERNAL_FALLBACK) return null;
   // Cụ thể trước (2 từ khoá đầu), không có ảnh thì nới dần: từ khoá đầu, rồi chính từ đó
   const first = (keywords ?? []).slice(0, 2).map((k) => k.trim()).filter(Boolean);
   const queries = [...new Set([first.join(" "), first[0], word.trim()].filter(Boolean))];

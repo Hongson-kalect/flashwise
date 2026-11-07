@@ -13,8 +13,10 @@ type Lang = { code: string; language: string };
 
 const learningLanguages: Lang[] = [
   { code: "en", language: "English" },
+  { code: "vi", language: "Tiếng Việt · Vietnamese" },
   { code: "ja", language: "日本語 · Japanese" },
   { code: "ko", language: "한국어 · Korean" },
+  { code: "zh", language: "中文 · Chinese" },
   { code: "fr", language: "Français · French" },
   { code: "de", language: "Deutsch · German" },
   { code: "es", language: "Español · Spanish" },
@@ -64,18 +66,25 @@ const StartConfigPage = () => {
   const [saving, setSaving] = useState(false);
 
   const [learning, setLearning] = useState("en");
+  // Tiếng mẹ đẻ mặc định: ngôn ngữ giao diện nếu khác ngôn ngữ đang học, không thì tiếng Việt (giao diện app là tiếng Việt)
   const [native, setNative] = useState(
-    motherLanguages.find((l) => l.code === displayLanguage)?.code ?? "vi",
+    motherLanguages.find((l) => l.code === displayLanguage && l.code !== "en")?.code ?? "vi",
   );
   const [showTranslation, setShowTranslation] = useState(true);
   const [topics, setTopics] = useState<string[]>([]);
 
   const current = STEPS[step];
   const isLast = step === STEPS.length - 1;
-  const learningOptions = useMemo(
-    () => learningLanguages.filter((l) => l.code !== native),
-    [native],
+  // Không lọc ngôn ngữ muốn học theo tiếng mẹ đẻ (trước đây đoán tiếng mẹ đẻ từ ngôn ngữ thiết bị nên mất English);
+  // thay vào đó bước tiếng mẹ đẻ loại ngôn ngữ đang học, và đổi tiếng mẹ đẻ nếu trùng
+  const nativeOptions = useMemo(
+    () => motherLanguages.filter((l) => l.code !== learning),
+    [learning],
   );
+  const chooseLearning = (code: string) => {
+    setLearning(code);
+    if (code === native) setNative(code === "vi" ? "en" : "vi");
+  };
 
   const finish = async () => {
     setSaving(true);
@@ -138,13 +147,13 @@ const StartConfigPage = () => {
         {current.key === "start" && <Welcome />}
         {current.key === "learning" && (
           <LanguageList
-            data={learningOptions}
+            data={learningLanguages}
             value={learning}
-            onSelect={setLearning}
+            onSelect={chooseLearning}
           />
         )}
         {current.key === "native" && (
-          <LanguageList data={motherLanguages} value={native} onSelect={setNative} />
+          <LanguageList data={nativeOptions} value={native} onSelect={setNative} />
         )}
         {current.key === "translation" && (
           <TranslationChoice value={showTranslation} onSelect={setShowTranslation} />
