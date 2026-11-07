@@ -1,5 +1,56 @@
 # Thiết kế Concept (liên kết nghĩa giữa các từ và ngôn ngữ)
 
+## Cập nhật 2026-11-07 (chiều): đã dựng tầng 1, đây là phạm vi hiện tại
+
+**Hai tầng (chốt cùng chủ dự án):**
+- **Tầng 1, Concept** = các nghĩa GIỐNG HỆT nhau giữa các ngôn ngữ (`big` = `lớn`; `hi` = `hello` cùng ngôn ngữ cũng gộp được vì thay nhau hoàn toàn). Dùng chung định nghĩa và ảnh. **Đã dựng** (xem dưới).
+- **Tầng 2** = đồ thị phủ lên các concept tầng 1: nhóm gần nghĩa (`big`, `huge`, `vast`, `wide`) với ghi chú khác biệt, viết một lần cho concept rồi dịch. **Chưa dựng.** Đầu vào đã có: `ConceptDecision.near` (cặp "gần nhưng khác" mà judge ghi lại, 200+ dòng sau lần chạy thử).
+- Các mục 1-7 bên dưới là thiết kế gốc (trước khi tách hai tầng): phần "nhóm gần nghĩa", `ConceptLink`, `axes`/`only_when` thuộc về tầng 2.
+
+**Đã dựng (backend `D:\Code\flashwise_api`, tắt mặc định, bật `CONCEPT_LINKING_ENABLED=true`):**
+- Mô hình `ai.Concept` (nhãn, mô tả en, embedding trung bình thành viên, trạng thái anchored / provisional / lexical_gap), `ai.ConceptDecision` (nhật ký: ứng viên, cosine, từng lần judge, `near`), `AISense.concept` (FK). Migration `0012_concept`.
+- `utils/concept/`: `text.py` (gloss + định nghĩa en), `embedding.py` (gemini-embedding-001, 3072 chiều), `judge.py` (Gemini JSON, **2 lần với thứ tự ứng viên đảo, chỉ nối khi cùng chọn một concept**, prompt phép thử dịch), `linker.py` (ứng viên = top vector cos >= 0,70 hợp với concept của nghĩa tiếng Anh có headword trùng gloss, loại concept đã có nghĩa của cùng từ; khoá advisory Postgres để hai worker không cùng tạo concept; chia sẻ ảnh hai chiều trong concept), `payload.py` (dữ liệu cho app), `notify.py` (chạy sau khi từ lưu xong, nạp lại cache, socket `PARTIAL_LINKS`).
+- Hook ở cuối `word_render` (sau ảnh, bọc try, timeout 120s); lệnh `manage.py link_concepts [--lang --word --limit --reset --judge-runs]` (tiếng Anh trước làm neo).
+- Model judge: `CONCEPT_JUDGE_MODEL` (mặc định `gemini-2.5-flash`; flash-lite nối sai nhiều hơn rõ rệt, xem số đo).
+- API: mỗi nghĩa trong `get-word` / `FULL_SENSE` có `concept: {id, label, status, equivalents[{id, word_id, word, language_code, pos}]}` hoặc `null` (không thêm endpoint). Liên kết sinh bất đồng bộ sau `FULL_SENSE`, app nhận qua socket `PARTIAL_LINKS`.
+- App: cột `ai_sense.concept` (JSON), `SenseConcept` trong `data.ts`, reducer `PARTIAL_LINKS`, mục "Cùng nghĩa ở ngôn ngữ khác" (`Word/Detail/components/equivalents.tsx`, chạm chip mở từ), mục khuyết từ vựng ghi chú riêng. Chưa chạy thử trên máy / emulator (chỉ kiểm tsc cho file mới).
+- Test: `ai/test_concept.py` (17 test, embedding và judge giả) + 2 test hook trong `ai/tests.py`; các bộ `ai` chính 303 test đạt.
+
+**Số đo (722 nghĩa trong DB dev: ~100 từ chia theo case + từ thử cũ; chấm tay, nhãn do tôi đọc nên có thiên lệch):**
+
+| | judge flash-lite | judge flash (mặc định) |
+|---|---|---|
+| Nghĩa nối vào concept có sẵn | 194 | 168 |
+| Tách vì hai lần judge không đồng ý | 39 | 16 |
+| Concept tạo ra (anchored / provisional) | 528 (473 / 55) | 554 (492 / 62) |
+| Concept >= 2 thành viên | 119 | 100 |
+| Nối SAI rõ ràng (chấm tay) | ~13 (7%) | ~1-3 (1-2%) |
+| Nối đáng ngờ (gần nghĩa, thuộc tầng 2) | ~20 | ~12 |
+| Thời gian / 722 nghĩa, tuần tự | 17 phút | 21 phút |
+| Token judge (lượt / vào / ra) | 692 / 276k / 52k | 678 / 271k / 43k |
+| Chi phí judge (theo giá nhớ từ trí nhớ, chưa kiểm lại) | ~$0,05 | ~$0,19 |
+
+Ví dụ lỗi flash-lite đã được flash sửa: `estrenar` (dùng lần đầu) nối vào `begin`; `tambor` (bộ phận máy) nối vào `drum` (thùng); `seta` vào `dowel`; `proud` vào `clever`; `cushion` vào `mattress`; `bet` vào `banque`. Phát lại 233 quyết định flash-lite bằng flash: đổi 41 (phần lớn là sửa lỗi thật, một số ít quá chặt như `libro` khỏi `book`).
+
+Theo case (judge flash):
+- **A. Neo tiếng Anh:** 45 từ, mọi nghĩa có concept `anchored`.
+- **B. Nước ngoài có từ Anh sẵn:** 27/28 từ nối đúng vào concept chứa từ Anh mong đợi (es/fr/ja/zh/ko/vi). Từ trượt là `bánh mì` (gloss "Vietnamese baguette", cụ thể hơn `bread`: tách là đúng).
+- **C. Nước ngoài đến trước, tiếng Anh sau:** `zapato`/`靴`/`신발`/`giày` gom thành 1 concept tạm; `fromage`/`奶酪`/`치즈` gom 1; `reloj`/`時計` gom 1. Khi `cheese`, `clock` (tiếng Anh) tới sau, hook thật (worker) nối vào đúng concept tạm và chuyển thành anchored. `shoe` lúc đầu **không** nối được (xem lỗi dưới), sau khi sửa nhãn thì nối đủ 4 ngôn ngữ.
+- **D. Khuyết từ vựng (8 từ, 11 nghĩa):** không nối nhầm vào concept tiếng Anh nào; mỗi nghĩa thành concept tạm riêng. Trạng thái `lexical_gap` **không bao giờ xuất hiện** (luật hiện tại chỉ bật khi gloss rỗng, mà AI luôn đưa gloss). Cần luật khác.
+- **E. Đồng nghĩa cùng ngôn ngữ:** nên gộp: 6/6 gộp đúng (hello/hi, big/large, begin/start, buy/purchase, sofa/couch, shout/yell); nên tách: 3/5 tách đúng (wide/vast, big/huge, tiny/small), huge/vast và wide/large vẫn bị gộp (định nghĩa gần như trùng, ranh giới tầng 1 / tầng 2). Judge flash không đổi các kết quả này so với flash-lite.
+- **G. Đa nghĩa (9 từ nước ngoài, 28 nghĩa):** `banco` 5 nghĩa vào 5 concept đúng (bank tiền, bench, data bank, workbench, shoal); `avocat` 3 nghĩa (lawyer / avocado / tree) tách đúng; `はし`/`橋` (bridge, chopsticks, edge, nose bridge); `tambor` nhạc cụ vào `drum`, bộ phận máy vào concept riêng cùng `fr:tambour` (flash-lite gộp sai vào thùng). Không thấy nối nhầm.
+- **Chia sẻ ảnh (cơ hội):** 168/722 nghĩa (23%) dùng lại ảnh của nghĩa cùng concept thay vì vẽ lại. Mẫu thiên lệch (nhiều từ chọn để có cặp), không nhân thẳng ra 90.000 nghĩa.
+
+**Lỗi và hạn chế tìm ra khi thử:**
+- Nhãn concept tạm là cả chuỗi gloss ("shoes, footwear, boots") làm judge cho rằng nó "rộng hơn" `shoe` nên không nối tiếng Anh vào. **Đã sửa**: nhãn = gloss đầu. (Chưa chạy lại toàn bộ sau sửa này; mới kiểm lại riêng `shoe`.)
+- `gemini-embedding-001` trả 429 thoáng qua khi nối liền 722 nghĩa; có thử lại 4 lần, không mất nghĩa nào.
+- Judge flash vẫn nối vài cặp gần nghĩa (huge/vast, wide/large, spoon/ladle, jump/start, affectionate/cuddly) và `ja:抱擁` (ôm) vào `acceptance`. Đây là đầu vào cho tầng 2 và cho bước duyệt (chưa có).
+- Hai lần judge cùng một model không độc lập (cùng sai cùng một chỗ vẫn xảy ra). Chưa thử model khác (Haiku) hay lần thứ ba bằng model mạnh hơn.
+- `lexical_gap` chưa kích hoạt; khoá advisory tuần tự (~1,7 giây / nghĩa), nạp hàng loạt cần bước gom cụm toàn cục; pool vector nạp lại từ DB mỗi lần (đủ tới vài chục nghìn concept, sau đó dùng pgvector / Redis Stack); embedding 768 chiều chưa thử.
+- Mẫu nhỏ và tự chấm: số liệu trên chỉ để so sánh tương đối (flash-lite vs flash), chưa thay được bộ kiểm 300+ nghĩa có nhãn người.
+
+---
+
 Thiết kế, **chưa có dòng code nào** (2026-11-07). Mục đích: một "ý" (concept) dùng chung giữa các nghĩa tương đương trong mọi ngôn ngữ, để dùng chung ảnh, và về sau dùng chung định nghĩa / bản dịch, thay vì vẽ và dịch lại từng nghĩa. Số đo lấy từ các thử nghiệm phiên 2026-11-06/07 (script ở container `/tmp`, ảnh ở `docs/image-tests/`).
 
 ## 1. Nguyên tắc
