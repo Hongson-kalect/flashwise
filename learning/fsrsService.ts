@@ -10,10 +10,34 @@ const GLOBAL_PRIOR = 20;
 const GLOBAL_MIN_LEARNERS = 5;
 
 /** Lịch FSRS như server: bước học 10 phút rồi `firstReviewHours` giờ (ôn lần đầu cùng ngày), học lại sau `firstReviewHours` giờ. */
-export const makeScheduler = (opts: { retention?: number; firstReviewHours?: number; fuzz?: boolean } = {}) => {
+/** "Tôi biết từ này" chỉ là lời khai: ôn kiểm tra sau chừng này ngày, lần đó phải nhớ lại thật (khớp server tracking/fsrs.py). */
+export const KNOWN_VERIFY_DAYS = 1;
+
+/** Tham số FSRS-6 riêng của user (server tối ưu từ review_log, về máy qua sync như cài đặt `fsrs_params`): 21 số hữu hạn, w20 trong [0,1; 0,8]. */
+export const validFsrsParams = (value: unknown): value is number[] =>
+  Array.isArray(value) &&
+  value.length === 21 &&
+  value.every((x) => typeof x === "number" && Number.isFinite(x) && x >= 0) &&
+  value[20] >= 0.1 &&
+  value[20] <= 0.8;
+
+/** Thẻ "đã biết" chưa qua lần ôn nào: lên cấp 5 chỉ sau 1 lần chấm (học bình thường lần đầu chỉ lên tối đa cấp 2). */
+export const isUnverifiedKnown = (level: number, repetitions: number) => repetitions === 1 && level === KNOWN_LEVEL;
+
+/** Các mức mục tiêu nhớ để user chọn: cao hơn = ôn dày hơn nhưng quên ít hơn; 0,85 giảm đáng kể số thẻ phải ôn. */
+export const RETENTION_CHOICES = [0.8, 0.85, 0.9, 0.95] as const;
+
+/** Mức kế tiếp trong vòng (giá trị lạ hoặc ở cuối thì về mức đầu). */
+export const nextRetention = (current: unknown) => {
+  const i = RETENTION_CHOICES.findIndex((r) => typeof current === "number" && Math.abs(r - current) < 0.001);
+  return RETENTION_CHOICES[(i + 1) % RETENTION_CHOICES.length];
+};
+
+export const makeScheduler = (opts: { retention?: number; firstReviewHours?: number; fuzz?: boolean; params?: number[] | null } = {}) => {
   const hours = `${Math.max(1, Math.round(opts.firstReviewHours ?? 6))}h` as const;
   return fsrs(
     generatorParameters({
+      ...(validFsrsParams(opts.params) ? { w: opts.params } : {}),
       request_retention: opts.retention ?? 0.9,
       learning_steps: ["10m", hours],
       relearning_steps: [hours],
@@ -50,14 +74,16 @@ export const scheduleNew = (
 ): NewProgress => {
   const rating = known ? EASY : grade;
   const { card } = scheduler.next(createEmptyCard(at), at, rating as any);
+  // Lời khai "đã biết": ôn kiểm tra sớm (độ bền sau Easy lên tới ~8 ngày), lần đó phải nhớ lại thật
+  const due = known ? new Date(Math.min(card.due.getTime(), at.getTime() + KNOWN_VERIFY_DAYS * 86400000)) : card.due;
   return {
     level: known ? KNOWN_LEVEL : NEW_LEVEL[grade],
     state: card.state,
     stability: card.stability,
     difficulty: blendedDifficulty(card.difficulty, sense.globalDifficulty, sense.learnerCount),
-    scheduledDays: Math.max(0, (card.due.getTime() - at.getTime()) / 86400000),
+    scheduledDays: Math.max(0, (due.getTime() - at.getTime()) / 86400000),
     learningSteps: card.learning_steps ?? 0,
-    due: card.due,
+    due,
   };
 };
 

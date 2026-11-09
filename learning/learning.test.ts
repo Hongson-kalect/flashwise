@@ -214,6 +214,28 @@ test("toCard: áp delta (định nghĩa thay hẳn, bản dịch gộp) và lấ
   assert.equal(card.pos, "noun");
 });
 
+test("toCard: tiếng Trung / Hàn hiện phiên âm Latin của từ và câu ví dụ", () => {
+  const base = {
+    item_id: "i", sense_id: "s", original_id: "o", word_id: "w", pos: "noun", audio: null, word_audio: null, image_preview: null,
+    image_link: null, image_keywords: "[]", global_difficulty: 0, learner_count: 0, delta: null,
+  };
+  const zh = toCard({
+    ...base, word_value: "银行", language_code: "zh", word_ipas: "[]",
+    ipas: JSON.stringify([{ label: "READING", value: "yínháng", roman: "yínháng" }]),
+    contents: JSON.stringify({ definition: { zh: { value: "一种金融机构。" } }, examples: [{ zh: { value: "我去银行。", roman: "wǒ qù yín háng." } }] }),
+  }, "vi");
+  assert.equal(zh.ipa, "yínháng");
+  assert.equal(zh.example!.roman, "wǒ qù yín háng.");
+
+  const ko = toCard({
+    ...base, word_value: "학교", language_code: "ko", ipas: "[]",
+    word_ipas: JSON.stringify([{ label: "READING", value: "학교", roman: "hakgyo" }]),
+    contents: JSON.stringify({ definition: { ko: { value: "배우는 곳." } }, examples: [{ ko: { value: "학교에 간다." } }] }),
+  }, "vi");
+  assert.equal(ko.ipa, "hakgyo");
+  assert.equal(ko.example!.roman, "");
+});
+
 // ------------------------------------------------------------------ ôn tập + vuốt
 import { autoGradeReview } from "./grade";
 import { nextLevel, retrievability, scheduleReview } from "./fsrsService";
@@ -481,4 +503,85 @@ test("không tiện nghe / nói: bước còn lại đổi sang dạng gõ / ch�
   assert.ok(s.cards.k0.questions.filter((q) => q.kind === "typeWord").length >= 2); // chính tả + nói thành gõ từ
   const done = playAll(s).s;
   assert.equal(done.doneSteps, done.totalSteps);
+});
+
+// ---------------------------------------------------------------- FSRS riêng theo user, kiểm lời khai "đã biết"
+
+import { isUnverifiedKnown, KNOWN_VERIFY_DAYS, nextRetention, validFsrsParams } from "./fsrsService";
+import { DEFAULT_FSRS_FOR_TEST } from "./fsrsTestHelpers";
+
+test("'Tôi biết từ này': vẫn Easy / cấp 5 nhưng hẹn ôn kiểm tra trong 1 ngày", () => {
+  const sched = makeScheduler({ fuzz: false });
+  const at = new Date("2026-11-05T08:00:00Z");
+  const sense = { globalDifficulty: 0, learnerCount: 0 };
+  const known = scheduleNew(sched, 3, at, sense, true);
+  const easy = scheduleNew(sched, 4, at, sense);
+  assert.deepEqual([known.level, known.state], [5, 2]);
+  assert.equal(known.stability, easy.stability); // độ bền không bị hạ
+  assert.ok(easy.scheduledDays > KNOWN_VERIFY_DAYS);
+  assert.ok(known.scheduledDays <= KNOWN_VERIFY_DAYS + 1e-9);
+  assert.ok(known.due.getTime() - at.getTime() <= KNOWN_VERIFY_DAYS * 86400000);
+});
+
+test("isUnverifiedKnown: cấp 5 sau đúng 1 lần chấm; ôn rồi hoặc cấp khác thì không", () => {
+  assert.equal(isUnverifiedKnown(5, 1), true);
+  assert.equal(isUnverifiedKnown(5, 2), false);
+  assert.equal(isUnverifiedKnown(2, 1), false);
+  assert.equal(isUnverifiedKnown(6, 1), false);
+});
+
+test("validFsrsParams: 21 số hữu hạn không âm, w20 trong [0,1; 0,8]", () => {
+  assert.equal(validFsrsParams(DEFAULT_FSRS_FOR_TEST), true);
+  assert.equal(validFsrsParams(DEFAULT_FSRS_FOR_TEST.slice(0, 20)), false);
+  assert.equal(validFsrsParams([...DEFAULT_FSRS_FOR_TEST.slice(0, 20), 3]), false);
+  assert.equal(validFsrsParams([...DEFAULT_FSRS_FOR_TEST.slice(0, 20), NaN]), false);
+  assert.equal(validFsrsParams("x"), false);
+  assert.equal(validFsrsParams(null), false);
+});
+
+test("tham số riêng đổi lịch ôn; tham số hỏng bị bỏ qua", () => {
+  const at = new Date("2026-11-05T08:00:00Z");
+  const progress = {
+    level: 3, state: 2, stability: 5, difficulty: 5, learningSteps: 0, repetitions: 4, forgetCount: 0,
+    lastReviewedAt: new Date("2026-10-31T08:00:00Z"), nextReviewAt: at,
+  };
+  const base = scheduleReview(makeScheduler({ fuzz: false }), progress, 3, at, "normal");
+  const custom = [...DEFAULT_FSRS_FOR_TEST];
+  custom[8] = 0.5; // tăng độ bền sau khi nhớ thấp hơn nhiều
+  const mine = scheduleReview(makeScheduler({ fuzz: false, params: custom }), progress, 3, at, "normal");
+  assert.ok(mine.stability < base.stability);
+  const broken = scheduleReview(makeScheduler({ fuzz: false, params: [1, 2, 3] }), progress, 3, at, "normal");
+  assert.equal(broken.stability, base.stability);
+});
+
+test("nextRetention đi vòng 80 → 85 → 90 → 95 → 80, giá trị lạ về 80", () => {
+  assert.equal(nextRetention(0.8), 0.85);
+  assert.equal(nextRetention(0.9), 0.95);
+  assert.equal(nextRetention(0.95), 0.8);
+  assert.equal(nextRetention(undefined), 0.8);
+  assert.equal(nextRetention(0.93), 0.8);
+});
+
+test("startRun preKnown: thẻ tự đánh dấu không có bước nào, kết quả báo auto", () => {
+  const list = cards(4);
+  const s = startRun({ cards: list, preKnown: ["k1"], clusterSteps: 6, now: T0, rng: seeded() });
+  assert.equal(s.cards.k1.known, true);
+  assert.equal(s.cards.k1.questions.length, 0);
+  assert.ok(!s.queue.some((i) => i.cardKey === "k1"));
+  assert.equal(s.totalSteps, s.order.filter((k) => k !== "k1").reduce((n, k) => n + s.cards[k].questions.length, 0));
+  const { s: done } = playAll(s);
+  const results = resultsOf(done);
+  assert.deepEqual(results.map((r) => [r.card.key, r.known, r.auto]), [["k0", false, false], ["k1", true, true], ["k2", false, false], ["k3", false, false]]);
+  assert.equal(done.grades.k1, 4);
+});
+
+test("startRun preKnown: cả cụm tự đánh dấu thì vào thẳng tổng kết", () => {
+  const s = startRun({ cards: cards(3), preKnown: ["k0", "k1", "k2"], clusterSteps: 6, now: T0, rng: seeded() });
+  assert.equal(s.phase, "summary");
+  assert.ok(resultsOf(s).every((r) => r.auto && r.known));
+});
+
+test("startRun: chế độ ôn bỏ qua preKnown", () => {
+  const s = startRun({ cards: cards(2), mode: "review", preKnown: ["k0"], clusterSteps: 6, now: T0, rng: seeded() });
+  assert.equal(s.cards.k0.known, false);
 });

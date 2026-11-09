@@ -1,7 +1,7 @@
 import { CardResult } from "@/learning/engine";
 import { CardRow, isReady, toCard } from "@/learning/cardData";
 import { DEFAULT_MEDIAN_MS } from "@/learning/grade";
-import { makeScheduler, MAX_LEVEL, scheduleNew } from "@/learning/fsrsService";
+import { makeScheduler, MAX_LEVEL, scheduleNew, validFsrsParams } from "@/learning/fsrsService";
 import { PoolEntry } from "@/learning/steps";
 import { AGAIN, glossOf, LearnCard } from "@/learning/types";
 import { toDbTime } from "@/learning/time";
@@ -28,6 +28,10 @@ export interface LearnSettings {
   swipeRetention: number;
   /** "left_remember" (vuốt trái = nhớ) hoặc "right_remember". */
   swipeDirection: string;
+  /** Tham số FSRS riêng của user (server tối ưu, về qua sync); null = dùng mặc định. */
+  fsrsParams: number[] | null;
+  /** Tự đánh dấu "đã biết" các từ ở mức mà user luôn biết (learning/knownStats.ts). */
+  autoKnown: boolean;
 }
 
 const num = (v: unknown, fallback: number, lo: number, hi: number) =>
@@ -47,12 +51,14 @@ export const loadLearnSettings = async (db: SQLiteDatabase): Promise<LearnSettin
     swipeMinLevel: Math.round(num(s.swipe_min_level, 3, 0, 7)),
     swipeRetention: num(s.swipe_retention, 0.93, 0.7, 0.99),
     swipeDirection: typeof s.swipe_direction === "string" ? s.swipe_direction : "left_remember",
+    fsrsParams: validFsrsParams(s.fsrs_params) ? s.fsrs_params : null,
+    autoKnown: s.auto_known !== false,
   };
 };
 
 const CARD_SQL = `
   SELECT i.id AS item_id, i.sense_id, COALESCE(i.original_id, i.sense_id) AS original_id,
-         s.word_id, s.word_value, s.language_code, s.pos, s.ipas, w.ipas AS word_ipas, s.audio, w.audio AS word_audio,
+         s.word_id, s.word_value, s.language_code, s.pos, s.level, s.ipas, w.ipas AS word_ipas, s.audio, w.audio AS word_audio,
          s.image_preview, m.image_link, m.image_keywords, s.contents, s.delta, s.global_difficulty, s.learner_count,
          p.state AS p_state, p.repetitions AS p_reps, p.is_hidden AS p_hidden, p.is_avoid AS p_avoid
   FROM collection_items i
@@ -141,6 +147,8 @@ export interface SaveInput {
 export interface SaveSummary {
   learned: number;
   known: number;
+  /** Trong số `known`, bao nhiêu từ app tự đánh dấu vì user luôn biết mức đó (learning/knownStats.ts). */
+  auto: number;
   xp: number;
   seconds: number;
 }
@@ -155,10 +163,10 @@ const XP_KNOWN = 2;
 export const saveLearnResult = async (db: SQLiteDatabase, input: SaveInput, settings: LearnSettings): Promise<SaveSummary> => {
   const done = await db.getFirstAsync<{ id: string }>(`SELECT id FROM learn_session WHERE id = ? AND status = 'completed'`, [input.sessionId]);
   const seconds = Math.max(0, Math.round((input.endedAt - input.startedAt) / 1000));
-  const summary: SaveSummary = { learned: 0, known: 0, xp: 0, seconds };
+  const summary: SaveSummary = { learned: 0, known: 0, auto: 0, xp: 0, seconds };
   if (done) return summary;
 
-  const scheduler = makeScheduler({ retention: settings.retention, firstReviewHours: settings.firstReviewHours });
+  const scheduler = makeScheduler({ retention: settings.retention, firstReviewHours: settings.firstReviewHours, params: settings.fsrsParams });
   const sessionRows: { sense: string; ok: number; bad: number }[] = [];
   let correct = 0;
   let wrong = 0;
@@ -207,7 +215,7 @@ export const saveLearnResult = async (db: SQLiteDatabase, input: SaveInput, sett
             state, elapsed_days, scheduled_days, stability, difficulty, reviewed_at)
          VALUES (?, ?, ?, ?, ?, ?, 1, 0, ?, ?, ?, ?, 0, ?, ?, ?, ?)`,
         [
-          uuidv7(), ...common, r.known ? 4 : r.grade, r.known ? "learn:known" : "learn:normal",
+          uuidv7(), ...common, r.known ? 4 : r.grade, r.auto ? "learn:known_auto" : r.known ? "learn:known" : "learn:normal",
           r.logs.reduce((n, l) => n + l.hintCount, 0), Math.max(1, r.logs.reduce((n, l) => n + l.attempts, 0)),
           r.logs.reduce((n, l) => n + l.durationMs, 0), prog.state, prog.scheduledDays, prog.stability, prog.difficulty, toDbTime(at),
         ],
@@ -218,7 +226,8 @@ export const saveLearnResult = async (db: SQLiteDatabase, input: SaveInput, sett
       sessionRows.push({ sense: r.card.key, ok, bad });
       summary.learned += 1;
       summary.known += r.known ? 1 : 0;
-      summary.xp += r.known ? XP_KNOWN : XP_NEW;
+      summary.auto += r.auto ? 1 : 0;
+      summary.xp += r.auto ? 0 : r.known ? XP_KNOWN : XP_NEW; // tự đánh dấu không có điểm thưởng (tránh lạm dụng)
     }
 
     await db.runAsync(

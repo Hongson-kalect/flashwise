@@ -1,4 +1,5 @@
 import { getMyCollection } from "@/database/queries/collections";
+import { autoKnownBands } from "@/database/queries/knownStats";
 import { getMedianStepMs, loadLearnSettings, pickNewCards, saveLearnResult, SaveSummary, LearnSettings } from "@/database/queries/learning";
 import { useAppStore } from "@/stores/appStore";
 import { requestSync } from "@/services/sync/bus";
@@ -11,6 +12,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Action, currentQuestion, reduce, resultsOf, RunState, startRun } from "./engine";
 import { clearSnapshot, loadSnapshot, saveSnapshot, Snapshot } from "./snapshot";
+import { bandOf } from "./knownStats";
 import { Grade } from "./types";
 
 export type RunStatus = "loading" | "resume" | "empty" | "error" | "running" | "saving" | "done";
@@ -75,7 +77,9 @@ export const useLearnRun = (userCollectionId: string) => {
       }
       const now = Date.now();
       session.current = { id: uuidv7(), collectionId: info.collectionId, startedAt: now, settings };
-      setState(startRun({ cards: picked.cards, extraPool: picked.pool, clusterSteps: settings.clusterSteps, now, medianMs: median, caps: { ...voiceCapabilities(settings), write: settings.writable ? await readyWriteLangs(picked.cards.map((c) => c.lang)) : [] } }));
+      const autoBands = settings.autoKnown ? await autoKnownBands(db) : new Set<string>();
+      const preKnown = picked.cards.filter((c) => autoBands.has(bandOf(c.level))).map((c) => c.key);
+      setState(startRun({ cards: picked.cards, extraPool: picked.pool, preKnown, clusterSteps: settings.clusterSteps, now, medianMs: median, caps: { ...voiceCapabilities(settings), write: settings.writable ? await readyWriteLangs(picked.cards.map((c) => c.lang)) : [] } }));
       setStatus("running");
     } catch (e: any) {
       setError(e?.message ?? "Có lỗi xảy ra");

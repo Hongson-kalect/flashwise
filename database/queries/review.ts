@@ -1,6 +1,6 @@
 import { CardRow, isReady, toCard } from "@/learning/cardData";
 import { CardResult } from "@/learning/engine";
-import { makeScheduler, MAX_LEVEL, retrievability, ReviewMode, scheduleReview } from "@/learning/fsrsService";
+import { isUnverifiedKnown, makeScheduler, MAX_LEVEL, retrievability, ReviewMode, scheduleReview } from "@/learning/fsrsService";
 import { PoolEntry } from "@/learning/steps";
 import { fromDbTime, toDbTime } from "@/learning/time";
 import { AGAIN, glossOf, Grade, LearnCard, StepLog } from "@/learning/types";
@@ -35,6 +35,8 @@ const fetchSenseCards = async (db: SQLiteDatabase, senseIds: string[], userLang:
 export interface ReviewCandidate {
   card: LearnCard;
   level: number;
+  /** Lời khai "đã biết" chưa qua lần nhớ lại nào: không ôn bằng vuốt, đi theo cụm để kiểm tra. */
+  unverified: boolean;
   /** Khả năng còn nhớ lúc chọn thẻ (thấp trước). */
   retrievability: number;
 }
@@ -66,8 +68,8 @@ export const pickReviewBatch = async (
   exclude: ReadonlySet<string> = new Set(),
 ): Promise<ReviewBatch> => {
   const cutoff = learningDayBounds(settings.dayStartHour, now).end;
-  const allRows = await db.getAllAsync<{ original_sense_id: string; level: number; stability: number; last_reviewed_at: string | null; sense_id: string }>(
-    `SELECT p.original_sense_id, p.level, p.stability, p.last_reviewed_at,
+  const allRows = await db.getAllAsync<{ original_sense_id: string; level: number; repetitions: number; stability: number; last_reviewed_at: string | null; sense_id: string }>(
+    `SELECT p.original_sense_id, p.level, p.repetitions, p.stability, p.last_reviewed_at,
             COALESCE((SELECT i.sense_id FROM collection_items i
                       WHERE COALESCE(i.original_id, i.sense_id) = p.original_sense_id AND i.is_deleted = 0
                       ORDER BY i.updated_at DESC LIMIT 1), p.original_sense_id) AS sense_id
@@ -83,7 +85,14 @@ export const pickReviewBatch = async (
       const card = cards.get(r.sense_id);
       const last = fromDbTime(r.last_reviewed_at);
       const elapsed = last ? (now.getTime() - last.getTime()) / 86400000 : 0;
-      return card ? { card: { ...card, key: r.original_sense_id }, level: r.level, retrievability: retrievability(r.stability, elapsed) } : null;
+      return card
+        ? {
+            card: { ...card, key: r.original_sense_id },
+            level: r.level,
+            unverified: isUnverifiedKnown(r.level, r.repetitions),
+            retrievability: retrievability(r.stability, elapsed, settings.fsrsParams?.[20]),
+          }
+        : null;
     })
     .filter((c): c is ReviewCandidate => !!c)
     .sort((a, b) => a.retrievability - b.retrievability);
@@ -99,8 +108,8 @@ export const pickReviewBatch = async (
     }
     return out;
   };
-  const quickAll = due.filter((c) => c.level >= settings.swipeMinLevel);
-  const normalAll = due.filter((c) => c.level < settings.swipeMinLevel);
+  const quickAll = due.filter((c) => c.level >= settings.swipeMinLevel && !c.unverified);
+  const normalAll = due.filter((c) => c.level < settings.swipeMinLevel || c.unverified);
   const normal = pick(normalAll, settings.clusterSize);
 
   // Đáp án nhiễu cho cụm: các thẻ đến hạn khác, thiếu thì lấy thêm nghĩa đã học bất kỳ
@@ -168,6 +177,7 @@ export const saveReviewResult = async (db: SQLiteDatabase, input: ReviewSaveInpu
   const scheduler = makeScheduler({
     retention: input.mode === "quick" ? settings.swipeRetention : settings.retention,
     firstReviewHours: settings.firstReviewHours,
+    params: settings.fsrsParams,
   });
   const kinds = new Set<string>();
   const done: string[] = [];

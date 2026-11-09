@@ -50,7 +50,7 @@ const SummaryView = ({ state, saving, onGrade, onSave }: Props) => {
                   <View className="flex-row items-center gap-1 px-2.5 h-7 rounded-full" style={{ backgroundColor: theme.success + "1F" }}>
                     <AppIcon branch="feather" name="check-circle" size={13} color={theme.success} />
                     <AppText size="xs" weight="semibold" style={{ color: theme.success }}>
-                      Đã biết
+                      {run.auto ? "Tự đánh dấu đã biết" : "Đã biết"}
                     </AppText>
                   </View>
                 )}

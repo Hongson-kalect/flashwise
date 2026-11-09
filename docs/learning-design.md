@@ -131,6 +131,12 @@ Giới hạn chỉ làm lượng tồn tăng dần. Không có trần ôn / ngà
 - Thống kê chung của nghĩa do server cộng dồn khi nhận `review_log`, chỉ dòng `is_fsrs=1` mới chèn (push lặp lại không cộng 2 lần).
 - Nghĩa bị quên ≥ 4 lần: đánh dấu "hay quên", gợi ý ghi mẹo nhớ riêng (`user_note`).
 
+### 5.6b FSRS cá nhân hoá và "Tôi biết từ này" (2026-11-09)
+- **Tham số FSRS riêng**: mặc định FSRS-6. Server tối ưu từ `review_log` (`is_fsrs=1`) bằng `fsrs-rs` (`flashwise_api/tracking/fsrs_params.py`, lệnh `fit_fsrs_params`, API `POST learn/fsrs/`): ít nhất 300 mục dùng được, huấn luyện trên 80% thẻ, kiểm trên 20% thẻ bắt đầu muộn nhất, chỉ nhận khi log loss kiểm giảm ≥ 0,002, rồi huấn luyện lại trên toàn bộ. Lưu ở `user_settings.fsrs_params` (21 số) + `fsrs_params_meta`, về máy qua sync như cài đặt; `loadLearnSettings` → `makeScheduler({params})`, `retrievability` dùng `w20` riêng. App gọi API sau đồng bộ khi có ≥ 300 lượt chấm, tăng ≥ 100 so với lần thử trước và cách lần trước ≥ 1 ngày (`services/fsrsParams.ts`, `providers/Sync.tsx`).
+- **Kiểm lời khai "Tôi biết từ này"**: vẫn Easy / cấp 5 nhưng hẹn ôn kiểm tra trong 1 ngày (`KNOWN_VERIFY_DAYS`); thẻ cấp 5 mới chấm 1 lần (`isUnverifiedKnown`) không được ôn bằng vuốt, đi theo cụm (có bước nhớ lại) tới khi qua lần ôn đầu. Server giống app (`tracking/learn.py`, `tracking/session.py`).
+- **Tự đánh dấu theo mức** (`learning/knownStats.ts`, setting `auto_known`, mặc định bật): mức (cấp CEFR / JLPT / TOPIK / HSK của nghĩa) mà user đã học ≥ 10 từ, bấm "biết" ≥ 80%, và ≥ 90% trong ≥ 5 lời khai đã kiểm tra nhớ đúng thì từ mới ở mức đó vào thẳng "đã biết" (mode `learn:known_auto`, không XP). Thẻ tự đánh dấu cũng bị kiểm tra sau 1 ngày; nhớ sai nhiều (< 85% sau ≥ 5 lần) thì mức đó tắt tự động.
+- **Mục tiêu nhớ**: Cá nhân → Học tập đổi vòng 80 / 85 / 90 / 95% (`request_retention`).
+
 ### 5.7 Học tiếp phiên dở
 Đã làm (`learning/snapshot.ts`): sau mỗi bước, trạng thái máy học (`RunState` / `SwipeState`, thuần JSON) được ghi vào `system_configs` khoá `run_snapshot:learn:<userCollectionId>` hoặc `run_snapshot:review`. Chọn `system_configs` thay vì cột `learn_session.snapshot` vì bảng đó có trigger sync (mỗi lần ghi sẽ đẩy cả phiên chưa xong lên server); cột `snapshot` hiện không dùng. Mở lại trong **1 giờ** thì hỏi "Học tiếp / Bắt đầu cụm mới" (Ôn: "Ôn tiếp / Nạp lượt mới"); quá 1 giờ hoặc JSON hỏng thì bỏ. Lưu kết quả thành công thì xoá snapshot. Chưa lưu kết quả thì chưa có dòng `review_log` / `user_sense_progress`, nên bỏ phiên dở không để lại dữ liệu nửa vời. Bước đang dở được tính giờ lại từ lúc học tiếp.
 

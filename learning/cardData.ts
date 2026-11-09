@@ -1,3 +1,4 @@
+import { pronunciationOf } from "@/utils/pronunciation";
 import { LearnCard } from "./types";
 
 /** Dòng SQL của 1 nghĩa trong bộ (xem database/queries/learning.ts). */
@@ -9,6 +10,7 @@ export interface CardRow {
   word_value: string;
   language_code: string;
   pos: string | null;
+  level?: string | null;
   ipas: string | null;
   word_ipas: string | null;
   audio: string | null;
@@ -48,6 +50,8 @@ export const mergeDelta = (contents: Record<string, any>, delta: Record<string, 
 };
 
 const text = (node: any): string => (isObject(node) && typeof node.value === "string" ? node.value.trim() : "");
+/** Phiên âm Latin của đoạn (ja / zh / ko), do server sinh. */
+const roman = (node: any): string => (isObject(node) && typeof node.roman === "string" ? node.roman.trim() : "");
 
 /** Dòng SQL → thẻ học: nội dung theo ngôn ngữ của từ (`lang`) và tiếng mẹ đẻ (`userLang`). */
 export const toCard = (r: CardRow, userLang: string): LearnCard => {
@@ -57,7 +61,7 @@ export const toCard = (r: CardRow, userLang: string): LearnCard => {
 
   const examples: any[] = Array.isArray(contents.examples) ? contents.examples : [];
   const found = examples.find((e) => text(e?.[lang]));
-  const rawIpa: string = parse<any[]>(r.ipas, [])[0]?.value || parse<any[]>(r.word_ipas, [])[0]?.value || "";
+  const rawIpa: string = pronunciationOf(parse<any[]>(r.ipas, []), lang) || pronunciationOf(parse<any[]>(r.word_ipas, []), lang);
   const ipa = /\p{L}/u.test(rawIpa) ? rawIpa : ""; // phiên âm không có chữ nào (vd chỉ "/") thì bỏ
 
   return {
@@ -68,6 +72,7 @@ export const toCard = (r: CardRow, userLang: string): LearnCard => {
     word: r.word_value,
     lang,
     pos: r.pos ? String(r.pos).toLowerCase() : null,
+    level: r.level ?? null,
     ipa,
     audio: r.audio || r.word_audio || null,
     imageUri: r.image_preview || r.image_link || null,
@@ -75,7 +80,9 @@ export const toCard = (r: CardRow, userLang: string): LearnCard => {
     definition: text(contents.definition?.[lang]),
     definitionNative: userLang === lang ? "" : text(contents.definition?.[userLang]),
     translations: userLang === lang ? [] : translations,
-    example: found ? { text: text(found[lang]), native: userLang === lang ? "" : text(found[userLang]) } : null,
+    example: found
+      ? { text: text(found[lang]), native: userLang === lang ? "" : text(found[userLang]), roman: roman(found[lang]) }
+      : null,
     globalDifficulty: r.global_difficulty ?? 0,
     learnerCount: r.learner_count ?? 0,
   };

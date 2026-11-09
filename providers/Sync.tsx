@@ -1,4 +1,6 @@
+import { optimizeFsrs } from "@/services/api/learn";
 import { syncApi } from "@/services/api/sync";
+import { maybeOptimizeFsrs } from "@/services/fsrsParams";
 import { Db, ensureSyncTracking, pendingCount, runSync, SyncReport } from "@/services/sync/engine";
 import { onSyncRequest } from "@/services/sync/bus";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -65,7 +67,12 @@ export const SyncProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       setState((s) => ({ ...s, status: "syncing", error: null }));
-      const report = await runSync(db, syncApi, accountId);
+      let report = await runSync(db, syncApi, accountId);
+      // Đủ lượt ôn mới thì nhờ server tối ưu tham số FSRS riêng; có tham số mới thì kéo về ngay
+      if (await maybeOptimizeFsrs(db, optimizeFsrs).catch(() => false)) {
+        const again = await runSync(db, syncApi, accountId);
+        report = { ...again, changed: again.changed || report.changed };
+      }
       setState((s) => ({ ...s, status: "idle", lastSyncedAt: Date.now(), lastReport: report }));
       if (report.changed) queryClient.invalidateQueries();
     } catch (e: any) {

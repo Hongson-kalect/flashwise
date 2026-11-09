@@ -107,7 +107,7 @@ export default function LearnNewScreen() {
           icon="check-circle"
           tone="success"
           title="Đã lưu!"
-          message={`${run.summary.learned} từ mới${run.summary.known ? ` (${run.summary.known} từ đã biết)` : ""} · +${run.summary.xp} XP · ${minutes} phút. Từ sẽ quay lại ôn theo lịch.`}
+          message={`${run.summary.learned} từ mới${run.summary.known ? ` (${run.summary.known} từ đã biết${run.summary.auto ? `, ${run.summary.auto} từ tự đánh dấu vì bạn luôn biết mức này; sẽ kiểm tra lại sau 1 ngày` : ""})` : ""} · +${run.summary.xp} XP · ${minutes} phút. Từ sẽ quay lại ôn theo lịch.`}
           actions={[
             ...(remaining > 0 ? [{ label: `Học cụm tiếp (còn ${remaining} từ)`, onPress: run.reload, primary: true }] : []),
             { label: "Về bộ từ", onPress: leave, primary: remaining === 0 },

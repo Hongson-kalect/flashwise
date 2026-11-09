@@ -4,6 +4,7 @@ import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import SyncStatus from "@/components/SyncStatus";
 import { useTheme } from "@/providers/Theme";
+import { nextRetention } from "@/learning/fsrsService";
 import { useAppStore } from "@/stores/appStore";
 import Slider from "@react-native-community/slider";
 import { router } from "expo-router";
@@ -27,10 +28,17 @@ export default function ProfilePage() {
   const updateSetting = useAppStore((s) => s.updateSetting);
 
   // Công tắc các bước học: ghi user_settings (đồng bộ lên server) và RAM; phiên học sau đọc lại từ DB
-  const toggleLearnSetting = async (key: "hearable" | "talkable" | "writable") => {
+  const toggleLearnSetting = async (key: "hearable" | "talkable" | "writable" | "auto_known") => {
     const next = settings?.[key] === false;
     updateSetting({ [key]: next });
     await dbService?.setSetting(key, next);
+  };
+
+  // Mục tiêu nhớ (FSRS request_retention): bấm để đổi vòng 80% → 85% → 90% → 95%
+  const cycleRetention = async () => {
+    const next = nextRetention(settings?.request_retention);
+    updateSetting({ request_retention: next });
+    await dbService?.setSetting("request_retention", next);
   };
 
   return (
@@ -198,6 +206,23 @@ export default function ProfilePage() {
           rightContent="toggle"
           value={settings?.writable !== false}
           onPress={() => toggleLearnSetting("writable")}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="check-circle" size={20} color="subText3" />}
+          label="Tự đánh dấu từ đã biết theo mức"
+          rightContent="toggle"
+          value={settings?.auto_known !== false}
+          onPress={() => toggleLearnSetting("auto_known")}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="target" size={20} color="subText3" />}
+          showValue
+          label="Mục tiêu nhớ (cao hơn = ôn nhiều hơn)"
+          value={`${Math.round((typeof settings?.request_retention === "number" ? settings.request_retention : 0.9) * 100)}%`}
+          rightContent="internalModal"
+          onPress={cycleRetention}
         />
         <Divider />
 

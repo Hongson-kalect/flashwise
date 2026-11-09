@@ -20,6 +20,8 @@ export interface LearnCard {
   word: string;
   lang: string;
   pos: string | null;
+  /** Mức của nghĩa (CEFR / JLPT / TOPIK / HSK), dùng để thống kê "đã biết" theo mức. */
+  level?: string | null;
   ipa: string;
   audio: string | null;
   imageUri: string | null;
@@ -29,7 +31,8 @@ export interface LearnCard {
   definitionNative: string;
   /** Nghĩa ngắn bằng tiếng mẹ đẻ (danh sách bản dịch). */
   translations: string[];
-  example: { text: string; native: string } | null;
+  /** `roman`: phiên âm Latin của câu ví dụ (chỉ ja / zh / ko). */
+  example: { text: string; native: string; roman?: string } | null;
   globalDifficulty: number;
   learnerCount: number;
 }

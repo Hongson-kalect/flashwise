@@ -28,6 +28,8 @@ export interface CardRun {
   questions: Question[];
   logs: StepLog[];
   known: boolean;
+  /** Tự đánh dấu "đã biết" từ đầu phiên (user luôn biết mức này), không phải user bấm. */
+  auto?: boolean;
 }
 
 export interface Attempt {
@@ -95,6 +97,8 @@ export interface StartInput {
   extraPool?: PoolEntry[];
   clusterSteps: number;
   now: number;
+  /** Khoá thẻ tự đánh dấu "đã biết" ngay từ đầu (không hỏi bước nào). */
+  preKnown?: readonly string[];
   medianMs?: number;
   rng?: () => number;
   /** Cho nghe / nói được không (mặc định không): quyết định có bước nghe / nói. */
@@ -103,15 +107,18 @@ export interface StartInput {
 
 const freshAttempt = (at: number): Attempt => ({ tries: 0, hints: 0, wrongOptionIds: [], startedAt: at, lastVerdict: null });
 
-export const startRun = ({ cards, mode = "learn", levels = {}, extraPool = [], clusterSteps, now, medianMs = DEFAULT_MEDIAN_MS, rng = Math.random, caps }: StartInput): RunState => {
+export const startRun = ({ cards, mode = "learn", levels = {}, extraPool = [], clusterSteps, now, preKnown = [], medianMs = DEFAULT_MEDIAN_MS, rng = Math.random, caps }: StartInput): RunState => {
   const pool = [...poolFromCards(cards), ...extraPool];
   const runs: Record<string, CardRun> = {};
   for (const card of cards) {
     const exclude = mode === "review" ? (["copy"] as const) : [];
-    runs[card.key] = { card, questions: buildQuestions(card, pool, stepCountFor(levels[card.key] ?? 0, clusterSteps), rng, [...exclude], caps), logs: [], known: false };
+    const auto = mode === "learn" && preKnown.includes(card.key);
+    runs[card.key] = auto
+      ? { card, questions: [], logs: [], known: true, auto: true }
+      : { card, questions: buildQuestions(card, pool, stepCountFor(levels[card.key] ?? 0, clusterSteps), rng, [...exclude], caps), logs: [], known: false };
   }
   const order = cards.map((c) => c.key);
-  const queue: Item[] = order.map((cardKey) => ({ cardKey, stepIdx: 0, pass: 1 }));
+  const queue: Item[] = order.filter((key) => !runs[key].known).map((cardKey) => ({ cardKey, stepIdx: 0, pass: 1 }));
   const totalSteps = order.reduce((n, key) => n + runs[key].questions.length, 0);
   const state: RunState = {
     mode,
@@ -314,13 +321,15 @@ export interface CardResult {
   card: LearnCard;
   grade: Grade;
   known: boolean;
+  /** Tự đánh dấu "đã biết" (không phải user bấm). */
+  auto: boolean;
   logs: StepLog[];
 }
 
 export const resultsOf = (state: RunState): CardResult[] =>
   state.order.map((key) => {
     const run = state.cards[key];
-    return { card: run.card, grade: state.grades[key] ?? GOOD, known: run.known, logs: run.logs };
+    return { card: run.card, grade: state.grades[key] ?? GOOD, known: run.known, auto: !!run.auto, logs: run.logs };
   });
 
 export const progressOf = (state: RunState) => (state.totalSteps ? Math.min(1, state.doneSteps / state.totalSteps) : 1);
