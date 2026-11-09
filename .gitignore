@@ -41,3 +41,6 @@ app-example
 # Build native của module cục bộ
 modules/*/android/build/
 modules/*/android/.cxx/
+
+# Từ vựng seed sinh ra bằng data/seed/fetch.sh (dựng lại được)
+data/seed/*/
