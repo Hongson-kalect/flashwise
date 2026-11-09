@@ -1,4 +1,5 @@
 import type { CollectionBundle, MyCollectionRow } from "@/services/api/collections";
+import { pronunciationOf } from "@/utils/pronunciation";
 import { SQLiteDatabase } from "expo-sqlite";
 
 const parse = (v: unknown, fallback: any) => {
@@ -324,7 +325,7 @@ export const listCollectionSenses = async (
     const trans: string[] = contents?.translations?.[lang] ?? [];
     const definition: string =
       contents?.definition?.[lang]?.value ?? contents?.definition?.[r.language_code]?.value ?? "";
-    const ipa = parse(r.ipas, [])?.[0]?.value || parse(r.word_ipas, [])?.[0]?.value || "";
+    const ipa = pronunciationOf(parse(r.ipas, []), r.language_code) || pronunciationOf(parse(r.word_ipas, []), r.language_code);
     return {
       itemId: r.item_id,
       senseId: r.sense_id,

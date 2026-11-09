@@ -1296,6 +1296,8 @@ export type SenseType = {
 
   ipas?: {
     value: string;
+    /** Phiên âm Latin (ja / zh / ko), server sinh. */
+    roman?: string;
     type: string;
     url: string;
     label: string;

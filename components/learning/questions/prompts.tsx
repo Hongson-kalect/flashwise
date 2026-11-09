@@ -28,6 +28,11 @@ const Example = ({ card, mask = false, hideNative = false }: { card: LearnCard; 
       <AppText color="title" style={{ fontStyle: "italic" }}>
         {mask ? maskWord(card.example.text, card.word) : card.example.text}
       </AppText>
+      {!!card.example.roman && !mask && (
+        <AppText size="sm" color="subText2">
+          {card.example.roman}
+        </AppText>
+      )}
       {!!card.example.native && !mask && !hideNative && (
         <AppText size="sm" color="subText2">
           {card.example.native}

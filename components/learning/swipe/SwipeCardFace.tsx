@@ -42,6 +42,11 @@ const SwipeCardFace = ({ card, flipped, review }: Props) => {
           {card.example.text}
         </AppText>
       )}
+      {!!card.example?.roman && (
+        <AppText size="sm" color="subText2" textAlign="center">
+          {card.example.roman}
+        </AppText>
+      )}
       {flipped && (
         <View className="p-4 rounded-2xl gap-1" style={{ backgroundColor: theme.primary + "14", borderWidth: 1, borderColor: theme.primary }}>
           <AppText size="xl" weight="bold" color="primary" textAlign="center">

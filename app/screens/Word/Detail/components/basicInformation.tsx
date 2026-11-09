@@ -5,6 +5,7 @@ import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import PhatAm from "@/components/PhatAm";
 import PhienAm from "@/components/PhienAm";
+import { pronunciationOf } from "@/utils/pronunciation";
 import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
@@ -226,7 +227,7 @@ const BasicInformation = ({
           onPress={() => openInputModal({ title: "Phiên âm", field: "phienAm" })}
           disabled={mode === "view"}
         >
-          <PhienAm> {ipas?.[0]?.value || ""}</PhienAm>
+          <PhienAm> {pronunciationOf(ipas, sense?.languageCode)}</PhienAm>
         </TouchableOpacity>
         <View className="flex-1 items-end">
           <MainSenseButton sense={sense} />

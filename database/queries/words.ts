@@ -1,3 +1,4 @@
+import { pronunciationOf } from "@/utils/pronunciation";
 import { SQLiteDatabase } from "expo-sqlite";
 
 const j = (v: unknown, fallback: unknown) => JSON.stringify(v ?? fallback);
@@ -131,7 +132,7 @@ export const listWords = async (
         wordId: r.word_id,
         value: r.word_value,
         languageCode: r.language_code,
-        ipa: parse(r.ipas, [])?.[0]?.value ?? "",
+        ipa: pronunciationOf(parse(r.ipas, []), r.language_code),
         imageUri: r.image_preview || null,
         senseCount: 0,
         posList: [],
