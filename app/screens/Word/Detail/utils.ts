@@ -31,7 +31,8 @@ export const senseDataReducer = (
         ...initialState,
       };
     case "INITIAL": {
-      // payload = data của get-word. complete=true (HTTP 200): đã đủ, không chờ socket.
+      // payload = data của get-word. complete=true (HTTP 200): đã đủ, không chờ socket. formOf: gợi ý "là dạng của …" khi nghĩa này là của từ gốc
+      // mà người dùng tra bằng dạng biến cách chưa có mục riêng (get-word trả redirect, hook tra tiếp từ gốc rồi truyền formOf vào đây).
       const { id, value, language_code, senses } = action.payload.data ?? {};
       const complete = !!action.payload.complete;
       // complete (bản đủ từ server): thay hẳn nghĩa, bỏ nghĩa cũ đã bị server loại
@@ -48,7 +49,7 @@ export const senseDataReducer = (
         value: state.value ?? value,
         languageCode: state.languageCode ?? language_code,
         senses: merged,
-        formOf: action.payload.data?.form_of ?? null,
+        formOf: action.payload.formOf ?? action.payload.data?.form_of ?? null,
         isLoading: !complete,
         status: complete ? "COMPLETED" : "INITIAL",
         error: null,

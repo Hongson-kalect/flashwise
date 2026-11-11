@@ -48,6 +48,9 @@ export const useWordData = (word: string) => {
   const [log, setLog] = useState<{ type: string; at: number }[]>([]);
   // Từ đã có trong SQLite: làm mới nền (nếu có) không cần báo "đang khởi tạo"
   const [hadLocal, setHadLocal] = useState(false);
+  // Chuỗi tra là dạng biến cách (killed) của từ gốc chưa có trong DB: get-word trả `redirect`, ta tra tiếp từ gốc (server tạo online như từ mới)
+  // và giữ `form_of` để trang hiện "là dạng … của kill" cùng ví dụ riêng của dạng đã tra. Chỉ theo 1 bước, và chỉ cho đúng chuỗi đã tra.
+  const [redirect, setRedirect] = useState<{ from: string; lemma: string; formOf: any } | null>(null);
 
   const retry = useCallback(() => setAttempt((n) => n + 1), []);
   // Sau khi thêm nghĩa mới: bỏ qua bản local, hỏi lại server để thấy nghĩa vừa thêm (server đã xoá cache từ)
@@ -84,12 +87,14 @@ export const useWordData = (word: string) => {
     const force = forceRefresh.current;
     forceRefresh.current = false;
 
-    const room = normalizeWord(word, lang);
+    const followed = redirect && redirect.from === word ? redirect : null;
+    const target = followed?.lemma ?? word;
+    const room = normalizeWord(target, lang);
     let unsubscribe: (() => void) | null = null;
 
     (async () => {
       // 1) Local trước: hiện ngay + dùng được khi offline
-      const local = silent || !LOCAL_WORDS_ENABLED ? null : await loadLocalWord(db, word, lang).catch(() => null);
+      const local = silent || !LOCAL_WORDS_ENABLED ? null : await loadLocalWord(db, target, lang).catch(() => null);
       if (!alive) return;
       if (local) {
         localOnly.current = true;
@@ -109,11 +114,16 @@ export const useWordData = (word: string) => {
 
       try {
         const res = await GetAPI("ai-words/get-word/", {
-          value: word,
+          value: target,
           lang,
           user_lang: userLang,
         });
         if (!alive) return;
+        const next = res.data?.data?.redirect;
+        if (next && !followed && next !== word) {
+          setRedirect({ from: word, lemma: next, formOf: res.data.data.form_of ?? null });
+          return; // effect chạy lại với từ gốc (RESET, đăng ký phòng của từ gốc, get-word từ gốc)
+        }
         localOnly.current = false;
         // 200: đủ rồi. 206: đủ nghĩa, bản dịch thiếu sẽ về qua socket. 201 / 202: còn chờ socket.
         dispatch({
@@ -121,6 +131,7 @@ export const useWordData = (word: string) => {
           payload: {
             data: res.data?.data,
             complete: res.status === 200 || res.status === 206,
+            formOf: followed?.formOf ?? undefined,
           },
         });
         setServerTick((t) => t + 1);
@@ -135,7 +146,7 @@ export const useWordData = (word: string) => {
       alive = false;
       unsubscribe?.();
     };
-  }, [word, lang, userLang, attempt]);
+  }, [word, lang, userLang, attempt, redirect]);
 
   // Từ đã đủ dữ liệu thì lưu vào SQLite (tab Từ vựng, xem lại khi offline). Lưu lại cả khi tin socket
   // muộn (vd PARTIAL_TRANSLATE sau HTTP 206) làm dữ liệu đổi.
