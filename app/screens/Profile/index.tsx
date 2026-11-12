@@ -25,6 +25,7 @@ export default function ProfilePage() {
   const { theme } = useTheme();
   const settings = useAppStore((s) => s.settings);
   const dbService = useAppStore((s) => s.dbService);
+  const userProfile = useAppStore((s) => s.userProfile);
   const updateSetting = useAppStore((s) => s.updateSetting);
 
   // Công tắc các bước học: ghi user_settings (đồng bộ lên server) và RAM; phiên học sau đọc lại từ DB
@@ -64,7 +65,7 @@ export default function ProfilePage() {
               color="error"
               style={{ paddingVertical: 32 }}
             >
-              You are not logged in
+              Bạn đang dùng tài khoản khách
             </AppText>
           </View>
 
@@ -76,17 +77,17 @@ export default function ProfilePage() {
               ></View>
               <View>
                 <AppText font="MulishSemiBold" size={10} color="primary">
-                  Guess
+                  Khách
                 </AppText>
-                <AppText font="MulishBold">Guess#1042011</AppText>
+                <AppText font="MulishBold">{userProfile?.full_name || "Khách"}</AppText>
                 <AppText font="MulishLightItalic" size={"xs"} color="subText2">
-                  Login to keep your progress
+                  Đăng nhập để giữ tiến độ học
                 </AppText>
               </View>
             </View>
             <View>
               <AppButton
-                title="Login"
+                title="Đăng nhập"
                 type="primary"
                 onPress={() => router.push("/screens/Login/screen")}
               >
@@ -96,7 +97,7 @@ export default function ProfilePage() {
                   size={16}
                   color="white"
                 />
-                <AppText color="white">Login</AppText>
+                <AppText color="white">Đăng nhập</AppText>
               </AppButton>
             </View>
           </View>

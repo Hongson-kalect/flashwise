@@ -50,6 +50,8 @@ const AppIcon = <B extends IconBranch>({
       size={size}
       color={theme[color as keyof typeof theme] || color}
       style={style}
+      // FontAwesome6 mặc định vẽ kiểu regular, bản miễn phí thiếu hầu hết glyph (book, pen, quote-left...) nên hiện ô vuông
+      {...(branch === "fa6" ? { solid: true } : null)}
     />
   );
 

@@ -77,6 +77,14 @@ export const saveWord = async (
   });
 };
 
+/**
+ * Nghĩa bị ẩn / xoá trên server (của riêng mình) cũng phải biến khỏi bản lưu: saveWord chỉ thêm / thay các nghĩa server trả về,
+ * không bỏ nghĩa đã vắng mặt (nghĩa tải từ bộ từ không có trong get-word nên không thể tự dọn theo kiểu "không còn trong kết quả").
+ */
+export const markSenseRemoved = async (db: SQLiteDatabase, senseId: string, removed: boolean) => {
+  await db.runAsync(`UPDATE ai_sense SET is_deleted = ? WHERE id = ?`, [removed ? 1 : 0, senseId]);
+};
+
 export type WordRow = {
   wordId: string;
   value: string;

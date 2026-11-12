@@ -16,6 +16,11 @@ import Animated, {
 import { extractObjectByPath, testAPIStreamData } from "../../data";
 import AddSenseSheet from "./addSenseSheet";
 import { useSenseEditor } from "../senseEdit";
+import { deleteSense, fetchMySenses, hideSense, unhideSense } from "@/services/api/senses";
+import { toast } from "@/utils/toast";
+import { markSenseRemoved } from "@/database/queries/words";
+import { useSQLiteContext } from "expo-sqlite";
+import { useQueryClient } from "@tanstack/react-query";
 import ToggleWordDisplayMode from "./toggleWordDisplayMode";
 
 type Props = {
@@ -37,6 +42,8 @@ const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mod
   const { present } = useBottomSheet();
   const addModal = useModalStore((state) => state.addModal);
   const { settings, dbService } = useAppStore();
+  const db = useSQLiteContext();
+  const queryClient = useQueryClient();
 
   const handleAddSense = () =>
     present({
@@ -54,8 +61,70 @@ const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mod
 
   const { edit, canEdit } = useSenseEditor({ sense: activeSense, onSaved: onSenseAdded });
 
-  const showMoreMenu = () => {
+  const confirmRemove = (kind: "hide" | "delete", own = false) => {
+    const id = activeSense?.id;
+    if (!id) return;
+    addModal({
+      type: "confirm",
+      title: kind === "hide" ? "Ẩn nghĩa này?" : "Xoá nghĩa này?",
+      message:
+        kind === "delete"
+          ? "Nghĩa do bạn tạo và chưa phát hành trong bộ từ. Xoá xong không thể hoàn tác."
+          : own
+            ? "Nghĩa đã phát hành trong bộ từ nên không xoá được, chỉ ẩn khỏi trang từ của riêng bạn. Người khác vẫn dùng được."
+            : "Nghĩa sẽ chỉ bị ẩn khỏi trang từ của riêng bạn, người khác vẫn thấy. Bỏ ẩn lại trong menu ba chấm.",
+      okText: kind === "hide" ? "Ẩn" : "Xoá",
+      cancelText: "Huỷ",
+      onOk: async () => {
+        try {
+          if (kind === "hide") await hideSense(id);
+          else await deleteSense(id);
+          await markSenseRemoved(db, id, true).catch(() => {}); // bản lưu local không còn nghĩa này
+          queryClient.invalidateQueries({ queryKey: ["words"] });
+          onSenseAdded?.(); // tải lại trang từ
+        } catch (e: any) {
+          const code = e?.response?.data?.errorCode;
+          const status = e?.response?.status;
+          toast.error(
+            !e?.response
+              ? "Không có kết nối, thử lại sau."
+              : code === "sense_frozen"
+                ? "Nghĩa đã phát hành trong bộ từ nên không xoá được."
+                : status === 403
+                  ? "Chỉ xoá được nghĩa do chính bạn tạo."
+                  : "Chưa thực hiện được, thử lại sau.",
+          );
+        }
+      },
+    });
+  };
+
+  const unhideAll = async (ids: string[]) => {
+    try {
+      await Promise.all(ids.map(unhideSense));
+      await Promise.all(ids.map((id) => markSenseRemoved(db, id, false).catch(() => {})));
+      queryClient.invalidateQueries({ queryKey: ["words"] });
+      onSenseAdded?.(); // tải lại trang từ
+    } catch {
+      toast.error("Chưa bỏ ẩn được, thử lại sau.");
+    }
+  };
+
+  const showMoreMenu = async () => {
     const title = word[0].toUpperCase() + word.slice(1);
+    // Quyền sở hữu và các nghĩa đang ẩn lấy từ server mỗi lần mở menu (offline thì chỉ còn "Ẩn nghĩa này")
+    let mineIds = new Map<string, boolean>(); // id nghĩa của mình -> đã đóng băng (bản lưu local không có is_frozen nên lấy từ server)
+    let hidden: string[] = [];
+    if (wordId) {
+      try {
+        const mine = await fetchMySenses(wordId);
+        mineIds = new Map(mine.senses.map((s) => [s.id, !!s.is_frozen]));
+        hidden = mine.hidden;
+      } catch {}
+    }
+    const own = !!activeSense?.id && mineIds.has(activeSense.id) && !activeSense.is_official;
+    // Chỉ nghĩa tuỳ chỉnh của mình chưa đóng băng mới xoá thật; còn lại (chính thức, của người khác, của mình đã phát hành) chỉ ẩn
+    const removable = own && !mineIds.get(activeSense.id);
     addModal({
       type: "menu",
       title: `Tuỳ chọn · ${title}`,
@@ -71,13 +140,32 @@ const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mod
           onPress: handleAddSense,
           icon: <AppIcon name="plus" branch="feather" size={20} color="primary" />,
         },
-        {
-          // Nghĩa của người dùng: xoá; nghĩa chính thức: chỉ ẩn
-          label: "Xoá nghĩa tự thêm",
-          destructive: true,
-          onPress: () => setMode("update"),
-          icon: <AppIcon name="trash-2" branch="feather" size={20} color="error" />,
-        },
+        ...(activeSense?.id
+          ? [
+              removable
+                ? {
+                    label: "Xoá nghĩa này",
+                    destructive: true,
+                    onPress: () => confirmRemove("delete"),
+                    icon: <AppIcon name="trash-2" branch="feather" size={20} color="error" />,
+                  }
+                : {
+                    label: "Ẩn nghĩa này",
+                    destructive: true,
+                    onPress: () => confirmRemove("hide", own),
+                    icon: <AppIcon name="eye-off" branch="feather" size={20} color="error" />,
+                  },
+            ]
+          : []),
+        ...(hidden.length
+          ? [
+              {
+                label: `Bỏ ẩn tất cả (${hidden.length})`,
+                onPress: () => unhideAll(hidden),
+                icon: <AppIcon name="eye" branch="feather" size={20} color="primary" />,
+              },
+            ]
+          : []),
       ],
     });
   };

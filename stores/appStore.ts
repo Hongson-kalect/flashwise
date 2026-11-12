@@ -61,13 +61,20 @@ export const useAppStore = create<AppState>((set) => ({
       let locale = Localization.getLocales()[0]?.languageCode || "en";
       const dbService = createDBService(db);
 
-      // Chạy song song cả 3 truy vấn để tối ưu hóa tốc độ khởi động
-      const [profile, settings, configs, theme] = await Promise.all([
-        dbService.getUserProfile(),
-        dbService.getUserSettings(),
-        dbService.getSystemConfigs(),
-        dbService.getActiveTheme(),
-      ]);
+      // Chạy song song các truy vấn để tối ưu hóa tốc độ khởi động. Lúc reload JS (dev) kết nối SQLite native có thể
+      // đang dở tay (prepareAsync bị từ chối); lỗi này mà để rơi xuống catch thì settings = null và app tưởng chưa cài đặt, nên thử lại 1 lần.
+      const load = () =>
+        Promise.all([
+          dbService.getUserProfile(),
+          dbService.getUserSettings(),
+          dbService.getSystemConfigs(),
+          dbService.getActiveTheme(),
+        ]);
+      const [profile, settings, configs, theme] = await load().catch(async (e) => {
+        console.warn("=> [Zustand] Đọc DB lỗi, thử lại:", e);
+        await new Promise((r) => setTimeout(r, 400));
+        return load();
+      });
 
       if (settings?.display_language) {
         locale = settings.display_language;

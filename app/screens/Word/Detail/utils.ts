@@ -90,7 +90,8 @@ export const senseDataReducer = (
         ...state,
         isLoading: false,
         status: "ERROR",
-        error: { code: "rejected", message: errText(action.payload) },
+        // Không dùng chuỗi của server ("Word rejected"): WordStatus có lời giải thích tiếng Việt cho mã rejected
+        error: { code: "rejected" },
       };
 
     case "ERROR":

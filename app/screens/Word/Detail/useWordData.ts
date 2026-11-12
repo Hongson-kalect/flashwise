@@ -148,6 +148,22 @@ export const useWordData = (word: string) => {
     };
   }, [word, lang, userLang, attempt, redirect]);
 
+  // Đang chờ tạo từ mới mà tin socket không về (mất mạng giữa chừng, socket đứt, lỡ tin): hỏi lại get-word mỗi 10 giây
+  // (âm thầm, giữ nội dung đang hiện; server đã xong thì trả 200), quá 2 phút thì báo lỗi có nút thử lại thay vì quay mãi.
+  useEffect(() => {
+    if (!state.isLoading || state.error || state.status === "COMPLETED") return;
+    const t0 = Date.now();
+    const timer = setInterval(() => {
+      if (Date.now() - t0 > 120_000) {
+        clearInterval(timer);
+        dispatch({ type: "FAILED", payload: { code: "failed", message: "Tạo từ mất quá lâu hoặc mất kết nối. Thử lại để tiếp tục." } });
+        return;
+      }
+      refresh();
+    }, 10_000);
+    return () => clearInterval(timer);
+  }, [state.isLoading, state.error, state.status, refresh]);
+
   // Từ đã đủ dữ liệu thì lưu vào SQLite (tab Từ vựng, xem lại khi offline). Lưu lại cả khi tin socket
   // muộn (vd PARTIAL_TRANSLATE sau HTTP 206) làm dữ liệu đổi.
   useEffect(() => {

@@ -123,6 +123,17 @@ const WordDetail = ({ word }: { word: string }) => {
     return () => clearTimeout(t);
   }, [pages]);
   const activeSense = pages[pageIndex]?.sense;
+  // Mở bằng dạng biến cách (planned, looked): nhảy tới loại từ của dạng đó thay vì loại từ đầu tiên của từ gốc. Một lần cho mỗi lần mở trang
+  const focusedPos = useRef(false);
+  useEffect(() => {
+    if (focusedPos.current || !formFocus || pages.length === 0) return;
+    focusedPos.current = true;
+    const target = pages.find((p) => formFocus.pos.includes(p.pos));
+    if (target && target.sense.id !== pages[0].sense.id) {
+      // Chờ thư viện tab dựng xong các trang rồi mới nhảy (nhảy ngay thì bị bỏ qua)
+      setTimeout(() => container.current?.jumpToTab(target.sense.id), 150);
+    }
+  }, [pages, formFocus]);
 
   return (
     <WordLoadingContext.Provider value={sensesObj.isLoading}>

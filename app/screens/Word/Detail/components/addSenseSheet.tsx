@@ -68,6 +68,8 @@ const AddSenseSheet = ({ word, wordId, senses, onAdded }: Props) => {
   const [pos, setPos] = useState<string | null>(null);
   const [showExisting, setShowExisting] = useState(false);
   const [step, setStep] = useState<Step>({ kind: "form" });
+  // Hook phải gọi trước mọi return sớm bên dưới (các màn kết quả), nếu không bấm Gửi sẽ crash "Rendered fewer hooks than expected"
+  const focused = useFocused();
 
   const existing = useMemo(
     () =>
@@ -174,7 +176,6 @@ const AddSenseSheet = ({ word, wordId, senses, onAdded }: Props) => {
     );
   }
 
-  const focused = useFocused();
   return (
     <View className="px-4 pt-3 gap-5">
       {/* Ô nhập là trọng tâm: lớn, tự focus, viền nổi khi đang gõ */}

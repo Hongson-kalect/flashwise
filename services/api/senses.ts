@@ -160,6 +160,28 @@ export const setMainSense = async (senseId: string, want: boolean) => {
   return res.data as { main: boolean; sense_id: string; word_id: string; main_count: number };
 };
 
+/** Nghĩa tuỳ chỉnh của mình (lọc theo từ), id các nghĩa đang bị mình ẩn và đang thích. */
+export const fetchMySenses = async (wordId: string) => {
+  const res = await GetAPI("ai-senses/mine/", { word_id: wordId });
+  return res.data as { senses: { id: string; is_frozen?: boolean }[]; hidden: string[]; liked: string[] };
+};
+
+/** Bỏ ẩn một nghĩa. */
+export const unhideSense = async (senseId: string) => {
+  await DeleteAPI(`ai-senses/${senseId}/hide/`);
+};
+
+/** Ẩn nghĩa khỏi trang từ của riêng mình (không ảnh hưởng người khác). Dùng cho nghĩa chính thức, nghĩa của người khác và nghĩa của mình đã phát hành. */
+export const hideSense = async (senseId: string) => {
+  const res = await PostAPI(`ai-senses/${senseId}/hide/`, {});
+  return res.data as { hidden: boolean; sense_id: string };
+};
+
+/** Xoá nghĩa tuỳ chỉnh do mình tạo. Lỗi 403: không phải nghĩa của mình / là nghĩa chính thức; 409 `sense_frozen`: đã phát hành trong bộ từ. */
+export const deleteSense = async (senseId: string) => {
+  await DeleteAPI(`ai-senses/${senseId}/`);
+};
+
 /**
  * Dịch trước cho cụm nghĩa sắp học (5-8 nghĩa): nghĩa thiếu bản dịch sang `userLang` được đẩy vào hàng đợi dịch.
  * Trả id nghĩa đã đủ (ready) và còn chờ (pending); hỏi lại sau vài giây hoặc tải lại bundle.
