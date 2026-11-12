@@ -24,7 +24,7 @@ Cách chạy: bộ điều khiển adb viết tay (`drive_learn.py` trong thư m
 | B2 | Chọn nghĩa / chọn từ | 1 đáp án đúng + nhiễu cùng loại; đúng → xanh "Chính xác!"; sai → đỏ | ✅ chọn sai → thẻ đỏ có dấu ✕, chọn đúng → xanh có ✓ + thanh "Chính xác!" + "Tiếp tục" |
 | B3 | Gõ từ | Đúng qua; sai báo thử lại; sai 2 lần hiện đáp án; gợi ý hiện chữ cái | ✅ đúng qua; sai → "Chưa đúng, thử lại nhé"; sai 2 lần → "Đáp án đúng: look. Bước này sẽ được hỏi lại sau ít thẻ nữa" (tổng bước 30 → 31); gợi ý hiện "h…" rồi gõ đúng → "Chính xác!". Chưa thử "gần đúng" (sai 1 ký tự) |
 | B4 | Nghe chọn, chính tả | Có bước nghe, phát audio; tắt `hearable` bỏ bước nghe | ◐ `listenChoose` và `dictation` chạy và ghi `review_log` (phiên đầu: 8 + 10 dòng); tắt "Bước nghe" thì phiên sau chỉ còn `copy, chooseMeaning, chooseWord, typeWord`. Chưa kiểm tiếng phát ra |
-| B5 | Bước nói | Hiện khi có nhận dạng; "Không tiện nói" bỏ bước nói còn lại | ◐ bước "Đọc to từ này" hiện, hệ điều hành xin quyền micro; **không cấp quyền** (thao tác hệ thống) → app chuyển sang bước gõ. Tắt "Bước nói" thì phiên sau không còn bước nói (kiểm qua `learn_session.methods`). Chưa thử nhận dạng thật và nút "Không tiện nói". Mỗi phiên mới lại hỏi quyền (xem Phát hiện) |
+| B5 | Bước nói | Hiện khi có nhận dạng; xin quyền micro khi bấm mic; "Không tiện nói" đổi các bước nói còn lại sang gõ | ◐ bước "Đọc to từ này" hiện nút mic và "Không tiện nói, chuyển sang gõ". Bấm mic mới có hộp xin quyền micro của hệ điều hành (**không cấp quyền**, đó là thao tác hệ thống). Bấm "Không tiện nói" → các bước nói còn lại đổi sang bước gõ. Tắt "Bước nói" thì phiên sau không còn bước nói (`learn_session.methods`). Chưa thử nhận dạng thật |
 | B6 | Giãn cách trong cụm | Mỗi nghĩa quay lại xen kẽ, số bước theo cấp | ◐ nghĩa lặp lại nhiều lần xen kẽ, sai thì thêm bước hỏi lại; chưa kiểm số bước theo cấp (chỉ có thẻ cấp 0) |
 | B7 | Thẻ không ảnh | Ô trống gọn, không vỡ layout | ⏳ mọi nghĩa trong bộ đều có ảnh |
 | B8 | Thoát giữa phiên (X / Back) | Hộp "Thoát phiên học?" | ✅ hộp toàn cục "Thoát phiên học? … Phiên được giữ 1 giờ", "Ở lại" / "Thoát" |
@@ -76,8 +76,8 @@ Cách chạy: bộ điều khiển adb viết tay (`drive_learn.py` trong thư m
 
 ## Phát hiện trong lúc test (chưa sửa)
 
-1. **Gõ sai mãi thì phiên không bao giờ kết thúc**: mỗi lần sai 2 lần app thêm bước hỏi lại (36 → 54 sau ~40 lần gõ sai), không có trần. Cần quyết định giới hạn số lần hỏi lại một bước.
-2. **Quyền micro hỏi lại mỗi phiên** sau khi từ chối: app nên nhớ lựa chọn trong ngày hoặc tự bỏ bước nói.
+1. ~~Gõ sai mãi thì phiên không kết thúc~~ **Rút lại**: mỗi bước chỉ được hỏi lại một lần (`pass`), nên tổng bước tối đa gấp đôi (36 → tối đa 72). Con số 54 thấy khi test là phiên đang chạy, chưa tới trần. Đã thêm test khẳng định trần (`sai liên tục mọi bước…` trong `learning/learning.test.ts`).
+2. ~~Quyền micro hỏi lại mỗi phiên~~ **Rút lại**: app chỉ xin quyền khi bấm nút mic. Hộp xin quyền xuất hiện vì bộ điều khiển adb bấm trúng nút mic (và "Không tiện nói"), không phải app tự hỏi.
 3. **Màn học không lộ cây truy cập** cho `uiautomator` (chỉ thấy lớp Home bên dưới), nghĩa là trình đọc màn hình cũng không đọc được; cần kiểm `accessibilityLabel` của các nút trong `components/learning/`.
 4. Chữ ở màn "Hết từ mới" nói "đã học hết" cả khi bộ rỗng.
 5. Số bước ở hộp "Học tiếp" lệch 1 so với thanh tiến độ (41 so 42).

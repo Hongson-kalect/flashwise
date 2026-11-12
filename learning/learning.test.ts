@@ -113,6 +113,21 @@ test("sai 2 lần ở câu chọn: hiện đáp án, làm lại đúng bước �
   assert.ok(done.autoGrades[target] <= 2);
 });
 
+test("sai liên tục mọi bước: phiên vẫn kết thúc, mỗi bước chỉ hỏi lại 1 lần (tổng bước tối đa gấp đôi)", () => {
+  let s = startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded(5) });
+  const initial = s.totalSteps;
+  let guard = 0;
+  while (s.phase !== "summary") {
+    assert.ok(guard++ < 400, "phiên không kết thúc");
+    if (s.phase === "question") {
+      let inner = 0;
+      while (s.phase === "question" && inner++ < 6) s = wrongOne(s, T0 + guard * 10 + inner);
+      if (s.phase === "question") s = reduce(s, { type: "known", at: T0 + guard * 10 }); // bước copy không có "sai" theo kiểu chọn
+    } else s = reduce(s, { type: "next", at: T0 + guard * 10 + 5 });
+  }
+  assert.ok(s.totalSteps <= initial * 2, `${s.totalSteps} > ${initial * 2}`);
+});
+
 test("câu gõ: gợi ý tăng dần, lần thứ 3 là hiện đáp án; gần đúng được nhận nhưng tính Khó", () => {
   let s = startRun({ cards: cards(4), clusterSteps: 6, now: T0, rng: seeded() });
   assert.equal(currentQuestion(s)!.kind, "copy");
