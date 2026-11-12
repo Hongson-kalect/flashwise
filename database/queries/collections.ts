@@ -244,7 +244,7 @@ const toMyCollection = (r: any): MyCollection => {
     isOfficial: !!r.is_official,
     // Bộ đã tải: số dòng thật trong SQLite (gồm nháp của mình, bỏ dòng đã xoá) là chuẩn; item_count của server chỉ tính bản đang hiệu lực
     // nên không đổi khi xoá / thêm nghĩa nháp. Bộ chưa có dòng nào ở máy (đang tải) thì dùng item_count.
-    total: downloaded && (r.local_items ?? 0) > 0 ? r.local_items : (r.item_count ?? 0),
+    total: downloaded ? (r.local_items ?? 0) : (r.item_count ?? 0), // đã tải: đếm dòng thật ở máy (bộ rỗng là 0, không lấy số của server)
     learned: downloaded ? (r.local_learned ?? 0) : (r.learned_count ?? 0),
     downloaded,
     needsUpdate: downloaded && (r.c_version ?? 0) > (r.uc_version ?? 0),
