@@ -156,6 +156,8 @@ export interface WordSenseOption {
   example: string;
   image_preview: string | null;
   best: boolean;
+  /** Nghĩa thô tục (chỉ có trong danh sách khi người dùng đã bật hiện nội dung thô tục). */
+  offensive?: boolean;
 }
 
 export interface WordSensesResult {

@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
 
-export type ChosenSenses = { senseIds: string[]; pendingWords: string[] };
+export type ChosenSenses = { senseIds: string[]; pendingWords: string[]; offensiveWords: string[] };
 
 type Props = {
   words: string[];
@@ -124,6 +124,11 @@ const ChooseSenses = ({ words, lang, userLang, submitting, onBack, onSubmit }: P
     () => words.filter((w) => ["processing", "unknown"].includes(stat(w)?.status ?? "")),
     [results, words],
   );
+  // Từ có nghĩa thô tục đang được chọn: app báo sau khi tạo bộ
+  const offensiveWords = useMemo(
+    () => words.filter((w) => (results?.[w.toLowerCase()]?.senses ?? []).some((s) => s.offensive && (chosen[w] ?? []).includes(s.id))),
+    [results, words, chosen],
+  );
   const canSubmit = !submitting && (senseCount > 0 || pendingWords.length > 0);
 
   return (
@@ -210,14 +215,14 @@ const ChooseSenses = ({ words, lang, userLang, submitting, onBack, onSubmit }: P
           </AppText>
         </Pressable>
         <Pressable
-          onPress={() => onSubmit({ senseIds: Object.values(chosen).flat(), pendingWords })}
+          onPress={() => onSubmit({ senseIds: Object.values(chosen).flat(), pendingWords, offensiveWords })}
           disabled={!canSubmit}
           className="flex-1 h-14 rounded-2xl flex-row items-center justify-center gap-2"
           style={{ backgroundColor: theme.primary, opacity: canSubmit ? 1 : 0.45 }}
         >
           {submitting ? <ActivityIndicator color="white" /> : null}
           <AppText color="white" size="lg" weight="bold">
-            {submitting ? "Đang tạo..." : `Tạo bộ (${senseCount + pendingWords.length} nghĩa)`}
+            {submitting ? "Đang tạo..." : `Tạo bộ (${senseCount} nghĩa${pendingWords.length ? ` + ${pendingWords.length} từ mới` : ""})`}
           </AppText>
         </Pressable>
       </View>

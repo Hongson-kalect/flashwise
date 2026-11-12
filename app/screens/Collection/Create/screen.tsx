@@ -138,7 +138,7 @@ export default function CreateCollection() {
     }
   };
 
-  const createChosen = async ({ senseIds, pendingWords }: ChosenSenses) => {
+  const createChosen = async ({ senseIds, pendingWords, offensiveWords }: ChosenSenses) => {
     setError(null);
     setSubmitting(true);
     try {
@@ -150,6 +150,7 @@ export default function CreateCollection() {
           userLang,
           senseIds,
           pendingWords,
+          offensiveWords,
         }),
       );
     } catch (e) {

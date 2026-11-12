@@ -3,9 +3,11 @@ import {
   saveBundle,
   saveMyCollections,
 } from "@/database/queries/collections";
+import AppText from "@/components/AppText";
 import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { SQLiteDatabase } from "expo-sqlite";
+import { createElement } from "react";
 import {
   addWordsToCollection,
   createCollectionFromSenses,
@@ -72,8 +74,12 @@ export const noticeOffensive = (words?: string[]) => {
   useModalStore.getState().addModal({
     type: "menu",
     modalTitle: "Có nội dung thô tục",
+    header: createElement(
+      AppText,
+      { color: "subText1", style: { paddingHorizontal: 12, paddingBottom: 8 } },
+      `Bộ này có từ thô tục nên sẽ bị ẩn với người chưa bật hiện nội dung thô tục.${list}`,
+    ),
     menuOptions: [
-      { key: "info", label: `Bộ này có từ thô tục nên sẽ bị ẩn với người chưa bật hiện nội dung thô tục.${list}`, disabled: true },
       { key: "ok", label: "Đã hiểu" },
       {
         key: "never",
@@ -117,9 +123,10 @@ export const createQuick = async (
  */
 export const createAdvanced = async (
   db: SQLiteDatabase,
-  p: { name: string; description: string; lang: string; userLang: string; senseIds: string[]; pendingWords: string[] },
+  p: { name: string; description: string; lang: string; userLang: string; senseIds: string[]; pendingWords: string[]; offensiveWords?: string[] },
 ) => {
   const created = await createCollectionFromSenses(p);
+  warnOffensive(p.offensiveWords);
   if (p.pendingWords.length) {
     try {
       await addWordsToCollection(created.user_collection, p.pendingWords, p.userLang);
