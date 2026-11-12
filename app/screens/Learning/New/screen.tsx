@@ -4,6 +4,7 @@ import StateView from "@/components/learning/StateView";
 import SummaryView from "@/components/learning/SummaryView";
 import { habitLine } from "@/utils/habitText";
 import { progressOf } from "@/learning/engine";
+import { useReminder } from "@/hooks/useReminder";
 import { useAutoAdvance } from "@/learning/useAutoAdvance";
 import { useLearnRun } from "@/learning/useLearnRun";
 import { useTheme } from "@/providers/Theme";
@@ -55,8 +56,12 @@ export default function LearnNewScreen() {
 
   useAutoAdvance(state, run.next);
 
+  const { promptAfterFirstSession } = useReminder();
   useEffect(() => {
-    if (status === "done") queryClient.invalidateQueries({ queryKey: ["collections"] });
+    if (status === "done") {
+      queryClient.invalidateQueries({ queryKey: ["collections"] });
+      promptAfterFirstSession(); // sau phiên học đầu tiên: xin quyền thông báo + chọn giờ nhắc (hỏi một lần)
+    }
   }, [status]);
 
   const body = () => {

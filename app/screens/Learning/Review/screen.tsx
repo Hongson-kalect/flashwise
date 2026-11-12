@@ -1,4 +1,5 @@
 import SessionHeader from "@/components/learning/SessionHeader";
+import { useReminder } from "@/hooks/useReminder";
 import { habitLine } from "@/utils/habitText";
 import QuestionView from "@/components/learning/questions";
 import StateView from "@/components/learning/StateView";
@@ -55,9 +56,11 @@ export default function ReviewScreen() {
     return () => sub.remove();
   }, [midSession, confirmExit]);
 
+  const { promptAfterFirstSession } = useReminder();
   useEffect(() => {
     if (status === "saved") queryClient.invalidateQueries({ queryKey: ["home"] });
     if (status === "saved") queryClient.invalidateQueries({ queryKey: ["collections"] });
+    if (status === "saved") promptAfterFirstSession(); // phiên ôn đầu tiên (chưa từng được hỏi): xin quyền thông báo + chọn giờ nhắc
   }, [status]);
 
   const body = () => {

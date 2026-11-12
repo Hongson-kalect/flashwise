@@ -1,6 +1,7 @@
 import { getMedianStepMs, loadLearnSettings, LearnSettings } from "@/database/queries/learning";
 import { pickReviewBatch, reviewResultsFromCluster, ReviewSummary, saveReviewResult } from "@/database/queries/review";
 import { useAppStore } from "@/stores/appStore";
+import { rescheduleReminders } from "@/services/reminder";
 import { requestSync } from "@/services/sync/bus";
 import { readyWriteLangs } from "./inkAvailability";
 import { voiceCapabilities } from "./speechRecognizer";
@@ -123,6 +124,7 @@ export const useReviewRun = () => {
     async (result: ReviewSummary) => {
       setSummary(result);
       requestSync();
+      rescheduleReminders(db).catch(() => {}); // đã ôn hôm nay thì bỏ nhắc hôm nay
       // Còn thẻ đến hạn (kể cả thẻ vừa quên hẹn ôn lại trong ngày) thì cho "Ôn tiếp"
       try {
         const s = settings ?? (await loadLearnSettings(db));

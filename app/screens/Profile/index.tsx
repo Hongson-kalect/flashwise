@@ -4,6 +4,7 @@ import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import SyncStatus from "@/components/SyncStatus";
 import { useTheme } from "@/providers/Theme";
+import { useReminder } from "@/hooks/useReminder";
 import { nextRetention } from "@/learning/fsrsService";
 import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
@@ -35,6 +36,7 @@ export default function ProfilePage() {
   const dbService = useAppStore((s) => s.dbService);
   const userProfile = useAppStore((s) => s.userProfile);
   const updateSetting = useAppStore((s) => s.updateSetting);
+  const reminder = useReminder();
 
   // Công tắc các bước học: ghi user_settings (đồng bộ lên server) và RAM; phiên học sau đọc lại từ DB
   const toggleLearnSetting = async (key: "hearable" | "talkable" | "writable" | "auto_known") => {
@@ -213,6 +215,15 @@ export default function ProfilePage() {
           style={{ marginVertical: 16, paddingLeft: 4 }}
           title="Học tập"
         />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="bell" size={20} color="subText3" />}
+          label="Nhắc học mỗi ngày"
+          showValue
+          value={reminder.label}
+          rightContent="internalModal"
+          onPress={() => reminder.chooseHour()}
+        />
+        <Divider />
         <SettingOption
           icon={<AppIcon branch="feather" name="headphones" size={20} color="subText3" />}
           label="Bước nghe"

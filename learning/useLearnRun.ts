@@ -2,6 +2,7 @@ import { getMyCollection } from "@/database/queries/collections";
 import { autoKnownBands } from "@/database/queries/knownStats";
 import { getMedianStepMs, loadLearnSettings, pickNewCards, saveLearnResult, SaveSummary, LearnSettings } from "@/database/queries/learning";
 import { useAppStore } from "@/stores/appStore";
+import { rescheduleReminders } from "@/services/reminder";
 import { requestSync } from "@/services/sync/bus";
 import { prefetchTranslation } from "@/services/api/senses";
 import { downloadBundle } from "@/services/collections";
@@ -173,6 +174,7 @@ export const useLearnRun = (userCollectionId: string) => {
       setSummary(result);
       setStatus("done");
       requestSync();
+      rescheduleReminders(db).catch(() => {}); // đã học hôm nay thì bỏ nhắc hôm nay
     } catch (e: any) {
       setError(e?.message ?? "Không lưu được phiên học");
       setStatus("error");
