@@ -2,8 +2,10 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { haptic } from "@/ui";
-import { useState } from "react";
-import { Pressable, View } from "react-native";
+import toast from "@/utils/toast";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useRef, useState } from "react";
+import { BackHandler, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import CollectionsPage from "./screens/Collection";
 import HomePage from "./screens/Home";
@@ -26,6 +28,26 @@ export default function Layout() {
   const { bottom } = useSafeAreaInsets();
   const [active, setActive] = useState(0);
   const [visited, setVisited] = useState<number[]>([0]);
+
+  // Nút Back của máy ở màn tab: tab khác về Trang chủ trước; ở Trang chủ phải bấm 2 lần (trong 2 giây) mới thoát app.
+  // Chỉ gắn khi màn tab đang được xem (vào màn con thì Back quay lại như bình thường).
+  const lastBack = useRef(0);
+  useFocusEffect(
+    useCallback(() => {
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+        if (active !== 0) {
+          setActive(0);
+          return true;
+        }
+        const now = Date.now();
+        if (now - lastBack.current < 2000) return false; // lần 2: để hệ thống thoát app
+        lastBack.current = now;
+        toast.info("Nhấn Back lần nữa để thoát");
+        return true;
+      });
+      return () => sub.remove();
+    }, [active]),
+  );
 
   const select = (i: number) => {
     if (i !== active) haptic("selection");
