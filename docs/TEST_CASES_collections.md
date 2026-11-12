@@ -182,3 +182,13 @@ Chưa chạy: A6–A10, B (Chuyên sâu), C3 / C5 / C6 (ảnh bìa, đếm dịc
 
 - **G3 trong app**: banner "Có bản mới của bộ này" ở chi tiết bộ giờ gọi `updates` rồi hiện hộp "Cập nhật bộ?" nêu thay đổi ("Thêm 0, sửa 0, bớt 1 nghĩa (v1 → v2)"), kèm dòng "n nghĩa bạn đã sửa trùng với thay đổi của tác giả: bản của bạn được giữ" khi có `conflicts`. Bấm Cập nhật → `update-version` rồi tải lại bundle, banner tắt, số nghĩa 3 → 2. Kiểm trên máy ảo: tải bộ remix v1, tác giả (user 5) xoá `house` và phát hành v2. Nhánh `conflicts` mới kiểm ở API (vòng 5), chưa dựng trên giao diện. Trước đây banner chỉ tải lại bundle (server ghim version nên không đổi).
 - **G5**: dòng "Xoá bộ khỏi máy" (người đã tải) / "Xoá bộ này" (tác giả) dưới nút chính của chi tiết bộ, có hộp xác nhận. Người đã tải: `DELETE user-collections/{id}/` (xoá mềm dòng của mình, bộ gốc không đổi) + gỡ khỏi SQLite; bộ hiện lại ở "Gợi ý cho bạn". Tác giả: `DELETE collections/{id}/` (bộ nháp xoá mềm; bộ đã phát hành chỉ ẩn khỏi Khám phá, người đã tải vẫn học). Tiến độ học giữ vì nằm ở bảng riêng. Kiểm trên máy ảo cả hai nhánh (bộ remix của người khác, bộ nháp `Offline A8`); nhánh tác giả của bộ đã phát hành chưa kiểm trên giao diện.
+
+## Vòng 7 (2026-11-12): nhóm case nhanh trước khi test học
+
+- **A7**: bộ Nhanh 22 từ có sẵn → vào ngay trong ~7 giây, 22 nghĩa, không timeout. Đạt.
+- **C6**: thêm từ mới `xylophone` vào bộ, thoát màn rồi vào lại sau ~10 giây → từ đã vào bộ (23 nghĩa), banner "Đang tạo" hết. Đạt (từ tạo xong nhanh nên chưa kiểm được trường hợp polling còn chạy lúc vào lại).
+- **C5**: đổi ngôn ngữ dịch sang tiếng Ý → "Đã có bản dịch 0/23 nghĩa. Phần còn lại sẽ được dịch khi bạn học tới"; đổi lại tiếng Việt thì banner hết. Đạt (trang Ngôn ngữ nên có nhãn rõ cho từng danh sách).
+- **D4**: xoá hết nghĩa của bộ nháp → "Bộ này chưa có nghĩa nào", nút Phát hành khoá (khớp E4). **Lỗi tìm ra và đã sửa**: đầu trang vẫn ghi "1 Nghĩa / 1 Chưa học" vì `total` rơi về `item_count` của server khi số dòng ở máy bằng 0; nay bộ đã tải luôn đếm dòng thật ở máy (`database/queries/collections.ts`). Còn lại: nút "Học từ mới" vẫn sáng khi bộ rỗng (xem khi test học).
+- **E7**: bộ đã phát hành không còn nút "Đổi ảnh" (đổi ảnh qua màn Phát hành; API 409 đã kiểm vòng 1). Đạt.
+- **E8**: "Bộ đã phát hành của tôi": 1 bộ, 1 xem, 1 thích, 2 tải, "Phiên bản 3 · 2 nghĩa", khớp server. Lệch nhỏ: ảnh bìa trong màn này hiện chữ "T" thay ảnh của bộ.
+- **Chưa chạy**: A10 (quota, bỏ theo yêu cầu), C3 (đổi ảnh bìa cần trình chọn ảnh), D5, F7 trên app, F9, H2 (chuyển sang phần học).
