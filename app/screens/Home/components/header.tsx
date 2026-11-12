@@ -18,7 +18,7 @@ const Chip = ({
   value,
   color,
 }: {
-  icon: "local-fire-department" | "bolt";
+  icon: "local-fire-department" | "bolt" | "shield";
   value: string;
   color: string;
 }) => {
@@ -36,13 +36,14 @@ const Chip = ({
   );
 };
 
-const HomeHeader = () => {
+const HomeHeader = ({ streak: streakProp, shield, xp: xpProp }: { streak?: number; shield?: number; xp?: number }) => {
   const profile = useAppStore((s) => s.userProfile);
   const authUser = useAuthStore((s) => s.user);
   const { theme } = useTheme();
   const name = (profile?.full_name || authUser?.full_name || "").trim();
-  const streak = profile?.current_streak ?? authUser?.current_streak ?? 0;
-  const xp = profile?.total_xp ?? authUser?.total_xp ?? 0;
+  // Số tính ở máy (database/queries/habit.ts); chưa đọc xong thì lấy bản lúc mở app / từ server
+  const streak = streakProp ?? profile?.current_streak ?? authUser?.current_streak ?? 0;
+  const xp = xpProp ?? profile?.total_xp ?? authUser?.total_xp ?? 0;
 
   return (
     <View className="flex-row items-center justify-between">
@@ -56,6 +57,7 @@ const HomeHeader = () => {
       </View>
       <View className="flex-row gap-2">
         <Chip icon="local-fire-department" color={theme.accent} value={String(streak)} />
+        <Chip icon="shield" color={theme.primary} value={String(shield ?? 0)} />
         <Chip icon="bolt" color={theme.primary} value={String(xp)} />
       </View>
     </View>

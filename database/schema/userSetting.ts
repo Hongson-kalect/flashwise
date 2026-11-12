@@ -1,6 +1,5 @@
 import { UserSetting, UserSettingObj } from "@/interfaces/db.type";
 import { SQLiteDatabase } from "expo-sqlite";
-import { createDBService } from ".";
 
 export const generateString = /*sql*/ `
 CREATE TABLE IF NOT EXISTS user_settings (

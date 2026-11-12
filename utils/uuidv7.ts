@@ -1,11 +1,18 @@
-import * as Crypto from "expo-crypto";
+/** Byte ngẫu nhiên: expo-crypto trong app; ngoài app (test Node, không nạp được react-native) dùng crypto của Node. */
+const randomBytesOf = (n: number): Uint8Array => {
+  try {
+    return require("expo-crypto").getRandomBytes(n);
+  } catch {
+    return globalThis.crypto.getRandomValues(new Uint8Array(n));
+  }
+};
 
 export const uuidv7 = () => {
   // 1. Lấy timestamp hiện tại (mili giây)
   const timestamp = Date.now();
 
   // 2. Tạo 10 bytes ngẫu nhiên cho phần còn lại
-  const randomBytes = Crypto.getRandomBytes(10);
+  const randomBytes = randomBytesOf(10);
 
   // 3. Chuyển timestamp thành hex (12 ký tự)
   let hex = timestamp.toString(16).padStart(12, "0");

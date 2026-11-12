@@ -1,4 +1,5 @@
 import SessionHeader from "@/components/learning/SessionHeader";
+import { habitLine } from "@/utils/habitText";
 import QuestionView from "@/components/learning/questions";
 import StateView from "@/components/learning/StateView";
 import SummaryView from "@/components/learning/SummaryView";
@@ -91,13 +92,13 @@ export default function ReviewScreen() {
       );
     }
     if (status === "saved" && r.summary) {
-      const { reviewed, remembered, forgotten, xp } = r.summary;
+      const { reviewed, remembered, forgotten, xp, habit } = r.summary;
       return (
         <StateView
           icon="check-circle"
           tone="success"
           title="Đã lưu!"
-          message={`${reviewed} thẻ: nhớ ${remembered}, quên ${forgotten} · +${xp} XP.${forgotten ? " Thẻ quên sẽ quay lại ôn sớm." : ""}`}
+          message={`${reviewed} thẻ: nhớ ${remembered}, quên ${forgotten} · +${xp} XP.${forgotten ? " Thẻ quên sẽ quay lại ôn sớm." : ""}${habitLine(habit)}`}
           actions={[
             ...(r.remaining > 0 ? [{ label: `Ôn tiếp (còn ${r.remaining} thẻ)`, onPress: r.reload, primary: true }] : []),
             { label: "Xong", onPress: leave, primary: r.remaining === 0 },

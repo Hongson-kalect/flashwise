@@ -161,6 +161,26 @@ test("pull: tiến độ local mới hơn bản server thì giữ local; server 
   assert.deepEqual([row.id, row.level], [U1, 6]); // id local giữ nguyên
 });
 
+test("pull day_learn_log: ngày khiên che (is_shield) kéo về được và không bị gỡ cờ", async () => {
+  await db.runAsync(`INSERT INTO day_learn_log (id, date, is_shield) VALUES (?, '2026-11-06', 1)`, [U1]);
+  await db.runAsync(`DELETE FROM sync_queue`);
+  await runSync(
+    db,
+    makeApi({
+      day_learn_log: [
+        {
+          items: [
+            { id: "s1", date: "2026-11-07", is_shield: true, updated_at: "2026-11-08T10:00:00Z" },
+            { id: "s2", date: "2026-11-06", is_shield: false, updated_at: "2026-11-08T10:00:00Z" }, // server cũ chưa có cờ: không gỡ cờ ở máy
+          ],
+        },
+      ],
+    }).api,
+  );
+  const rows = await db.getAllAsync<any>(`SELECT date, is_shield FROM day_learn_log ORDER BY date`);
+  assert.deepEqual(rows.map((r) => [r.date, r.is_shield]), [["2026-11-06", 1], ["2026-11-07", 1]]);
+});
+
 test("pull day_learn_log: bộ đếm lấy max; note và session áp được", async () => {
   await db.runAsync(`INSERT INTO day_learn_log (id, date, words_learned, xp_earned) VALUES (?, '2026-11-05', 6, 35)`, [U1]);
   await db.runAsync(`DELETE FROM sync_queue`);

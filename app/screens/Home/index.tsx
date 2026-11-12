@@ -3,6 +3,7 @@ import { useFocusEffect } from "expo-router";
 import { ReactNode, useCallback, useState } from "react";
 import { RefreshControl, View } from "react-native";
 import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
+import HabitCard from "./components/habitCard";
 import HomeHeader from "./components/header";
 import Mistakes from "./components/mistakes";
 import Progress from "./components/progress";
@@ -43,7 +44,7 @@ export default function HomePage() {
         contentContainerStyle={{ paddingTop: 8, paddingBottom: 40, gap: 24 }}
       >
         <View className="px-4">
-          <HomeHeader />
+          <HomeHeader streak={data?.habit.state.streak} shield={data?.habit.state.shield} xp={data?.habit.totalXp} />
         </View>
         <View className="px-4" onLayout={(e) => setSearchY(e.nativeEvent.layout.y)}>
           <HomeSearch anchorY={searchY} scrollY={scrollY} setOverlay={setOverlay} />
@@ -57,6 +58,9 @@ export default function HomePage() {
             today={data?.today}
             goal={dailyGoal}
           />
+        </View>
+        <View className="px-4">
+          <HabitCard view={data?.habit} />
         </View>
         <Mistakes items={data?.mistakes ?? []} />
         <Suggested />

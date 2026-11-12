@@ -1,3 +1,4 @@
+import { getHabitView } from "@/database/queries/habit";
 import {
   dateKey,
   getDueCount,
@@ -19,14 +20,15 @@ export const useHomeData = () => {
   const q = useQuery({
     queryKey: ["home", dayStartHour],
     queryFn: async () => {
-      const [due, week, mistakes] = await Promise.all([
+      const [due, week, mistakes, habit] = await Promise.all([
         getDueCount(db, dayStartHour),
         getRecentLogs(db, 7, dayStartHour),
         getMistakeWords(db),
+        getHabitView(db),
       ]);
       const todayKey = dateKey(learningDayBounds(dayStartHour).start);
       const today = week.find((d) => d.date === todayKey) ?? week[week.length - 1];
-      return { due, week, today, mistakes };
+      return { due, week, today, mistakes, habit };
     },
     staleTime: 0,
     // Thẻ vừa học / vừa quên hẹn vài phút hoặc vài giờ: tới giờ thì số "đến hạn" phải tự đổi (đọc SQLite nên rẻ)

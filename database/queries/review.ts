@@ -6,6 +6,7 @@ import { fromDbTime, toDbTime } from "@/learning/time";
 import { AGAIN, glossOf, Grade, LearnCard, StepLog } from "@/learning/types";
 import { uuidv7 } from "@/utils/uuidv7";
 import { SQLiteDatabase } from "expo-sqlite";
+import { HabitReport, trackHabit } from "./habit";
 import { DUE_SQL, dateKey, learningDayBounds } from "./home";
 import { LearnSettings } from "./learning";
 
@@ -149,6 +150,8 @@ export interface ReviewSummary {
   forgotten: number;
   xp: number;
   seconds: number;
+  /** Streak / khiên / habit sau phiên (database/queries/habit.ts). */
+  habit?: HabitReport;
 }
 
 const XP_REVIEW: Record<ReviewMode, number> = { normal: 5, quick: 2 };
@@ -270,6 +273,7 @@ export const saveReviewResult = async (db: SQLiteDatabase, input: ReviewSaveInpu
          sessions_count = sessions_count + 1, updated_at = DATETIME('now')`,
       [uuidv7(), day, summary.reviewed, seconds, summary.xp],
     );
+    summary.habit = await trackHabit(db, { dayStartHour: settings.dayStartHour, activity: true, now: new Date(input.endedAt) });
   });
   return summary;
 };

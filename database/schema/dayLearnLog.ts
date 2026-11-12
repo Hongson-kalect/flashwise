@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS day_learn_log (
     app_time INTEGER DEFAULT 0,                     -- Tổng thời gian mở app (tính bằng giây)
     xp_earned INTEGER DEFAULT 0,
     sessions_count INTEGER DEFAULT 0,
+    is_shield INTEGER DEFAULT 0,                    -- 1 = ngày nghỉ được khiên che (không có học); server tính là ngày có hoạt động cho streak
 
     created_at TEXT DEFAULT (DATETIME('now')),
     updated_at TEXT DEFAULT (DATETIME('now')),

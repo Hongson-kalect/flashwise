@@ -211,9 +211,9 @@ const applyRows: Record<string, (db: Db, rows: any[]) => Promise<number>> = {
     for (const raw of rows) {
       const row = normalize(raw, cols);
       if (!row.date) continue;
-      const counters = ["words_learned", "words_relearned", "learn_time", "app_time", "xp_earned", "sessions_count"].filter((c) => c in row);
+      const counters = ["words_learned", "words_relearned", "learn_time", "app_time", "xp_earned", "sessions_count", "is_shield"].filter((c) => c in row);
       const keys = Object.keys(row);
-      // Bộ đếm chỉ tăng: 2 máy cùng ngày thì lấy giá trị lớn hơn
+      // Bộ đếm chỉ tăng: 2 máy cùng ngày thì lấy giá trị lớn hơn (is_shield: 1 nếu máy nào đó đã đánh dấu khiên che)
       await db.runAsync(
         `INSERT INTO day_learn_log (${keys.join(",")}) VALUES (${keys.map(() => "?").join(",")})
          ON CONFLICT(date) DO UPDATE SET ${counters.map((c) => `${c} = MAX(${c}, excluded.${c})`).join(", ") || "date = date"}`,

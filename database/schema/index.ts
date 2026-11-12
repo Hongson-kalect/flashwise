@@ -1,46 +1,14 @@
+import { copyAsync, deleteAsync } from "expo-file-system";
 import * as SQLite from "expo-sqlite";
 import { SQLiteDatabase } from "expo-sqlite";
-import { generateString as aiSenseGenerateString } from "./aiSense";
-import { generateString as aiWordGenerateString } from "./aiWord";
-import { generateString as collectionGenerateString } from "./collection";
-import { generateString as collectionItemsGenerateString } from "./collectionItems";
-import { generateString as dailyStudyCacheGenerateString } from "./dailyStudyCache";
-import { generateString as dayLearnLogGenerateString } from "./dayLearnLog";
-import { generateString as imageLibraryGenerateString } from "./imageLibrary";
-import { generateString as learnSessionGenerateString } from "./learnSession";
-import { generateString as notificationGenerateString } from "./notification";
-import { generateString as restrictedListGenerateString } from "./restrictedList";
-import { generateString as reviewLogGenerateString } from "./reviewLog";
-import { generateString as senseMetadataGenerateString } from "./senseMetadata";
-import { generateString as syncQueueGenerateString } from "./syncQueue";
-import {
-  getSystemConfigs,
-  generateString as systemConfigGenerateString,
-  seedData as systemConfigseedData,
-} from "./systemConfig";
-import {
-  getActiveTheme,
-  generateString as themeGenerateString,
-  seedData as themeseedData,
-} from "./theme";
-import { generateString as userCollectionGenerateString } from "./userCollection";
-import { generateString as userInteractionGenerateString } from "./userInteraction";
-import { generateString as userNoteGenerateString } from "./userNote";
-import {
-  getUserProfile,
-  generateString as userProfileGenerateString,
-  seedData as userProfileseedData,
-} from "./userProfile";
-import { generateString as userSenseProgressGenerateString } from "./userSenseProgress";
-import {
-  getUserSettings,
-  setLearningLanguage,
-  setSetting,
-  setShowTranslation,
-  setTranslateLanguage,
-  generateString as userSettingGenerateString,
-  seedData as userSettingseedData,
-} from "./userSetting";
+import { LATEST_VERSION, migrate, MigrationDb } from "../migrations";
+import { generateSchema, generateSeedData } from "./ddl";
+import { getSystemConfigs } from "./systemConfig";
+import { getActiveTheme } from "./theme";
+import { getUserProfile } from "./userProfile";
+import { getUserSettings, setLearningLanguage, setSetting, setShowTranslation, setTranslateLanguage } from "./userSetting";
+
+export { generateSchema } from "./ddl";
 
 export const createDBService = (db: SQLiteDatabase) => ({
   getActiveTheme: () => getActiveTheme(db),
@@ -53,62 +21,32 @@ export const createDBService = (db: SQLiteDatabase) => ({
   setSetting: (key: string, val: unknown) => setSetting(db, key, val),
 });
 
-export const generateSchema = `
-    ${notificationGenerateString}
-    ${userProfileGenerateString}
-    ${userSettingGenerateString}
-    ${systemConfigGenerateString}
-    ${themeGenerateString}
-    ${aiWordGenerateString}
-    ${senseMetadataGenerateString}
-    ${aiSenseGenerateString}
-    
-    ${userNoteGenerateString}
-    ${collectionGenerateString}
-    ${collectionItemsGenerateString}
-    ${dayLearnLogGenerateString}
-    ${dailyStudyCacheGenerateString}
-    ${imageLibraryGenerateString}
-    
-    ${learnSessionGenerateString}
-    ${restrictedListGenerateString}
-    ${userCollectionGenerateString}
-    
-    ${userInteractionGenerateString}
-    ${userSenseProgressGenerateString}
-    ${reviewLogGenerateString}
-    ${syncQueueGenerateString}
-`;
-
-const generateSeedData = `
-${systemConfigseedData}
-${themeseedData}
-${userProfileseedData}
-${userSettingseedData}
-`;
-
-/** Băm chuỗi schema + seed (djb2, 31 bit) để biết schema có đổi không. */
-const hashText = (text: string) => {
-  let h = 5381;
-  for (let i = 0; i < text.length; i++) h = ((h << 5) + h + text.charCodeAt(i)) & 0x7fffffff;
-  return h;
-};
-// Seed chứa id ngẫu nhiên nên không đưa vào hash; đổi seed (theme, setting mặc định) thì tăng SEED_VERSION để DB tạo lại.
-const SEED_VERSION = 1;
-const SCHEMA_HASH = hashText(generateSchema + SEED_VERSION);
-
 /**
- * Giữ nguyên dữ liệu giữa các lần mở app (cần cho bộ từ tải về học offline). Chỉ xoá và tạo lại DB khi
- * schema đổi hoặc SEED_VERSION đổi (hash lưu ở PRAGMA user_version), nên sửa schema trong lúc dev vẫn không cần migration.
+ * Mở DB: DB mới thì tạo schema + seed; DB cũ thì nâng version bằng migration (database/migrations), giữ nguyên dữ liệu học.
+ * Chép file DB ra `.bak` trước khi nâng (chỉ giữ 1 bản); migration lỗi thì ném lỗi (app báo lỗi, không chạy tiếp trên schema thiếu cột).
  */
 export const initDatabase = async (db: SQLiteDatabase) => {
   const row = await db.getFirstAsync<{ user_version: number }>("PRAGMA user_version");
-  if (row?.user_version === SCHEMA_HASH) return;
+  if (row && row.user_version !== 0 && row.user_version !== LATEST_VERSION) await backupBeforeMigrate(db);
+  const result = await migrate(db as unknown as MigrationDb, async () => {
+    await clearDatabase(db);
+    await db.execAsync(generateSchema);
+    await db.execAsync(generateSeedData);
+  });
+  if (!result.fresh && result.from !== result.to) console.log(`[DB] migration ${result.from} -> ${result.to}`);
+};
 
-  await clearDatabase(db);
-  await db.execAsync(generateSchema);
-  await db.execAsync(generateSeedData);
-  await db.execAsync(`PRAGMA user_version = ${SCHEMA_HASH}`);
+const backupBeforeMigrate = async (db: SQLiteDatabase) => {
+  try {
+    await db.execAsync("PRAGMA wal_checkpoint(TRUNCATE)");
+    const path = (db as any).databasePath as string | undefined;
+    if (!path) return;
+    const uri = path.startsWith("file://") ? path : `file://${path}`;
+    await deleteAsync(`${uri}.bak`, { idempotent: true });
+    await copyAsync({ from: uri, to: `${uri}.bak` });
+  } catch (e) {
+    console.warn("[DB] không sao lưu được trước khi migrate:", e);
+  }
 };
 
 export const clearDatabase = async (db: SQLite.SQLiteDatabase) => {

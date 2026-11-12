@@ -1,3 +1,4 @@
+import { useHabitCheck } from "@/hooks/useHabitCheck";
 import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
 import { isColorDark } from "@/utils/color";
@@ -18,6 +19,7 @@ export const AppWrapper = ({ children }: { children: React.ReactNode }) => {
 
   const db = useSQLiteContext();
   const { bootstrapAppData, setServerConfig } = useAppStore();
+  useHabitCheck();
 
   useEffect(() => {
     if (db) {

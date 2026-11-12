@@ -7,6 +7,7 @@ import { AGAIN, glossOf, LearnCard } from "@/learning/types";
 import { toDbTime } from "@/learning/time";
 import { uuidv7 } from "@/utils/uuidv7";
 import { SQLiteDatabase } from "expo-sqlite";
+import { trackHabit, HabitReport } from "./habit";
 import { dateKey, learningDayBounds } from "./home";
 import { getUserSettings } from "../schema/userSetting";
 
@@ -151,6 +152,8 @@ export interface SaveSummary {
   auto: number;
   xp: number;
   seconds: number;
+  /** Streak / khiên / habit sau phiên (database/queries/habit.ts). */
+  habit?: HabitReport;
 }
 
 const XP_NEW = 10;
@@ -250,6 +253,7 @@ export const saveLearnResult = async (db: SQLiteDatabase, input: SaveInput, sett
          sessions_count = sessions_count + 1, updated_at = DATETIME('now')`,
       [uuidv7(), day, summary.learned, seconds, summary.xp],
     );
+    summary.habit = await trackHabit(db, { dayStartHour: settings.dayStartHour, activity: true, now: new Date(input.endedAt) });
   });
   return summary;
 };
