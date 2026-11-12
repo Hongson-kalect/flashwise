@@ -90,10 +90,10 @@ export interface WordSuggestion {
 }
 
 /** Mã lý do AI không gợi ý được cho cụm gõ (server): từ chối hoặc hạn chế tạm. */
-export type AiReason = "ok" | "sentence" | "offensive" | "spam" | "injection" | "not_a_word" | "quota" | "unavailable";
+export type AiReason = "ok" | "sentence" | "offensive" | "sensitive" | "spam" | "injection" | "not_a_word" | "quota" | "unavailable";
 
 /** Dòng gợi ý có thêm nguồn: `ai` = do AI đề xuất, `in_db` = từ đã có nghĩa chính thức trong hệ thống (kèm `sense_id` nghĩa khớp). */
-export type SuggestRow = WordSuggestion & { source?: "ai"; in_db?: boolean };
+export type SuggestRow = WordSuggestion & { source?: "ai"; in_db?: boolean; offensive?: boolean };
 
 /**
  * Gợi ý khi thêm từ vào bộ. mode "word": gõ từ của ngôn ngữ đang học (đầu từ, rồi gần giống). mode "meaning": gõ nghĩa bằng ngôn ngữ

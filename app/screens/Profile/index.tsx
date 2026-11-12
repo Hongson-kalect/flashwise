@@ -6,6 +6,8 @@ import SyncStatus from "@/components/SyncStatus";
 import { useTheme } from "@/providers/Theme";
 import { nextRetention } from "@/learning/fsrsService";
 import { useAppStore } from "@/stores/appStore";
+import useModalStore from "@/stores/modalStore";
+import { requestSync } from "@/services/sync/bus";
 import { learningLanguages, motherLanguages } from "@/constants/languages";
 import Slider from "@react-native-community/slider";
 import { router } from "expo-router";
@@ -39,6 +41,24 @@ export default function ProfilePage() {
     const next = settings?.[key] === false;
     updateSetting({ [key]: next });
     await dbService?.setSetting(key, next);
+  };
+
+  // Hiện nội dung thô tục (mặc định tắt): bật thì gợi ý từ và Khám phá có từ / bộ thô tục. Ghi user_settings để server cũng lọc theo
+  const addModal = useModalStore((s) => s.addModal);
+  const applyOffensive = async (next: boolean) => {
+    updateSetting({ show_offensive: next });
+    await dbService?.setSetting("show_offensive", next);
+    requestSync();
+  };
+  const toggleOffensive = () => {
+    if (settings?.show_offensive === true) return applyOffensive(false);
+    addModal({
+      type: "confirm",
+      title: "Hiện nội dung thô tục?",
+      message: "Gợi ý từ và Khám phá sẽ có thêm từ thô tục và các bộ chứa chúng. Chỉ bật nếu bạn từ 18 tuổi trở lên.",
+      okText: "Bật",
+      onOk: () => applyOffensive(true),
+    });
   };
 
   // Mục tiêu nhớ (FSRS request_retention): bấm để đổi vòng 80% → 85% → 90% → 95%
@@ -232,6 +252,14 @@ export default function ProfilePage() {
           value={`${Math.round((typeof settings?.request_retention === "number" ? settings.request_retention : 0.9) * 100)}%`}
           rightContent="internalModal"
           onPress={cycleRetention}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="eye-off" size={20} color="subText3" />}
+          label="Hiện nội dung thô tục"
+          rightContent="toggle"
+          value={settings?.show_offensive === true}
+          onPress={toggleOffensive}
         />
         <Divider />
 

@@ -3,6 +3,8 @@ import {
   saveBundle,
   saveMyCollections,
 } from "@/database/queries/collections";
+import { useAppStore } from "@/stores/appStore";
+import useModalStore from "@/stores/modalStore";
 import { SQLiteDatabase } from "expo-sqlite";
 import {
   addWordsToCollection,
@@ -52,10 +54,42 @@ export const downloadBundle = async (
 
 /** Thêm bộ có sẵn (Discover / gợi ý) vào thư viện rồi tải về máy. Trả id UserCollection. */
 export const addAndDownload = async (db: SQLiteDatabase, collectionId: string, userLang: string) => {
-  const id = await downloadCollection(collectionId);
+  const { id, offensive } = await downloadCollection(collectionId);
+  if (offensive) noticeOffensive();
   await syncMyCollections(db);
   await downloadBundle(db, id, userLang);
   return id;
+};
+
+/**
+ * Thông báo bộ có từ thô tục khi thêm từ hoặc tải bộ (kể cả khi đã bật hiện nội dung thô tục). Người dùng chọn "Không hiển thị lại"
+ * thì ghi user_settings.offensive_notice_hidden và lần sau bỏ qua.
+ */
+export const noticeOffensive = (words?: string[]) => {
+  const { settings, dbService, updateSetting } = useAppStore.getState();
+  if (settings?.offensive_notice_hidden === true) return;
+  const list = words?.length ? `\n\nTừ thô tục: ${words.slice(0, 5).join(", ")}${words.length > 5 ? "…" : ""}.` : "";
+  useModalStore.getState().addModal({
+    type: "menu",
+    modalTitle: "Có nội dung thô tục",
+    menuOptions: [
+      { key: "info", label: `Bộ này có từ thô tục nên sẽ bị ẩn với người chưa bật hiện nội dung thô tục.${list}`, disabled: true },
+      { key: "ok", label: "Đã hiểu" },
+      {
+        key: "never",
+        label: "Không hiển thị lại",
+        onPress: () => {
+          updateSetting({ offensive_notice_hidden: true });
+          dbService?.setSetting("offensive_notice_hidden", true);
+        },
+      },
+    ],
+  });
+};
+
+/** Giữ tên cũ cho chỗ gọi với danh sách từ thô tục trả từ server. */
+export const warnOffensive = (words?: string[]) => {
+  if (words?.length) noticeOffensive(words);
 };
 
 /** Sau khi tạo bộ: kéo danh sách bộ + tải nội dung về máy. Lỗi mạng ở bước này không làm mất bộ đã tạo (mở ra sẽ có nút tải). */
@@ -73,6 +107,7 @@ export const createQuick = async (
   p: { name: string; description: string; lang: string; userLang: string; words: string[]; senses?: Record<string, string> },
 ) => {
   const created = await createCollectionFromWords(p);
+  warnOffensive(created.offensive_words);
   return finishCreate(db, created.user_collection, p.userLang);
 };
 

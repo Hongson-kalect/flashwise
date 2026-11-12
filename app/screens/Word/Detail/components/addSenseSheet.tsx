@@ -53,6 +53,7 @@ const REJECT_TEXT: Record<string, { title: string; body: string }> = {
   too_vague: { title: "Chưa thêm được nghĩa này", body: "Mô tả còn quá chung chung. Hãy viết cụ thể hơn." },
   unverifiable: { title: "Chưa xác nhận được nghĩa này", body: "Đây là nghĩa hiếm hoặc khẩu ngữ mà hệ thống chưa kiểm chứng được." },
   offensive: { title: "Nội dung không được chấp nhận", body: "Nội dung có từ ngữ xúc phạm hoặc thông tin cá nhân. Hãy chỉ mô tả nghĩa của từ." },
+  sensitive: { title: "Nội dung không được chấp nhận", body: "Nội dung liên quan đến xúc phạm, thù ghét hoặc vấn đề chính trị nhạy cảm nên bị từ chối." },
   spam: { title: "Nội dung không được chấp nhận", body: "Nội dung giống quảng cáo hoặc spam. Hãy chỉ mô tả nghĩa của từ." },
   injection: { title: "Nội dung không được chấp nhận", body: "Nội dung có dấu hiệu cố điều khiển hệ thống. Hãy chỉ mô tả nghĩa của từ." },
 };

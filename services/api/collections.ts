@@ -57,7 +57,7 @@ export const fetchMyCollections = async () => {
 /** Thêm bộ có sẵn vào thư viện của mình. Trả id UserCollection (đã có rồi thì 200 cùng id). */
 export const downloadCollection = async (collectionId: string) => {
   const res = await PostAPI(`user-collections/${collectionId}/download/`, {});
-  return res.data?.id as string;
+  return { id: res.data?.id as string, offensive: res.data?.offensive === true };
 };
 
 /** Gói học offline (core/bundle.py): các bảng đúng cột SQLite. */
@@ -89,6 +89,8 @@ export interface CreatedCollection {
   name: string;
   pending_words?: string[];
   invalid_words?: string[];
+  /** Từ có nghĩa thô tục trong bộ vừa tạo (app cảnh báo). */
+  offensive_words?: string[];
 }
 
 /** Chế độ nhanh: server tự chọn nghĩa chính thức tốt nhất của mỗi từ; từ chưa có thì AI tạo dần (pending_words). */
@@ -132,7 +134,7 @@ export const addWordsToCollection = async (userCollectionId: string, words: stri
     { timeout: 60_000 },
   );
   /** unavailable: chỉ khi không phải tác giả (remix): từ chưa có nghĩa chính thức, không được thêm. */
-  return res.data as { added: string[]; pending_words: string[]; invalid_words: string[]; unavailable: string[] };
+  return res.data as { added: string[]; pending_words: string[]; invalid_words: string[]; unavailable: string[]; offensive_words?: string[] };
 };
 
 /**

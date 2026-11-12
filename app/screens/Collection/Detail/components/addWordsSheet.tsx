@@ -6,6 +6,7 @@ import WordSuggest from "../../components/wordSuggest";
 import { useAppStore } from "@/stores/appStore";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
+import { warnOffensive } from "@/services/collections";
 import toast from "@/utils/toast";
 
 type Props = { userCollectionId: string; userLang: string; onDone: () => void };
@@ -35,6 +36,7 @@ const AddWordsSheet = ({ userCollectionId, userLang, onDone }: Props) => {
         Object.fromEntries(Object.entries(choices).filter(([w]) => words.some((x) => x.toLowerCase() === w))),
       );
       onDone();
+      warnOffensive(res.offensive_words);
       if (res.unavailable?.length) {
         toast.warning(`Chưa có nghĩa cho: ${res.unavailable.slice(0, 5).join(", ")}`, { long: true });
       }

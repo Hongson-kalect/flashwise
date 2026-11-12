@@ -32,6 +32,7 @@ const AI_REASON_TEXT: Partial<Record<AiReason, string>> = {
   sentence: "Hãy gõ một từ hoặc cụm từ ngắn, không phải cả câu.",
   not_a_word: "Chưa hiểu cụm này là từ gì, thử gõ lại.",
   offensive: "Nội dung này không được gợi ý.",
+  sensitive: "Nội dung này không được gợi ý.",
   spam: "Nội dung này không được gợi ý.",
   injection: "Nội dung này không được gợi ý.",
   quota: "Hôm nay bạn đã dùng hết lượt gợi ý tự động. Vẫn có thể gõ thẳng từ vào danh sách.",
