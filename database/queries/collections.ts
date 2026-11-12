@@ -358,3 +358,15 @@ export const setLocalOrder = async (db: SQLiteDatabase, itemIds: string[]) => {
     }
   });
 };
+
+export type OwnedCollection = { id: string; isAuthor: boolean };
+
+/** Bộ công khai nào đã nằm trong thư viện của mình (theo collection_id): id user_collection và mình có phải tác giả không. Để Khám phá đánh dấu bộ của mình / đã tải. */
+export const getOwnedCollectionMap = async (db: SQLiteDatabase) => {
+  const rows = await db.getAllAsync<{ id: string; collection_id: string; is_author: number | null }>(
+    `SELECT id, collection_id, is_author FROM user_collection WHERE is_deleted = 0 AND collection_id IS NOT NULL AND downloaded_at IS NOT NULL`,
+  );
+  const map: Record<string, OwnedCollection> = {};
+  for (const r of rows) map[r.collection_id] = { id: r.id, isAuthor: !!r.is_author };
+  return map;
+};

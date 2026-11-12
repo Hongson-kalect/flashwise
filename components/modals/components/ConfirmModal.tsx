@@ -29,6 +29,7 @@ const ConfirmModal = (modal: Props) => {
           }}
         />
         <ModalButton
+          variant={modal.destructive ? "danger" : "primary"}
           label={modal.okText || "OK"}
           onPress={async () => {
             await modal.onOk?.();

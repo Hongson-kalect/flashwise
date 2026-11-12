@@ -1,12 +1,17 @@
 import * as FileSystem from "expo-file-system";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
-import { Alert } from "react-native";
+import useModalStore from "@/stores/modalStore";
 
 export const pickImage = async (aspect: [number, number] = [1, 1]) => {
   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (status !== "granted") {
-    Alert.alert("Permission denied", "We need access to your photos!");
+    useModalStore.getState().addModal({
+      type: "alert",
+      title: "Chưa được cấp quyền",
+      message: "Cần quyền truy cập ảnh để chọn ảnh. Bạn có thể bật lại trong Cài đặt của máy.",
+      okText: "Đã hiểu",
+    });
     return;
   }
 

@@ -10,12 +10,13 @@ import { useTheme } from "@/providers/Theme";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { downloadBundle, refreshPending, unpublish } from "@/services/collections";
 import { useAppStore } from "@/stores/appStore";
+import useModalStore from "@/stores/modalStore";
 import { ProgressRing, Skeleton, useDebounce } from "@/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Pressable, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
 import CollectionCover from "../components/collectionCover";
 import CoverSheet from "./components/coverSheet";
 import AddWordsSheet from "./components/addWordsSheet";
@@ -40,32 +41,30 @@ const CollectionDetail = () => {
   });
   const c = info.data;
 
+  const addModal = useModalStore((s) => s.addModal);
   const [editing, setEditing] = useState(false);
   const [revoking, setRevoking] = useState(false);
   const confirmRevoke = () =>
-    Alert.alert(
-      "Thu hồi bộ này?",
-      "Bộ không còn công khai: người chưa tải sẽ không thấy nữa. Người đã tải vẫn học tiếp. Bạn có thể bấm Tiếp tục phát hành bất cứ lúc nào.",
-      [
-        { text: "Huỷ", style: "cancel" },
-        {
-          text: "Thu hồi",
-          style: "destructive",
-          onPress: async () => {
-            setRevoking(true);
-            try {
-              await unpublish(db, id, userLang);
-              await queryClient.invalidateQueries({ queryKey: ["collections"] });
-              toast.success("Đã thu hồi bộ");
-            } catch {
-              toast.error("Chưa thu hồi được, thử lại sau");
-            } finally {
-              setRevoking(false);
-            }
-          },
-        },
-      ],
-    );
+    addModal({
+      type: "confirm",
+      title: "Thu hồi bộ này?",
+      message: "Bộ không còn công khai: người chưa tải sẽ không thấy nữa. Người đã tải vẫn học tiếp. Bạn có thể bấm Tiếp tục phát hành bất cứ lúc nào.",
+      okText: "Thu hồi",
+      cancelText: "Huỷ",
+      destructive: true,
+      onOk: async () => {
+        setRevoking(true);
+        try {
+          await unpublish(db, id, userLang);
+          await queryClient.invalidateQueries({ queryKey: ["collections"] });
+          toast.success("Đã thu hồi bộ");
+        } catch {
+          toast.error("Chưa thu hồi được, thử lại sau");
+        } finally {
+          setRevoking(false);
+        }
+      },
+    });
 
   const senses = useQuery({
     queryKey: ["collections", "senses", id, q, userLang],
@@ -91,22 +90,27 @@ const CollectionDetail = () => {
   };
 
   const confirmDelete = (itemId: string, value: string) =>
-    Alert.alert(`Xoá "${value}" khỏi bộ?`, !c?.isAuthor ? "Nghĩa này bị bỏ khỏi bản remix của bạn, bộ gốc không đổi." : c?.publishState === "draft" ? "Nghĩa này bị bỏ khỏi bộ." : "Người đã tải bản đã phát hành vẫn giữ nghĩa này; thay đổi có hiệu lực khi bạn cập nhật bộ.", [
-      { text: "Huỷ", style: "cancel" },
-      {
-        text: "Xoá",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await deleteCollectionItem(id, itemId);
-            await downloadBundle(db, id, userLang, { force: true, retries: 0 });
-            await refreshAll();
-          } catch {
-            toast.error("Chưa xoá được, thử lại sau");
-          }
-        },
+    addModal({
+      type: "confirm",
+      title: `Xoá "${value}" khỏi bộ?`,
+      message: !c?.isAuthor
+        ? "Nghĩa này bị bỏ khỏi bản remix của bạn, bộ gốc không đổi."
+        : c?.publishState === "draft"
+          ? "Nghĩa này bị bỏ khỏi bộ."
+          : "Người đã tải bản đã phát hành vẫn giữ nghĩa này; thay đổi có hiệu lực khi bạn cập nhật bộ.",
+      okText: "Xoá",
+      cancelText: "Huỷ",
+      destructive: true,
+      onOk: async () => {
+        try {
+          await deleteCollectionItem(id, itemId);
+          await downloadBundle(db, id, userLang, { force: true, retries: 0 });
+          await refreshAll();
+        } catch {
+          toast.error("Chưa xoá được, thử lại sau");
+        }
       },
-    ]);
+    });
 
   const openAddWords = () =>
     present({

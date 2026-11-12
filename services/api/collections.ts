@@ -5,6 +5,9 @@ export interface CollectionSummary {
   name: string;
   description: string;
   image_url: string | null;
+  /** Ảnh của nghĩa đầu tiên có ảnh trong bộ (khi tác giả chưa đặt ảnh bìa) và từ của nghĩa đầu (tìm ảnh mở khi không nghĩa nào có ảnh). */
+  cover_image?: string | null;
+  cover_word?: string | null;
   senses_count: number;
   is_official: boolean;
   language_code: string;

@@ -2,6 +2,8 @@ import AppText from "@/components/AppText";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import { addWordsToCollection } from "@/services/api/collections";
+import WordSuggest from "../../components/wordSuggest";
+import { useAppStore } from "@/stores/appStore";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 import toast from "@/utils/toast";
@@ -19,6 +21,7 @@ const AddWordsSheet = ({ userCollectionId, userLang, onDone }: Props) => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const words = splitWords(text);
+  const lang: string = useAppStore((s) => s.settings?.learning_language) ?? "en";
 
   const submit = async () => {
     setError(null);
@@ -48,11 +51,16 @@ const AddWordsSheet = ({ userCollectionId, userLang, onDone }: Props) => {
 
   return (
     <View className="gap-3 pb-6 px-4">
+      <WordSuggest
+        lang={lang}
+        userLang={userLang}
+        added={words.map((w) => w.toLowerCase())}
+        onPick={(w) => setText((t) => (t.trim() ? t.replace(/\s+$/, "") + "\n" : "") + w + "\n")}
+      />
       <TextInput
         value={text}
         onChangeText={setText}
         multiline
-        autoFocus
         autoCapitalize="none"
         placeholder={"Mỗi từ một dòng hoặc cách nhau bằng dấu phẩy\nvd: walk, ticket, luggage"}
         placeholderTextColor={theme.subText3}

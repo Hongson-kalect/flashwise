@@ -7,10 +7,11 @@ import { useAutoAdvance } from "@/learning/useAutoAdvance";
 import { useLearnRun } from "@/learning/useLearnRun";
 import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
+import useModalStore from "@/stores/modalStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect } from "react";
-import { ActivityIndicator, Alert, BackHandler, KeyboardAvoidingView, Platform, View } from "react-native";
+import { ActivityIndicator, BackHandler, KeyboardAvoidingView, Platform, View } from "react-native";
 
 /**
  * Học từ mới của 1 bộ (param `id` = id UserCollection): 1 cụm vài nghĩa, mỗi nghĩa đi qua các bước (xem thẻ + gõ lại, chọn nghĩa,
@@ -24,14 +25,20 @@ export default function LearnNewScreen() {
   const run = useLearnRun(id);
   const { state, status } = run;
 
+  const addModal = useModalStore((s) => s.addModal);
   const leave = useCallback(() => router.back(), []);
   const confirmExit = useCallback(() => {
     if (status !== "running" || !state || state.phase === "summary") return leave();
-    Alert.alert("Thoát phiên học?", "Kết quả chưa lưu chưa được tính vào tiến độ. Phiên được giữ 1 giờ, vào lại để học tiếp.", [
-      { text: "Ở lại", style: "cancel" },
-      { text: "Thoát", style: "destructive", onPress: leave },
-    ]);
-  }, [status, state, leave]);
+    addModal({
+      type: "confirm",
+      title: "Thoát phiên học?",
+      message: "Kết quả chưa lưu chưa được tính vào tiến độ. Phiên được giữ 1 giờ, vào lại để học tiếp.",
+      okText: "Thoát",
+      cancelText: "Ở lại",
+      destructive: true,
+      onOk: leave,
+    });
+  }, [status, state, leave, addModal]);
 
   // Nút back của máy cũng hỏi trước khi thoát giữa phiên
   useEffect(() => {

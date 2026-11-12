@@ -32,6 +32,8 @@ export type ConfirmModalOptions = {
   subMessage?: string;
   okText?: string;
   cancelText?: string;
+  /** Hành động phá huỷ (xoá, thu hồi, thoát mất dữ liệu): nút đồng ý màu đỏ. */
+  destructive?: boolean;
   onOk?: () => void | Promise<void>;
   onCancel?: () => void;
 };

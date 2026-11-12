@@ -12,6 +12,9 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, ScrollView, View } from "react-native";
 import CollectionCover from "../../components/collectionCover";
+import OwnershipBadge, { ownershipColor } from "../../components/ownershipBadge";
+import { getOwnedCollectionMap } from "@/database/queries/collections";
+import { useSQLiteContext } from "expo-sqlite";
 
 const ORDERS: { key: DiscoverOrdering; label: string }[] = [
   { key: "popular", label: "Phổ biến" },
@@ -37,6 +40,8 @@ const Chip = ({ label, active, onPress }: { label: string; active: boolean; onPr
 /** Khám phá bộ từ công khai: tìm theo tên, lọc chủ đề, sắp xếp; chạm bộ để xem trước và tải về. */
 const DiscoverList = () => {
   const { theme } = useTheme();
+  const db = useSQLiteContext();
+  const owned = useQuery({ queryKey: ["collections", "owned-map"], queryFn: () => getOwnedCollectionMap(db) });
   const learningLang = useAppStore((s) => s.settings?.learning_language) ?? "en";
   const userLang = useAppStore((s) => s.settings?.translate_language) ?? "vi";
   const [search, setSearch] = useState("");
@@ -101,34 +106,43 @@ const DiscoverList = () => {
         onEndReachedThreshold={0.4}
         onEndReached={() => list.hasNextPage && !list.isFetchingNextPage && list.fetchNextPage()}
         ListFooterComponent={list.isFetchingNextPage ? <ActivityIndicator color={theme.primary} style={{ padding: 16 }} /> : null}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() => router.push({ pathname: "/screens/Collection/Discover/Detail/[id]", params: { id: item.id } })}
-            className="flex-row items-center gap-3 p-3 rounded-2xl"
-            style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}
-          >
-            <CollectionCover
-              collection={{ name: item.name, imageUrl: item.image_url, coverUri: null, coverWord: null, coverKeywords: [] }}
-              style={{ height: 72, width: 96 }}
-            />
-            <View className="flex-1 gap-1">
-              <View className="flex-row items-center gap-1.5">
-                <AppText numberOfLines={1} size="lg" weight="bold" color="title" style={{ flexShrink: 1 }}>
-                  {item.name}
+        renderItem={({ item }) => {
+          const mine = owned.data?.[item.id];
+          const accent = ownershipColor(mine, theme);
+          return (
+            <Pressable
+              onPress={() => router.push({ pathname: "/screens/Collection/Discover/Detail/[id]", params: { id: item.id } })}
+              className="flex-row items-center gap-3 p-3 rounded-2xl"
+              style={{ backgroundColor: accent ? accent + "0D" : theme.card, borderWidth: accent ? 2 : 1, borderColor: accent ?? theme.border }}
+            >
+              <CollectionCover
+                collection={{ name: item.name, imageUrl: item.image_url, coverUri: item.cover_image ?? null, coverWord: item.cover_word ?? null, coverKeywords: [] }}
+                style={{ height: 72, width: 96 }}
+              />
+              <View className="flex-1 gap-1">
+                <View className="flex-row items-center gap-1.5">
+                  <AppText numberOfLines={1} size="lg" weight="bold" color="title" style={{ flexShrink: 1 }}>
+                    {item.name}
+                  </AppText>
+                  {item.is_official && <AppIcon branch="feather" name="check-circle" size={14} color={theme.primary} />}
+                </View>
+                {!!mine && (
+                  <View className="flex-row">
+                    <OwnershipBadge owned={mine} />
+                  </View>
+                )}
+                {!!item.description && (
+                  <AppText numberOfLines={1} size="sm" color="subText1">
+                    {item.description}
+                  </AppText>
+                )}
+                <AppText size="xs" color="subText2">
+                  {item.senses_count} nghĩa · {item.downloaded_count} lượt tải · {item.like_count} thích
                 </AppText>
-                {item.is_official && <AppIcon branch="feather" name="check-circle" size={14} color={theme.primary} />}
               </View>
-              {!!item.description && (
-                <AppText numberOfLines={1} size="sm" color="subText1">
-                  {item.description}
-                </AppText>
-              )}
-              <AppText size="xs" color="subText2">
-                {item.senses_count} nghĩa · {item.downloaded_count} lượt tải · {item.like_count} thích
-              </AppText>
-            </View>
-          </Pressable>
-        )}
+            </Pressable>
+          );
+        }}
         ListEmptyComponent={
           list.isLoading ? (
             <View className="gap-3">

@@ -9,10 +9,11 @@ import { useAutoAdvance } from "@/learning/useAutoAdvance";
 import { useReviewRun } from "@/learning/useReviewRun";
 import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
+import useModalStore from "@/stores/modalStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useCallback, useEffect } from "react";
-import { ActivityIndicator, Alert, BackHandler, KeyboardAvoidingView, Platform, View } from "react-native";
+import { ActivityIndicator, BackHandler, KeyboardAvoidingView, Platform, View } from "react-native";
 
 /**
  * Ôn tập thẻ đến hạn: thẻ cấp cao ôn bằng vuốt (nhanh), thẻ cấp thấp theo cụm; xong 1 lượt thì ghi kết quả và hỏi ôn tiếp.
@@ -27,14 +28,20 @@ export default function ReviewScreen() {
   useAutoAdvance(run, r.next);
 
   const midSession = (status === "swiping" && swipe?.phase === "swiping") || (status === "cluster" && run?.phase !== "summary");
+  const addModal = useModalStore((s) => s.addModal);
   const leave = useCallback(() => router.back(), []);
   const confirmExit = useCallback(() => {
     if (!midSession) return leave();
-    Alert.alert("Thoát phiên ôn?", "Kết quả chưa lưu chưa được tính, thẻ vẫn đến hạn ôn. Lượt này được giữ 1 giờ, vào lại để ôn tiếp.", [
-      { text: "Ở lại", style: "cancel" },
-      { text: "Thoát", style: "destructive", onPress: leave },
-    ]);
-  }, [midSession, leave]);
+    addModal({
+      type: "confirm",
+      title: "Thoát phiên ôn?",
+      message: "Kết quả chưa lưu chưa được tính, thẻ vẫn đến hạn ôn. Lượt này được giữ 1 giờ, vào lại để ôn tiếp.",
+      okText: "Thoát",
+      cancelText: "Ở lại",
+      destructive: true,
+      onOk: leave,
+    });
+  }, [midSession, leave, addModal]);
 
   useEffect(() => {
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {

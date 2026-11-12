@@ -11,6 +11,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
 import CollectionCover from "../../components/collectionCover";
+import OwnershipBadge from "../../components/ownershipBadge";
+import type { OwnedCollection } from "@/database/queries/collections";
 import toast from "@/utils/toast";
 
 const Stat = ({ icon, value, label }: { icon: any; value: number; label: string }) => {
@@ -40,7 +42,7 @@ const DiscoverDetail = () => {
   const likes = useQuery({ queryKey: ["collections", "discover", "likes", id], queryFn: () => fetchCollectionLikes(id), retry: false });
   const owned = useQuery({
     queryKey: ["collections", "owned", id],
-    queryFn: () => db.getFirstAsync<{ id: string }>(`SELECT id FROM user_collection WHERE collection_id = ? AND is_deleted = 0`, [id]),
+    queryFn: () => db.getFirstAsync<{ id: string; is_author: number | null }>(`SELECT id, is_author FROM user_collection WHERE collection_id = ? AND is_deleted = 0 AND downloaded_at IS NOT NULL`, [id]),
   });
   const c = detail.data;
 
@@ -67,8 +69,16 @@ const DiscoverDetail = () => {
   const header = !c ? null : (
     <View className="gap-4 pb-3">
       <CollectionCover
-        collection={{ name: c.name, imageUrl: c.image_url, coverUri: null, coverWord: c.senses[0]?.word_value ?? null, coverKeywords: [] }}
+        collection={{
+          name: c.name,
+          imageUrl: c.image_url,
+          // Ảnh đầu tiên khả dụng trong các nghĩa của bộ; không nghĩa nào có ảnh thì tìm ảnh mở theo từ của nghĩa đầu
+          coverUri: c.senses.find((s) => s.image_preview)?.image_preview ?? null,
+          coverWord: c.senses[0]?.word_value ?? null,
+          coverKeywords: [],
+        }}
         radius={20}
+        watermark
         style={{ height: 180, width: "100%" }}
       />
       <View className="gap-1">
@@ -86,9 +96,12 @@ const DiscoverDetail = () => {
             <AppIcon branch="antd" name={liked ? "heart" : "hearto"} size={18} color={liked ? theme.error : theme.text} />
           </Pressable>
         </View>
-        <AppText size="xs" color="subText2">
-          {c.is_official ? "Bộ chính thức" : "Do cộng đồng chia sẻ"} · phiên bản {c.version}
-        </AppText>
+        <View className="flex-row items-center gap-2">
+          {!!owned.data && <OwnershipBadge owned={{ id: owned.data.id, isAuthor: !!owned.data.is_author } as OwnedCollection} />}
+          <AppText size="xs" color="subText2">
+            {c.is_official ? "Bộ chính thức" : "Do cộng đồng chia sẻ"} · phiên bản {c.version}
+          </AppText>
+        </View>
         {!!c.description && <AppText color="subText1">{c.description}</AppText>}
       </View>
 

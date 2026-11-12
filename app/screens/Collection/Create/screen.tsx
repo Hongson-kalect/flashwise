@@ -21,6 +21,7 @@ import {
 } from "react-native";
 
 import ChooseSenses, { ChosenSenses } from "./components/chooseSenses";
+import WordSuggest from "../components/wordSuggest";
 
 const MAX_WORDS = 200; // khớp BULK_MAX_WORDS_PER_REQUEST của server
 
@@ -197,6 +198,13 @@ export default function CreateCollection() {
                 style={[inputStyle(theme), { minHeight: 52, paddingTop: 14, textAlignVertical: "top" }]}
               />
             </View>
+
+            <WordSuggest
+              lang={lang}
+              userLang={userLang}
+              added={parsed.words.map((w) => w.toLowerCase())}
+              onPick={(w) => setText((t) => (t.trim() ? t.replace(/\s+$/, "") + "\n" : "") + w + "\n")}
+            />
 
             <View className="gap-2">
               <View className="flex-row items-center justify-between">

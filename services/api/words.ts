@@ -74,3 +74,26 @@ export const fetchWordForms = async (wordId: string) => {
   const res = await GetAPI("ai-words/forms/", { word_id: wordId });
   return res.data as WordForms;
 };
+
+export interface WordSuggestion {
+  /** id từ (word_id) */
+  id: string;
+  value: string;
+  language_code: string;
+  sense_id: string | null;
+  pos: string | null;
+  /** Nghĩa ngắn theo ngôn ngữ người dùng (bản dịch, không có thì định nghĩa). */
+  gloss: string;
+  image_preview: string | null;
+  /** Chế độ "meaning": bản dịch đã khớp với chuỗi gõ. */
+  matched: string | null;
+}
+
+/**
+ * Gợi ý khi thêm từ vào bộ. mode "word": gõ từ của ngôn ngữ đang học (đầu từ, rồi gần giống). mode "meaning": gõ nghĩa bằng ngôn ngữ
+ * của mình ("nồi cơm") để tìm từ tương ứng của ngôn ngữ đang học. Chỉ trả từ đã có trong hệ thống.
+ */
+export const suggestWords = async (q: string, lang: string, userLang: string, mode: "word" | "meaning", limit = 8) => {
+  const res = await GetAPI("ai-words/suggest/", { q, lang, user_lang: userLang, mode, limit });
+  return (Array.isArray(res.data) ? res.data : []) as WordSuggestion[];
+};

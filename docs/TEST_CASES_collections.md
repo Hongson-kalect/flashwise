@@ -137,3 +137,15 @@ Chưa chạy: A6–A10, B (Chuyên sâu), C3 / C5 / C6 (ảnh bìa, đếm dịc
 - Thẻ bộ ở Khám phá và trang xem trước chỉ có chữ cái đầu, chưa có ảnh bìa (bộ chưa đặt ảnh thì app chỉ tự lấy ảnh nghĩa ở danh sách "Bộ từ của tôi").
 - Bộ của chính mình vẫn hiện trong Khám phá (gợi ý ở Home thì đã loại).
 - Dữ liệu test còn lại: bộ `Thu 1`, `Thu 2`, `Thu 3` (đã phát hành, v2), `Thu 3 remix cua B` (đã tải), bộ rỗng `Rong`, tài khoản khách B (`device_id` 11111111-2222-4333-8444-555555555555).
+
+## Vòng 2 (2026-11-12): modal toàn cục, ảnh bìa Khám phá, đánh dấu bộ của mình, gợi ý từ và thêm ngược
+
+- **Alert → modal toàn cục**: `Alert.alert` ở Chi tiết bộ (thu hồi, xoá nghĩa), thoát phiên học / ôn và quyền ảnh nay dùng `addModal({ type: "confirm" | "alert" })`. ConfirmModal có `destructive` (nút đồng ý đỏ). Máy ảo: hộp "Xoá "house" khỏi bộ?" hiện bằng modal của app, nút Xoá đỏ.
+- **Ảnh bìa Khám phá / xem trước**: server (`CollectionListSerializer`) thêm `cover_image` (ảnh của nghĩa đầu tiên có ảnh trong bản đang hiệu lực, bỏ dòng xoá, tính cả trang bằng một truy vấn) và `cover_word`; ảnh riêng của bộ vẫn ưu tiên. Xem trước lấy ảnh đầu tiên khả dụng trong `senses`, không có thì tìm ảnh mở theo từ đầu. Trang xem trước in tên bộ in hoa, đậm, mờ, cỡ lớn ngay trên khung ảnh (`watermark`). Máy ảo: thẻ bánh sinh nhật / toà nhà thay cho chữ "T", tên mờ hiện trên ảnh.
+- **Bộ của mình / đã tải trong Khám phá**: vẫn hiện, nhưng có thẻ "Của bạn" (màu chính, tác giả) hoặc "Đã tải" (xanh), khung viền đậm và nền tô nhẹ cùng màu; trang xem trước có thẻ cạnh tên. Dữ liệu lấy từ bảng `user_collection` ở máy (`getOwnedCollectionMap`).
+- **Gợi ý từ khi thêm** (`ai-words/suggest/`, `ai/suggest.py`, `WordSuggest`): ô thêm từ ở Tạo bộ và "Thêm từ" của bộ có hai chế độ.
+  - "Gõ từ": gõ đầu từ của ngôn ngữ đang học → từ kèm loại từ, nghĩa ngắn, ảnh; chạm để thêm vào danh sách (từ đã có thì mờ, có dấu tick).
+  - "Gõ nghĩa" (thêm ngược): gõ nghĩa tiếng Việt ("cua", "nha", "chao") → từ tiếng Anh có bản dịch khớp (door, home, hello...). Khớp theo đầu từ của bản dịch, **không phân biệt dấu** (extension `unaccent`, migration `ai.0015`), khớp trọn / đầu bản dịch xếp trước, gõ có dấu thì khớp đúng dấu xếp trước. Định nghĩa chỉ bổ sung khi bản dịch khớp < 3.
+  - Chỉ gợi ý được từ đã có trong hệ thống; từ chưa có vẫn gõ thẳng vào danh sách. Tìm ngược cho từ chưa có trong DB (hoặc qua AI) là bước sau.
+  - Test backend: `ai.test_suggest` (7 test); tổng `ai.test_senses ai.test_suggest core ai.test_forms` 173 test OK.
+  - Chưa kiểm khi dữ liệu lớn: tìm theo nghĩa quét `contents` của các nghĩa chính thức (iregex trên jsonb), cần chỉ mục trigram trên cột văn bản bản dịch khi lên hàng trăm nghìn nghĩa.
