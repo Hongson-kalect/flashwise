@@ -26,7 +26,7 @@ Cách chạy: bộ điều khiển adb viết tay (`drive_learn.py` trong thư m
 | B4 | Nghe chọn, chính tả | Có bước nghe, phát audio; tắt `hearable` bỏ bước nghe | ◐ `listenChoose` và `dictation` chạy và ghi `review_log` (phiên đầu: 8 + 10 dòng); tắt "Bước nghe" thì phiên sau chỉ còn `copy, chooseMeaning, chooseWord, typeWord`. Chưa kiểm tiếng phát ra |
 | B5 | Bước nói | Hiện khi có nhận dạng; xin quyền micro khi bấm mic; "Không tiện nói" đổi các bước nói còn lại sang gõ | ◐ bước "Đọc to từ này" hiện nút mic và "Không tiện nói, chuyển sang gõ". Bấm mic mới có hộp xin quyền micro của hệ điều hành (**không cấp quyền**, đó là thao tác hệ thống). Bấm "Không tiện nói" → các bước nói còn lại đổi sang bước gõ. Tắt "Bước nói" thì phiên sau không còn bước nói (`learn_session.methods`). Chưa thử nhận dạng thật |
 | B6 | Giãn cách trong cụm | Mỗi nghĩa quay lại xen kẽ, số bước theo cấp | ◐ nghĩa lặp lại nhiều lần xen kẽ, sai thì thêm bước hỏi lại; chưa kiểm số bước theo cấp (chỉ có thẻ cấp 0) |
-| B7 | Thẻ không ảnh | Ô trống gọn, không vỡ layout | ⏳ mọi nghĩa trong bộ đều có ảnh |
+| B7 | Thẻ không ảnh | Ô trống gọn, không vỡ layout | ✅ nghĩa `kettle` (bộ `Do gia dung`): xoá `image_preview` ở máy ảo, tắt mạng, bắt đầu cụm mới: thẻ không có khung ảnh, tiêu đề / nghĩa / ví dụ dồn lên gọn, không ô trống, vẫn học và lưu được khi offline (ảnh ngoài mặc định tắt nên không có ảnh dự phòng) |
 | B8 | Thoát giữa phiên (X / Back) | Hộp "Thoát phiên học?" | ✅ hộp toàn cục "Thoát phiên học? … Phiên được giữ 1 giờ", "Ở lại" / "Thoát" |
 
 ## C. "Đã biết"
@@ -42,7 +42,7 @@ Cách chạy: bộ điều khiển adb viết tay (`drive_learn.py` trong thư m
 |---|---|---|---|
 | D1 | Bảng tổng kết cuối cụm | Mỗi nghĩa chọn sẵn mức, sửa tối đa ±1 | ✅ thẻ "đã biết" ghi "Đã"; thẻ còn lại chọn sẵn "Quên", chỉ đổi được sang "Khó" (Vừa / Dễ mờ); nút "Lưu kết quả" |
 | D2 | Lưu | `user_sense_progress`, `review_log` (`is_fsrs=1`), `learn_session`, `day_learn_log` | ✅ kiểm cụm 1: 6 tiến độ; `review_log` mỗi thẻ 1 dòng `is_fsrs=1` + các dòng bước `is_fsrs=0`; `learn_session` completed (6 nghĩa, 52 XP, 484 giây); `day_learn_log` 6 từ. Cụm 2 chưa đối chiếu lại DB |
-| D3 | Tiến độ theo `original_sense_id` | 1 nghĩa ở 2 bộ chỉ 1 tiến độ | ⏳ |
+| D3 | Tiến độ theo `original_sense_id` | 1 nghĩa ở 2 bộ chỉ 1 tiến độ | ✅ `damn` nằm ở 3 bộ (`Chuyen B5`, `Chuyen B4`, `Tho tuc thu`); học ở B5 xong thì DB có đúng 1 dòng `user_sense_progress`, cả 3 bộ hiện 1/1, và "Học từ mới" ở B4 báo "Hết từ mới". Không có `original_sense_id` nào trùng trong 30 dòng tiến độ |
 | D4 | Đồng bộ | Server có tiến độ, review_log, phiên | ✅ server (user 4): 6 `UserSenseProgress`, 1 `DayLearnLog`, 58 `ReviewLog`. Chưa đối chiếu `learn_session` |
 | D5 | "Học cụm tiếp" | Không lặp thẻ vừa học | ✅ "còn 17 từ" rồi "còn 11 từ" (23 → 17 → 11) |
 | D6 | Chỉ số Home / chi tiết bộ | "Đã học", số hôm nay tăng | ✅ Home: 12 → 17 / 20 từ (học + ôn lại), mục "Từ hay sai" cập nhật; danh sách nghĩa của bộ có dấu ✓ cạnh từ đã học |
@@ -52,7 +52,7 @@ Cách chạy: bộ điều khiển adb viết tay (`drive_learn.py` trong thư m
 | # | Thao tác | Mong đợi | KQ |
 |---|---|---|---|
 | E1 | Học giữa chừng, thoát, vào lại trong 1 giờ | "Học tiếp / Bắt đầu cụm mới", quay đúng bước | ✅ "Bạn còn một phiên học dở. Đã làm 41/54 bước, dừng cách đây 1 phút"; "Học tiếp" quay đúng bước (hiện 42/54); "Bắt đầu cụm mới" vào cụm mới 1/36. Lưu ý: hộp ghi 41 trong khi thanh ghi 42 |
-| E2 | Quá 1 giờ | Snapshot bỏ | ⏳ |
+| E2 | Quá 1 giờ | Snapshot bỏ | ✅ snapshot của `Chuyen B5` để lâu 169 phút (quá 1 giờ thật, không giả lập): mở bộ ra không hỏi "Học tiếp", vào thẳng phiên mới bước 1/2, snapshot cũ bị thay bằng cái mới (0,2 phút tuổi). Dưới 1 giờ thì vẫn hỏi "Học tiếp" (kiểm lại ở B7: "cách đây 2 phút") |
 | E3 | Lưu xong | Snapshot bị xoá | ✅ sau khi lưu phiên ôn, `run_snapshot:review` biến khỏi `system_configs`. Còn sót một `run_snapshot:learn:<bộ>` của phiên bỏ dở bị thay bằng "Bắt đầu cụm mới" (xem Phát hiện) |
 
 ## F. Ôn tập
@@ -80,7 +80,7 @@ Cách chạy: bộ điều khiển adb viết tay (`drive_learn.py` trong thư m
 2. ~~Quyền micro hỏi lại mỗi phiên~~ **Rút lại**: app chỉ xin quyền khi bấm nút mic. Hộp xin quyền xuất hiện vì bộ điều khiển adb bấm trúng nút mic (và "Không tiện nói"), không phải app tự hỏi.
 3. ~~Màn học không lộ cây truy cập~~ **Chưa kiểm chứng**: `uiautomator dump` trên máy ảo này không đáng tin (lúc trả màn của route cũ, lúc trả rỗng), nên không kết luận được. Đã thêm `accessibilityRole` / `accessibilityLabel` cho các phương án trả lời; nên kiểm bằng TalkBack thật.
 4. ~~Chữ "Hết từ mới" cho bộ rỗng~~ **Đã sửa**: bộ rỗng hiện "Bộ còn trống: Bộ này chưa có nghĩa nào…"; bộ học hết vẫn "Hết từ mới". Hộp "Học tiếp" ghi "Đang ở bước n/m" khớp thanh tiến độ (trước lệch 1). Kiểm trên máy ảo.
-5. ~~Home không tự cập nhật khi thẻ tới giờ ôn~~ **Đã sửa theo code, chưa kiểm chạy thật**: `useHomeData` thêm `refetchInterval: 30000` (đọc SQLite nên rẻ). Chưa chờ đủ một mốc để xem số đổi.
+5. ~~Home không tự cập nhật khi thẻ tới giờ ôn~~ **Đã sửa và kiểm chạy thật**: `useHomeData` thêm `refetchInterval: 30000` (đọc SQLite nên rẻ). Đặt `next_review_at` của 1 thẻ lên 12:35:40 UTC, để yên màn Home: 12:31 hiện 12, 12:37 hiện 13, không chạm gì.
 6. ~~Snapshot cũ sót trong `system_configs`~~ **Đã sửa**: `loadSnapshot` gọi `purgeExpiredSnapshots` xoá mọi `run_snapshot:*` quá 1 giờ hoặc hỏng JSON (kiểm: snapshot 328 phút tuổi biến sau khi mở một màn học).
 7. ~~Bảng tổng kết dễ hiểu nhầm~~ **Đã sửa chữ**: ghi rõ mức chọn sẵn tính theo cả cụm, từ sai hoặc xem đáp án lần đầu vẫn tính Khó / Quên dù sau đó làm đúng.
 8. Đính chính G3 / H2: `prefetchTranslation` **đã nối** trong `useLearnRun` và đã chạy được (xem G3). Lưu ý nhỏ: màn "Đang chờ bản dịch" tự chuyển sang phiên học khi có bản dịch, nhưng chữ hướng dẫn vẫn bảo "kéo làm mới sau ít phút rồi quay lại" dù thực tế không cần.
