@@ -1,4 +1,5 @@
 import { trackHabit } from "@/database/queries/habit";
+import { HABIT_CONFIG } from "@/habit/engine";
 import { requestSync } from "@/services/sync/bus";
 import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
@@ -40,7 +41,7 @@ export const useHabitCheck = () => {
           type: "alert",
           title: "Khiên đã giữ chuỗi cho bạn",
           message: `Bạn nghỉ ${r.missedDays} ngày, mình dùng ${r.shieldUsed} khiên để giữ chuỗi ${r.streak} ngày. Còn ${r.shield} khiên.`,
-          subMessage: "Học đều để tích thêm khiên: mỗi mốc 35%, 70%, 100% của độ bền thói quen được 1 khiên.",
+          subMessage: `Mỗi ngày học đủ ${HABIT_CONFIG.shieldDailyTarget} từ được 1 stack, đủ ${HABIT_CONFIG.stacksPerShield} stack đổi 1 khiên.`,
           okText: "Đã hiểu",
         });
       }

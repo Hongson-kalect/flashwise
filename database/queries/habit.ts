@@ -1,4 +1,4 @@
-import { applyActivity, HabitEvent, HabitState, Outcome, parseHabitState, reconcile, stateFromDays } from "@/habit/engine";
+import { addDays, applyActivity, HabitEvent, HabitState, Outcome, parseHabitState, reconcile, stateFromDays } from "@/habit/engine";
 import { uuidv7 } from "@/utils/uuidv7";
 import { SQLiteDatabase } from "expo-sqlite";
 import { dateKey, learningDayBounds } from "./home";
@@ -29,6 +29,9 @@ export interface HabitReport {
   habitDelta: number;
   shield: number;
   shieldDelta: number;
+  /** Số stack khiên đang tích (0 tới stacksPerShield - 1) và hôm nay vừa được thêm 1 stack hay không. */
+  stack: number;
+  stackAdded: boolean;
   /** Số khiên đã dùng để che ngày nghỉ (0 nếu không có). */
   shieldUsed: number;
   /** Số ngày nghỉ vừa được xử lý. */
@@ -50,6 +53,8 @@ const report = (before: HabitState, out: Outcome): HabitReport => {
     habitDelta: Math.round((after.habit - before.habit) * 10) / 10,
     shield: after.shield,
     shieldDelta: after.shield - before.shield,
+    stack: after.stack,
+    stackAdded: after.stackDate !== before.stackDate && after.stackDate !== null,
     shieldUsed: used,
     missedDays: missed,
     lostStreak: out.lostStreak,
@@ -110,21 +115,66 @@ export const trackHabit = async (db: Db, opts: TrackOptions): Promise<HabitRepor
   return report(before, out);
 };
 
+/** Một ngày trên biểu đồ chăm chỉ. */
+export interface HabitPoint {
+  date: string;
+  /** Habit cuối ngày (ngày không có sự kiện thì giữ giá trị ngày trước). */
+  habit: number;
+  /** Số thẻ học + ôn trong ngày. */
+  items: number;
+  /** Ngày có khiên che / mất streak (để đánh dấu trên biểu đồ). */
+  mark: "shield" | "lapse" | null;
+}
+
+/**
+ * Chuỗi habit theo ngày của `days` ngày gần nhất tới `today`, dựng từ habit_log (snap cuối mỗi ngày, giữ giá trị khi không có
+ * sự kiện) và day_learn_log (số thẻ). Điểm cuối luôn là habit hiện tại. Nhật ký chỉ ở máy nên cài lại máy thì phần trước đó phẳng.
+ */
+export const getHabitSeries = async (db: Db, today: string, days = 30, current?: number): Promise<HabitPoint[]> => {
+  const start = addDays(today, -(days - 1));
+  const [before, logs, usage] = await Promise.all([
+    db.getFirstAsync<{ habit_snap: number }>(`SELECT habit_snap FROM habit_log WHERE log_date < ? ORDER BY log_date DESC, id DESC LIMIT 1`, [start]),
+    db.getAllAsync<{ log_date: string; type: string; habit_snap: number }>(`SELECT log_date, type, habit_snap FROM habit_log WHERE log_date >= ? ORDER BY log_date, id`, [start]),
+    db.getAllAsync<{ date: string; n: number }>(`SELECT date, COALESCE(words_learned, 0) + COALESCE(words_relearned, 0) AS n FROM day_learn_log WHERE date >= ?`, [start]),
+  ]);
+  const items = new Map(usage.map((u) => [u.date, u.n]));
+  const snap = new Map<string, number>();
+  const mark = new Map<string, "shield" | "lapse">();
+  for (const l of logs) {
+    snap.set(l.log_date, l.habit_snap);
+    if (l.type === "lapse") mark.set(l.log_date, "lapse");
+    else if (l.type === "shield" && mark.get(l.log_date) !== "lapse") mark.set(l.log_date, "shield");
+  }
+  let cur = before?.habit_snap ?? 0;
+  const out: HabitPoint[] = [];
+  for (let i = 0; i < days; i++) {
+    const date = addDays(start, i);
+    if (snap.has(date)) cur = snap.get(date)!;
+    out.push({ date, habit: cur, items: items.get(date) ?? 0, mark: mark.get(date) ?? null });
+  }
+  if (current !== undefined && out.length) out[out.length - 1].habit = current;
+  return out;
+};
+
 export interface HabitView {
   state: HabitState;
+  /** 30 ngày gần nhất cho biểu đồ chăm chỉ. */
+  series: HabitPoint[];
   /** Nhật ký gần nhất (mới trước). */
   recent: { id: string; log_date: string; type: string; habit_delta: number; habit_snap: number; shield_delta: number; missed_days: number; note: string | null }[];
   totalXp: number;
 }
 
-export const getHabitView = async (db: Db, recentLimit = 20): Promise<HabitView> => {
+export const getHabitView = async (db: Db, opts: { recentLimit?: number; dayStartHour?: number; days?: number } = {}): Promise<HabitView> => {
+  const today = dateKey(learningDayBounds(opts.dayStartHour ?? 4).start);
   const [state, recent, xp] = await Promise.all([
     loadHabitState(db),
     db.getAllAsync<HabitView["recent"][number]>(
       `SELECT id, log_date, type, habit_delta, habit_snap, shield_delta, missed_days, note FROM habit_log ORDER BY log_date DESC, id DESC LIMIT ?`,
-      [recentLimit],
+      [opts.recentLimit ?? 20],
     ),
     db.getFirstAsync<{ n: number }>(`SELECT COALESCE(SUM(xp_earned), 0) AS n FROM day_learn_log`),
   ]);
-  return { state, recent, totalXp: xp?.n ?? 0 };
+  const series = await getHabitSeries(db, today, opts.days ?? 30, state.habit);
+  return { state, series, recent, totalXp: xp?.n ?? 0 };
 };

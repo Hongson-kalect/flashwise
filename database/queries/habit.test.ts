@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { beforeEach, test } from "node:test";
 import { generateSchema, generateSeedData } from "../schema/ddl";
-import { getHabitView, loadHabitState, trackHabit } from "./habit";
+import { getHabitSeries, getHabitView, loadHabitState, trackHabit } from "./habit";
 
 let raw: DatabaseSync;
 const db = (): any => ({
@@ -87,7 +87,7 @@ test("ngày học bắt đầu lúc 4h: 2h sáng vẫn thuộc ngày hôm trư�
 test("getHabitView: trả state, nhật ký mới trước và tổng XP", async () => {
   await study("2026-11-10", 20);
   await study("2026-11-11", 20);
-  const v = await getHabitView(db());
+  const v = await getHabitView(db(), { dayStartHour: 4 });
   assert.equal(v.state.streak, 2);
   assert.equal(v.recent[0].log_date, "2026-11-11");
   assert.equal(v.totalXp, 400);
@@ -101,4 +101,21 @@ test("người đã học từ trước khi có tính năng: dựng streak từ 
   assert.ok(raw.prepare("SELECT 1 FROM user_settings WHERE key = 'habit_state'").get(), "state được lưu ngay lần đầu");
   const after = await study("2026-11-11", 20);
   assert.equal(after.streak, 4);
+});
+
+test("getHabitSeries: giữ giá trị ngày không có sự kiện, đánh dấu ngày mất streak, điểm cuối là habit hiện tại", async () => {
+  await study("2026-11-01", 20); // habit 5
+  await study("2026-11-02", 20); // habit 10
+  await trackHabit(db(), { dayStartHour: 4, activity: false, now: at("2026-11-06") }); // nghỉ 3 ngày, không khiên: lapse ghi ở 11-05
+  const series = await getHabitSeries(db(), "2026-11-06", 7, (await loadHabitState(db())).habit);
+  assert.equal(series.length, 7);
+  assert.equal(series[0].date, "2026-10-31");
+  assert.equal(series[0].habit, 0);
+  assert.equal(series[1].habit, 5);
+  assert.equal(series[2].habit, 10);
+  assert.equal(series[3].habit, 10); // 11-03 không có sự kiện: giữ
+  const lapse = series.find((p) => p.mark === "lapse");
+  assert.equal(lapse?.date, "2026-11-05");
+  assert.equal(series[6].habit, (await loadHabitState(db())).habit);
+  assert.equal(series[1].items, 20);
 });

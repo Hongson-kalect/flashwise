@@ -24,7 +24,7 @@ export const useHomeData = () => {
         getDueCount(db, dayStartHour),
         getRecentLogs(db, 7, dayStartHour),
         getMistakeWords(db),
-        getHabitView(db),
+        getHabitView(db, { dayStartHour }),
       ]);
       const todayKey = dateKey(learningDayBounds(dayStartHour).start);
       const today = week.find((d) => d.date === todayKey) ?? week[week.length - 1];

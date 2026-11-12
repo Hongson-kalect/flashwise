@@ -3,17 +3,20 @@
  * (database/schema/habit_logs.ts, fast_sessions.ts bên đó), con số đặt ở `HABIT_CONFIG` để chỉnh được.
  *
  * - Ngày học (key 'YYYY-MM-DD', theo `day_start_hour`) có học hoặc ôn thì streak +1, habit tăng.
- * - Nghỉ n ngày: trừ n khiên (tối đa 3 khiên). Đủ khiên thì streak giữ nguyên, các ngày nghỉ được ghi là "ngày khiên che".
- * - Thiếu khiên: khiên còn lại vẫn bị dùng hết, phần ngày nghỉ không có khiên làm mất streak và trừ habit.
- * - Habit 0-100. Qua mốc 35 / 70 / 100 thì được 1 khiên (mỗi mốc 1 lần, mốc nào bị tụt xuống dưới mốc trước thì nhận lại được).
- *   Habit đã đầy thì không cộng thêm.
+ * - Khiên (tối đa 3) kiếm bằng "stack": mỗi ngày làm đủ `shieldDailyTarget` thẻ (học + ôn, cố định, không theo cài đặt mục tiêu
+ *   ngày) được 1 stack; đủ `stacksPerShield` stack thì đổi 1 khiên. Stack không cần liên tiếp và không mất khi nghỉ.
+ * - Nghỉ n ngày: trừ n khiên (streak giữ, các ngày nghỉ ghi là "ngày khiên che"). Thiếu khiên: khiên còn lại vẫn bị dùng hết,
+ *   phần ngày nghỉ không có khiên làm mất streak và trừ habit.
+ * - Habit 0-100 chỉ là thước đo độ đều đặn: tăng khi có học (nhiều thẻ thì tăng nhiều hơn), giảm khi nghỉ không khiên che.
  * - Tất cả là hàm thuần nhận / trả state: `reconcile` (chạy khi mở app / trước khi ghi phiên học) rồi `applyActivity`.
  */
 
 export const HABIT_CONFIG = {
   shieldLimit: 3,
-  /** Mốc habit được thưởng khiên. */
-  milestones: [35, 70, 100],
+  /** Số thẻ (học mới + ôn) trong ngày để tính là "hoàn thành ngày" và được 1 stack. Cố định, không theo daily_goal. */
+  shieldDailyTarget: 20,
+  /** Số stack đổi 1 khiên. */
+  stacksPerShield: 7,
   /** Điểm habit của 1 ngày học: từ `gainMin` (học / ôn ít) tới `gainMax` (đạt mục tiêu ngày), tăng theo số thẻ. */
   gainMin: 2,
   gainMax: 5,
@@ -28,12 +31,14 @@ export interface HabitState {
   /** 0-100. */
   habit: number;
   shield: number;
+  /** Số ngày hoàn thành mục tiêu đã tích, 0 tới stacksPerShield - 1 (đủ thì đổi khiên và về 0). */
+  stack: number;
+  /** Ngày gần nhất đã được tính stack (mỗi ngày chỉ 1 stack). */
+  stackDate: string | null;
   streak: number;
   maxStreak: number;
   /** Ngày cuối đã được tính vào streak (có học hoặc được khiên che). */
   streakDate: string | null;
-  /** Mốc 35 / 70 / 100 còn nhận được khiên không. */
-  claim: [boolean, boolean, boolean];
   /** Ngày đang cộng habit và số điểm đã cộng trong ngày đó (nhiều phiên cùng ngày chỉ cộng phần chênh). */
   todayDate: string | null;
   todayGain: number;
@@ -43,7 +48,7 @@ export interface HabitState {
 }
 
 export const INITIAL_HABIT: HabitState = {
-  habit: 0, shield: 0, streak: 0, maxStreak: 0, streakDate: null, claim: [true, true, true],
+  habit: 0, shield: 0, stack: 0, stackDate: null, streak: 0, maxStreak: 0, streakDate: null,
   todayDate: null, todayGain: 0, activeDays: 0, shieldUsed: 0, shieldWasted: 0,
 };
 
@@ -59,7 +64,7 @@ export interface HabitEvent {
   shieldSnap: number;
   /** Số ngày nghỉ liên quan (shield / lapse). */
   missedDays: number;
-  /** Giải thích ngắn: mốc, ngày nghỉ... */
+  /** Giải thích ngắn: stack, ngày nghỉ... */
   note: string | null;
 }
 
@@ -85,13 +90,15 @@ export const addDays = (d: string, n: number) => {
   return `${t.getUTCFullYear()}-${String(t.getUTCMonth() + 1).padStart(2, "0")}-${String(t.getUTCDate()).padStart(2, "0")}`;
 };
 
+const fresh = (): HabitState => ({ ...INITIAL_HABIT });
+
 /**
  * Dựng state ban đầu từ lịch sử các ngày có hoạt động (người đã học trước khi có tính năng này): streak = chuỗi ngày liền tới ngày
- * học gần nhất (còn tính nếu ngày đó là hôm nay hoặc hôm qua), habit và khiên bắt đầu từ 0. Không phạt ngược các ngày nghỉ cũ.
+ * học gần nhất (còn tính nếu ngày đó là hôm nay hoặc hôm qua), habit, stack và khiên bắt đầu từ 0. Không phạt ngược các ngày nghỉ cũ.
  */
 export const stateFromDays = (days: string[], today: string): HabitState => {
   const sorted = [...new Set(days)].sort();
-  const s: HabitState = { ...INITIAL_HABIT, claim: [...INITIAL_HABIT.claim] };
+  const s = fresh();
   if (!sorted.length) return s;
   let run = 0;
   let longest = 0;
@@ -108,8 +115,8 @@ export const stateFromDays = (days: string[], today: string): HabitState => {
   return s;
 };
 
-/** Parse state lưu ở user_settings (thiếu / hỏng thì về mặc định, trường lạ bỏ). */
-export const parseHabitState = (raw: unknown): HabitState => {
+/** Parse state lưu ở user_settings (thiếu / hỏng thì về mặc định, trường lạ và trường cũ như claim / retain bị bỏ). */
+export const parseHabitState = (raw: unknown, cfg: HabitConfig = HABIT_CONFIG): HabitState => {
   let v: any = raw;
   if (typeof raw === "string") {
     try {
@@ -118,17 +125,17 @@ export const parseHabitState = (raw: unknown): HabitState => {
       v = null;
     }
   }
-  if (!v || typeof v !== "object") return { ...INITIAL_HABIT, claim: [...INITIAL_HABIT.claim] };
+  if (!v || typeof v !== "object") return fresh();
   const num = (x: any, d: number) => (typeof x === "number" && Number.isFinite(x) ? x : d);
   const str = (x: any) => (typeof x === "string" && /^\d{4}-\d{2}-\d{2}$/.test(x) ? x : null);
-  const claim: HabitState["claim"] = Array.isArray(v.claim) && v.claim.length === 3 ? [Boolean(v.claim[0]), Boolean(v.claim[1]), Boolean(v.claim[2])] : [true, true, true];
   return {
     habit: clamp(num(v.habit, 0), 0, 100),
-    shield: clamp(Math.round(num(v.shield, 0)), 0, HABIT_CONFIG.shieldLimit),
+    shield: clamp(Math.round(num(v.shield, 0)), 0, cfg.shieldLimit),
+    stack: clamp(Math.round(num(v.stack, 0)), 0, cfg.stacksPerShield - 1),
+    stackDate: str(v.stackDate),
     streak: Math.max(0, Math.round(num(v.streak, 0))),
     maxStreak: Math.max(0, Math.round(num(v.maxStreak, 0))),
     streakDate: str(v.streakDate),
-    claim,
     todayDate: str(v.todayDate),
     todayGain: Math.max(0, num(v.todayGain, 0)),
     activeDays: Math.max(0, Math.round(num(v.activeDays, 0))),
@@ -136,8 +143,6 @@ export const parseHabitState = (raw: unknown): HabitState => {
     shieldWasted: Math.max(0, Math.round(num(v.shieldWasted, 0))),
   };
 };
-
-const clone = (s: HabitState): HabitState => ({ ...s, claim: [...s.claim] as HabitState["claim"] });
 
 const event = (type: HabitEventType, date: string, before: HabitState, after: HabitState, missedDays = 0, note: string | null = null): HabitEvent => ({
   type,
@@ -160,7 +165,7 @@ export const reconcile = (input: HabitState, today: string, cfg: HabitConfig = H
   const gap = daysBetween(input.streakDate, today);
   if (gap <= 1) return none;
 
-  const s = clone(input);
+  const s = { ...input };
   const missed = gap - 1;
   const used = Math.min(s.shield, missed);
   const over = missed - used;
@@ -181,10 +186,6 @@ export const reconcile = (input: HabitState, today: string, cfg: HabitConfig = H
     s.streak = 0;
     const loss = Math.min(s.habit, cfg.penaltyBase + cfg.penaltyPerDay * over);
     s.habit = round1(s.habit - loss);
-    // Tụt dưới mốc trước thì mốc sau nhận khiên lại được: 35 chỉ khi về 0, 70 khi dưới 35, 100 khi dưới 70
-    if (s.habit <= 0) s.claim[0] = true;
-    if (s.habit < cfg.milestones[0]) s.claim[1] = true;
-    if (s.habit < cfg.milestones[1]) s.claim[2] = true;
     note = used ? `${missed} ngày nghỉ: khiên chỉ che ${used}, thiếu ${over}` : `${missed} ngày nghỉ, không còn khiên`;
   }
   s.streakDate = addDays(today, -1);
@@ -201,12 +202,13 @@ export const dayGain = (items: number, goal: number, cfg: HabitConfig = HABIT_CO
 
 /**
  * Ghi nhận học / ôn trong ngày `today` (`itemsToday` = tổng thẻ học + ôn của cả ngày sau phiên này, không phải của riêng phiên).
- * Tự `reconcile` trước. Ngày đầu tiên có học: streak +1; habit chỉ cộng phần chênh so với điểm đã cộng trong ngày.
+ * Tự `reconcile` trước. Ngày đầu tiên có học: streak +1; habit chỉ cộng phần chênh so với điểm đã cộng trong ngày; làm đủ
+ * `shieldDailyTarget` thẻ thì ngày đó được 1 stack (mỗi ngày một lần), đủ `stacksPerShield` stack thì +1 khiên.
  */
 export const applyActivity = (input: HabitState, today: string, itemsToday: number, goal: number, cfg: HabitConfig = HABIT_CONFIG): Outcome => {
   const rec = reconcile(input, today, cfg);
-  const before = clone(rec.state);
-  const s = clone(rec.state);
+  const before = { ...rec.state };
+  const s = { ...rec.state };
   const events = [...rec.events];
   const notes: string[] = [];
 
@@ -223,29 +225,23 @@ export const applyActivity = (input: HabitState, today: string, itemsToday: numb
 
   const delta = Math.max(0, round1(dayGain(itemsToday, goal, cfg) - s.todayGain));
   s.todayGain = round1(s.todayGain + delta);
-
-  let shieldGain = 0;
   if (delta > 0) s.habit = round1(Math.min(100, s.habit + delta));
-  cfg.milestones.forEach((m, i) => {
-    if (s.habit >= m && s.claim[i]) {
-      s.claim[i] = false;
-      shieldGain += 1;
-      notes.push(`đạt mốc ${m}%: +1 khiên`);
+
+  if (itemsToday >= cfg.shieldDailyTarget && s.stackDate !== today) {
+    s.stackDate = today;
+    s.stack += 1;
+    if (s.stack >= cfg.stacksPerShield) {
+      s.stack = 0;
+      const next = Math.min(cfg.shieldLimit, s.shield + 1);
+      s.shieldWasted += s.shield + 1 - next;
+      s.shield = next;
+      notes.push(`đủ ${cfg.stacksPerShield} ngày hoàn thành mục tiêu: +1 khiên`);
+    } else {
+      notes.push(`hoàn thành mục tiêu ngày (${s.stack}/${cfg.stacksPerShield} tới khiên)`);
     }
-  });
-  if (shieldGain) {
-    const next = Math.min(cfg.shieldLimit, s.shield + shieldGain);
-    s.shieldWasted += s.shield + shieldGain - next;
-    s.shield = next;
   }
 
-  const changed = s.streak !== before.streak || s.habit !== before.habit || s.shield !== before.shield;
+  const changed = s.streak !== before.streak || s.habit !== before.habit || s.shield !== before.shield || s.stack !== before.stack;
   if (changed) events.push(event("active", today, before, s, 0, notes.join("; ") || null));
   return { state: s, events, coveredDates: rec.coveredDates, lostStreak: rec.lostStreak };
-};
-
-/** Nhãn ngắn cho UI: tới mốc khiên tiếp theo còn bao nhiêu điểm habit (null nếu đã qua hết mốc đang nhận được). */
-export const nextMilestone = (s: HabitState, cfg: HabitConfig = HABIT_CONFIG) => {
-  const i = cfg.milestones.findIndex((m, idx) => s.claim[idx] && s.habit < m);
-  return i < 0 ? null : { at: cfg.milestones[i], remaining: round1(cfg.milestones[i] - s.habit) };
 };
