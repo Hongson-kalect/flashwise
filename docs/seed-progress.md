@@ -74,3 +74,17 @@ Ngoài danh sách bước: DB còn các từ tiếng Anh của các đợt seed 
 | Gần như bao quát | 20.000 | 10.000–12.000 | 11.092 | 10.000 |
 
 Cụm / thành ngữ / tục ngữ: ít hơn nhiều, bị giới hạn bởi số dòng nguồn (ko, zh chỉ ~790 cụm; ko 62 thành ngữ). Tiếng Anh dự kiến nhiều hơn các ngôn ngữ khác ở mọi mức.
+
+## Từ thô tục / nhạy cảm đã thêm tay (2026-11-12, en) — seed bỏ qua
+
+Thử cơ chế thô tục (`show_offensive`) và chặn nhạy cảm (`sensitive` → `BANNED`). Các từ này **đã có trong DB** nên luồng seed (`DONE_STATUSES` gồm COMPLETED / REJECTED / BANNED) tự bỏ qua; đừng tạo lại hoặc xoá, đặc biệt hai từ BANNED.
+
+| Từ | Trạng thái | Ghi chú |
+|---|---|---|
+| `damn` | COMPLETED | 4 nghĩa, cả 4 `is_offensive` |
+| `bastard` | COMPLETED | 3 nghĩa, 2 `is_offensive` |
+| `bitch` | COMPLETED | 3 nghĩa, 1 `is_offensive` |
+| `nigger` | **BANNED** | miệt thị chủng tộc, AI đặt `sensitive`, chặn hẳn |
+| `chink` | **BANNED** | AI coi là miệt thị (cũng có nghĩa "khe hở", bị chặn theo): nếu cần từ nghĩa thường thì admin `unban` |
+
+Từ thô tục có sẵn do gợi ý theo nghĩa "chết tiệt": `shit`, `fuck`, `fucking`, `motherfucker` (đã có từ trước, `is_offensive`). Kết quả thử: gợi ý theo từ / theo nghĩa ẩn nghĩa `is_offensive` khi chưa bật `show_offensive`, hiện kèm cờ khi đã bật. Cần chạy lại `ai_worker` sau khi sửa prompt (không có `--reload`) và xoá cache Redis `word:*` của từ cũ (`WordCacheManager.cache_word_clear_specific`).
