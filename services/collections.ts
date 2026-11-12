@@ -1,5 +1,6 @@
 import {
   getCollectionEtag,
+  removeLocalCollection,
   saveBundle,
   saveMyCollections,
 } from "@/database/queries/collections";
@@ -29,6 +30,13 @@ export const syncMyCollections = async (db: SQLiteDatabase) => {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/** Server báo bộ bị admin ban (403 collection_banned): app đã gỡ bộ khỏi máy. */
+export class CollectionBannedError extends Error {
+  constructor() {
+    super("collection_banned");
+  }
+}
+
 /**
  * Tải (hoặc cập nhật) nội dung 1 bộ về SQLite để học offline. Gửi etag cũ nên không đổi thì gần như không tốn gì.
  * Tải bộ không kích hoạt dịch (dịch lười khi học tới cụm nào, xem prefetchTranslation); `pending` chỉ là số nghĩa
@@ -45,7 +53,18 @@ export const downloadBundle = async (
   const retries = opts.retries ?? 0;
   for (let attempt = 0; attempt <= retries; attempt++) {
     const etag = opts.force && attempt === 0 ? null : await getCollectionEtag(db, userCollectionId);
-    const bundle = await fetchBundle(userCollectionId, userLang, etag);
+    let bundle;
+    try {
+      bundle = await fetchBundle(userCollectionId, userLang, etag);
+    } catch (e: any) {
+      if (e?.response?.status === 403 && e.response.data?.errorCode === "collection_banned") {
+        // Bộ bị cấm: gỡ khỏi máy (tiến độ học nằm ở bảng riêng nên giữ nguyên) và báo cho màn gọi
+        const collectionId = e.response.data?.collection_id ?? (await db.getFirstAsync<{ collection_id: string }>(`SELECT collection_id FROM user_collection WHERE id = ?`, [userCollectionId]))?.collection_id;
+        if (collectionId) await removeLocalCollection(db, userCollectionId, String(collectionId));
+        throw new CollectionBannedError();
+      }
+      throw e;
+    }
     if (!bundle.unchanged) await saveBundle(db, bundle);
     pending = bundle.pending?.length ?? 0;
     if (!pending) break;

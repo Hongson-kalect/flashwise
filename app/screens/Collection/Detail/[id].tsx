@@ -8,7 +8,7 @@ import { getMyCollection, listCollectionSenses, setLocalCover, setLocalOrder } f
 import { deleteCollectionItem, reorderCollectionItems } from "@/services/api/collections";
 import { useTheme } from "@/providers/Theme";
 import { useBottomSheet } from "@/providers/BottomSheet";
-import { downloadBundle, refreshPending, unpublish } from "@/services/collections";
+import { CollectionBannedError, downloadBundle, refreshPending, unpublish } from "@/services/collections";
 import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { ProgressRing, Skeleton, useDebounce } from "@/ui";
@@ -131,6 +131,12 @@ const CollectionDetail = () => {
 
   const download = useMutation({
     mutationFn: (force: boolean) => downloadBundle(db, id, userLang, { force }),
+    onError: (e) => {
+      if (e instanceof CollectionBannedError) {
+        toast.error("Bộ này đã bị gỡ vì vi phạm quy định. Tiến độ học của bạn vẫn được giữ.", { long: true });
+        router.back();
+      }
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: ["collections"] }),
   });
 
