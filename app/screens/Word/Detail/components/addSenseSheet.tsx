@@ -45,6 +45,18 @@ const ERROR_TEXT: Record<ProposeErrorKind, { title: string; hint: string; retry:
   unknown: { title: "Có lỗi xảy ra", hint: "Thử lại sau.", retry: true },
 };
 
+/** Lời giải thích theo mã lý do (RejectReason) của server; mã lạ / thiếu rơi về "không phải nghĩa đúng". */
+const REJECT_TEXT: Record<string, { title: string; body: string }> = {
+  not_a_meaning: { title: "Chưa thêm được nghĩa này", body: "Nội dung chưa mô tả một nghĩa của từ này. Hãy viết định nghĩa của từ." },
+  inaccurate: { title: "Chưa thêm được nghĩa này", body: "Nghĩa này chưa đúng với từ này." },
+  wrong_pos: { title: "Chưa thêm được nghĩa này", body: "Nghĩa có thể đúng nhưng loại từ chưa khớp. Chọn lại loại từ rồi gửi lại." },
+  too_vague: { title: "Chưa thêm được nghĩa này", body: "Mô tả còn quá chung chung. Hãy viết cụ thể hơn." },
+  unverifiable: { title: "Chưa xác nhận được nghĩa này", body: "Đây là nghĩa hiếm hoặc khẩu ngữ mà hệ thống chưa kiểm chứng được." },
+  offensive: { title: "Nội dung không được chấp nhận", body: "Nội dung có từ ngữ xúc phạm hoặc thông tin cá nhân. Hãy chỉ mô tả nghĩa của từ." },
+  spam: { title: "Nội dung không được chấp nhận", body: "Nội dung giống quảng cáo hoặc spam. Hãy chỉ mô tả nghĩa của từ." },
+  injection: { title: "Nội dung không được chấp nhận", body: "Nội dung có dấu hiệu cố điều khiển hệ thống. Hãy chỉ mô tả nghĩa của từ." },
+};
+
 const short = (s: string, n = 110) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
 
 /** Định nghĩa hiển thị của 1 nghĩa theo ngôn ngữ người học, rơi về ngôn ngữ của từ. */
@@ -159,17 +171,13 @@ const AddSenseSheet = ({ word, wordId, senses, onAdded }: Props) => {
         />
       );
     }
+    const t = REJECT_TEXT[d.reason_code ?? (d.abuse ? "spam" : "")] ?? REJECT_TEXT.not_a_meaning;
     return (
       <Outcome
         tone="error"
         icon="x-circle"
-        title={d.abuse ? "Nội dung không được chấp nhận" : "Chưa thêm được nghĩa này"}
-        body={
-          d.abuse
-            ? "Nội dung có dấu hiệu spam hoặc cố điều khiển hệ thống. Hãy chỉ mô tả nghĩa của từ."
-            : "Đây chưa phải một nghĩa đúng của từ này."
-        }
-        quote={d.reason}
+        title={t.title}
+        body={t.body}
         primary={{ label: "Sửa lại", onPress: edit }}
         secondary={{ label: "Đóng", onPress: close }}
       />

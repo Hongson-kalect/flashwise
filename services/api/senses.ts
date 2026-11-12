@@ -45,7 +45,18 @@ export type ProposeResult =
   | { result: "official"; sense: any }
   | { result: "pending"; sense: any; reasons?: string[] }
   | { result: "duplicate"; reason: string; sense: any | null }
-  | { result: "rejected"; reason: string; abuse: boolean };
+  | { result: "rejected"; reason?: string; reason_code?: RejectReason; abuse: boolean };
+
+/** Mã lý do từ chối của cổng AI (server); app dịch ra từng ngôn ngữ, `reason` tiếng Anh của server chỉ để log. */
+export type RejectReason =
+  | "not_a_meaning"
+  | "inaccurate"
+  | "wrong_pos"
+  | "too_vague"
+  | "unverifiable"
+  | "offensive"
+  | "spam"
+  | "injection";
 
 /**
  * Đề xuất nghĩa mới (chỉ cần định nghĩa). Server chạy cổng AI đồng bộ ~3-6s nên nới timeout.

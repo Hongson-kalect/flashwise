@@ -16,6 +16,11 @@ export const saveWord = async (
     ipas?: unknown;
     audio?: string | null;
     senses: Record<string, any>;
+    /**
+     * Danh sách `senses` là bản đủ từ server (get-word): nghĩa của từ này không còn trong đó (bị ẩn, bị xoá, admin từ chối)
+     * thì đánh dấu xoá ở máy, trừ nghĩa đang nằm trong một bộ từ của mình (học offline vẫn cần).
+     */
+    prune?: boolean;
   },
 ) => {
   const lang = word.languageCode ?? "en";
@@ -74,11 +79,24 @@ export const saveWord = async (
         ],
       );
     }
+    if (word.prune) {
+      const ids = Object.values(word.senses)
+        .map((s) => s?.id)
+        .filter(Boolean);
+      if (ids.length) {
+        await db.runAsync(
+          `UPDATE ai_sense SET is_deleted = 1
+           WHERE word_id = ? AND is_deleted = 0 AND id NOT IN (${ids.map(() => "?").join(",")})
+             AND id NOT IN (SELECT sense_id FROM collection_items WHERE is_deleted = 0 AND sense_id IS NOT NULL)`,
+          [word.id, ...ids],
+        );
+      }
+    }
   });
 };
 
 /**
- * Nghĩa bị ẩn / xoá trên server (của riêng mình) cũng phải biến khỏi bản lưu: saveWord chỉ thêm / thay các nghĩa server trả về,
+ * Nghĩa bị xoá trên server (của riêng mình) cũng phải biến khỏi bản lưu: saveWord chỉ thêm / thay các nghĩa server trả về,
  * không bỏ nghĩa đã vắng mặt (nghĩa tải từ bộ từ không có trong get-word nên không thể tự dọn theo kiểu "không còn trong kết quả").
  */
 export const markSenseRemoved = async (db: SQLiteDatabase, senseId: string, removed: boolean) => {
@@ -184,6 +202,8 @@ export type LocalWord = {
   value: string;
   language_code: string;
   senses: Record<string, any>;
+  /** Lần cuối bản lưu được ghi từ server (UTC, `YYYY-MM-DD HH:MM:SS`); để làm mới nền khi đã cũ. */
+  updated_at?: string;
 };
 
 /** Đọc 1 từ đã lưu, dựng lại đúng dạng server trả (get-word 200) để màn chi tiết dùng chung. */
@@ -193,7 +213,7 @@ export const loadLocalWord = async (
   lang: string,
 ): Promise<LocalWord | null> => {
   const w = await db.getFirstAsync<any>(
-    `SELECT id, value, language_code FROM ai_word
+    `SELECT id, value, language_code, updated_at FROM ai_word
      WHERE language_code = ? AND value = ? COLLATE NOCASE AND status = 'COMPLETED' LIMIT 1`,
     [lang, value.trim()],
   );
@@ -240,11 +260,13 @@ export const loadLocalWord = async (
         : null,
     };
   }
-  return { id: w.id, value: w.value, language_code: w.language_code, senses };
+  return { id: w.id, value: w.value, language_code: w.language_code, senses, updated_at: w.updated_at };
 };
 
 // Mỗi từ chỉ làm mới nền tối đa 1 lần / 10 phút (từ còn draft hoặc thiếu dịch sẽ không bị gọi mỗi lần mở)
 const REFRESH_COOLDOWN_MS = 10 * 60 * 1000;
+// Bản lưu cũ hơn mức này thì hỏi lại server ở nền khi có mạng (hiện bản lưu ngay, rồi thay bằng bản mới)
+const REVALIDATE_AFTER_MS = 10 * 60 * 1000;
 const lastRefresh = new Map<string, number>();
 
 /**
@@ -259,7 +281,9 @@ export const needsRefresh = (
   now = Date.now(),
 ) => {
   const senses = Object.values(word.senses);
+  const savedAt = word.updated_at ? Date.parse(word.updated_at.replace(" ", "T") + "Z") : NaN;
   const stale =
+    (!Number.isNaN(savedAt) && now - savedAt > REVALIDATE_AFTER_MS) ||
     senses.some((s) => s.quality_status === "draft") ||
     senses.some((s) => !s.image_preview) ||
     (!!userLang &&

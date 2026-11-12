@@ -173,3 +173,37 @@ Phát hiện thêm:
 | Tab Từ vựng | Đạt: 2 từ, 12 nghĩa (house 5 + look 7), tìm "lo" ra `Look`, gloss theo nghĩa đầu còn hiện |
 
 Dọn: xoá `ai_word`, `ai_sense`, `sense_metadata` trong SQLite trên máy ảo (app dừng, sửa file DB rồi đẩy lại, `integrity_check` ok), `LOCAL_WORDS_ENABLED = false`, bỏ ẩn lại các nghĩa đã ẩn trong DB server. Kiểm sau cùng: `house` hiện đủ Noun 5, có gọi get-word (cờ tắt).
+
+## Vòng 4 (2026-11-12): trang Ngôn ngữ, local bật, các case sense còn lại
+
+`LOCAL_WORDS_ENABLED = true` và **giữ nguyên bật**, không xoá local (theo yêu cầu). Đã bỏ 429 / 500.
+
+### Trang đổi ngôn ngữ (mới)
+`app/screens/Profile/Language/screen.tsx`, mở từ Cá nhân → hàng "Ngôn ngữ" (hiện "English · Tiếng Việt"). Hai danh sách: ngôn ngữ đang học và ngôn ngữ dịch (danh sách chung ở `constants/languages.ts`, dùng lại ở màn Start). Chọn xong ghi `user_settings` + store; hai ngôn ngữ không được trùng (đổi sang ngôn ngữ kia thì ngôn ngữ còn lại tự đổi sang mặc định). Nút chuyển bản dịch / bản gốc ở trang từ lấy nhãn theo ngôn ngữ đã chọn thay vì "VI" / "EN" cố định.
+
+### Kết quả
+| Case | Kết quả |
+|---|---|
+| D1 đổi ngôn ngữ dịch vi → es | Đạt: `house` hiện bản dịch tiếng Tây Ban Nha (casa, vivienda, hogar; ví dụ dịch es). Local giữ cả es lẫn vi trong `contents`, đổi lại vi mở từ local ngay, không gọi server |
+| A4 concept | Đạt: học tiếng Tây Ban Nha, `puerta` hiện mục "Cùng nghĩa ở ngôn ngữ khác → Tiếng Anh: door" |
+| Propose: duplicate (`king`, `safe`) | Đạt |
+| Propose: rejected không abuse (`king` + "slang: excellent...") | Đạt (`abuse: false`, có lý do) |
+| Propose: official (`boss` + "Informal... excellent or very impressive", adjective) | Đạt: nghĩa mới thành chính thức ngay, đủ ví dụ, bản dịch, ảnh; trang từ hiện thêm tab Adjective |
+| Propose: pending | Chưa gặp (cần phán quyết "không chắc") |
+| "Sửa nghĩa này" (`boss`) | Đạt: tạo bản riêng, hiện nội dung đã sửa. Lỗi tìm ra và đã sửa: sau khi lưu, trang nhảy sang tab khác; nay ở lại đúng nghĩa vừa sửa (nhận bản riêng qua `original_id`) |
+| Đặt / bỏ nghĩa chính (sao) | Đạt: `POST` / `DELETE main`, sao đổi màu, nghĩa chính lên đầu |
+| Cụm từ `break the ice` (tạo mới) | Đạt: loại "Verb phrase", 4 nhãn dịch, ví dụ + dịch; ảnh còn chờ |
+| Local: từ chưa có ảnh | Bản lưu local không có `image_preview` nên mỗi lần mở hỏi lại server (đúng thiết kế, cooldown 10 phút) |
+
+### Phát hiện cần xem
+1. **Từ chối bị gắn `abuse: true` cả khi nội dung chỉ lạc đề** ("The colour of bananas is yellow..." cho `king`): app hiện "Nội dung có dấu hiệu spam hoặc cố điều khiển hệ thống", ghi điểm `sense_abuse` -5. Quyết định sản phẩm: có nên tách "lạc đề" khỏi "spam / chèn lệnh" không.
+2. Lý do từ chối (`reason`) là tiếng Anh thô, hiện nguyên trong hộp trích dẫn của màn kết quả.
+3. Local không bỏ nghĩa đã bị xoá / đổi ở server (admin từ chối, nghĩa của mình bị xoá trên máy khác): `saveWord` chỉ thêm / thay. Chỉ ẩn / xoá thực hiện ngay trong app mới được đánh dấu (`markSenseRemoved`).
+4. Từ tiếng Tây Ban Nha có "Tags" bằng tiếng Anh (door, entry, access): có vẻ là từ khoá ảnh, xem lại có nên hiện không.
+5. Dữ liệu test còn lại trong DB: nghĩa chính thức `boss` (adjective, giữ lại vì hợp lệ), hai bản riêng "EDITED" / "EDIT2" của `boss` cho tài khoản khách, `break the ice` (ảnh chưa tạo xong). Local có `house`, `look`, `boss`, `break the ice`, `puerta`...
+
+## Vòng 5 (2026-11-12): local làm mới nền, mã lý do từ chối, nút bản dịch
+
+- **Local + mạng**: bản lưu hiện ngay rồi thay bằng bản server. `loadLocalWord` trả `ai_word.updated_at` (thời điểm ghi từ server; bảng từ / nghĩa không có cột `sync_at`, chỉ có `updated_at`); `needsRefresh` làm mới nền khi bản lưu cũ hơn 10 phút (cộng các điều kiện cũ: draft, thiếu ảnh, thiếu dịch; cooldown 10 phút / từ). Bản đủ từ server (`saveWord(..., prune: true)`) đánh dấu xoá ở máy các nghĩa không còn trong kết quả, trừ nghĩa đang nằm trong bộ từ của mình. Ẩn nghĩa không còn đánh dấu ngay (nghĩa ẩn có thể còn trong bộ từ), để lần làm mới ngay sau đó dọn; xoá nghĩa của mình vẫn đánh dấu ngay. Test: `npx tsx --test database/queries/words.test.ts` (3 test). Máy ảo: ẩn một nghĩa của `house` → local `is_deleted = 1` sau lần làm mới, bỏ ẩn → về 0, trang Noun 4 → 5.
+- **Mã lý do từ chối**: server (`utils/ai/sense_gate.py`, `ai/views/AISense.py`) trả `reason_code` (`not_a_meaning, inaccurate, wrong_pos, too_vague, unverifiable, offensive, spam, injection`); `reason` tiếng Anh chỉ để log. App (`addSenseSheet.tsx`) dịch mã ra tiếng Việt, không còn hiện câu của AI. Prompt chỉnh: `is_offensive_or_spam` chỉ đặt cho `offensive` / `spam`, lạc đề hoặc sai là `not_a_meaning` / `inaccurate`. Kiểm bằng curl: "bananas" cho `king` → `not_a_meaning`, `abuse: false`; chèn lệnh → `injection`, `abuse: true`. Ca spam quảng cáo chưa kiểm được vì bị throttle (1 giờ).
+- **Nút bản dịch** (`toggleWordDisplayMode.tsx`): một nút biểu tượng dịch, bật = nền màu chính, tắt = nền nhạt; không còn chữ VI / EN.

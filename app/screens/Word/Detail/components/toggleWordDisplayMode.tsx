@@ -1,78 +1,42 @@
+import AppIcon from "@/components/AppIcon";
 import { useTheme } from "@/providers/Theme";
-import AppText from "@/components/AppText";
 import { useAppStore } from "@/stores/appStore";
-import { useMemo } from "react";
-import { Pressable, StyleSheet } from "react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import { Pressable } from "react-native";
 
+/**
+ * Nút bật / tắt hiển thị bản dịch (show_translation) trên trang từ, không đổi ngôn ngữ của trang:
+ * bật = nền màu chính, biểu tượng dịch trắng; tắt = nền nhạt, biểu tượng xám. Đổi ngôn ngữ ở Cá nhân → Ngôn ngữ.
+ */
 const ToggleWordDisplayMode = () => {
   const { settings, dbService, updateSetting } = useAppStore();
   const { theme } = useTheme();
+  const on = !!settings?.show_translation;
 
-  const toggleLanguageMode = () => {
-    dbService?.setShowTranslation(!settings?.show_translation);
-    updateSetting({ show_translation: !settings?.show_translation });
+  const toggle = () => {
+    dbService?.setShowTranslation(!on);
+    updateSetting({ show_translation: !on });
   };
 
   return (
-    <Pressable onPress={toggleLanguageMode}>
-      <Animated.View
-        className="items-center justify-center"
-        layout={LinearTransition}
-        style={[
-          {
-            backgroundColor: theme.secondary,
-            borderWidth: 0.5,
-            borderColor: theme.secondary,
-            borderRadius: 5,
-            height: 36,
-            width: 36,
-          },
-          settings?.show_translation
-            ? styles.frontFlagPosition
-            : styles.backFlagPosition,
-        ]}
-      >
-        <AppText color="white">VI</AppText>
-      </Animated.View>
-      <Animated.View
-        className={"h-8 w-8 items-center justify-center"}
-        layout={LinearTransition}
-        style={[
-          {
-            backgroundColor: theme.primary,
-            borderWidth: 0.5,
-            borderColor: theme.primary,
-            borderRadius: 5,
-            height: 36,
-            width: 36,
-          },
-          !settings?.show_translation
-            ? styles.frontFlagPosition
-            : styles.backFlagPosition,
-        ]}
-      >
-        <AppText color="white">EN</AppText>
-      </Animated.View>
+    <Pressable
+      onPress={toggle}
+      hitSlop={8}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: on }}
+      accessibilityLabel="Hiện bản dịch"
+      className="items-center justify-center"
+      style={{
+        height: 36,
+        width: 36,
+        borderRadius: 10,
+        backgroundColor: on ? theme.primary : theme.card,
+        borderWidth: 1,
+        borderColor: on ? theme.primary : theme.border,
+      }}
+    >
+      <AppIcon branch="mui" name="translate" size={20} color={on ? "white" : "subText2"} />
     </Pressable>
   );
 };
 
 export default ToggleWordDisplayMode;
-
-const styles = StyleSheet.create({
-  backFlagPosition: {
-    position: "absolute",
-    left: -6,
-    top: -4,
-    opacity: 0.3,
-    // zIndex: 1,
-  },
-
-  frontFlagPosition: {
-    position: "relative",
-    right: 0,
-    zIndex: 1,
-    top: 0,
-  },
-});

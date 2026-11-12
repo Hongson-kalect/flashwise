@@ -6,6 +6,7 @@ import SyncStatus from "@/components/SyncStatus";
 import { useTheme } from "@/providers/Theme";
 import { nextRetention } from "@/learning/fsrsService";
 import { useAppStore } from "@/stores/appStore";
+import { learningLanguages, motherLanguages } from "@/constants/languages";
 import Slider from "@react-native-community/slider";
 import { router } from "expo-router";
 import React from "react";
@@ -18,6 +19,11 @@ import {
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Divider } from "react-native-paper";
+
+// Tên ngắn của ngôn ngữ (phần trước dấu · của danh sách chọn) để hiện ở hàng Ngôn ngữ
+const LANG_NAME: Record<string, string> = Object.fromEntries(
+  [...learningLanguages, ...motherLanguages].map((l) => [l.code, l.language.split(" · ")[0]]),
+);
 
 export default function ProfilePage() {
   // Các dạng click: toggle, range, list modal, new page, disable, feedback modal
@@ -161,7 +167,9 @@ export default function ProfilePage() {
           }
           showValue
           label="Ngôn ngữ"
-          value="Tiếng Việt"
+          value={`${LANG_NAME[settings?.learning_language ?? "en"] ?? settings?.learning_language} · ${LANG_NAME[settings?.translate_language ?? "vi"] ?? settings?.translate_language}`}
+          rightContent="newPage"
+          onPress={() => router.push("/screens/Profile/Language/screen")}
         />
         <Divider />
 

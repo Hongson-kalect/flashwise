@@ -117,9 +117,13 @@ const WordDetail = ({ word }: { word: string }) => {
   useEffect(() => {
     const id = viewingId.current;
     if (!id || pages[pageIndex]?.sense.id === id) return;
-    if (!pages.some((p) => p.sense.id === id)) return;
+    // Sửa nghĩa chính thức tạo bản riêng (id mới, trỏ về nghĩa gốc): coi bản riêng là nghĩa đang xem
+    const target =
+      pages.find((p) => p.sense.id === id) ??
+      pages.find((p: any) => (p.sense.original_id ?? p.sense.original?.id ?? p.sense.original) === id);
+    if (!target || target.sense.id === pages[pageIndex]?.sense.id) return;
     // Chờ thư viện tab nhận danh sách trang mới rồi mới nhảy (nhảy ngay thì bị bỏ qua)
-    const t = setTimeout(() => container.current?.jumpToTab(id), 120);
+    const t = setTimeout(() => container.current?.jumpToTab(target.sense.id), 120);
     return () => clearTimeout(t);
   }, [pages]);
   const activeSense = pages[pageIndex]?.sense;

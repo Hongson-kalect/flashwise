@@ -79,7 +79,8 @@ const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mod
         try {
           if (kind === "hide") await hideSense(id);
           else await deleteSense(id);
-          await markSenseRemoved(db, id, true).catch(() => {}); // bản lưu local không còn nghĩa này
+          // Xoá nghĩa của mình thì bản lưu local bỏ ngay; ẩn thì để lần làm mới sau của trang từ dọn (nghĩa ẩn có thể còn nằm trong bộ từ của mình)
+          if (kind === "delete") await markSenseRemoved(db, id, true).catch(() => {});
           queryClient.invalidateQueries({ queryKey: ["words"] });
           onSenseAdded?.(); // tải lại trang từ
         } catch (e: any) {
@@ -102,7 +103,6 @@ const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mod
   const unhideAll = async (ids: string[]) => {
     try {
       await Promise.all(ids.map(unhideSense));
-      await Promise.all(ids.map((id) => markSenseRemoved(db, id, false).catch(() => {})));
       queryClient.invalidateQueries({ queryKey: ["words"] });
       onSenseAdded?.(); // tải lại trang từ
     } catch {

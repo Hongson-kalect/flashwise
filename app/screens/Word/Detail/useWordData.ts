@@ -175,6 +175,7 @@ export const useWordData = (word: string) => {
       value: state.value,
       languageCode: state.languageCode,
       senses: state.senses,
+      prune: true,
     })
       .then(() => queryClient.invalidateQueries({ queryKey: ["words"] }))
       .catch((e) => console.log("saveWord lỗi", e));

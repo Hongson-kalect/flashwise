@@ -3,53 +3,12 @@ import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { fetchTopics, Tag } from "@/services/api/tags";
 import { useAppStore } from "@/stores/appStore";
+import { Lang, learningLanguages, motherLanguages } from "@/constants/languages";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
 import Animated, { FadeInDown, FadeInRight } from "react-native-reanimated";
-
-type Lang = { code: string; language: string };
-
-const learningLanguages: Lang[] = [
-  { code: "en", language: "English" },
-  { code: "vi", language: "Tiếng Việt · Vietnamese" },
-  { code: "ja", language: "日本語 · Japanese" },
-  { code: "ko", language: "한국어 · Korean" },
-  { code: "zh", language: "中文 · Chinese" },
-  { code: "fr", language: "Français · French" },
-  { code: "de", language: "Deutsch · German" },
-  { code: "es", language: "Español · Spanish" },
-  { code: "it", language: "Italiano · Italian" },
-  { code: "pt-BR", language: "Português (BR)" },
-  { code: "ru", language: "Русский · Russian" },
-  { code: "hi", language: "हिन्दी · Hindi" },
-  { code: "ar", language: "العربية · Arabic" },
-  { code: "tr", language: "Türkçe · Turkish" },
-];
-
-const motherLanguages: Lang[] = [
-  { code: "vi", language: "Tiếng Việt" },
-  { code: "en", language: "English" },
-  { code: "zh", language: "中文 · Chinese" },
-  { code: "ja", language: "日本語 · Japanese" },
-  { code: "ko", language: "한국어 · Korean" },
-  { code: "es", language: "Español" },
-  { code: "fr", language: "Français" },
-  { code: "de", language: "Deutsch" },
-  { code: "it", language: "Italiano" },
-  { code: "pt", language: "Português" },
-  { code: "ru", language: "Русский" },
-  { code: "hi", language: "हिन्दी" },
-  { code: "bn", language: "বাংলা" },
-  { code: "ar", language: "العربية" },
-  { code: "tr", language: "Türkçe" },
-  { code: "nl", language: "Nederlands" },
-  { code: "sv", language: "Svenska" },
-  { code: "th", language: "ไทย" },
-  { code: "pl", language: "Polski" },
-  { code: "uk", language: "Українська" },
-];
 
 const STEPS = [
   { key: "start", title: "Chào bạn! Cùng thiết lập vài điều trước khi học nhé." },
