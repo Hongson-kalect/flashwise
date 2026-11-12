@@ -99,7 +99,7 @@ const HabitCard = ({ view }: { view?: HabitView }) => {
 
         <AppText size="sm" color="subText2">
           {full
-            ? `Habit đã đầy. Tích thêm ${fmt(s.retain)}/${HABIT_CONFIG.retainLimit} điểm để được 1 khiên nữa.`
+            ? `Habit đã đầy: bạn học rất đều. Nghỉ một ngày chỉ tốn 1 khiên, chuỗi vẫn giữ.`
             : next
               ? `Còn ${fmt(next.remaining)}% tới mốc ${next.at}% (được 1 khiên). Nghỉ một ngày sẽ tốn 1 khiên, hết khiên thì mất chuỗi và tụt habit.`
               : `Học đều để giữ habit. Nghỉ một ngày sẽ tốn 1 khiên.`}

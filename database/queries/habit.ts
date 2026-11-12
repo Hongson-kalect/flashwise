@@ -59,9 +59,9 @@ const report = (before: HabitState, out: Outcome): HabitReport => {
 
 const insertEvent = (db: Db, e: HabitEvent) =>
   db.runAsync(
-    `INSERT INTO habit_log (id, log_date, type, habit_delta, habit_snap, shield_delta, shield_snap, retain_delta, retain_snap, missed_days, note)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [uuidv7(), e.date, e.type, e.habitDelta, e.habitSnap, e.shieldDelta, e.shieldSnap, e.retainDelta, e.retainSnap, e.missedDays, e.note],
+    `INSERT INTO habit_log (id, log_date, type, habit_delta, habit_snap, shield_delta, shield_snap, missed_days, note)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [uuidv7(), e.date, e.type, e.habitDelta, e.habitSnap, e.shieldDelta, e.shieldSnap, e.missedDays, e.note],
   );
 
 /** Streak / XP trên profile local (server cũng tính từ day_learn_log; ở máy để khách và offline vẫn có số). */

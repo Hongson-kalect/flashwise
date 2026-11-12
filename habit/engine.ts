@@ -4,15 +4,14 @@
  *
  * - Ngày học (key 'YYYY-MM-DD', theo `day_start_hour`) có học hoặc ôn thì streak +1, habit tăng.
  * - Nghỉ n ngày: trừ n khiên (tối đa 3 khiên). Đủ khiên thì streak giữ nguyên, các ngày nghỉ được ghi là "ngày khiên che".
- * - Thiếu khiên: khiên còn lại vẫn bị dùng hết, phần ngày nghỉ không có khiên làm mất streak và trừ habit, thanh retain về 0.
+ * - Thiếu khiên: khiên còn lại vẫn bị dùng hết, phần ngày nghỉ không có khiên làm mất streak và trừ habit.
  * - Habit 0-100. Qua mốc 35 / 70 / 100 thì được 1 khiên (mỗi mốc 1 lần, mốc nào bị tụt xuống dưới mốc trước thì nhận lại được).
- *   Habit đầy thì điểm thưởng dồn vào thanh retain (đủ 25 điểm = 1 khiên).
+ *   Habit đã đầy thì không cộng thêm.
  * - Tất cả là hàm thuần nhận / trả state: `reconcile` (chạy khi mở app / trước khi ghi phiên học) rồi `applyActivity`.
  */
 
 export const HABIT_CONFIG = {
   shieldLimit: 3,
-  retainLimit: 25,
   /** Mốc habit được thưởng khiên. */
   milestones: [35, 70, 100],
   /** Điểm habit của 1 ngày học: từ `gainMin` (học / ôn ít) tới `gainMax` (đạt mục tiêu ngày), tăng theo số thẻ. */
@@ -28,8 +27,6 @@ export type HabitConfig = typeof HABIT_CONFIG;
 export interface HabitState {
   /** 0-100. */
   habit: number;
-  /** 0-retainLimit, tích khi habit đã đầy. */
-  retain: number;
   shield: number;
   streak: number;
   maxStreak: number;
@@ -46,7 +43,7 @@ export interface HabitState {
 }
 
 export const INITIAL_HABIT: HabitState = {
-  habit: 0, retain: 0, shield: 0, streak: 0, maxStreak: 0, streakDate: null, claim: [true, true, true],
+  habit: 0, shield: 0, streak: 0, maxStreak: 0, streakDate: null, claim: [true, true, true],
   todayDate: null, todayGain: 0, activeDays: 0, shieldUsed: 0, shieldWasted: 0,
 };
 
@@ -60,11 +57,9 @@ export interface HabitEvent {
   habitSnap: number;
   shieldDelta: number;
   shieldSnap: number;
-  retainDelta: number;
-  retainSnap: number;
   /** Số ngày nghỉ liên quan (shield / lapse). */
   missedDays: number;
-  /** Giải thích ngắn: milestone, retain, ngày nghỉ... */
+  /** Giải thích ngắn: mốc, ngày nghỉ... */
   note: string | null;
 }
 
@@ -129,7 +124,6 @@ export const parseHabitState = (raw: unknown): HabitState => {
   const claim: HabitState["claim"] = Array.isArray(v.claim) && v.claim.length === 3 ? [Boolean(v.claim[0]), Boolean(v.claim[1]), Boolean(v.claim[2])] : [true, true, true];
   return {
     habit: clamp(num(v.habit, 0), 0, 100),
-    retain: clamp(num(v.retain, 0), 0, HABIT_CONFIG.retainLimit),
     shield: clamp(Math.round(num(v.shield, 0)), 0, HABIT_CONFIG.shieldLimit),
     streak: Math.max(0, Math.round(num(v.streak, 0))),
     maxStreak: Math.max(0, Math.round(num(v.maxStreak, 0))),
@@ -152,8 +146,6 @@ const event = (type: HabitEventType, date: string, before: HabitState, after: Ha
   habitSnap: round1(after.habit),
   shieldDelta: after.shield - before.shield,
   shieldSnap: after.shield,
-  retainDelta: round1(after.retain - before.retain),
-  retainSnap: round1(after.retain),
   missedDays,
   note,
 });
@@ -189,7 +181,6 @@ export const reconcile = (input: HabitState, today: string, cfg: HabitConfig = H
     s.streak = 0;
     const loss = Math.min(s.habit, cfg.penaltyBase + cfg.penaltyPerDay * over);
     s.habit = round1(s.habit - loss);
-    s.retain = 0; // habit bị trừ thì retain về 0 (như Fastfast)
     // Tụt dưới mốc trước thì mốc sau nhận khiên lại được: 35 chỉ khi về 0, 70 khi dưới 35, 100 khi dưới 70
     if (s.habit <= 0) s.claim[0] = true;
     if (s.habit < cfg.milestones[0]) s.claim[1] = true;
@@ -234,21 +225,7 @@ export const applyActivity = (input: HabitState, today: string, itemsToday: numb
   s.todayGain = round1(s.todayGain + delta);
 
   let shieldGain = 0;
-  if (delta > 0) {
-    const room = 100 - s.habit;
-    const toHabit = Math.min(room, delta);
-    const toRetain = round1(delta - toHabit);
-    s.habit = round1(s.habit + toHabit);
-    if (toRetain > 0) {
-      s.retain = round1(s.retain + toRetain);
-      if (s.retain >= cfg.retainLimit) {
-        const circles = Math.floor(s.retain / cfg.retainLimit);
-        s.retain = round1(s.retain - circles * cfg.retainLimit);
-        shieldGain += circles;
-        notes.push(`thanh retain đầy: +${circles} khiên`);
-      }
-    }
-  }
+  if (delta > 0) s.habit = round1(Math.min(100, s.habit + delta));
   cfg.milestones.forEach((m, i) => {
     if (s.habit >= m && s.claim[i]) {
       s.claim[i] = false;
@@ -262,7 +239,7 @@ export const applyActivity = (input: HabitState, today: string, itemsToday: numb
     s.shield = next;
   }
 
-  const changed = s.streak !== before.streak || s.habit !== before.habit || s.retain !== before.retain || s.shield !== before.shield;
+  const changed = s.streak !== before.streak || s.habit !== before.habit || s.shield !== before.shield;
   if (changed) events.push(event("active", today, before, s, 0, notes.join("; ") || null));
   return { state: s, events, coveredDates: rec.coveredDates, lostStreak: rec.lostStreak };
 };

@@ -25,7 +25,7 @@ export interface MigrationDb {
 /** user_version >= số này là mã băm của bản cũ (băm 31 bit, thực tế luôn rất lớn), không phải số phiên bản. */
 export const LEGACY_HASH_THRESHOLD = 1_000_000;
 
-export const LATEST_VERSION = 2;
+export const LATEST_VERSION = 3;
 
 /** Bước nâng từ version (n - 1) lên n. */
 export const MIGRATIONS: Record<number, (db: MigrationDb) => Promise<void>> = {
@@ -51,6 +51,12 @@ export const MIGRATIONS: Record<number, (db: MigrationDb) => Promise<void>> = {
       CREATE INDEX IF NOT EXISTS idx_habit_log_date ON habit_log (log_date DESC, id DESC);
     `);
   },
+};
+
+// 3: bỏ thanh retain khỏi habit (cột retain_* của habit_log không còn dùng)
+MIGRATIONS[3] = async (db) => {
+  const cols = (await db.getAllAsync<{ name: string }>(`PRAGMA table_info(habit_log)`)).map((c) => c.name);
+  for (const c of ["retain_delta", "retain_snap"]) if (cols.includes(c)) await db.execAsync(`ALTER TABLE habit_log DROP COLUMN ${c}`);
 };
 
 export type MigrateResult = { from: number; to: number; fresh: boolean };

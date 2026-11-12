@@ -63,14 +63,13 @@ test("hôm qua có học, hôm nay chưa học: không phạt", () => {
   assert.equal(out.state.shield, 1);
 });
 
-test("không khiên: mất streak, trừ habit, retain về 0", () => {
-  const s0 = base({ streak: 9, maxStreak: 9, streakDate: "2026-11-10", shield: 0, habit: 50, retain: 10, claim: [false, true, true] });
+test("không khiên: mất streak, trừ habit", () => {
+  const s0 = base({ streak: 9, maxStreak: 9, streakDate: "2026-11-10", shield: 0, habit: 50, claim: [false, true, true] });
   const out = reconcile(s0, "2026-11-12"); // nghỉ 11
   assert.equal(out.state.streak, 0);
   assert.equal(out.lostStreak, 9);
   assert.equal(out.state.maxStreak, 9);
   assert.equal(out.state.habit, 50 - (HABIT_CONFIG.penaltyBase + HABIT_CONFIG.penaltyPerDay));
-  assert.equal(out.state.retain, 0);
   assert.equal(out.events[0].type, "lapse");
   assert.deepEqual(out.coveredDates, []);
 });
@@ -126,19 +125,16 @@ test("khiên tối đa 3, phần dư tính vào shieldWasted", () => {
   assert.equal(out.state.shieldWasted, 1);
 });
 
-test("habit đầy: điểm thưởng dồn vào retain, đủ 25 thì +1 khiên", () => {
-  let s = base({ habit: 100, retain: 22, shield: 0, streak: 1, streakDate: "2026-11-11", claim: [false, false, false] });
-  const out = applyActivity(s, "2026-11-12", 20, 20); // +5 retain -> 27 -> 2 dư, +1 khiên
+test("habit đầy thì dừng ở 100, không cộng thêm khiên", () => {
+  const out = applyActivity(base({ habit: 100, shield: 1, streak: 1, streakDate: "2026-11-11", claim: [false, false, false] }), "2026-11-12", 20, 20);
   assert.equal(out.state.habit, 100);
   assert.equal(out.state.shield, 1);
-  assert.equal(out.state.retain, 2);
 });
 
-test("habit gần đầy: phần vượt 100 chuyển sang retain", () => {
+test("habit gần đầy: vượt 100 bị chặn ở 100 và nhận khiên mốc 100", () => {
   const out = applyActivity(base({ habit: 98, streak: 1, streakDate: "2026-11-11", claim: [false, false, true] }), "2026-11-12", 20, 20);
   assert.equal(out.state.habit, 100);
-  assert.equal(out.state.retain, 3);
-  assert.equal(out.state.shield, 1); // mốc 100
+  assert.equal(out.state.shield, 1);
 });
 
 test("dayGain: 0 thẻ không có điểm, đạt mục tiêu là mức cao nhất", () => {

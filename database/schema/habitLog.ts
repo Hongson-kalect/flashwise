@@ -11,8 +11,6 @@ CREATE TABLE IF NOT EXISTS habit_log (
     habit_snap REAL NOT NULL DEFAULT 0,
     shield_delta INTEGER NOT NULL DEFAULT 0,
     shield_snap INTEGER NOT NULL DEFAULT 0,
-    retain_delta REAL NOT NULL DEFAULT 0,
-    retain_snap REAL NOT NULL DEFAULT 0,
     missed_days INTEGER NOT NULL DEFAULT 0,
     note TEXT,
     created_at TEXT DEFAULT (DATETIME('now'))
