@@ -70,7 +70,7 @@ const finishCreate = async (db: SQLiteDatabase, userCollectionId: string, userLa
 /** Chế độ nhanh: dán danh sách từ, server chọn nghĩa tốt nhất cho từng từ. Trả id UserCollection. */
 export const createQuick = async (
   db: SQLiteDatabase,
-  p: { name: string; description: string; lang: string; userLang: string; words: string[] },
+  p: { name: string; description: string; lang: string; userLang: string; words: string[]; senses?: Record<string, string> },
 ) => {
   const created = await createCollectionFromWords(p);
   return finishCreate(db, created.user_collection, p.userLang);

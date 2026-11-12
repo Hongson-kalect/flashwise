@@ -98,10 +98,12 @@ export const createCollectionFromWords = async (p: {
   lang: string;
   userLang: string;
   words: string[];
+  /** Nghĩa đã chọn sẵn khi gợi ý theo nghĩa: {từ: sense_id}; từ còn lại server chọn nghĩa tốt nhất. */
+  senses?: Record<string, string>;
 }) => {
   const res = await PostAPI(
     "collections/bulk-create/",
-    { name: p.name, description: p.description, lang: p.lang, user_lang: p.userLang, words: p.words },
+    { name: p.name, description: p.description, lang: p.lang, user_lang: p.userLang, words: p.words, senses: p.senses ?? {} },
     { timeout: 60_000 },
   );
   return res.data as CreatedCollection;
@@ -123,10 +125,10 @@ export const createCollectionFromSenses = async (p: {
 };
 
 /** Thêm từ vào bộ của mình (chỉ tác giả): từ có nghĩa vào ngay, từ chưa có thì chờ AI. */
-export const addWordsToCollection = async (userCollectionId: string, words: string[], userLang: string) => {
+export const addWordsToCollection = async (userCollectionId: string, words: string[], userLang: string, senses: Record<string, string> = {}) => {
   const res = await PostAPI(
     `user-collections/${userCollectionId}/add-words/`,
-    { words, user_lang: userLang },
+    { words, user_lang: userLang, senses },
     { timeout: 60_000 },
   );
   /** unavailable: chỉ khi không phải tác giả (remix): từ chưa có nghĩa chính thức, không được thêm. */

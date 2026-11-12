@@ -1,4 +1,4 @@
-import { GetAPI, PostAPI } from "../axios";
+import { GetAPI, PostAPI, serverInstance } from "../axios";
 
 export interface WordHit {
   id: string;
@@ -89,11 +89,21 @@ export interface WordSuggestion {
   matched: string | null;
 }
 
+/** Mã lý do AI không gợi ý được cho cụm gõ (server): từ chối hoặc hạn chế tạm. */
+export type AiReason = "ok" | "sentence" | "offensive" | "spam" | "injection" | "not_a_word" | "quota" | "unavailable";
+
+/** Dòng gợi ý có thêm nguồn: `ai` = do AI đề xuất, `in_db` = từ đã có nghĩa chính thức trong hệ thống (kèm `sense_id` nghĩa khớp). */
+export type SuggestRow = WordSuggestion & { source?: "ai"; in_db?: boolean };
+
 /**
  * Gợi ý khi thêm từ vào bộ. mode "word": gõ từ của ngôn ngữ đang học (đầu từ, rồi gần giống). mode "meaning": gõ nghĩa bằng ngôn ngữ
- * của mình ("nồi cơm") để tìm từ tương ứng của ngôn ngữ đang học. Chỉ trả từ đã có trong hệ thống.
+ * của mình ("nồi cơm") để tìm từ tương ứng của ngôn ngữ đang học. `ai: true` (chỉ mode meaning): server hỏi thêm AI (đã kiểm duyệt cụm gõ,
+ * có cache và hạn mức ngày); từ chối / hết hạn mức thì vẫn trả phần từ DB kèm `aiReason`.
  */
-export const suggestWords = async (q: string, lang: string, userLang: string, mode: "word" | "meaning", limit = 8) => {
-  const res = await GetAPI("ai-words/suggest/", { q, lang, user_lang: userLang, mode, limit });
-  return (Array.isArray(res.data) ? res.data : []) as WordSuggestion[];
+export const suggestWords = async (q: string, lang: string, userLang: string, mode: "word" | "meaning", opts: { limit?: number; ai?: boolean } = {}) => {
+  const res = await serverInstance.get("ai-words/suggest/", {
+    params: { q, lang, user_lang: userLang, mode, limit: opts.limit ?? 8, ai: opts.ai ? 1 : undefined },
+    timeout: opts.ai ? 40_000 : 10_000, // lượt AI có thể mất vài giây
+  });
+  return { rows: (res.data?.results ?? []) as SuggestRow[], aiReason: (res.data?.ai_reason ?? null) as AiReason | null };
 };

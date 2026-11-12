@@ -18,6 +18,7 @@ const AddWordsSheet = ({ userCollectionId, userLang, onDone }: Props) => {
   const { theme } = useTheme();
   const { close } = useBottomSheet();
   const [text, setText] = useState("");
+  const [choices, setChoices] = useState<Record<string, string>>({}); // nghĩa chọn sẵn từ gợi ý theo nghĩa
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const words = splitWords(text);
@@ -27,7 +28,12 @@ const AddWordsSheet = ({ userCollectionId, userLang, onDone }: Props) => {
     setError(null);
     setBusy(true);
     try {
-      const res = await addWordsToCollection(userCollectionId, words, userLang);
+      const res = await addWordsToCollection(
+        userCollectionId,
+        words,
+        userLang,
+        Object.fromEntries(Object.entries(choices).filter(([w]) => words.some((x) => x.toLowerCase() === w))),
+      );
       onDone();
       if (res.unavailable?.length) {
         toast.warning(`Chưa có nghĩa cho: ${res.unavailable.slice(0, 5).join(", ")}`, { long: true });
@@ -55,7 +61,10 @@ const AddWordsSheet = ({ userCollectionId, userLang, onDone }: Props) => {
         lang={lang}
         userLang={userLang}
         added={words.map((w) => w.toLowerCase())}
-        onPick={(w) => setText((t) => (t.trim() ? t.replace(/\s+$/, "") + "\n" : "") + w + "\n")}
+        onPick={(w, senseId) => {
+          setText((t) => (t.trim() ? t.replace(/\s+$/, "") + "\n" : "") + w + "\n");
+          if (senseId) setChoices((c) => ({ ...c, [w.toLowerCase()]: senseId }));
+        }}
       />
       <TextInput
         value={text}

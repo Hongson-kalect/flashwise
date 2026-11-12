@@ -98,6 +98,8 @@ export default function CreateCollection() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [text, setText] = useState("");
+  // Nghĩa đã chọn sẵn từ gợi ý theo nghĩa ({từ: sense_id}); chế độ Nhanh gửi kèm để bộ có đúng nghĩa đó
+  const [choices, setChoices] = useState<Record<string, string>>({});
   const [mode, setMode] = useState<Mode>("quick");
   const [step, setStep] = useState<"input" | "choose">("input");
   const [submitting, setSubmitting] = useState(false);
@@ -122,7 +124,14 @@ export default function CreateCollection() {
     setError(null);
     setSubmitting(true);
     try {
-      done(await createQuick(db, { name: name.trim(), description: description.trim(), lang, userLang, words }));
+      done(await createQuick(db, {
+          name: name.trim(),
+          description: description.trim(),
+          lang,
+          userLang,
+          words,
+          senses: Object.fromEntries(Object.entries(choices).filter(([w]) => words.some((x) => x.toLowerCase() === w))),
+        }));
     } catch (e) {
       fail(e);
       setSubmitting(false);
@@ -203,7 +212,10 @@ export default function CreateCollection() {
               lang={lang}
               userLang={userLang}
               added={parsed.words.map((w) => w.toLowerCase())}
-              onPick={(w) => setText((t) => (t.trim() ? t.replace(/\s+$/, "") + "\n" : "") + w + "\n")}
+              onPick={(w, senseId) => {
+                setText((t) => (t.trim() ? t.replace(/\s+$/, "") + "\n" : "") + w + "\n");
+                if (senseId) setChoices((c) => ({ ...c, [w.toLowerCase()]: senseId }));
+              }}
             />
 
             <View className="gap-2">
