@@ -85,22 +85,25 @@ export default function LearnNewScreen() {
           icon="rotate-ccw"
           tone="warning"
           title="Bạn còn một phiên học dở"
-          message={info ? `Đã làm ${info.doneSteps}/${info.totalSteps} bước, dừng cách đây ${minutes} phút. Học tiếp hay bắt đầu cụm mới?` : undefined}
+          message={info ? `Đang ở bước ${Math.min(info.doneSteps + 1, info.totalSteps)}/${info.totalSteps}, dừng cách đây ${minutes} phút. Học tiếp hay bắt đầu cụm mới?` : undefined}
           actions={[{ label: "Học tiếp", onPress: run.resume, primary: true }, { label: "Bắt đầu cụm mới", onPress: run.discard }]}
         />
       );
     }
     if (status === "empty") {
       const waiting = run.meta?.waitingTranslation ?? 0;
+      const empty = (run.meta?.total ?? 1) === 0;
       return (
         <StateView
           icon={waiting ? "globe" : "award"}
           tone={waiting ? "warning" : "success"}
-          title={waiting ? "Đang chờ bản dịch" : "Hết từ mới"}
+          title={waiting ? "Đang chờ bản dịch" : empty ? "Bộ còn trống" : "Hết từ mới"}
           message={
             waiting
               ? `${waiting} từ trong bộ chưa có bản dịch sang ngôn ngữ của bạn nên chưa học được. Mở bộ từ, kéo làm mới sau ít phút rồi quay lại.`
-              : "Bạn đã học hết từ mới trong bộ này. Thêm từ vào bộ hoặc chọn bộ khác."
+              : empty
+                ? "Bộ này chưa có nghĩa nào. Thêm từ vào bộ rồi quay lại học."
+                : "Bạn đã học hết từ mới trong bộ này. Thêm từ vào bộ hoặc chọn bộ khác."
           }
           actions={[{ label: "Quay lại bộ từ", onPress: leave, primary: true }]}
         />

@@ -28,7 +28,7 @@ const SummaryView = ({ state, saving, onGrade, onSave }: Props) => {
             Xong cụm này!
           </AppText>
           <AppText color="subText1" textAlign="center">
-            Mình đã chọn sẵn mức nhớ cho từng từ. Nếu thấy chưa đúng, bạn chỉnh được 1 nấc; mức này quyết định khi nào từ quay lại ôn.
+            Mình đã chọn sẵn mức nhớ cho từng từ theo cả cụm (từ sai hoặc xem đáp án ở lần đầu vẫn tính là Khó / Quên dù sau đó bạn làm đúng). Nếu thấy chưa đúng, bạn chỉnh được 1 nấc; mức này quyết định khi nào từ quay lại ôn.
           </AppText>
         </View>
         {state.order.map((key) => {

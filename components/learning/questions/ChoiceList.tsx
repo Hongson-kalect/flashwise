@@ -18,6 +18,9 @@ const ChoiceList = ({ question, attempt, feedback, onAnswer }: AnswerProps) => {
             key={option.id}
             disabled={!!feedback || wrong}
             onPress={() => onAnswer(option.id)}
+            accessibilityRole="button"
+            accessibilityLabel={option.text}
+            accessibilityState={{ disabled: !!feedback || wrong }}
             className="flex-row items-center gap-3 px-4 py-3.5 rounded-2xl"
             style={{
               backgroundColor: showCorrect ? theme.success + "14" : wrong ? theme.error + "10" : theme.card,

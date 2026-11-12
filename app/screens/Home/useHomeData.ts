@@ -29,6 +29,8 @@ export const useHomeData = () => {
       return { due, week, today, mistakes };
     },
     staleTime: 0,
+    // Thẻ vừa học / vừa quên hẹn vài phút hoặc vài giờ: tới giờ thì số "đến hạn" phải tự đổi (đọc SQLite nên rẻ)
+    refetchInterval: 30_000,
   });
 
   return { ...q, dailyGoal };

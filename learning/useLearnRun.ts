@@ -28,6 +28,8 @@ export interface RunMeta {
   /** Nghĩa mới còn lại trong bộ sau cụm này (và bao nhiêu chưa có bản dịch). */
   remaining: number;
   waitingTranslation: number;
+  /** Số nghĩa trong bộ (bộ rỗng khác bộ đã học hết). */
+  total: number;
 }
 
 /**
@@ -60,7 +62,7 @@ export const useLearnRun = (userCollectionId: string) => {
       if (!info) throw new Error("Không tìm thấy bộ từ");
       const picked = await pickNewCards(db, userCollectionId, userLang, settings.clusterSize);
       missing.current = picked.missingSenseIds;
-      setMeta({ collectionName: info.name, remaining: Math.max(0, picked.available - picked.cards.length), waitingTranslation: picked.waitingTranslation });
+      setMeta({ collectionName: info.name, remaining: Math.max(0, picked.available - picked.cards.length), waitingTranslation: picked.waitingTranslation, total: info.total });
       if (fresh === true) await clearSnapshot(db, scope);
       else {
         const snap = await loadSnapshot<SavedRun>(db, scope);

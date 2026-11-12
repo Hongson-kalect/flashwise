@@ -72,19 +72,18 @@ Cách chạy: bộ điều khiển adb viết tay (`drive_learn.py` trong thư m
 |---|---|---|---|
 | G1 | Tắt mạng, học một cụm | Học bình thường, `sync_queue` có dòng; bật mạng thì đẩy | ✅ chế độ máy bay: học, lưu bình thường; `sync_queue` có 21 dòng (6 tiến độ, 13 `review_log`, 1 phiên, 1 nhật ký ngày); bật mạng ~25 giây sau hàng đợi rỗng, server có 18 tiến độ, nhật ký ngày 18 từ / 9 ôn lại / 125 XP |
 | G2 | Đổi cài đặt học | Phiên sau theo cài đặt | ◐ "Mục tiêu nhớ" 90% → 95% lưu `request_retention`; tắt "Bước nghe" và "Bước nói" lưu `hearable` / `talkable = false` và phiên sau bỏ các bước đó. Chưa có UI đổi `cluster_size`; chưa so khoảng ôn 90% với 95% |
-| G3 | H2: nghĩa chưa dịch rồi học | Dịch lười kích hoạt (`prefetchTranslation`) | ➖ chưa kiểm được: `prefetchTranslation` chưa nối vào màn học |
+| G3 | H2: nghĩa chưa dịch rồi học | Dịch lười kích hoạt (`prefetchTranslation`) | ⏳ chưa chạy (hàm đã nối trong `useLearnRun`; xem Phát hiện 8) |
 
 ## Phát hiện trong lúc test (chưa sửa)
 
 1. ~~Gõ sai mãi thì phiên không kết thúc~~ **Rút lại**: mỗi bước chỉ được hỏi lại một lần (`pass`), nên tổng bước tối đa gấp đôi (36 → tối đa 72). Con số 54 thấy khi test là phiên đang chạy, chưa tới trần. Đã thêm test khẳng định trần (`sai liên tục mọi bước…` trong `learning/learning.test.ts`).
 2. ~~Quyền micro hỏi lại mỗi phiên~~ **Rút lại**: app chỉ xin quyền khi bấm nút mic. Hộp xin quyền xuất hiện vì bộ điều khiển adb bấm trúng nút mic (và "Không tiện nói"), không phải app tự hỏi.
-3. **Màn học không lộ cây truy cập** cho `uiautomator` (chỉ thấy lớp Home bên dưới), nghĩa là trình đọc màn hình cũng không đọc được; cần kiểm `accessibilityLabel` của các nút trong `components/learning/`.
-4. Chữ ở màn "Hết từ mới" nói "đã học hết" cả khi bộ rỗng.
-5. Số bước ở hộp "Học tiếp" lệch 1 so với thanh tiến độ (41 so 42).
-6. "Học từ mới" vẫn sáng ở bộ rỗng (vào màn "Hết từ mới", chấp nhận được nhưng có thể mờ nút).
-7. Home không tự làm mới khi thẻ tới giờ ôn (phải kéo làm mới); nên làm mới theo mốc `next_review_at` gần nhất hoặc khi màn lấy lại focus.
-8. Còn sót một `run_snapshot:learn:<bộ>` của phiên bỏ dở (chọn "Bắt đầu cụm mới" sau khi thoát) trong `system_configs`; hết hạn sau 1 giờ nên vô hại, nhưng có thể xoá ngay khi chọn "Bắt đầu cụm mới".
-9. Bảng tổng kết phiên đầu ghi "Quên" cho thẻ gõ đúng ở bước cuối vì lấy điểm theo kết quả cả phiên; đúng thiết kế nhưng người dùng hay thấy lạ khi vừa đúng mà lại "Quên", nên giải thích ngắn dưới bảng.
+3. ~~Màn học không lộ cây truy cập~~ **Chưa kiểm chứng**: `uiautomator dump` trên máy ảo này không đáng tin (lúc trả màn của route cũ, lúc trả rỗng), nên không kết luận được. Đã thêm `accessibilityRole` / `accessibilityLabel` cho các phương án trả lời; nên kiểm bằng TalkBack thật.
+4. ~~Chữ "Hết từ mới" cho bộ rỗng~~ **Đã sửa**: bộ rỗng hiện "Bộ còn trống: Bộ này chưa có nghĩa nào…"; bộ học hết vẫn "Hết từ mới". Hộp "Học tiếp" ghi "Đang ở bước n/m" khớp thanh tiến độ (trước lệch 1). Kiểm trên máy ảo.
+5. ~~Home không tự cập nhật khi thẻ tới giờ ôn~~ **Đã sửa theo code, chưa kiểm chạy thật**: `useHomeData` thêm `refetchInterval: 30000` (đọc SQLite nên rẻ). Chưa chờ đủ một mốc để xem số đổi.
+6. ~~Snapshot cũ sót trong `system_configs`~~ **Đã sửa**: `loadSnapshot` gọi `purgeExpiredSnapshots` xoá mọi `run_snapshot:*` quá 1 giờ hoặc hỏng JSON (kiểm: snapshot 328 phút tuổi biến sau khi mở một màn học).
+7. ~~Bảng tổng kết dễ hiểu nhầm~~ **Đã sửa chữ**: ghi rõ mức chọn sẵn tính theo cả cụm, từ sai hoặc xem đáp án lần đầu vẫn tính Khó / Quên dù sau đó làm đúng.
+8. Đính chính G3 / H2: `prefetchTranslation` **đã nối** trong `useLearnRun` (khi nghĩa thiếu bản dịch, màn học hiện "Đang chờ bản dịch" và gửi dịch trước); chưa chạy case này.
 
 ## Cách báo lỗi
 Như `TEST_CASES_collections.md`: mã case + ảnh / mô tả + log Metro và backend.
