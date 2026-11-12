@@ -72,7 +72,7 @@ Cách chạy: bộ điều khiển adb viết tay (`drive_learn.py` trong thư m
 |---|---|---|---|
 | G1 | Tắt mạng, học một cụm | Học bình thường, `sync_queue` có dòng; bật mạng thì đẩy | ✅ chế độ máy bay: học, lưu bình thường; `sync_queue` có 21 dòng (6 tiến độ, 13 `review_log`, 1 phiên, 1 nhật ký ngày); bật mạng ~25 giây sau hàng đợi rỗng, server có 18 tiến độ, nhật ký ngày 18 từ / 9 ôn lại / 125 XP |
 | G2 | Đổi cài đặt học | Phiên sau theo cài đặt | ◐ "Mục tiêu nhớ" 90% → 95% lưu `request_retention`; tắt "Bước nghe" và "Bước nói" lưu `hearable` / `talkable = false` và phiên sau bỏ các bước đó. Chưa có UI đổi `cluster_size`; chưa so khoảng ôn 90% với 95% |
-| G3 | H2: nghĩa chưa dịch rồi học | Dịch lười kích hoạt (`prefetchTranslation`) | ⏳ chưa chạy (hàm đã nối trong `useLearnRun`; xem Phát hiện 8) |
+| G3 | H2: nghĩa chưa dịch rồi học | Dịch lười kích hoạt (`prefetchTranslation`) | ✅ đổi dịch sang tiếng Ý, mở bộ `Chuyen B5` (`damn`): banner "Đã có bản dịch 0/1"; "Học từ mới" → màn "Đang chờ bản dịch"; sau khoảng 12 giây server dịch xong, app tải lại bundle (`user_lang: it`, log Metro) và phiên học tự mở với bản dịch tiếng Ý ("cavolo, dannazione, maledizione", ví dụ tiếng Ý). Đã đổi lại tiếng Việt |
 
 ## Phát hiện trong lúc test (chưa sửa)
 
@@ -83,7 +83,7 @@ Cách chạy: bộ điều khiển adb viết tay (`drive_learn.py` trong thư m
 5. ~~Home không tự cập nhật khi thẻ tới giờ ôn~~ **Đã sửa theo code, chưa kiểm chạy thật**: `useHomeData` thêm `refetchInterval: 30000` (đọc SQLite nên rẻ). Chưa chờ đủ một mốc để xem số đổi.
 6. ~~Snapshot cũ sót trong `system_configs`~~ **Đã sửa**: `loadSnapshot` gọi `purgeExpiredSnapshots` xoá mọi `run_snapshot:*` quá 1 giờ hoặc hỏng JSON (kiểm: snapshot 328 phút tuổi biến sau khi mở một màn học).
 7. ~~Bảng tổng kết dễ hiểu nhầm~~ **Đã sửa chữ**: ghi rõ mức chọn sẵn tính theo cả cụm, từ sai hoặc xem đáp án lần đầu vẫn tính Khó / Quên dù sau đó làm đúng.
-8. Đính chính G3 / H2: `prefetchTranslation` **đã nối** trong `useLearnRun` (khi nghĩa thiếu bản dịch, màn học hiện "Đang chờ bản dịch" và gửi dịch trước); chưa chạy case này.
+8. Đính chính G3 / H2: `prefetchTranslation` **đã nối** trong `useLearnRun` và đã chạy được (xem G3). Lưu ý nhỏ: màn "Đang chờ bản dịch" tự chuyển sang phiên học khi có bản dịch, nhưng chữ hướng dẫn vẫn bảo "kéo làm mới sau ít phút rồi quay lại" dù thực tế không cần.
 
 ## Cách báo lỗi
 Như `TEST_CASES_collections.md`: mã case + ảnh / mô tả + log Metro và backend.
