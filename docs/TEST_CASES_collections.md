@@ -192,3 +192,15 @@ Chưa chạy: A6–A10, B (Chuyên sâu), C3 / C5 / C6 (ảnh bìa, đếm dịc
 - **E7**: bộ đã phát hành không còn nút "Đổi ảnh" (đổi ảnh qua màn Phát hành; API 409 đã kiểm vòng 1). Đạt.
 - **E8**: "Bộ đã phát hành của tôi": 1 bộ, 1 xem, 1 thích, 2 tải, "Phiên bản 3 · 2 nghĩa", khớp server. Lệch nhỏ: ảnh bìa trong màn này hiện chữ "T" thay ảnh của bộ.
 - **Chưa chạy**: A10 (quota, bỏ theo yêu cầu), C3 (đổi ảnh bìa cần trình chọn ảnh), D5, F7 trên app, F9, H2 (chuyển sang phần học).
+
+## Vòng 8 (2026-11-12): C3, D5, F7, F9, và các case tra từ còn lại
+
+- **C3 (đổi / gỡ ảnh bìa)**: "Đổi ảnh" → "Chọn từ thư viện" (trình chọn ảnh hệ thống) → ảnh nén, tải lên, ảnh bìa đổi; mở lại sheet có thêm "Dùng ảnh tự động" → về ảnh tự động. Đạt.
+- **D5 (`containing`)**: API trả đúng 4 bộ chứa nghĩa `house` (không tính bộ đã xoá), `sense_id` sai → 400. Đạt ở API; **app chưa có giao diện** dùng endpoint này.
+- **F7**: đã phủ ở E5 (tác giả thu hồi, bộ của người đã tải vẫn học tiếp, bundle 200). Đạt.
+- **F9**: "Gợi ý cho bạn" ở Home và tab Bộ từ không hiện bộ của mình hay bộ đã tải; có "Xem tất cả". Đạt. Lệch nhỏ: thẻ gợi ý ghi "3 nghĩa" trong khi bộ còn 2 nghĩa dùng được vì `item_count` của server vẫn tính nghĩa đã bị ban (`sick`).
+- **Tra từ**: `"  tell  "` → ra `tell` (đạt). Xoay ngang và chữ hệ thống 1,6 lần: layout trang từ không vỡ (đạt); đổi cỡ chữ làm app khởi động lại về Trang chủ (dev build). Ảnh nghĩa tải từ `media_base_url` đạt (ảnh hiện ở mọi trang đã xem).
+- **Timeout polling 2 phút**: dừng `ai_worker`, tra `gazebo` → "Từ đang được khởi tạo…" rồi sau ~2 phút "Tạo từ chưa thành công … Thử lại"; bật worker và bấm Thử lại → từ tạo xong (4 nghĩa Noun, ảnh, dịch). Đạt.
+- **H2 (dịch lười)**: chưa thử được vì `prefetchTranslation` chưa nối vào phần học; kiểm khi test học.
+- **Cảnh báo dev**: toast "Looks like you have configured linking in multiple places" (expo-router) xuất hiện sau mỗi lần app khởi động lại từ Reload / đổi cấu hình; chưa rõ có ở bản chạy bình thường không.
+- **Còn chưa chạy**: A10 (bỏ theo yêu cầu), nhánh `conflicts` của nâng bản trên giao diện, tác giả xoá bộ đã phát hành trên giao diện.
