@@ -266,6 +266,35 @@ export const unpublishCollection = async (userCollectionId: string) => {
   return res.data as { collection_id: string; released: false; version: number };
 };
 
+/** Bản mới của bộ đã tải: version đang dùng / mới nhất, thay đổi từng bản, từ xung đột với nháp của mình. */
+export interface CollectionUpdates {
+  current_version: number;
+  latest_version: number;
+  has_update: boolean;
+  changes: { version?: number; changelog?: { added?: string[]; updated?: string[]; deleted?: string[] } }[];
+  conflicts: string[];
+}
+export const fetchCollectionUpdates = async (userCollectionId: string) => {
+  const res = await GetAPI(`user-collections/${userCollectionId}/updates/`);
+  return res.data as CollectionUpdates;
+};
+
+/** Nâng bộ đã tải lên bản mới nhất. Nháp của mình được giữ và thắng bản của tác giả; từ trùng trả về ở `conflicts`. */
+export const updateCollectionVersion = async (userCollectionId: string) => {
+  const res = await PostAPI(`user-collections/${userCollectionId}/update-version/`, {});
+  return res.data as { updated: boolean; current_version: number; conflicts: string[] };
+};
+
+/** Bỏ bộ khỏi thư viện của mình (xoá mềm dòng user_collection; người khác không ảnh hưởng). */
+export const removeUserCollection = async (userCollectionId: string) => {
+  await serverInstance.delete(`user-collections/${userCollectionId}/`);
+};
+
+/** Tác giả xoá bộ của mình: bộ chưa phát hành bị xoá, bộ đã phát hành ẩn khỏi Khám phá (người đã tải vẫn học). */
+export const deleteOwnCollection = async (collectionId: string) => {
+  await serverInstance.delete(`collections/${collectionId}/`);
+};
+
 /** Xoá 1 dòng khỏi bộ của mình (dòng đã phát hành thành "bia mộ" nháp, dòng nháp xoá hẳn). */
 export const deleteCollectionItem = async (userCollectionId: string, itemId: string) => {
   const res = await PostAPI(`user-collections/${userCollectionId}/delete-sense/`, {

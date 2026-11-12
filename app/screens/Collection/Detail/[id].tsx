@@ -8,7 +8,7 @@ import { getMyCollection, listCollectionSenses, setLocalCover, setLocalOrder } f
 import { deleteCollectionItem, reorderCollectionItems } from "@/services/api/collections";
 import { useTheme } from "@/providers/Theme";
 import { useBottomSheet } from "@/providers/BottomSheet";
-import { CollectionBannedError, downloadBundle, refreshPending, unpublish } from "@/services/collections";
+import { checkUpdates, CollectionBannedError, downloadBundle, refreshPending, removeCollection, unpublish, upgradeCollection } from "@/services/collections";
 import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
 import { ProgressRing, Skeleton, useDebounce } from "@/ui";
@@ -62,6 +62,69 @@ const CollectionDetail = () => {
           toast.error("Chưa thu hồi được, thử lại sau");
         } finally {
           setRevoking(false);
+        }
+      },
+    });
+
+  // Bản mới của tác giả: xem thay đổi rồi mới nâng (server ghim version đang dùng; nháp của mình được giữ)
+  const [upgrading, setUpgrading] = useState(false);
+  const askUpgrade = async () => {
+    if (upgrading) return;
+    setUpgrading(true);
+    try {
+      const info = await checkUpdates(id);
+      if (!info.has_update) {
+        await downloadBundle(db, id, userLang, { force: true, retries: 0 });
+        await queryClient.invalidateQueries({ queryKey: ["collections"] });
+        return;
+      }
+      const sum = (key: "added" | "updated" | "deleted") => info.changes.reduce((n, ch) => n + (ch.changelog?.[key]?.length ?? 0), 0);
+      const lines = [`Thêm ${sum("added")}, sửa ${sum("updated")}, bớt ${sum("deleted")} nghĩa (v${info.current_version} → v${info.latest_version}).`];
+      if (info.conflicts.length) lines.push(`${info.conflicts.length} nghĩa bạn đã sửa trùng với thay đổi của tác giả: bản của bạn được giữ.`);
+      addModal({
+        type: "confirm",
+        title: "Cập nhật bộ?",
+        message: lines.join("\n\n"),
+        okText: "Cập nhật",
+        cancelText: "Để sau",
+        onOk: async () => {
+          try {
+            await upgradeCollection(db, id, userLang);
+            await queryClient.invalidateQueries({ queryKey: ["collections"] });
+            toast.success("Đã cập nhật bộ");
+          } catch (e) {
+            if (!(e instanceof CollectionBannedError)) toast.error("Chưa cập nhật được, thử lại sau");
+          }
+        },
+      });
+    } catch {
+      toast.error("Không kiểm tra được bản mới, thử lại sau");
+    } finally {
+      setUpgrading(false);
+    }
+  };
+
+  // Gỡ bộ khỏi máy / thư viện (tác giả: xoá bộ của mình)
+  const confirmRemove = () =>
+    addModal({
+      type: "confirm",
+      title: c?.isAuthor ? "Xoá bộ của bạn?" : "Xoá bộ khỏi máy?",
+      message: c?.isAuthor
+        ? c.released
+          ? "Bộ sẽ ẩn khỏi Khám phá, người đã tải vẫn học tiếp. Tiến độ học của bạn được giữ."
+          : "Bộ nháp sẽ bị xoá. Tiến độ học của bạn với các nghĩa được giữ."
+        : "Bộ biến khỏi thư viện và máy của bạn. Tiến độ học được giữ, tải lại được từ Khám phá.",
+      okText: "Xoá",
+      cancelText: "Huỷ",
+      destructive: true,
+      onOk: async () => {
+        try {
+          await removeCollection(db, { userCollectionId: id, collectionId: c!.collectionId, isAuthor: !!c?.isAuthor });
+          await queryClient.invalidateQueries({ queryKey: ["collections"] });
+          toast.success("Đã xoá bộ");
+          router.back();
+        } catch {
+          toast.error("Chưa xoá được, thử lại sau");
         }
       },
     });
@@ -321,9 +384,10 @@ const CollectionDetail = () => {
         <View className="gap-2">
           {c.needsUpdate && (
             <Pressable
-              onPress={() => download.mutate(true)}
+              onPress={askUpgrade}
+              disabled={upgrading}
               className="flex-row items-center gap-2 p-3 rounded-2xl"
-              style={{ backgroundColor: theme.warning + "1F" }}
+              style={{ backgroundColor: theme.warning + "1F", opacity: upgrading ? 0.6 : 1 }}
             >
               <AppIcon branch="feather" name="refresh-cw" size={16} color={theme.warning} />
               <AppText style={{ flex: 1, color: theme.warning }} weight="semibold">
@@ -412,6 +476,12 @@ const CollectionDetail = () => {
 
       {c.downloaded && (
         <>
+          <Pressable onPress={confirmRemove} className="flex-row items-center justify-center gap-2 h-10 self-start px-1">
+            <AppIcon branch="feather" name="trash-2" size={15} color={theme.subText2} />
+            <AppText size="sm" color="subText2">
+              {c.isAuthor ? "Xoá bộ này" : "Xoá bộ khỏi máy"}
+            </AppText>
+          </Pressable>
           <View className="flex-row items-center justify-between" style={{ marginTop: 8 }}>
             <AppText size="lg" weight="bold" color="title">
               Danh sách nghĩa

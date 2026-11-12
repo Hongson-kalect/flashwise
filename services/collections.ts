@@ -18,7 +18,12 @@ import {
   fetchMyCollections,
   publishCollection,
   resolvePendingWords,
+  deleteOwnCollection,
+  fetchCollectionUpdates,
+  removeUserCollection,
   unpublishCollection,
+  updateCollectionVersion,
+  CollectionUpdates,
 } from "./api/collections";
 
 /** Kéo danh sách bộ của mình từ server về SQLite (chưa kèm nội dung nghĩa). Lỗi mạng thì giữ bản local. */
@@ -71,6 +76,27 @@ export const downloadBundle = async (
     if (attempt < retries) await sleep(4000);
   }
   return { pending };
+};
+
+/** Bản mới của bộ đã tải (gọi trước khi nâng để cho người dùng xem thay đổi). */
+export const checkUpdates = (userCollectionId: string): Promise<CollectionUpdates> => fetchCollectionUpdates(userCollectionId);
+
+/** Nâng bộ lên bản mới nhất rồi tải lại nội dung. Trả danh sách từ xung đột với nháp của mình (bản của mình được giữ). */
+export const upgradeCollection = async (db: SQLiteDatabase, userCollectionId: string, userLang: string) => {
+  const { conflicts } = await updateCollectionVersion(userCollectionId);
+  await syncMyCollections(db);
+  await downloadBundle(db, userCollectionId, userLang, { force: true, retries: 0 });
+  return conflicts;
+};
+
+/** Gỡ bộ khỏi máy và thư viện. Tác giả: xoá bộ của mình (bộ đã phát hành chỉ bị ẩn). Tiến độ học giữ nguyên. */
+export const removeCollection = async (
+  db: SQLiteDatabase,
+  p: { userCollectionId: string; collectionId: string; isAuthor: boolean },
+) => {
+  if (p.isAuthor) await deleteOwnCollection(p.collectionId);
+  else await removeUserCollection(p.userCollectionId);
+  await removeLocalCollection(db, p.userCollectionId, p.collectionId);
 };
 
 /** Thêm bộ có sẵn (Discover / gợi ý) vào thư viện rồi tải về máy. Trả id UserCollection. */
