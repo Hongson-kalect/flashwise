@@ -67,6 +67,11 @@ export const pickReviewBatch = async (
   now = new Date(),
   /** original_sense_id đã ôn trong lần mở màn này: không đưa lại (thẻ vừa ôn có thể hẹn lại vài giờ, vẫn nằm trước cuối ngày học). */
   exclude: ReadonlySet<string> = new Set(),
+  /**
+   * `auto` (mặc định): thẻ từ cấp `swipeMinLevel` (đã nhớ lại ít nhất một lần) ôn bằng vuốt, thẻ thấp hơn theo cụm.
+   * `traditional`: mọi thẻ đến hạn, cả cấp cao, gộp chung vào cụm (không có vuốt).
+   */
+  mode: "auto" | "traditional" = "auto",
 ): Promise<ReviewBatch> => {
   const cutoff = learningDayBounds(settings.dayStartHour, now).end;
   const allRows = await db.getAllAsync<{ original_sense_id: string; level: number; repetitions: number; stability: number; last_reviewed_at: string | null; sense_id: string }>(
@@ -109,8 +114,8 @@ export const pickReviewBatch = async (
     }
     return out;
   };
-  const quickAll = due.filter((c) => c.level >= settings.swipeMinLevel && !c.unverified);
-  const normalAll = due.filter((c) => c.level < settings.swipeMinLevel || c.unverified);
+  const quickAll = mode === "traditional" ? [] : due.filter((c) => c.level >= settings.swipeMinLevel && !c.unverified);
+  const normalAll = mode === "traditional" ? due : due.filter((c) => c.level < settings.swipeMinLevel || c.unverified);
   const normal = pick(normalAll, settings.clusterSize);
 
   // Đáp án nhiễu cho cụm: các thẻ đến hạn khác, thiếu thì lấy thêm nghĩa đã học bất kỳ

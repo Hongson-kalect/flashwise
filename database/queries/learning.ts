@@ -33,6 +33,8 @@ export interface LearnSettings {
   fsrsParams: number[] | null;
   /** Tự đánh dấu "đã biết" các từ ở mức mà user luôn biết (learning/knownStats.ts). */
   autoKnown: boolean;
+  /** Hỏi chọn kiểu ôn (vuốt nhanh / truyền thống) khi có thẻ đến hạn từ cấp `swipeMinLevel` trở lên; mặc định tắt (tự chọn). */
+  askReviewMode: boolean;
 }
 
 const num = (v: unknown, fallback: number, lo: number, hi: number) =>
@@ -54,6 +56,7 @@ export const loadLearnSettings = async (db: SQLiteDatabase): Promise<LearnSettin
     swipeDirection: typeof s.swipe_direction === "string" ? s.swipe_direction : "left_remember",
     fsrsParams: validFsrsParams(s.fsrs_params) ? s.fsrs_params : null,
     autoKnown: s.auto_known !== false,
+    askReviewMode: s.ask_review_mode === true, // thiếu khoá = tắt (không seed qua migration để không đẩy bản mặc định đè cài đặt máy khác)
   };
 };
 

@@ -1,5 +1,5 @@
 import { getMedianStepMs, loadLearnSettings, LearnSettings } from "@/database/queries/learning";
-import { pickReviewBatch, reviewResultsFromCluster, ReviewSummary, saveReviewResult } from "@/database/queries/review";
+import { pickReviewBatch, ReviewBatch, reviewResultsFromCluster, ReviewSummary, saveReviewResult } from "@/database/queries/review";
 import { useAppStore } from "@/stores/appStore";
 import { rescheduleReminders } from "@/services/reminder";
 import { requestSync } from "@/services/sync/bus";
@@ -24,10 +24,12 @@ interface SavedReview {
   remaining: number;
 }
 
-export type ReviewStatus = "loading" | "resume" | "empty" | "swiping" | "cluster" | "saving" | "saved" | "error";
+export type ReviewStatus = "loading" | "resume" | "choose" | "empty" | "swiping" | "cluster" | "saving" | "saved" | "error";
 
 /**
  * Nối phiên ôn tập với SQLite: lấy lượt thẻ đến hạn, thẻ cấp cao ôn bằng vuốt trước (nhanh), rồi thẻ cấp thấp theo cụm.
+ * Cài đặt `ask_review_mode` bật và có thẻ cấp cao đến hạn thì hỏi trước (status `choose`): vuốt nhanh như trên, hoặc kiểu truyền thống
+ * (gộp thẻ cấp cao với thẻ thấp, tất cả ôn theo cụm). Lựa chọn nhớ trong lần mở màn này, "Ôn tiếp" không hỏi lại.
  * Mỗi lượt xong thì ghi kết quả; còn thẻ đến hạn thì "Ôn tiếp" nạp lượt kế.
  */
 export const useReviewRun = () => {
@@ -46,6 +48,30 @@ export const useReviewRun = () => {
   const reviewed = useRef(new Set<string>());
 
   const resumable = useRef<Snapshot<SavedReview> | null>(null);
+  const modeChoice = useRef<"swipe" | "traditional" | null>(null);
+  const pending = useRef<{ batch: ReviewBatch; s: LearnSettings } | null>(null);
+  const [choice, setChoice] = useState<{ quick: number; normal: number } | null>(null);
+
+  /** Bắt đầu lượt ôn từ lượt thẻ đã chọn: chồng vuốt nếu có thẻ vuốt, không thì cụm. */
+  const begin = useCallback(
+    async (batch: ReviewBatch, s: LearnSettings) => {
+      setRemaining(batch.quickTotal + batch.normalTotal);
+      const now = Date.now();
+      session.current = { id: uuidv7(), startedAt: now };
+      const levels = (list: { card: { key: string }; level: number }[]) => Object.fromEntries(list.map((c) => [c.card.key, c.level]));
+      if (batch.quick.length) {
+        setSwipe(startSwipe({ cards: batch.quick.map((c) => c.card), levels: levels(batch.quick), now }));
+        setStatus("swiping");
+      } else if (batch.normal.length) {
+        const median = await getMedianStepMs(db);
+        setRun(startRun({ cards: batch.normal.map((c) => c.card), mode: "review", levels: levels(batch.normal), extraPool: batch.pool, clusterSteps: s.clusterSteps, now, medianMs: median, caps: { ...voiceCapabilities(s), write: s.writable ? await readyWriteLangs(batch.normal.map((c) => c.card.lang)) : [] } }));
+        setStatus("cluster");
+      } else {
+        setStatus("empty");
+      }
+    },
+    [db],
+  );
 
   /** `fresh` = bỏ lượt dở, nạp lượt mới; không thì có lượt dở còn hạn sẽ hỏi ôn tiếp. */
   const load = useCallback(async (fresh: boolean | unknown = false) => {
@@ -68,26 +94,40 @@ export const useReviewRun = () => {
           return;
         }
       }
-      const batch = await pickReviewBatch(db, userLang, s, new Date(), reviewed.current);
-      setRemaining(batch.quickTotal + batch.normalTotal);
-      const now = Date.now();
-      session.current = { id: uuidv7(), startedAt: now };
-      const levels = (list: { card: { key: string }; level: number }[]) => Object.fromEntries(list.map((c) => [c.card.key, c.level]));
-      if (batch.quick.length) {
-        setSwipe(startSwipe({ cards: batch.quick.map((c) => c.card), levels: levels(batch.quick), now }));
-        setStatus("swiping");
-      } else if (batch.normal.length) {
-        const median = await getMedianStepMs(db);
-        setRun(startRun({ cards: batch.normal.map((c) => c.card), mode: "review", levels: levels(batch.normal), extraPool: batch.pool, clusterSteps: s.clusterSteps, now, medianMs: median, caps: { ...voiceCapabilities(s), write: s.writable ? await readyWriteLangs(batch.normal.map((c) => c.card.lang)) : [] } }));
-        setStatus("cluster");
-      } else {
-        setStatus("empty");
+      const batch = await pickReviewBatch(db, userLang, s, new Date(), reviewed.current, modeChoice.current === "traditional" ? "traditional" : "auto");
+      // Bật "Hỏi kiểu ôn" và có thẻ cấp cao đến hạn (chưa chọn trong lần mở màn này): hỏi trước khi bắt đầu
+      if (s.askReviewMode && modeChoice.current === null && batch.quick.length > 0) {
+        pending.current = { batch, s };
+        setChoice({ quick: batch.quickTotal, normal: batch.normalTotal });
+        setRemaining(batch.quickTotal + batch.normalTotal);
+        setStatus("choose");
+        return;
       }
+      await begin(batch, s);
     } catch (e: any) {
       setError(e?.message ?? "Có lỗi xảy ra");
       setStatus("error");
     }
-  }, [db, userLang]);
+  }, [db, userLang, begin]);
+
+  /** Trả lời câu hỏi kiểu ôn: `swipe` giữ lượt đã chọn, `traditional` chọn lại gộp mọi thẻ vào cụm. */
+  const chooseMode = useCallback(
+    async (mode: "swipe" | "traditional") => {
+      const p = pending.current;
+      if (!p) return;
+      modeChoice.current = mode;
+      setStatus("loading");
+      try {
+        const batch = mode === "swipe" ? p.batch : await pickReviewBatch(db, userLang, p.s, new Date(), reviewed.current, "traditional");
+        pending.current = null;
+        await begin(batch, p.s);
+      } catch (e: any) {
+        setError(e?.message ?? "Có lỗi xảy ra");
+        setStatus("error");
+      }
+    },
+    [db, userLang, begin],
+  );
 
   useEffect(() => {
     load();
@@ -128,7 +168,7 @@ export const useReviewRun = () => {
       // Còn thẻ đến hạn (kể cả thẻ vừa quên hẹn ôn lại trong ngày) thì cho "Ôn tiếp"
       try {
         const s = settings ?? (await loadLearnSettings(db));
-        const next = await pickReviewBatch(db, userLang, s, new Date(), reviewed.current);
+        const next = await pickReviewBatch(db, userLang, s, new Date(), reviewed.current, modeChoice.current === "traditional" ? "traditional" : "auto");
         setRemaining(next.quickTotal + next.normalTotal);
       } catch {
         setRemaining(0);
@@ -170,7 +210,7 @@ export const useReviewRun = () => {
   }, [run, save]);
 
   return {
-    status, swipe, run, summary, remaining, error, settings, userLang,
+    status, swipe, run, summary, remaining, error, settings, userLang, choice, chooseMode,
     question: run ? currentQuestion(run) : undefined,
     swipeCard: (direction: "remember" | "unsure") => dispatchSwipe({ type: "swipe", direction, at: Date.now() }),
     flip: () => dispatchSwipe({ type: "flip", at: Date.now() }),

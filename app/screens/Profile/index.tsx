@@ -39,8 +39,9 @@ export default function ProfilePage() {
   const reminder = useReminder();
 
   // Công tắc các bước học: ghi user_settings (đồng bộ lên server) và RAM; phiên học sau đọc lại từ DB
-  const toggleLearnSetting = async (key: "hearable" | "talkable" | "writable" | "auto_known") => {
-    const next = settings?.[key] === false;
+  const toggleLearnSetting = async (key: "hearable" | "talkable" | "writable" | "auto_known" | "ask_review_mode") => {
+    // ask_review_mode mặc định tắt (thiếu khoá = tắt), các công tắc kia mặc định bật
+    const next = key === "ask_review_mode" ? settings?.ask_review_mode !== true : settings?.[key] === false;
     updateSetting({ [key]: next });
     await dbService?.setSetting(key, next);
   };
@@ -222,6 +223,14 @@ export default function ProfilePage() {
           value={reminder.label}
           rightContent="internalModal"
           onPress={() => reminder.chooseHour()}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="layers" size={20} color="subText3" />}
+          label="Hỏi kiểu ôn khi có từ cấp cao"
+          rightContent="toggle"
+          value={settings?.ask_review_mode === true}
+          onPress={() => toggleLearnSetting("ask_review_mode")}
         />
         <Divider />
         <SettingOption

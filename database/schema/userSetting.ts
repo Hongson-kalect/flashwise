@@ -89,6 +89,7 @@ INSERT OR IGNORE INTO user_settings (key, value) VALUES
 ('day_start_hour', '4'),             -- Ngày học mới bắt đầu lúc 4h sáng
 ('swipe_direction', '"left_remember"'), -- Vuốt trái = nhớ, phải = chưa chắc
 ('method_weights', '{}'),            -- Tỉ lệ chọn phương pháp, tính từ review_log
+('ask_review_mode', 'false'),        -- Hỏi chọn kiểu ôn (vuốt / truyền thống) khi có thẻ cấp cao đến hạn
 
 ('offline_mode', 'true');
 `;

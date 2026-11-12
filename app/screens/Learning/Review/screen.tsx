@@ -89,6 +89,20 @@ export default function ReviewScreen() {
         />
       );
     }
+    if (status === "choose" && r.choice) {
+      const { quick, normal } = r.choice;
+      return (
+        <StateView
+          icon="layers"
+          title="Ôn bằng cách nào?"
+          message={`Có ${quick} từ đã nhớ khá chắc (cấp ${r.settings?.swipeMinLevel ?? 3} trở lên) có thể vuốt nhanh${normal ? `, và ${normal} từ còn lại ôn theo cụm` : ""}. Kiểu truyền thống gộp tất cả vào cụm câu hỏi: lâu hơn nhưng phải tự nhớ lại, khoảng ôn sau đó dài hơn.`}
+          actions={[
+            { label: "Vuốt nhanh", onPress: () => r.chooseMode("swipe"), primary: true },
+            { label: "Truyền thống (gộp mọi từ)", onPress: () => r.chooseMode("traditional") },
+          ]}
+        />
+      );
+    }
     if (status === "empty") {
       return (
         <StateView icon="sun" tone="success" title="Hôm nay đã ôn xong" message="Không còn thẻ nào đến hạn. Học thêm từ mới hoặc quay lại sau." actions={[{ label: "Về trang chủ", onPress: leave, primary: true }]} />
