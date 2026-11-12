@@ -242,7 +242,9 @@ const toMyCollection = (r: any): MyCollection => {
     imageUrl: r.image_url ?? null,
     languageCode: r.language_code ?? "en",
     isOfficial: !!r.is_official,
-    total: Math.max(r.item_count ?? 0, r.local_items ?? 0),
+    // Bộ đã tải: số dòng thật trong SQLite (gồm nháp của mình, bỏ dòng đã xoá) là chuẩn; item_count của server chỉ tính bản đang hiệu lực
+    // nên không đổi khi xoá / thêm nghĩa nháp. Bộ chưa có dòng nào ở máy (đang tải) thì dùng item_count.
+    total: downloaded && (r.local_items ?? 0) > 0 ? r.local_items : (r.item_count ?? 0),
     learned: downloaded ? (r.local_learned ?? 0) : (r.learned_count ?? 0),
     downloaded,
     needsUpdate: downloaded && (r.c_version ?? 0) > (r.uc_version ?? 0),

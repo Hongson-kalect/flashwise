@@ -96,3 +96,44 @@ Từ mới, theo danh sách seed tiếp theo (hạng 522+, chưa có): `book, wh
 
 ## Cách báo lỗi
 Như `TEST_CASES_word-search.md`: mã case + ảnh / mô tả + log Metro và backend.
+
+## Kết quả chạy (2026-11-12, Claude, qua adb + curl)
+
+Người dùng thứ hai (B) tạo bằng `POST auth/device-login/` với `device_id` khác rồi dùng token trả về (không cần đổi chủ sở hữu trong DB; đi đúng luồng API thật).
+
+| Case | Kết quả |
+|---|---|
+| A1 Nhanh `house,tell,look,big` | Đạt: 4 nghĩa, nháp |
+| A2 5 từ mới + từ chờ AI | Đạt: banner "Đang tạo 5", ~30 giây sau đủ 8 nghĩa, banner tắt |
+| A3 dạng chia `looked, children` | Đạt: vào bộ là `look`, `child` |
+| A4 trùng hoa thường `House` | Đạt: một dòng |
+| A5 từ lạ `xyzqq` | Đạt: banner "1 từ không dùng được" |
+| C1, C2, C4 | Đạt: trạng thái "Bản nháp", ảnh bìa tự động lấy từ nghĩa đầu, danh sách nghĩa |
+| D1 xoá nghĩa nháp | Đạt (hộp xác nhận, server `delete-sense` 200). **Lỗi tìm ra và đã sửa**: "Nghĩa" ở chi tiết bộ vẫn 6 sau khi xoá (xem dưới) |
+| D2 đổi thứ tự | Đạt: `reorder` 200, ảnh bìa đổi theo nghĩa đầu |
+| E1 phát hành | Đạt: v1, "Cập nhật" mờ + "Thu hồi", server `released`, `item_count` 5 |
+| E2 sửa rồi cập nhật | Đạt: "có 1 thay đổi chưa phát hành", "Cập nhật" sáng, v2 |
+| E3 cập nhật không đổi | Đạt (API): `changed: false`, version giữ 2, mô tả cập nhật |
+| E4 phát hành bộ rỗng | Đạt (API): 400 `no_changes` |
+| E5 thu hồi | Đạt: "Đã thu hồi (v2), chỉ người đã tải còn học được", nút "Tiếp tục phát hành"; B không còn thấy trong danh sách nhưng bundle của B vẫn 200 |
+| E6 tiếp tục phát hành | Đạt: công khai lại v2, không cần thay đổi |
+| F1/F2 Khám phá | Đạt: thấy bộ công khai, tìm / sắp xếp hiển thị |
+| F3 xem trước + thích | Đạt (cả app lẫn API): `gloss` hiện, `like_count` +1 |
+| F4 tải về | Đạt (app): `download` 201, bundle, lần sau gửi `etag` (G2) |
+| F5 người tải sửa | Đạt (API): xoá / thêm từ chỉ là nháp của B; `add-words` của người không phải tác giả: từ có sẵn thêm được, `xyzqqq` vào `unavailable`; bộ gốc không đổi |
+| F6 remix | Đạt (API): bộ mới v1, 4 nghĩa, `remix_count` bộ gốc +1; app hiện "Remix từ 'Thu 3'" |
+| G1 offline | Đạt: tắt mạng vẫn mở danh sách bộ, chi tiết bộ, sắp xếp |
+| G2 etag | Đạt: lần mở sau gửi `etag` |
+| H1 | Mở `Học từ mới` từ bộ 8 từ ra phiên 36 bước (chưa xét sâu); thoát phiên hỏi "Thoát phiên học?" |
+
+Chưa chạy: A6–A10, B (Chuyên sâu), C3 / C5 / C6 (ảnh bìa, đếm dịch, polling khi thoát), D3 (thêm từ trong app), D4 / D5, E7 / E8, F8 (bộ bị ban), F9, G3 / G4 / G5, H2.
+
+### Lỗi tìm ra và đã sửa
+1. **`item_count` lệch số nghĩa thật** (bộ `Thu 2`: 9 trong khi có 8 nghĩa): `utils/celery/worker.py` cộng dồn `item_count + valid_count` ở hai đường chạy lệch pha (`atoms_update` và `collection_items_create`). Nay cả hai đếm lại từ `collection_item` (distinct `original_id`, bỏ dòng xoá). Kiểm: bộ mới `Thu 3` 6 / 6.
+2. **Số nghĩa ở app không giảm sau khi xoá nghĩa nháp**: `total` lấy `max(item_count server, dòng local)`, mà `item_count` chỉ tính bản đang hiệu lực. Nay bộ đã tải dùng số dòng thật trong SQLite (`database/queries/collections.ts`).
+
+### Cần xem
+- Hộp xác nhận xoá nghĩa / thu hồi bộ / thoát phiên học dùng `Alert` gốc của Android, khác hệ modal của app.
+- Thẻ bộ ở Khám phá và trang xem trước chỉ có chữ cái đầu, chưa có ảnh bìa (bộ chưa đặt ảnh thì app chỉ tự lấy ảnh nghĩa ở danh sách "Bộ từ của tôi").
+- Bộ của chính mình vẫn hiện trong Khám phá (gợi ý ở Home thì đã loại).
+- Dữ liệu test còn lại: bộ `Thu 1`, `Thu 2`, `Thu 3` (đã phát hành, v2), `Thu 3 remix cua B` (đã tải), bộ rỗng `Rong`, tài khoản khách B (`device_id` 11111111-2222-4333-8444-555555555555).
