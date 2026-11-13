@@ -15,6 +15,10 @@ Nguồn đang dùng cho en là **mẫu 1.000 từ đầu** `fixtures/wordlists/e
 | en | words | 381 | `different` | r357 (step_0012) | 20 từ, 76 nghĩa, từ file đã lọc dạng chia `seed_runs/sources/en_lemmas_ref.jsonl` (hạng gốc giữ nguyên); 2 từ ≥ 40 nghĩa sang `multi_sense.jsonl` |
 | en | words | 356 | `under` | r304 (step_0011) | 50 từ, 192 nghĩa; 3 từ ≥ 50 nghĩa (`play`, `open`, `turn`) sang `multi_sense.jsonl`; ngưỡng đổi 40 từ step 12 |
 | en | words | 506 | (xem step_0013) | r384 (step_0013) | 100 từ (99 lưu, `comes` bị draft từ chối vì chỉ có nghĩa nhạc fugue), 407 nghĩa, từ `en_lemmas_ref.jsonl`; 12 từ ≥ 40 nghĩa sang `multi_sense.jsonl`; hạng 384–506 |
+| en | words | 661 | (xem step_0014) | r661 (step_0014) | 100 từ (98 lưu, `o` và `sam` bị draft từ chối), 368 nghĩa, toàn Haiku batch từ `en_lemmas_ref.jsonl`; 12 từ ≥ 40 nghĩa sang `multi_sense.jsonl`, 21 từ bỏ qua vì đã có trong DB (từ thêm tay 12/11); hạng 507–661 |
+| en | words | 787 | (xem step_0015) | r787 (step_0015) | 100 từ (99 lưu, `bought` bị draft từ chối: dạng chia của `buy`), 328 nghĩa, toàn Haiku batch từ `en_lemmas_ref.jsonl`; 9 từ ≥ 40 nghĩa sang `multi_sense.jsonl`; hạng 663–787 |
+| en | words | 925 | (xem step_0016) | r925 (step_0016) | 110 từ (109 lưu, `lt` bị draft từ chối), 391 nghĩa, toàn Haiku batch từ `en_lemmas_ref.jsonl` (cắt tới hạng 1000: `en_lemmas_ref_top1000.jsonl`); 13 từ ≥ 40 nghĩa sang `multi_sense.jsonl`, 2 từ bỏ qua vì đã có; hạng 788–925 |
+| en | words | 1000 | (xem step_0017) | r1000 (step_0017) | 63 từ (62 lưu, `cops` bị từ chối), 210 nghĩa, 2 từ ≥ 40 nghĩa sang `multi_sense.jsonl`; hạng 926–1000 = hết mẫu 1.000 từ đầu; concept qua hàng đợi Redis lần đầu |
 | en | phrases / idioms / proverbs | chưa | | | |
 | es | words | 5 từ thử (không theo hạng) | `feliz` | xes1 (online, 2026-11-11) | `esposa, mañana, puerta, hermano, feliz` để thử nối concept với en; 13 nghĩa; chi tiết ở mục dưới |
 | ja, ko, zh, fr, de, ru | mọi loại | chưa | | | |
@@ -55,6 +59,34 @@ Ngoài danh sách bước: DB còn các từ tiếng Anh của các đợt seed 
 - **Chất lượng**: 0 request chạy bù, 0 lỗi batch. Verify 1628 cặp: ok 679 (42%), fixed 338 (21%), flagged 611 (38%). Concept: 345 tạo mới, 52 nối, 10 ambiguous_split. WordForm: 74 / 99 từ có form (dựng lúc lưu). Số nghĩa mỗi từ: 1 nghĩa 5 từ, 2: 18, 3: 26, 4: 14, 5: 11, 6: 11, 7: 6, 8: 5, 9: 2, 11: 1. 384 / 407 nghĩa đã có `image_preview` lúc kiểm.
 - **Tổng DB sau r384**: 535 từ, 2085 nghĩa, 1846 concept, 908 dòng WordForm, 54 MB.
 
+
+## r661 (100 từ, 368 nghĩa, 2026-11-13, UTC)
+
+- **Thời gian** ≈ 25 phút (05:20 → 05:45): draft 2, refine 2, enrich 3,5 (batch Claude xong sớm), verify 2, brief ảnh + xếp việc ≈ 3, concept 12,8 phút (368 nghĩa). Toàn Haiku batch (`SEED_ENRICH_PROVIDER=claude IMAGE_BRIEF_PROVIDER=claude CONCEPT_JUDGE_PROVIDER=claude`); nguyên nhân bỏ Gemini batch: lượt bù `bf1113` cho thấy Gemini batch không có kết quả khớp (58 request đều phải gọi online bù).
+- **Chi phí Claude batch** ≈ $0,2181 (draft 0,0324; refine 0,0195; dịch 0,0782; metadata 0,0185; verify 0,0517; brief 0,0178) + judge concept bằng Claude (online) ≈ $0,03 ≈ $0,0025 / từ. enrich: 304 request đều từ batch, 0 gọi online bù; brief: 98 lệnh gộp, 0 viết lại online.
+- **Chất lượng**: 98 từ lưu, 2 từ bị draft từ chối (`o`, `sam`: ký tự / tên riêng). Verify 1.472 cặp: ok 652 (44%), fixed 297 (20%), flagged 523 (36%). Concept: 269 tạo mới, 73 nối, 26 ambiguous_split. 368/368 nghĩa đủ 5 ngôn ngữ, đủ verify, đủ metadata, đủ concept; WordForm 228 dòng. Ảnh 149/368 lúc kiểm (còn lại đang trong hàng đợi vẽ ComfyUI).
+- **Vị trí seed en**: hạng **661** (con trỏ `make-step` = 661).
+
+## r787 (100 từ, 328 nghĩa, 2026-11-13, UTC)
+
+- **Thời gian** ≈ 26 phút (07:22 → 07:48): draft 2, refine 2, enrich 3, verify 3, brief ảnh + xếp việc ≈ 4, concept 11,2 phút (328 nghĩa). Toàn Haiku batch (`SEED_ENRICH_PROVIDER=claude IMAGE_BRIEF_PROVIDER=claude CONCEPT_JUDGE_PROVIDER=claude`).
+- **Chi phí Claude batch** ≈ $0,2048 (draft 0,0313; refine 0,0185; dịch 0,0721; metadata 0,0170; verify 0,0488; brief 0,0172) + judge concept bằng Claude (online) ≈ $0,03 ≈ $0,0024 / từ. 286/286 request enrich và 99 lệnh gộp brief đều lấy từ batch, 0 gọi online bù.
+- **Chất lượng**: 99 từ lưu, 1 từ từ chối (`bought`). Verify 1.312 cặp: ok 537 (41%), fixed 280 (21%), flagged 495 (38%). Concept: tạo mới 242, nối 65, `ambiguous_split` 21. 328/328 nghĩa đủ 5 ngôn ngữ, đủ verify, metadata, concept; WordForm 223 dòng. Ảnh 318/328 lúc kiểm (còn lại đang trong hàng đợi vẽ).
+- **Vị trí seed en**: hạng **787** (con trỏ `make-step` = 787). DB sau r787: 762 từ `COMPLETED`, 2.897 nghĩa.
+- Flow seed kiểm DB trước khi gọi AI: `make-step` bỏ từ đã có (`skipped.existing`) và `stage_prepare` đánh dấu `skipped` từ đã `COMPLETED / REJECTED / BANNED`.
+
+## r925 + r1000 (173 từ, 601 nghĩa, 2026-11-13, UTC)
+
+- **Chạy song song các giai đoạn batch**: hai run gửi batch cùng lúc (giới hạn Message Batches rộng và tách khỏi API thường); xong cả hai trong ≈ 30 phút (07:56 → 08:25) thay vì ≈ 50–60 phút nếu chạy lần lượt. Concept không chồng nhau.
+- **r925** (110 từ, 109 lưu, 391 nghĩa): Claude batch ≈ $0,238 (draft 0,0359; refine 0,0213; dịch 0,0853; metadata 0,0198; verify 0,0561; brief 0,0198). 328/328 request dịch từ batch, 111 lệnh gộp brief từ batch, 0 gọi online bù. Verify 1.564 cặp: ok 704, fixed 266, flagged 594. Concept (nối trực tiếp trong flow, 748 s): tạo mới 321, nối 53, ambiguous_split 17. WordForm 248. Ảnh 363/391 lúc kiểm.
+- **r1000** (63 từ, 62 lưu, 210 nghĩa): Claude batch ≈ $0,130 (draft 0,0198; refine 0,0118; dịch 0,0458; metadata 0,0106; verify 0,0309; brief 0,0110). 181/181 request dịch từ batch, 0 gọi online bù. Verify 840 cặp: ok 373, fixed 169, flagged 298. WordForm 128. Ảnh 204/210.
+- **Concept qua hàng đợi Redis lần đầu** (`SEED_CONCEPT_QUEUE=true` đã bật trong `.env`): stage concept của r1000 chỉ đẩy 210 nghĩa vào `concept_arr:en` rồi báo "xong"; consumer `seed_flow concept-worker --lang en --once` nối hết 210 nghĩa trong 417 s (1,99 s / nghĩa, giống chế độ inline): tạo mới 163, nối 36, ambiguous_split 11. Bật chế độ hàng đợi mà quên chạy consumer thì nghĩa sẽ chưa có concept dù run báo xong.
+- **Chi phí lượt này** ≈ $0,37 Claude + ≈ $0,06 judge concept ≈ $0,0025 / từ. Số dư lúc bắt đầu $1,47 (người dùng báo).
+- **Vị trí seed en**: hạng **1000** (hết mẫu top 1.000). Tiếp tục cần nguồn đầy đủ `en_lemmas_ref.jsonl` (cursor 1000 trong manifest). DB sau r1000: **933 từ `COMPLETED`, 3.498 nghĩa, 3.487 nghĩa có concept**.
+
+## Bù cho từ online cũ (2026-11-13, run `bf1113`)
+
+29 từ tiếng Anh tạo bằng luồng online ngày 2026-11-12 (các nhóm hạng 508-536 như `plan`, `cause`, `king`, cộng `chair`, `river`, `window`, `kettle`, `gazebo`, `scone`, `xylophone`, `break the ice`; bỏ `bastard`, `bitch` thô tục) thiếu bản dịch es / fr / zh, verify và concept. Bù bằng `seed_flow backfill` + `run` (mode batch). Kết quả: 100 nghĩa, **100/100 đủ 5 ngôn ngữ** (en, vi, zh, es, fr), **100/100 có verify** cả 4 ngôn ngữ dịch (ok 156, fixed 83, flagged 161 / 400 cặp), **100/100 có concept** (tạo mới 87, nối 10, ambiguous_split 3), ảnh 94/100 (6 nghĩa chưa có ảnh), metadata 100/100. Chi phí Claude (verify batch) ≈ $0,0154 (111.688 vào / 39.401 ra); Gemini dịch 58 request: lượt batch không có kết quả khớp nên cả 58 gọi online bù (ghi `enrich_batch: 0 từ batch`), chưa tìm nguyên nhân. Từ nay luồng online tạo từ mới đã làm đủ các bước này (xem CLAUDE.md của flashwise_api). Các từ này nằm ở hạng ≥ 508 nên seed sẽ bỏ qua khi tới (đã có trong DB), con trỏ không lệch.
 
 ## Lọc dạng chia khỏi nguồn en (2026-11-11)
 

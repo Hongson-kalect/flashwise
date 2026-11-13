@@ -50,3 +50,16 @@ Hiện trạng công cụ:
 ## Việc nên làm trước tiên
 
 Thứ tự đề xuất: 1 (hai crash hook) → 5 (polling) → 2 (đồng bộ độc quyền) → 3 (refresh) → 6 (socket) → 7 (số thẻ) → dọn mục 17–19 để `tsc` xanh rồi mới bật kiểm `tsc` trong CI.
+
+## Đã sửa (2026-11-13)
+- **P1:** 1 (hook sau `return` ở `AppRecording`; `addSenseSheet` đã ổn), 2 (kéo dữ liệu dùng `withExclusiveTransactionAsync`), 3 (chỉ logout khi refresh bị 400/401/403), 4 (lỗi tạo trigger hiện trạng thái `error`), 5 (polling bộ từ).
+- **P2:** 6 (socket đăng ký lại phòng, không nối lại sau `disconnect`), 7 (Home đếm bằng `countReadyDue`, `DUE_SQL` thêm `is_mastered = 0`), 8 (thử lại `device-login` khi có mạng), 9 (`user_settings.updated_at` thật, migration 4, trigger ghi giờ sửa), 10 (`accountId` lấy từ JWT `utils/jwt.ts`, lượt sync chen vào được chạy lại ngay), 11 (không cần sửa: mọi lý do server từ chối ở `tracking/sync.py` là lỗi định dạng vĩnh viễn như `invalid:*`, `id_taken`, thiếu khoá, nên bỏ khỏi hàng đợi là đúng; UI vẫn nhận `report.rejected`), 12 (trigger DROP rồi tạo lại mỗi lần mở app trong 1 giao dịch), 13 (polling dịch có cờ bận), 14 (`createPressGuard({ onError })`, `useGuardedPress` báo toast), 15 (`AppWrapper` dùng safe-area và selector), 16 (`preventAutoHideAsync` ở cấp module).
+- **P3:** 17-19 (xoá 85 file chết: `hooks/useDatabase`, `useWebSocket`, `useSSE`, `services/s3`, màn `Word/Detail/Sense`, `Word/Create/Translate/Detail|Edit`, `Word/utils`, mock `getSenseData` / `getTranslate` / `isTranslationCompleted`, component và `interfaces/*` không ai import...; sửa các lỗi kiểu còn lại), `npx tsc --noEmit` **0 lỗi** (trước 74). 20 (log bọc `__DEV__`). 21 một phần: `eslint --fix` (import trùng / sai chỗ), bỏ import thừa (265 → 157 cảnh báo, không còn lỗi `rules-of-hooks`, `no-unused-expressions`).
+- **P4:** 24 (bỏ Pixabay, chỉ còn Wikimedia), 25 (`utils/joinUrl.ts`, test), 26 (rung khi nhấn giữ `AppPressable isVibration`).
+
+## Làm tiếp (2026-11-13, lần 2)
+- 21: `npx eslint .` sạch (0 cảnh báo): xoá biến / import thừa (bằng script theo cây cú pháp), `exhaustive-deps` rà từng chỗ: sửa thật `AppRecording` (timer giữ bằng ref, trước đây cleanup không bao giờ xoá được timer), các effect còn lại cố ý chạy khi phụ thuộc liệt kê đổi nên có chú thích `eslint-disable-next-line ... -- cố ý`.
+- 22: `key={index}`: danh sách chuỗi (collocations) dùng chính chuỗi làm key; các chỗ còn lại là skeleton / chấm cố định, hoặc key đặt nhầm trên phần tử con.
+- Xoá thêm màn / file không dùng: `Practice` (demo), luồng `Word/Create/Translate/*`, `Word/Create/components` không dùng (giữ `lineInput`, `wordSelectForm`, `wordSearchItem` vì trang chi tiết từ còn dùng), 37 component thẻ cũ (`components/card/*`...), dữ liệu giả 1.250 dòng của `Word/data.ts` (chỉ giữ kiểu). `Word/Create/screen.tsx` ("Tìm từ mới") còn dùng nên giữ.
+- Thông báo thông minh: xem `docs/reminder-design.md`.
+- 23 (đa ngôn ngữ giao diện): chủ ý để sau, làm khi các màn đã chốt rồi mới dịch một lượt.
