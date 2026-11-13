@@ -9,6 +9,7 @@ import vi from "@/locales/vi.json";
 // import jp from "@/locales/jp.json";
 
 // Init i18next (only once)
+/* eslint-disable import/no-named-as-default-member */
 if (!i18n.isInitialized) {
   i18n.use(initReactI18next).init({
     compatibilityJSON: "v4", // React Native compatibility

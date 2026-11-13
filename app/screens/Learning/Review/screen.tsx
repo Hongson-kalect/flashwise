@@ -61,6 +61,7 @@ export default function ReviewScreen() {
     if (status === "saved") queryClient.invalidateQueries({ queryKey: ["home"] });
     if (status === "saved") queryClient.invalidateQueries({ queryKey: ["collections"] });
     if (status === "saved") promptAfterFirstSession(); // phiên ôn đầu tiên (chưa từng được hỏi): xin quyền thông báo + chọn giờ nhắc
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [status]);
 
   const body = () => {

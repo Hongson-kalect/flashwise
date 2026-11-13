@@ -7,7 +7,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useState } from "react";
 import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 import { warnOffensive } from "@/services/collections";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 
 type Props = { userCollectionId: string; userLang: string; onDone: () => void };
 

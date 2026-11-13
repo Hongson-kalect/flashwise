@@ -16,6 +16,7 @@ const TypeAnswer = ({ question, attempt, onAnswer, onHint }: AnswerProps) => {
   // Gõ sai thì xoá ô để gõ lại
   useEffect(() => {
     if (wrong) setValue("");
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [attempt.tries]);
 
   const submit = () => value.trim() && onAnswer(value);

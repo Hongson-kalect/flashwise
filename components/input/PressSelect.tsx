@@ -1,5 +1,5 @@
 import { useTheme } from "@/providers/Theme";
-import { useState } from "react";
+
 import { Pressable } from "react-native";
 import Animated, {
   FadeOut,

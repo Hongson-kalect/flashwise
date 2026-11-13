@@ -45,6 +45,7 @@ const CollectionListScreen = () => {
   // Mở tab thì kéo danh sách mới nhất ở nền
   useEffect(() => {
     refresh();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, []);
 
   const totals = useMemo(() => {

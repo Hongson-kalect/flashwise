@@ -30,6 +30,7 @@ const HandwriteAnswer = ({ card, question, attempt, onWritten, onHint, onSkipWri
   // Viết sai thì xoá ô để viết lại
   useEffect(() => {
     if (wrong) setCells(chars.map(() => []));
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [attempt.tries]);
 
   const setCell = (i: number, strokes: InkStroke[]) => setCells((prev) => prev.map((c, j) => (j === i ? strokes : c)));

@@ -2,7 +2,7 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useTheme } from "@/providers/Theme";
 import { haptic } from "@/ui";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { BackHandler, Pressable, View } from "react-native";

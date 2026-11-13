@@ -21,7 +21,7 @@ import CollectionCover from "../components/collectionCover";
 import CoverSheet from "./components/coverSheet";
 import AddWordsSheet from "./components/addWordsSheet";
 import SenseRow from "./components/senseRow";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 
 /** Chi tiết 1 bộ: ảnh bìa, tiến độ, tải về học offline, danh sách nghĩa trong bộ. */
 const CollectionDetail = () => {
@@ -210,6 +210,7 @@ const CollectionDetail = () => {
       setChecked(true);
       download.mutate(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [c?.downloaded]);
 
   // Còn từ đang chờ AI tạo: hỏi lại mỗi vài giây (tối đa ~2 phút) để từ xong tự vào bộ
@@ -219,15 +220,18 @@ const CollectionDetail = () => {
     let tries = 0;
     let busy = false;
     const timer = setInterval(async () => {
-      if (busy || ++tries > 20) return clearInterval(timer);
+      if (++tries > 20) return clearInterval(timer);
+      if (busy) return; // lượt trước còn chạy (mạng chậm): bỏ qua tick này, không dừng hẳn
       busy = true;
       try {
         await refreshPending(db, id, c.collectionId, userLang);
         await queryClient.invalidateQueries({ queryKey: ["collections"] });
-      } catch {}
-      busy = false;
+      } catch {} finally {
+        busy = false;
+      }
     }, 6000);
     return () => clearInterval(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [waiting, id]);
 
   const pct = c?.total ? Math.min(100, (c.learned / c.total) * 100) : 0;

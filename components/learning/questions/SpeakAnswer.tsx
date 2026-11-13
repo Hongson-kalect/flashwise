@@ -21,6 +21,7 @@ const SpeakAnswer = ({ card, question, attempt, onSpeech, onSkipSpeak }: AnswerP
   // Micro bị chặn (từ chối quyền / máy không nhận dạng được): tự chuyển các bước nói còn lại sang dạng gõ
   useEffect(() => {
     if (blocked || denied) onSkipSpeak();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [blocked, denied]);
   const wrong = attempt.lastVerdict === "wrong" && attempt.tries > 0 && !listening;
   const color = blocked ? theme.subText3 : listening ? theme.error : theme.primary;

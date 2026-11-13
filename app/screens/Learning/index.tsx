@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text } from "react-native";
+import { View, Text } from "react-native";
 import React from "react";
 
 export default function LearningPage() {
@@ -9,4 +9,4 @@ export default function LearningPage() {
   );
 }
 
-const styles = StyleSheet.create({});
+

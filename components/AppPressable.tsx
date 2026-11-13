@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable, StyleSheet, ViewStyle } from "react-native";
+import { Pressable, Vibration, ViewStyle } from "react-native";
 
 interface AppPressableProps {
   children: React.ReactNode;
@@ -26,8 +26,7 @@ export const AppPressable = ({
   ...props
 }: AppPressableProps) => {
   const handleLongPress = () => {
-    // TODO: Vibration
-    // isVibration && Vibration.vibrate([100, 50, 100]);
+    if (isVibration) Vibration.vibrate([0, 40]); // rung ngắn khi nhấn giữ
 
     onLongPress && onLongPress();
   };
@@ -47,12 +46,4 @@ export const AppPressable = ({
   );
 };
 
-const styles = StyleSheet.create({
-  default: {
-    padding: 8,
-    borderRadius: 8,
-  },
-  pressed: {
-    opacity: 0.6,
-  },
-});
+

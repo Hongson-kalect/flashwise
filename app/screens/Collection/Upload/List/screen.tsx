@@ -131,7 +131,7 @@ const CollectionUploadList = () => {
                 Chưa phát hành bộ nào
               </AppText>
               <AppText color="subText2" textAlign="center">
-                Mở một bộ do bạn tạo và bấm "Phát hành" để chia sẻ với mọi người.
+                Mở một bộ do bạn tạo và bấm &ldquo;Phát hành&rdquo; để chia sẻ với mọi người.
               </AppText>
             </View>
           )

@@ -1,31 +1,13 @@
 import axios from "axios";
 
-const PIXABAY_KEY = process.env.EXPO_PUBLIC_PIXABAY_API_KEY || "";
-
 export interface SenseImage {
   url: string;
-  /** Nguồn hiển thị làm ghi công, vd "Pixabay · tên tác giả". */
+  /** Nguồn hiển thị làm ghi công, vd "Wikimedia Commons". */
   credit: string;
 }
 
 // Cache trong RAM theo từ khoá. Lưu cả kết quả "không có"; lỗi mạng thì xoá để thử lại.
 const cache = new Map<string, Promise<SenseImage | null>>();
-
-const fromPixabay = async (q: string): Promise<SenseImage | null> => {
-  const r = await axios.get("https://pixabay.com/api/", {
-    timeout: 8000,
-    params: {
-      key: PIXABAY_KEY,
-      q,
-      image_type: "photo",
-      orientation: "horizontal",
-      safesearch: true,
-      per_page: 3,
-    },
-  });
-  const hit = r.data?.hits?.[0];
-  return hit ? { url: hit.webformatURL, credit: `Pixabay · ${hit.user}` } : null;
-};
 
 // Không cần API key. Chỉ ảnh bitmap (bỏ SVG, sơ đồ), lấy bản thu nhỏ 800px.
 const fromCommons = async (q: string): Promise<SenseImage | null> => {
@@ -54,12 +36,12 @@ const fromCommons = async (q: string): Promise<SenseImage | null> => {
 
 /**
  * Ảnh minh hoạ tạm cho 1 nghĩa: từ khoá AI gợi ý (`image_keywords`), không có thì dùng chính từ.
- * Pixabay nếu có EXPO_PUBLIC_PIXABAY_API_KEY, không thì Wikimedia Commons.
+ * Wikimedia Commons (không cần API key; đã bỏ Pixabay: key EXPO_PUBLIC_* bị nhúng vào bundle app, ai cũng lấy được).
  * Chỉ là giải pháp tạm phía app cho tới khi server tự chọn ảnh (PARTIAL_IMAGE).
  */
 const lookup = (q: string): Promise<SenseImage | null> => {
   if (!cache.has(q)) {
-    const load = PIXABAY_KEY ? fromPixabay : fromCommons;
+    const load = fromCommons;
     cache.set(
       q,
       load(q).catch(() => {
@@ -72,7 +54,7 @@ const lookup = (q: string): Promise<SenseImage | null> => {
 };
 
 /**
- * Anh ngoai (Pixabay / Wikimedia) chi dung khi bat EXPO_PUBLIC_EXTERNAL_IMAGE_FALLBACK=true. Mac dinh TAT: anh minh hoa
+ * Anh ngoai (Wikimedia) chi dung khi bat EXPO_PUBLIC_EXTERNAL_IMAGE_FALLBACK=true. Mac dinh TAT: anh minh hoa
  * do server ve (image_preview); nghia server chu y khong ve (nghia bong, truu tuong) thi hien chu cai dau thay vi anh stock lech nghia.
  */
 const EXTERNAL_FALLBACK = process.env.EXPO_PUBLIC_EXTERNAL_IMAGE_FALLBACK === "true";

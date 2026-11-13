@@ -117,7 +117,7 @@ export const SubCollapseSection = ({
   children: React.ReactNode;
   defaultExpanded?: boolean;
 }) => {
-  const { theme } = useTheme();
+  
 
   // React state điều khiển mount/unmount
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);

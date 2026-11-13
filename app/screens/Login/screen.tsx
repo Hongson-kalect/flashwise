@@ -25,6 +25,8 @@ import {
 import Animated, { FadeIn } from "react-native-reanimated";
 
 // Chỉ nạp khi đã có client id, tránh lỗi hook Google khi thiếu cấu hình.
+// Nạp lười: module Google native chỉ có khi bật đăng nhập Google
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const GoogleButton = GOOGLE_ENABLED ? require("./GoogleButton").default : null;
 
 type Mode = "login" | "register" | "forgot" | "reset";

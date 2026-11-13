@@ -55,7 +55,9 @@ const HomeSearch = ({ anchorY, scrollY, setOverlay }: Props) => {
         />
       ) : null,
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [q, data, isFetching, anchorY, barHeight, theme]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   useEffect(() => () => setOverlay(null), []);
 
   return (

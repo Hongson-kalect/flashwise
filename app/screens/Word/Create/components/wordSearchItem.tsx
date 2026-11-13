@@ -1,7 +1,7 @@
 import AppText from "@/components/AppText";
 import PressSelect from "@/components/input/PressSelect";
-import { useTheme } from "@/providers/Theme";
-import { useEffect, useMemo, useState } from "react";
+
+import { useEffect, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import Animated, { FadeOut, LinearTransition } from "react-native-reanimated";
 import { SearchSuggestion, STATUS } from "./wordSelectForm";
@@ -15,10 +15,10 @@ type Props = {
   onDismiss: (id: string) => void;
 };
 const WordSearchItem = ({ word, ...props }: Props) => {
-  const { theme } = useTheme();
+  
   const [status, setStatus] = useState<STATUS>("LOADING");
 
-  const bgColor = useMemo(() => {}, [status]);
+  
   // loading = get word status from server
   // init = unpressable. Getting word data from server -> pending.
   // translating = not have translate yet, pressable  -> done

@@ -13,6 +13,7 @@ const WordHeader = ({ card, autoPlay = false }: Props) => {
   const { theme } = useTheme();
   useEffect(() => {
     if (autoPlay) speakWord(card);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [card.key, autoPlay]);
 
   return (

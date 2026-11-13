@@ -1,13 +1,13 @@
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
-import { useTheme } from "@/providers/Theme";
+
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { Pressable, View } from "react-native";
 
 /** Ôn tập trước, hết thẻ đến hạn mới gợi ý học từ mới (docs/learning-design.md mục 5). */
 const StudyCard = ({ due, loading }: { due: number; loading: boolean }) => {
-  const { theme } = useTheme();
+  
   const hasDue = due > 0;
   // Luôn gradient xanh thương hiệu; trạng thái "đã ôn xong" dịu hơn (xanh trời -> xanh chủ đạo)
   const colors = hasDue

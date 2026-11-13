@@ -24,6 +24,7 @@ const PromptModal = (modal: Props) => {
 
   useEffect(() => {
     currentModal && setTimeout(() => textFocus(), 300);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, []);
 
   useEffect(() => {

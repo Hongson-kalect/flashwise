@@ -1,20 +1,13 @@
 import { useTheme } from "@/providers/Theme";
 import { SearchSuggestion } from "@/app/screens/Word/Create/components/wordSelectForm";
 import { fontFamily } from "@/configs/fonts";
-import { useBottomSheet } from "@/providers/BottomSheet";
-import { useAppStore } from "@/stores/appStore";
+
+
 import useModalStore from "@/stores/modalStore";
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { View } from "react-native";
 import { TextInput } from "react-native-gesture-handler";
-import { Divider } from "react-native-paper";
+
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import AppIcon from "../AppIcon";
 import AppInput from "../AppInput";
@@ -49,12 +42,13 @@ type Props = {
   autofocus?: boolean;
 };
 
+// eslint-disable-next-line react/display-name
 const AppSearch = forwardRef((props: Props, ref) => {
   const { isClearable = true, isFilterable = true } = props;
   // const { theme } = useTheme();
   const { theme } = useTheme();
   const [focused, setFocused] = useState(false);
-  const [value, setValue] = useState("");
+  const [, setValue] = useState("");
   const inputRef = useRef<TextInput>(null);
   useImperativeHandle(ref, () => ({
     focus: () => inputRef.current?.focus(),
@@ -62,7 +56,7 @@ const AppSearch = forwardRef((props: Props, ref) => {
     clear: () => props.onChangeText(""),
   }));
 
-  const [searchSuggestion, setSearchSuggestion] =
+  const [searchSuggestion] =
     useState<SearchSuggestion[]>(searchResult);
 
   const selectSugession = (val: string) => {
@@ -74,7 +68,7 @@ const AppSearch = forwardRef((props: Props, ref) => {
     // gọi api, socket các thứ
   };
 
-  const { present } = useBottomSheet();
+  
   const addModal = useModalStore((state) => state.addModal);
   const showFilterModal = () => {
     addModal({
@@ -149,6 +143,7 @@ const AppSearch = forwardRef((props: Props, ref) => {
         inputRef.current?.focus();
       }, 300);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, []);
 
   return (
@@ -242,42 +237,8 @@ const AppSearch = forwardRef((props: Props, ref) => {
   );
 });
 
-const FilterModal = () => {
-  return (
-    <View>
-      <View className="flex-row gap-2 items-center">
-        <AppIcon name="filter" branch="antd" size={24} color="#888" />
-        <AppText size={18}>Filter</AppText>
-      </View>
-      {/* <Divider style={{ width: "100%" }} /> */}
 
-      <View className="mt-2">
-        <ModalItem />
-        <Divider />
-        <ModalItem />
-        <Divider />
-        <ModalItem />
-      </View>
-      {/* Có những loại filter nào nhỉ?
-        // Tags
-        // Loại từ
-        // Ngôn ngữ
-      */}
-    </View>
-  );
-};
 
-const ModalItem = () => {
-  return (
-    <View className="flex-row items-center gap-2 justify-between h-14">
-      <AppText font="MulishMedium" size={"lg"}>
-        ModalItem
-      </AppText>
-      <AppText size={"sm"} color="subText2">
-        Value
-      </AppText>
-    </View>
-  );
-};
+
 
 export default AppSearch;

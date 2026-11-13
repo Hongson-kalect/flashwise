@@ -110,6 +110,7 @@ const ChooseSenses = ({ words, lang, userLang, submitting, onBack, onSubmit }: P
         words.map((w) => [w, (results[w.toLowerCase()]?.senses ?? []).filter((s) => s.best).map((s) => s.id)]),
       ),
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [results]);
 
   const toggle = (word: string, id: string) =>
@@ -122,6 +123,7 @@ const ChooseSenses = ({ words, lang, userLang, submitting, onBack, onSubmit }: P
   const senseCount = useMemo(() => Object.values(chosen).reduce((n, ids) => n + ids.length, 0), [chosen]);
   const pendingWords = useMemo(
     () => words.filter((w) => ["processing", "unknown"].includes(stat(w)?.status ?? "")),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
     [results, words],
   );
   // Từ có nghĩa thô tục đang được chọn: app báo sau khi tạo bộ

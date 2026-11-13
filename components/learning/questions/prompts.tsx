@@ -2,12 +2,10 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import SenseImage from "@/components/learning/SenseImage";
 import WordHeader from "@/components/learning/WordHeader";
-import { ClusterStepKind, LearnCard } from "@/learning/types";
-import { glossOf } from "@/learning/types";
+import { ClusterStepKind, LearnCard , glossOf } from "@/learning/types";
 import { useTheme } from "@/providers/Theme";
-import { ComponentType } from "react";
+import { ComponentType , useEffect } from "react";
 import { speakWord } from "@/utils/speak";
-import { useEffect } from "react";
 import { Pressable, View } from "react-native";
 import { PromptProps } from "./types";
 
@@ -110,6 +108,7 @@ const ListenControl = ({ card, onSkip }: { card: LearnCard; onSkip: () => void }
   const { theme } = useTheme();
   useEffect(() => {
     speakWord(card);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [card.key]);
   return (
     <View className="items-center gap-3 py-6">

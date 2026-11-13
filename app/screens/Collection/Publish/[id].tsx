@@ -24,7 +24,7 @@ import {
   View,
 } from "react-native";
 import CollectionCover from "../components/collectionCover";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 
 const ERROR_TEXT = {
   no_changes: "Bộ chưa có nghĩa nào để phát hành. Thêm nghĩa vào bộ rồi thử lại.",

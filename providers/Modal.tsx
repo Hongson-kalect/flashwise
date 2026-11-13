@@ -11,7 +11,7 @@ import {
 import TabsModal from "@/components/modals/components/TabModal";
 import ModalWrapper from "@/components/modals/ModalWrapper";
 import useModalStore from "@/stores/modalStore";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 import React, { memo, useEffect, useState } from "react";
 import { View } from "react-native";
 import { useShallow } from "zustand/react/shallow";

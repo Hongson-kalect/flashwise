@@ -25,15 +25,15 @@ export const startRecording = async (
     await recording.prepareToRecordAsync({
       android: {
         extension: ".m4a",
-        outputFormat: Audio.RECORDING_OPTION_ANDROID_OUTPUT_FORMAT_MPEG_4,
-        audioEncoder: Audio.RECORDING_OPTION_ANDROID_AUDIO_ENCODER_AAC,
+        outputFormat: Audio.AndroidOutputFormat.MPEG_4,
+        audioEncoder: Audio.AndroidAudioEncoder.AAC,
         sampleRate: 44100,
         numberOfChannels: 2,
         bitRate: 128000,
       },
       ios: {
         extension: ".m4a",
-        audioQuality: Audio.RECORDING_OPTION_IOS_AUDIO_QUALITY_HIGH,
+        audioQuality: Audio.IOSAudioQuality.HIGH,
         sampleRate: 44100,
         numberOfChannels: 2,
         bitRate: 128000,
@@ -68,7 +68,7 @@ export const startRecording = async (
     setCallBack(callback);
 
     await recording.startAsync();
-    console.log("🔴 Recording started");
+    if (__DEV__) console.log("🔴 Recording started");
   } catch (err) {
     console.error("Failed to start recording", err);
   }
@@ -80,7 +80,7 @@ export const stopRecording = async (getResult: boolean = true) => {
 
     await recording.stopAndUnloadAsync();
     const uri = recording.getURI();
-    console.log("✅ Recording stopped. File saved at:", uri);
+    if (__DEV__) console.log("✅ Recording stopped. File saved at:", uri);
 
     // Trả đoạn ghi âm về vào tham số của callback khi start ghi âm
     const { onRecording, setOnRecording } = recordingStore.getState();

@@ -39,6 +39,7 @@ const SenseRow = ({ item, edit }: { item: CollectionSense; edit?: RowEdit }) => 
     return () => {
       alive = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [own, item.value, item.keywords.join("|")]);
 
   const uri = own ?? fallback;

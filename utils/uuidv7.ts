@@ -1,6 +1,7 @@
 /** Byte ngẫu nhiên: expo-crypto trong app; ngoài app (test Node, không nạp được react-native) dùng crypto của Node. */
 const randomBytesOf = (n: number): Uint8Array => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     return require("expo-crypto").getRandomBytes(n);
   } catch {
     return globalThis.crypto.getRandomValues(new Uint8Array(n));

@@ -2,7 +2,7 @@ import AppChip from "@/components/AppChip";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import SearchBar from "@/components/SearchBar";
-import { SkeletonCircle, Skeleton, useDebounce } from "@/ui";
+import { Skeleton, useDebounce } from "@/ui";
 import { getWordStats, listWords, WordSort } from "@/database/queries/words";
 import { useAppNavigation } from "@/hooks/useNavigation";
 import { useTheme } from "@/providers/Theme";

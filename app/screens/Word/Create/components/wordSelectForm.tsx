@@ -146,11 +146,11 @@ const WordSelectForm = (props: Props) => {
   }, [order, wordList]);
 
   const [focusing, setFocusing] = useState(false);
-  const { width, height } = useWindowDimensions();
+  const { width } = useWindowDimensions();
 
   const [searchVal, setSearchVal] = useState<string>("");
   const appSearchRef = useRef<TextInput>(null);
-  const [selectedWord, setSelectedWord] = useState<string | undefined[]>([]);
+  const [selectedWord] = useState<string | undefined[]>([]);
   const [editMode, setEditMode] = useState(false);
 
   const searchDebounced = useDebounce(searchVal);
@@ -203,10 +203,12 @@ const WordSelectForm = (props: Props) => {
       }
     });
     setWordSense(wordSenseMap);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, []);
 
   useEffect(() => {
     handleSearchResult(searchResult);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [searchResult, searchDebounced]);
 
   const selectSugession = (id: string) => {
@@ -266,6 +268,7 @@ const WordSelectForm = (props: Props) => {
   const [checkList, setCheckList] = useState<Set<string>>(new Set<string>());
   const isCheckAll = useMemo(() => {
     return checkList.size === displayList.length;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [checkList]);
 
   const checkWord = (id?: string) => {
@@ -295,17 +298,7 @@ const WordSelectForm = (props: Props) => {
     setCheckList(new Set<string>());
   };
 
-  const removeWord = (id: string[]) => {
-    const idSet = new Set<string>(id);
-    const newMap = new Map(wordList);
-    id.forEach((item) => {
-      newMap.delete(item);
-    });
-
-    const newSense = [...senses].filter((item) => !idSet.has(item.wordId));
-    setSenses(newSense);
-    const newOrder = order.filter((item) => !idSet.has(item));
-  };
+  
 
   return (
     <View className="h-full w-full">
@@ -356,7 +349,7 @@ const WordSelectForm = (props: Props) => {
                   font="MulishRegularItalic"
                   color="subText2"
                 >
-                  Let's add your first word
+                  Let&apos;s add your first word
                 </AppText>
               </View>
             ) : (
@@ -453,25 +446,6 @@ const WordSelectForm = (props: Props) => {
   );
 };
 
-const TagItem = () => {
-  const { theme } = useTheme();
-  return (
-    <View
-      style={{ backgroundColor: theme.primary + "10" }}
-      className="px-3 py-1 rounded-full h-8 items-center justify-center"
-    >
-      <AppText size={"xs"}>Test tag</AppText>
 
-      <View className="absolute -top-1 -right-1">
-        <AppIcon
-          branch="antd"
-          name="closecircle"
-          color={theme.error + "80"}
-          size={14}
-        />
-      </View>
-    </View>
-  );
-};
 
 export default WordSelectForm;

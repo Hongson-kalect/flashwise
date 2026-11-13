@@ -13,7 +13,7 @@ import { ActivityIndicator, FlatList, Pressable, View } from "react-native";
 import CollectionCover from "../../components/collectionCover";
 import OwnershipBadge from "../../components/ownershipBadge";
 import type { OwnedCollection } from "@/database/queries/collections";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 
 const Stat = ({ icon, value, label }: { icon: any; value: number; label: string }) => {
   const { theme } = useTheme();
@@ -62,7 +62,8 @@ const DiscoverDetail = () => {
     },
     onError: (e: any) => {
       const code = e?.response?.data?.errorCode;
-      code === "account_required" ? toast.info("Đăng nhập để thích bộ từ") : toast.error("Chưa thích được, thử lại sau");
+      if (code === "account_required") toast.info("Đăng nhập để thích bộ từ");
+      else toast.error("Chưa thích được, thử lại sau");
     },
   });
 

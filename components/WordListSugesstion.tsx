@@ -27,7 +27,7 @@ type Props = {
 const WordListSuggestion = (props: Props) => {
   const { theme } = useTheme();
   const { height } = useWindowDimensions();
-  const [selectedSense, setSelectedSense] = React.useState<string[]>([]);
+  
 
   // Data để show cái nào đang select, status có ok hay chưa
   // Loading, init, done

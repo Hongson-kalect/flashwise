@@ -1,7 +1,7 @@
 import { useTheme } from "@/providers/Theme";
 import useRecordingStore from "@/stores/recordingStore";
 import { stopRecording } from "@/utils/audioRecord";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Pressable,
   TouchableOpacity,
@@ -22,27 +22,29 @@ const AppRecording = () => {
   const { theme } = useTheme();
   const [recordTime, setRecordTime] = useState(0);
   const { width } = useWindowDimensions();
-  const [recordInterval, setRecordInterval] = useState<
-    NodeJS.Timeout | number | null
-  >(null);
-
-  const startInterval = () => {
-    const interval = setInterval(() => {
-      setRecordTime((prev) => prev + 1);
-    }, 1000);
-    setRecordInterval(interval);
-    // return interval;
-  };
+  // Timer giữ bằng ref: cleanup của effect luôn thấy timer hiện tại (state cũ trước đây khiến timer không bao giờ được xoá)
+  const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const stopInterval = () => {
-    recordInterval && clearInterval(recordInterval);
+    if (timer.current) clearInterval(timer.current);
+    timer.current = null;
   };
 
   useEffect(() => {
-    if (onRecording) startInterval();
-    return () => stopInterval();
+    if (onRecording) {
+      stopInterval();
+      timer.current = setInterval(() => setRecordTime((prev) => prev + 1), 1000);
+    }
+    return stopInterval;
   }, [onRecording]);
 
+  // Hook phải đứng trước `return null` bên dưới (số hook không được đổi giữa các lần render)
+  useEffect(() => {
+    if (onRecording === null) {
+      setRecordTime(0);
+      stopInterval();
+    }
+  }, [onRecording]);
 
   const handleFinishRecording = async () => {
     await stopRecording();
@@ -56,12 +58,6 @@ const AppRecording = () => {
 
   if (!onRecording) return null;
 
-  useEffect(() => {
-    if (onRecording === null) {
-      setRecordTime(0);
-    stopInterval();
-    };
-  }, [onRecording]);
   return (
     <Animated.View
       entering={FadeIn}

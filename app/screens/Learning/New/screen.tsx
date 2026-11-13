@@ -62,6 +62,7 @@ export default function LearnNewScreen() {
       queryClient.invalidateQueries({ queryKey: ["collections"] });
       promptAfterFirstSession(); // sau phiên học đầu tiên: xin quyền thông báo + chọn giờ nhắc (hỏi một lần)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [status]);
 
   const body = () => {

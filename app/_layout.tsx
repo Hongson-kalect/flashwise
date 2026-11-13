@@ -31,18 +31,19 @@ import { MenuProvider } from "react-native-popup-menu";
 
 const queryClient = new QueryClient();
 
+// Giữ splash tới khi font + dữ liệu sẵn sàng (chạy 1 lần lúc nạp module, không mỗi lần render)
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
   const [isReady, setIsReady] = useState(false);
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [, setFontsLoaded] = useState(false);
   const [hasSeenStart, setHasSeenStart] = useState<boolean | null>(null);
-
-  SplashScreen.preventAutoHideAsync();
 
   useEffect(() => {
     // wordSocket.connect();
     async function loadFonts() {
       try {
-        console.log("loading font...");
+        if (__DEV__) console.log("loading font...");
         // Nạp sẵn font icon cùng font chữ để icon không nhấp nháy lúc đầu
         await Font.loadAsync({
           ...fonts,
@@ -102,7 +103,7 @@ export default function RootLayout() {
                           <Stack.Screen name="screens/Start/screen" />
                           <Stack.Screen name="screens/Login/screen" />
                           <Stack.Screen
-                            getId={({ params }) => params?.value}
+                            getId={({ params }) => `${params?.value ?? ""}|${params?.lang ?? ""}`}
                             singular
                             name="screens/Word/Detail/[value]"
                             dangerouslySingular={false} // Tạo phòng mới hoàn toàn cho mỗi từ khác nhau

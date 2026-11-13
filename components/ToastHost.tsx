@@ -36,6 +36,7 @@ export default function ToastHost({ inModal }: Props) {
     const id = toast.id;
     const timer = setTimeout(() => hide(id), toast.duration);
     return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [toast?.id]);
 
   // Cửa sổ modal nằm trên mọi thứ: khi có modal chỉ bản trong modal vẽ, không thì chỉ bản ở gốc vẽ (tránh vẽ đôi)

@@ -1,6 +1,6 @@
 import { fontFamily } from "@/configs/fonts";
 import { textSizes } from "@/configs/size";
-import { useTheme } from "@/providers/Theme";
+
 import { useState } from "react";
 import { StyleProp, TextStyle } from "react-native";
 import AppText from "../AppText";
