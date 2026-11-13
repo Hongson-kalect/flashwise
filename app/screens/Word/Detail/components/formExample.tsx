@@ -1,3 +1,4 @@
+import { useWordLangs } from "../wordLang";
 import AppText from "@/components/AppText";
 import { BoldText } from "@/components/output/BoldText";
 import { SkeletonReact } from "@/components/skeleton/ReactSkeleton";
@@ -21,7 +22,7 @@ const FormExample = () => {
   const { theme } = useTheme();
   const focus = useFormFocus();
   const sense = useContext(SenseContext);
-  const userLang = useAppStore((s) => s.settings?.translate_language) ?? "vi";
+  const { userLang } = useWordLangs();
   const showTranslation = useAppStore((s) => s.settings?.show_translation);
   const eligible = !!focus && !!sense?.id && focus.pos.includes(formPos(sense.pos));
 

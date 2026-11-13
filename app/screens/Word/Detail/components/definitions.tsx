@@ -1,4 +1,5 @@
 import { AppPressable } from "@/components/AppPressable";
+import { useWordLangs } from "../wordLang";
 import AppAddIcon from "@/components/AppAddIcon";
 import AppText from "@/components/AppText";
 import { SkeletonReact } from "@/components/skeleton/ReactSkeleton";
@@ -24,16 +25,17 @@ type Props = {
 /** Nhấn giữ định nghĩa / bản dịch / ví dụ để sửa ngay phần đó; sửa toàn bộ nghĩa ở menu 3 chấm. */
 const WordDefinitions = ({ definition, examples, isSimple, word, style }: Props) => {
   const settings = useAppStore((s) => s.settings);
+  const { lang: wordLang, userLang } = useWordLangs();
   const isWordLoading = useWordLoading();
   const { theme } = useTheme();
   const { edit, canEdit } = useSenseEditor();
 
   const [tDefinition, nDefinition] = useMemo(
     () => [
-      getLangContent(definition, settings?.learning_language),
-      getLangContent(definition, settings?.translate_language),
+      getLangContent(definition, wordLang),
+      getLangContent(definition, userLang),
     ],
-    [definition, settings?.learning_language, settings?.translate_language],
+    [definition, wordLang, userLang],
   );
   const hold = (focus: EditFocus) => (canEdit ? () => edit(focus) : undefined);
 

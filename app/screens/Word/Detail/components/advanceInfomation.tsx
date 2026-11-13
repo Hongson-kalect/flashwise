@@ -1,4 +1,5 @@
 import AppIcon from "@/components/AppIcon";
+import { useWordLangs, useWordRouteParams } from "../wordLang";
 import AppText from "@/components/AppText";
 import {
   bottomSheetTitle,
@@ -12,7 +13,7 @@ import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
 import { ItemKind, useAddItems } from "../addItems";
 import { useWordForms } from "../formsContext";
 import { useWordExists } from "../useWordExists";
-import { useAppStore } from "@/stores/appStore";
+
 import type { WordChecks } from "@/services/api/words";
 import { formPos, formTagLabel } from "@/utils/formTags";
 import SectionHeader from "./sectionHeader";
@@ -45,7 +46,7 @@ const WordAdvanceInformation = ({
   openRadioModal,
 }: Props) => {
   const { theme } = useTheme();
-  const lang = useAppStore((st) => st.settings?.learning_language);
+  const { lang } = useWordLangs();
   // Một lần hỏi cho cả ba danh sách: từ nào đã có ở server, từ nào chưa
   const exists = useWordExists([...(relateds ?? []), ...(synonyms ?? []), ...(antonyms ?? [])], lang);
   return (
@@ -282,6 +283,7 @@ type RelatedProp = {
 const Related = (props: RelatedProp) => {
   const { theme } = useTheme();
   const { open, canAdd, sense } = useAddItems();
+  const routeLangs = useWordRouteParams();
   const add = canAdd ? () => open(props.kind) : undefined;
   return (
     <View>
@@ -317,7 +319,7 @@ const Related = (props: RelatedProp) => {
                   router.push({
                     pathname: `/screens/Word/Detail/[value]`,
                     // from / kind: nếu từ này bị từ chối khi mở thì trang từ gỡ nó khỏi danh sách nguồn
-                    params: { value: item, valueId: item, ...(sense?.id ? { from: sense.id, kind: props.kind } : {}) },
+                    params: { value: item, valueId: item, ...routeLangs, ...(sense?.id ? { from: sense.id, kind: props.kind } : {}) },
                   });
                 }}
                 key={item}
@@ -333,8 +335,8 @@ const Related = (props: RelatedProp) => {
                   size={"sm"}
                   color={bad ? "error" : "subText1"}
                   font="MulishRegularItalic"
-                  key={index}
-                  style={bad ? { textDecorationLine: "line-through" } : undefined}
+                  numberOfLines={1}
+                  style={[{ paddingRight: 2 }, bad ? { textDecorationLine: "line-through" } : null]}
                 >
                   {item}
                 </AppText>

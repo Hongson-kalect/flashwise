@@ -2,7 +2,7 @@ import { useTheme } from "@/providers/Theme";
 import AppAddIcon from "@/components/AppAddIcon";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
-import AppTitle from "@/components/AppTitle";
+
 import PhatAm from "@/components/PhatAm";
 import PhienAm from "@/components/PhienAm";
 import { pronunciationOf } from "@/utils/pronunciation";
@@ -10,33 +10,30 @@ import {
   CreateWordInputModalProps,
   CreateWordRadioModalProps,
 } from "@/interfaces/word";
-import { useBottomSheet } from "@/providers/BottomSheet";
+
 import { AudioType } from "@/stores/recordingStore";
-import { startRecording } from "@/utils/audioRecord";
+
 import { Audio } from "expo-av";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Image,
-  LayoutChangeEvent,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
-import { Divider } from "react-native-paper";
+import { LayoutChangeEvent, TouchableOpacity, View } from "react-native";
+
 import Animated, { FadeInUp, LinearTransition } from "react-native-reanimated";
 // import {
 //   ExpoSpeechRecognitionModule,
 //   useSpeechRecognitionEvent,
 // } from "expo-speech-recognition";
 // import { initWhisper } from "whisper.rn";
-import { lightTheme } from "@/configs/theme";
+
 import { mediaUrl, useAppStore } from "@/stores/appStore";
 import { SenseType } from "../../data";
 import AppImage from "@/components/AppImage";
 import { SkeletonReact } from "@/components/skeleton/ReactSkeleton";
 import { findSenseImage, SenseImage } from "@/services/senseImage";
 import { useWordLoading } from "../loadingContext";
+import { useWordExists } from "../useWordExists";
+import { useWordLangs } from "../wordLang";
+import { router } from "expo-router";
 import { getLangTranslate, textToSpeech } from "../utils";
 import SectionHeader from "./sectionHeader";
 import WordDefinitions from "./definitions";
@@ -67,28 +64,36 @@ const BasicInformation = ({
   ...props
 }: Props) => {
   // const [image, setImage] = useState<ImageResult | null>(null);
-  const [audios] = useState(null);
-  const [selectedAudio, setSelectedAudio] = useState<
+  
+  const [selectedAudio] = useState<
     DocumentPickerAsset | AudioType | null
   >(null);
 
   const sound = useState<Audio.Sound | null>(null);
-  const { settings, dbService } = useAppStore();
+  const { settings } = useAppStore();
   const { theme } = useTheme();
+  const { lang: wordLang, userLang } = useWordLangs();
+  const learning = settings?.learning_language ?? "en";
+  const native = settings?.translate_language ?? "vi";
   const translations = useMemo(
-    () =>
-      getLangTranslate(
-        sense?.contents?.translations,
-        settings?.translate_language,
-      ),
-    [sense?.contents?.translations],
+    () => getLangTranslate(sense?.contents?.translations, userLang),
+    [sense?.contents?.translations, userLang],
   );
+  // Bản dịch là từ của ngôn ngữ kia: hỏi 1 lần cái nào đã có ở server (mở ngay), cái nào chưa (chạm vào mới tạo) thì mờ đi, bị từ chối thì gạch ngang
+  const translationExists = useWordExists(translations ?? [], userLang);
+  // Chạm bản dịch: mở từ đó theo chiều ngược (từ tiếng mẹ đẻ, dịch ra tiếng đang học). Quay về chiều cài đặt thì không cần tham số
+  const openTranslation = (word: string) => {
+    const back = userLang === learning && wordLang === native;
+    router.push({
+      pathname: "/screens/Word/Detail/[value]",
+      params: { value: word, valueId: word, ...(back ? {} : { lang: userLang, userLang: wordLang }) },
+    });
+  };
 
-  const toggleLanguageMode = () =>
-    dbService?.setShowTranslation(!settings?.show_translation);
+  
   const ipas = useMemo(() => sense?.ipas, [sense?.ipas]);
-  const { width } = useWindowDimensions();
-  const { present } = useBottomSheet();
+  
+  
   const isWordLoading = useWordLoading();
 
   // Ảnh: server (image_preview) ưu tiên; chưa có thì tạm lấy từ Pixabay theo image_keywords
@@ -101,6 +106,7 @@ const BasicInformation = ({
     return () => {
       alive = false;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [sense.image_preview, keywords?.join(","), word]);
   // image_preview là khoá tương đối (images/v1/...): phải ghép media_base_url bằng mediaUrl() mới tải được
   const serverImage = mediaUrl(sense.image_preview);
@@ -131,54 +137,17 @@ const BasicInformation = ({
   //   });
   // };
 
-  const [audio, setAudio] = useState<AudioType | null>(null);
+  
 
-  const handleStartRecording = () => {
-    startRecording(handleStopRecording);
-  };
+  
 
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [searchText, setSearchText] = useState("");
+  
+  
 
-  const handleStopRecording = async (result: AudioType | null) => {
-    if (!result) return;
+  
 
-    // Kiểm tra thời lượng nếu cần
-    if (result.duration > 10000) {
-      // Ví dụ 10s cho thoải mái
-      return alert("Ghi âm quá dài, vui lòng nói ngắn gọn.");
-    }
-
-    try {
-      setIsProcessing(true); // Hiển thị loading trên UI
-
-      // 1. Khởi tạo Whisper Context (Nên làm 1 lần ở useEffect hoặc Global)
-      // Giả sử bạn đã có file model trong máy
-      // const whisperContext = await initWhisper({
-      //   filePath: "path/to/ggml-tiny.en.bin",
-      // });
-
-      // 2. Transcribe file từ URI
-      // const { promise } = await whisperContext.transcribe(result.uri, {
-      //   language: "en", // Ngôn ngữ mục tiêu
-      //   maxLen: 1, // Tối ưu cho việc nhận diện từ đơn/câu ngắn
-      // });
-
-      // const { text } = await promise;
-
-      // console.log("📝 Kết quả Whisper:", text);
-
-      // // 3. Đưa text vào ô search hoặc xử lý tiếp theo logic của Flashwise
-      // setSearchText(text.trim());
-    } catch (error) {
-      console.error("Whisper Error:", error);
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const [recognizing, setRecognizing] = useState(false);
-  const [transcript, setTranscript] = useState("");
+  
+  
 
   // useSpeechRecognitionEvent("start", () => setRecognizing(true));
   // useSpeechRecognitionEvent("end", () => setRecognizing(false));
@@ -239,17 +208,29 @@ const BasicInformation = ({
           <Animated.View entering={FadeInUp} className="mb-3 w-full">
             <View className="flex-row gap-2 items-center flex-wrap">
               {translations?.length ? (
-                translations.map((item) => (
-                  <View
-                    key={item}
-                    className="px-3 py-1 rounded-full"
-                    style={{ backgroundColor: theme.primary + "14" }}
-                  >
-                    <AppText size={"sm"} font="MulishSemiBold" color="primary">
-                      {item}
-                    </AppText>
-                  </View>
-                ))
+                translations.map((item) => {
+                  const status = translationExists[item.trim().toLowerCase()]?.status;
+                  const pending = status === "unknown";
+                  const bad = status === "rejected" || status === "invalid";
+                  return (
+                    <TouchableOpacity
+                      key={item}
+                      onPress={() => openTranslation(item)}
+                      activeOpacity={0.7}
+                      className="px-3 py-1 rounded-full"
+                      style={{ backgroundColor: bad ? theme.error + "14" : theme.primary + "14", opacity: pending ? 0.55 : 1 }}
+                    >
+                      <AppText
+                        size={"sm"}
+                        font="MulishSemiBold"
+                        color={bad ? "error" : "primary"}
+                        style={bad ? { textDecorationLine: "line-through" } : undefined}
+                      >
+                        {item}
+                      </AppText>
+                    </TouchableOpacity>
+                  );
+                })
               ) : isWordLoading ? (
                 [84, 64, 96].map((w) => (
                   <SkeletonReact key={w} width={w} height={26} style={{ borderRadius: 13 }} />

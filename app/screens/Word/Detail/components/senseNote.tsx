@@ -1,7 +1,7 @@
 import AppIcon from "@/components/AppIcon";
 import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
-import AppTitle from "@/components/AppTitle";
+
 import { getNote, saveNote } from "@/database/queries/notes";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
@@ -9,7 +9,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useContext, useEffect, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
-import { Divider } from "react-native-paper";
+
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SenseContext } from "../senseEdit";
 import SectionHeader from "./sectionHeader";

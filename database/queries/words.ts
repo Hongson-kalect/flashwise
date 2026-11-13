@@ -275,13 +275,23 @@ const lastRefresh = new Map<string, number>();
  */
 // Thêm: nghĩa chưa có ảnh cũng đáng hỏi lại. Ảnh AI do server gắn SAU khi từ lưu xong (vài chục giây tới vài phút) mà app
 // chỉ lưu bản cuối nên bản lưu lúc đó chưa có ảnh. Nghĩa server chủ ý không vẽ cũng vào đây, bị chặn bởi REFRESH_COOLDOWN_MS.
+/**
+ * Mốc lưu của từ, UTC. Có 2 dạng trong SQLite: `YYYY-MM-DD HH:MM:SS` (mặc định của cột) và ISO có `Z` / múi giờ (ghi thẳng từ server,
+ * vd `2026-11-12T09:05:54.143620Z`). Trước đây luôn nối thêm "Z" nên dạng ISO thành `...ZZ` → NaN → kiểm tra "bản lưu cũ" không bao giờ chạy.
+ */
+export const parseSavedAt = (value?: string | null) => {
+  if (!value) return NaN;
+  const iso = value.includes("T") ? value : value.replace(" ", "T");
+  return Date.parse(/(Z|[+-]\d\d:?\d\d)$/.test(iso) ? iso : iso + "Z");
+};
+
 export const needsRefresh = (
   word: LocalWord,
   userLang: string | undefined,
   now = Date.now(),
 ) => {
   const senses = Object.values(word.senses);
-  const savedAt = word.updated_at ? Date.parse(word.updated_at.replace(" ", "T") + "Z") : NaN;
+  const savedAt = parseSavedAt(word.updated_at);
   const stale =
     (!Number.isNaN(savedAt) && now - savedAt > REVALIDATE_AFTER_MS) ||
     senses.some((s) => s.quality_status === "draft") ||

@@ -33,10 +33,11 @@ const toWordError = (e: any): WordError => {
  * kết quả HTTP + các tin socket vào 1 state. Từ có sẵn (200) hiện ngay; từ mới (201/202)
  * hiện dần qua PARTIAL_*, FULL_SENSE là bản cuối.
  */
-export const useWordData = (word: string) => {
+export const useWordData = (word: string, langs?: { lang?: string; userLang?: string }) => {
   const settings = useAppStore((s) => s.settings);
-  const lang: string | undefined = settings?.learning_language;
-  const userLang: string | undefined = settings?.translate_language;
+  // Mặc định theo cài đặt; mở từ từ 1 bản dịch thì đảo chiều (xem wordLang.ts)
+  const lang: string | undefined = langs?.lang ?? settings?.learning_language;
+  const userLang: string | undefined = langs?.userLang ?? settings?.translate_language;
 
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
@@ -146,6 +147,7 @@ export const useWordData = (word: string) => {
       alive = false;
       unsubscribe?.();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [word, lang, userLang, attempt, redirect]);
 
   // Đang chờ tạo từ mới mà tin socket không về (mất mạng giữa chừng, socket đứt, lỡ tin): hỏi lại get-word mỗi 10 giây
@@ -179,6 +181,7 @@ export const useWordData = (word: string) => {
     })
       .then(() => queryClient.invalidateQueries({ queryKey: ["words"] }))
       .catch((e) => console.log("saveWord lỗi", e));
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [state.status, state.id, log.length, serverTick]);
 
   return { state, retry, refresh, log, hadLocal };

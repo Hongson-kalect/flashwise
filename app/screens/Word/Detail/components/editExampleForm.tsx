@@ -1,10 +1,10 @@
-import { useTheme } from "@/providers/Theme";
+
 import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { TextInput, View } from "react-native";
 import { LineInput } from "../../Create/components/lineInput";
 import { SenseExample } from "./createSenseSheet";
@@ -18,15 +18,15 @@ const EditExampleForm = (props: Props) => {
   const currentModal = useModalStore((state) => state.currentModal);
   const textRef = useRef<TextInput>(null);
   const textFocus = () => textRef.current?.focus();
-  const { settings, dbService } = useAppStore();
-  const { theme } = useTheme();
+  const { settings } = useAppStore();
+  
 
-  const toggleLanguageMode = () =>
-    dbService?.setShowTranslation(!settings?.show_translation);
+  
 
   useEffect(() => {
     currentModal && setTimeout(() => textFocus(), 300);
     // textFocus();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, []);
 
   return (

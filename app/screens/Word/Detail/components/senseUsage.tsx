@@ -1,13 +1,13 @@
 import AppAddIcon from "@/components/AppAddIcon";
+import { useWordLangs } from "../wordLang";
 import { AppPressable } from "@/components/AppPressable";
 import AppText from "@/components/AppText";
-import AppTitle from "@/components/AppTitle";
+
 import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
 import { FontAwesome } from "@expo/vector-icons";
 import { useMemo } from "react";
-import { View } from "react-native";
-import { Divider } from "react-native-paper";
+
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SenseContentType } from "../../data";
 import { useSenseEditor } from "../senseEdit";
@@ -22,15 +22,16 @@ type Props = {
 /** Nhấn giữ để sửa; khi chưa có thì chạm vào dòng gợi ý để thêm. */
 const SenseUsage = (props: Props) => {
   const settings = useAppStore((s) => s.settings);
+  const { lang: wordLang, userLang } = useWordLangs();
   const { theme } = useTheme();
   const { edit, canEdit } = useSenseEditor();
 
   const [tUsage, nUsage] = useMemo(
     () => [
-      getLangContent(props.usage, settings?.learning_language),
-      getLangContent(props.usage, settings?.translate_language),
+      getLangContent(props.usage, wordLang),
+      getLangContent(props.usage, userLang),
     ],
-    [props.usage, settings?.learning_language, settings?.translate_language],
+    [props.usage, wordLang, userLang],
   );
   const open = canEdit ? () => edit("usage") : undefined;
 

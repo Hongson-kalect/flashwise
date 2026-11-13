@@ -1,10 +1,10 @@
 import AppButton from "@/components/AppButton";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
-import { useTheme } from "@/providers/Theme";
+
 import useModalStore from "@/stores/modalStore";
-import { Dispatch, SetStateAction, useMemo } from "react";
-import { StyleSheet, View } from "react-native";
+import { Dispatch, SetStateAction } from "react";
+import { View } from "react-native";
 import { SenseType } from "./createSenseSheet";
 import ToggleWordDisplayMode from "./toggleWordDisplayMode";
 
@@ -60,18 +60,3 @@ const CreateSenseHeader = ({
 
 export default CreateSenseHeader;
 
-const styles = StyleSheet.create({
-  backFlagPosition: {
-    position: "absolute",
-    left: -6,
-    top: -6,
-    // zIndex: 1,
-  },
-
-  frontFlagPosition: {
-    position: "relative",
-    right: 0,
-    zIndex: 1,
-    top: 0,
-  },
-});

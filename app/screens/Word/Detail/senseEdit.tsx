@@ -1,12 +1,13 @@
+import { useWordLangs } from "./wordLang";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import { editErrorKind, EditErrorKind, SenseDelta, updateSense } from "@/services/api/senses";
-import { useAppStore } from "@/stores/appStore";
+
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
-import { ActivityIndicator, Platform, Pressable, TextInput, View } from "react-native";
-import toast from "@/utils/toast";
+import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
+import { toast } from "@/utils/toast";
 
 /** Mục được nhấn giữ. Không truyền = mở form đầy đủ (3 chấm → Sửa nghĩa này). */
 export type EditFocus = "definition" | "translation" | "usage" | `example:${number}`;
@@ -324,11 +325,10 @@ export const useSenseEditor = (override?: { sense?: any; onSaved?: () => void })
   const ctxSense = useContext(SenseContext);
   const ctxSaved = useContext(SenseSavedContext);
   const { present } = useBottomSheet();
-  const settings = useAppStore((s) => s.settings);
+  
   const sense = override?.sense ?? ctxSense;
   const onSaved = override?.onSaved ?? ctxSaved;
-  const wordLang: string = settings?.learning_language ?? "en";
-  const userLang: string = settings?.translate_language ?? "vi";
+  const { lang: wordLang, userLang } = useWordLangs();
 
   const edit = useCallback(
     (focus?: EditFocus) => {

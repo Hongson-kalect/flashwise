@@ -4,7 +4,7 @@ import AppIcon from "@/components/AppIcon";
 import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
 import { useAppStore } from "@/stores/appStore";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { View } from "react-native";
 import { SenseExample } from "./createSenseSheet";
 
@@ -13,11 +13,10 @@ type Props = {
 };
 
 const TempExampleCreate = ({ onAddExample }: Props) => {
-  const { settings, dbService } = useAppStore();
+  const { settings } = useAppStore();
   const { theme } = useTheme();
 
-  const toggleLanguageMode = () =>
-    dbService?.setShowTranslation(!settings?.show_translation);
+  
   const [example, setExample] = useState<SenseExample>({
     id: new Date().getTime().toString(),
     value: "",

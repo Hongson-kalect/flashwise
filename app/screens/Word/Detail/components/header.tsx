@@ -1,19 +1,15 @@
 import AppButton from "@/components/AppButton";
+import { useWordLangs } from "../wordLang";
 import AppIcon from "@/components/AppIcon";
 import AppReturnHeader from "@/components/AppReturnHeader";
 import AppText from "@/components/AppText";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
-import { useAppStore } from "@/stores/appStore";
+
 import useModalStore from "@/stores/modalStore";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 import { TouchableOpacity, View } from "react-native";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition,
-} from "react-native-reanimated";
-import { extractObjectByPath, testAPIStreamData } from "../../data";
+
 import AddSenseSheet from "./addSenseSheet";
 import { useSenseEditor } from "../senseEdit";
 import { deleteSense, fetchMySenses, hideSense, unhideSense } from "@/services/api/senses";
@@ -31,17 +27,20 @@ type Props = {
   /** Các nghĩa đang có của từ (để người dùng đối chiếu trước khi thêm). */
   senses?: Record<string, any>;
   /** Gọi sau khi thêm nghĩa (chính thức hoặc chờ duyệt) để trang tải lại. */
-  onSenseAdded?: () => void;
+  onSenseAdded?: (senseId?: string) => void;
+  /** Cuộn tới 1 nghĩa đã có (khi thêm nghĩa bị báo trùng). */
+  onGotoSense?: (senseId: string) => void;
   /** Nghĩa đang xem (để "Sửa nghĩa này" mở form đã điền sẵn). */
   activeSense?: any;
   isLoading: boolean;
   setMode: Dispatch<SetStateAction<"update" | "view">>;
 };
-const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mode, isLoading, setMode }: Props) => {
+const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, onGotoSense, activeSense, mode, isLoading, setMode }: Props) => {
   const { theme } = useTheme();
   const { present } = useBottomSheet();
+  const { lang, userLang } = useWordLangs();
   const addModal = useModalStore((state) => state.addModal);
-  const { settings, dbService } = useAppStore();
+  
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
 
@@ -55,6 +54,9 @@ const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mod
           wordId={wordId}
           senses={senses}
           onAdded={onSenseAdded}
+          onGoto={onGotoSense}
+          wordLang={lang}
+          userLang={userLang}
         />
       ),
     });
@@ -170,52 +172,7 @@ const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mod
     });
   };
 
-  const testData = testAPIStreamData;
-
-  const getSpecificData = () => {
-    // accumulatedText += decoder.decode(value, { stream: true });
-    const startTime = performance.now();
-    let accumulatedText = testData; // streaming text to now
-    let flagsFound = false;
-    let firstSenseFound = false;
-
-    // 1. CHECK FLAGS (Ưu tiên số 1)
-    if (!flagsFound) {
-      const flagsMatch = extractObjectByPath(accumulatedText, '"flags"');
-      if (flagsMatch) {
-        const flags = JSON.parse(flagsMatch);
-        const timeFlags = (performance.now() - startTime).toFixed(2);
-        console.log(`🛡️ Flags detected at ${timeFlags}ms:`, flags);
-
-        // Xử lý che chắn ngay lập tức
-        if (flags.isOffensive) {
-          console.warn("CẢNH BÁO: Từ tục tịu! Kích hoạt chế độ che chắn.");
-          // Hiển thị cảnh báo hoặc ẩn nội dung nhạy cảm tại đây
-        }
-        if (!flags.isValid) {
-          console.error("Từ không hợp lệ.");
-          // Có thể dừng stream hoặc báo lỗi
-        }
-
-        flagsFound = true;
-
-        // return flags;
-      }
-    }
-
-    // 2. NHẶT SENSE ĐẦU TIÊN (Ưu tiên số 2)
-    if (flagsFound && !firstSenseFound) {
-      const senseMatch = extractObjectByPath(accumulatedText, '"senses"', true); // true để lấy phần tử đầu tiên trong mảng
-      if (senseMatch) {
-        const sense = JSON.parse(senseMatch);
-        const timeSense = (performance.now() - startTime).toFixed(2);
-        console.log(`✅ First Sense detected at ${timeSense}ms`);
-
-        firstSenseFound = true;
-        return sense || { text: "Có éo gì đâu" };
-      }
-    }
-  };
+  
 
   return (
     <>
@@ -283,48 +240,3 @@ const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, activeSense, mod
 
 export default WordDetailHeader;
 
-const WordMoreMenu = () => {
-  const { theme } = useTheme();
-  return (
-    <View>
-      <Animated.View
-        className={"h-8 w-8 items-center justify-center"}
-        layout={LinearTransition}
-        style={[
-          {
-            backgroundColor: theme.secondary,
-            // borderWidth: 0.5,
-            elevation: 4,
-            shadowColor: theme.secondary,
-            // borderColor: theme.secondary,
-            borderRadius: 5,
-            height: 40,
-            width: 40,
-          },
-        ]}
-      >
-        <AppIcon
-          name="edit"
-          branch="antd"
-          color="white"
-          size={20}
-          // color={theme.secondary}
-        />
-      </Animated.View>
-
-      <View className="flex-row gap-2">
-        <AppButton
-          onPress={() => {
-            // router.push(`/screens/Word/Update/${1}`);
-            // handleAddSense();
-            // setMode((prev) => (prev === "view" ? "update" : "view"));
-          }}
-          type={"view" === "view" ? "primary" : "success"}
-        >
-          <AppIcon name={"plus"} branch="antd" size={18} color="white" />
-          <AppText color="white">Sense</AppText>
-        </AppButton>
-      </View>
-    </View>
-  );
-};

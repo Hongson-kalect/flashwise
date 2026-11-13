@@ -1,4 +1,5 @@
 import { AppPressable } from "@/components/AppPressable";
+import { useWordLangs } from "../wordLang";
 import AppText from "@/components/AppText";
 import { BoldText } from "@/components/output/BoldText";
 import { useTheme } from "@/providers/Theme";
@@ -20,14 +21,15 @@ const cap = (s?: string) => `${s?.[0]?.toUpperCase() || ""}${s?.slice(1) || ""}`
 
 const WordExample = ({ example, bold, index }: Props) => {
   const settings = useAppStore((s) => s.settings);
+  const { lang: wordLang, userLang } = useWordLangs();
   const { theme } = useTheme();
   const { edit, canEdit } = useSenseEditor();
   const [tExample, nExample] = useMemo(
     () => [
-      getLangContent(example, settings?.learning_language),
-      getLangContent(example, settings?.translate_language),
+      getLangContent(example, wordLang),
+      getLangContent(example, userLang),
     ],
-    [example, settings?.learning_language, settings?.translate_language],
+    [example, wordLang, userLang],
   );
   const onHold = canEdit ? () => edit(`example:${index}`) : undefined;
 

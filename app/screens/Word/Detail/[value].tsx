@@ -28,11 +28,12 @@ import WordDetailHeader from "./components/header";
 import SenseSkeleton from "@/components/skeleton/SenseSkeleton";
 import { WordLoadingContext } from "./loadingContext";
 import { useWordData } from "./useWordData";
+import { useWordLangs, WordLangContext, wordScreenId } from "./wordLang";
 import WordStatus from "./components/wordStatus";
 import { mapSenses } from "./utils";
 import { SenseContext, SenseSavedContext } from "./senseEdit";
 import { ItemKind, removeItems } from "@/services/senseLists";
-import { useAppStore } from "@/stores/appStore";
+
 import { useQuery } from "@tanstack/react-query";
 import { fetchWordForms } from "@/services/api/words";
 import { FormFocus, FormFocusContext, WordFormsContext } from "./formsContext";
@@ -41,28 +42,32 @@ import { formTagLabel } from "@/utils/formTags";
 // const DATA: WordType[] = testData;
 
 function WordDetailWrapper() {
-  const { value } = useLocalSearchParams<{ value: string }>();
+  // lang / userLang: có khi mở từ từ 1 bản dịch (chiều ngược: từ tiếng mẹ đẻ, dịch ra tiếng đang học); không có thì theo cài đặt
+  const { value, lang, userLang } = useLocalSearchParams<{ value: string; lang?: string; userLang?: string }>();
+  const langs = useMemo(() => ({ lang, userLang }), [lang, userLang]);
 
   return (
     <>
-      {/* Cấu hình getId ngay tại đây */}
-      <Stack.Screen getId={() => value} />
+      <Stack.Screen getId={() => wordScreenId({ value, lang })} />
 
-      {/* Phần UI và logic hiện tại của bạn */}
-      <WordDetail key={value} word={value} />
+      <WordLangContext.Provider value={langs}>
+        <WordDetail key={`${value}|${lang ?? ""}`} word={value} />
+      </WordLangContext.Provider>
     </>
   );
 }
 
 const WordDetail = ({ word }: { word: string }) => {
   const { theme } = useTheme();
-  const { state: sensesObj, retry, refresh, hadLocal } = useWordData(word);
+  const langs = useWordLangs();
+  const { state: sensesObj, retry, refresh, hadLocal } = useWordData(word, langs);
   // Mở từ này từ 1 chip trong danh sách của nghĩa khác (from = id nghĩa, kind = danh sách). Từ bị từ chối thì gỡ khỏi danh sách đó, trang vẫn báo không hợp lệ như tra từ thường
   const { from, kind } = useLocalSearchParams<{ from?: string; kind?: ItemKind }>();
-  const userLang = useAppStore((s) => s.settings?.translate_language) ?? "vi";
+  const { userLang } = langs;
   useEffect(() => {
     if (sensesObj.error?.code !== "rejected" || !from || !kind) return;
     removeItems({ senseId: from, kind, words: [word], userLang }); // không gỡ được thì thôi, người dùng tự xoá
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [sensesObj.error?.code]);
   const senses = useMemo(() => mapSenses(sensesObj), [sensesObj]);
   // Dạng biến cách của từ (phần "Biến thể") và gợi ý "cũng là dạng của …": tải riêng, không chặn việc hiện nghĩa
@@ -125,6 +130,7 @@ const WordDetail = ({ word }: { word: string }) => {
     // Chờ thư viện tab nhận danh sách trang mới rồi mới nhảy (nhảy ngay thì bị bỏ qua)
     const t = setTimeout(() => container.current?.jumpToTab(target.sense.id), 120);
     return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [pages]);
   const activeSense = pages[pageIndex]?.sense;
   // Mở bằng dạng biến cách (planned, looked): nhảy tới loại từ của dạng đó thay vì loại từ đầu tiên của từ gốc. Một lần cho mỗi lần mở trang
@@ -154,6 +160,7 @@ const WordDetail = ({ word }: { word: string }) => {
         const list = pagesRef.current;
         if (list[props.index]?.pos !== list[props.prevIndex]?.pos) {
           try {
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
             require("expo-haptics").selectionAsync().catch(() => {});
           } catch {}
         }
@@ -167,7 +174,19 @@ const WordDetail = ({ word }: { word: string }) => {
             setMode={setPageMode}
             wordId={sensesObj.id}
             senses={sensesObj.senses}
-            onSenseAdded={refresh}
+            // Thêm nghĩa mới: ghi nhớ nghĩa đó là nghĩa đang xem, sau khi tải lại trang effect theo `pages` sẽ nhảy tới đúng tab
+            onSenseAdded={(senseId) => {
+              if (senseId) viewingId.current = senseId;
+              refresh();
+            }}
+            onGotoSense={(senseId) => {
+              // Nghĩa đã có trong trang thì cuộn tới ngay; bản trong máy cũ chưa có nghĩa đó thì tải lại, tab mới xuất hiện sẽ được nhảy tới
+              if (pagesRef.current.some((p) => p.sense.id === senseId)) container.current?.jumpToTab(senseId);
+              else {
+                viewingId.current = senseId;
+                refresh();
+              }
+            }}
             activeSense={activeSense}
           />
           <WordStatus state={sensesObj} hadLocal={hadLocal} onRetry={retry} formOf={formOf} />

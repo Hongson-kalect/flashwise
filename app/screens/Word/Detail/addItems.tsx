@@ -1,15 +1,16 @@
 import AppIcon from "@/components/AppIcon";
+import { useWordLangs } from "./wordLang";
 import AppText from "@/components/AppText";
 import { useBottomSheet } from "@/providers/BottomSheet";
 import { useTheme } from "@/providers/Theme";
 import { AddItemsResult, addSenseItems, editErrorKind, proposeErrorKind, VerifiedItemKind } from "@/services/api/senses";
 import { ItemKind, itemsOfMetadata, saveItems, VERIFIED_KINDS } from "@/services/senseLists";
-import { useAppStore } from "@/stores/appStore";
+
 import { router } from "expo-router";
 import { useContext, useMemo, useState } from "react";
-import { ActivityIndicator, Platform, Pressable, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
 import { SenseContext, SenseSavedContext } from "./senseEdit";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 
 export type { ItemKind };
 
@@ -44,6 +45,8 @@ type Props = {
   kind: ItemKind;
   sense: any;
   onSaved: () => void;
+  /** Ngôn ngữ dịch của trang từ đang mở (sheet vẽ ngoài trang nên không đọc được context). */
+  userLang: string;
 };
 
 /**
@@ -51,10 +54,9 @@ type Props = {
  * Đồng nghĩa / trái nghĩa / liên quan: bấm Lưu thì server nhờ 2 AI kiểm tra, chỉ từ cả hai chấp nhận mới được thêm
  * (chỉ thêm, không xoá); từ bị loại hiện kèm lý do. Các danh sách khác lưu thẳng thành bản riêng của người dùng.
  */
-export const AddItemsSheet = ({ kind, sense, onSaved }: Props) => {
+export const AddItemsSheet = ({ kind, sense, onSaved, userLang }: Props) => {
   const { theme } = useTheme();
   const { close } = useBottomSheet();
-  const userLang: string = useAppStore((s) => s.settings?.translate_language) ?? "vi";
   const verify = VERIFIED_KINDS.includes(kind);
   const cfg = KIND[kind];
   const existing = useMemo(() => itemsOf(sense, kind), [sense, kind]);
@@ -125,7 +127,8 @@ export const AddItemsSheet = ({ kind, sense, onSaved }: Props) => {
     const res = await addSenseItems({ senseId: sense.id, kind: kind as VerifiedItemKind, words: items });
     if (res.added.length) onSaved(); // danh sách đã đổi trên server: trang tải lại 1 lần
     if (!res.rejected.length) {
-      res.added.length ? toast.success(`Đã thêm ${res.added.length} mục`) : toast.info("Các mục này đã có trong danh sách");
+      if (res.added.length) toast.success(`Đã thêm ${res.added.length} mục`);
+      else toast.info("Các mục này đã có trong danh sách");
       close();
       return;
     }
@@ -333,12 +336,13 @@ export const useAddItems = () => {
   const sense = useContext(SenseContext);
   const onSaved = useContext(SenseSavedContext);
   const { present } = useBottomSheet();
+  const { userLang } = useWordLangs();
   const open = (kind: ItemKind) =>
     sense?.id &&
     present({
       title: KIND[kind].title,
       size: "long",
-      render: () => <AddItemsSheet kind={kind} sense={sense} onSaved={onSaved} />,
+      render: () => <AddItemsSheet kind={kind} sense={sense} onSaved={onSaved} userLang={userLang} />,
     });
   return { open, canAdd: !!sense?.id, sense };
 };

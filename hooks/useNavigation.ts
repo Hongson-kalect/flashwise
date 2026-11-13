@@ -8,7 +8,7 @@ export const useAppNavigation = () => {
   const routerPush = (path: Path, params?: UnknownInputParams) => {
     console.log("Navigating to:", path);
     // Gửi data đến analytics service nếu cần
-    router.push({ pathname: path, params });
+    router.push({ pathname: path as any, params });
   };
 
   const routerReplace = (path: Path) => {

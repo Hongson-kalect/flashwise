@@ -6,7 +6,7 @@ import { useContext, useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import { SenseSavedContext } from "../senseEdit";
 import { SenseType } from "../../data";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 
 /**
  * Dấu sao "nghĩa chính của tôi" + huy hiệu "Đề xuất" khi admin đã đề xuất nghĩa này.

@@ -8,13 +8,28 @@ import {
   proposeSense,
   ProposeResult,
 } from "@/services/api/senses";
-import { useAppStore } from "@/stores/appStore";
+
 import { Chip, Skeleton } from "@/ui";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from "react-native";
 
-const POS = ["noun", "verb", "adjective", "adverb"] as const;
+/**
+ * Loại từ chọn được khi thêm nghĩa. Giá trị là tên tiếng Anh (khoá chung cho mọi ngôn ngữ: server, tab loại từ, cổng AI đều dùng tên này).
+ * Phổ biến xếp trước, phần còn lại theo alphabet; ja / zh / ko có thêm loại riêng (trợ từ, lượng từ...).
+ */
+const POS_COMMON = ["noun", "verb", "adjective", "adverb", "pronoun", "preposition", "conjunction", "interjection", "determiner"];
+const POS_MORE = ["article", "auxiliary verb", "modal verb", "number", "particle", "phrasal verb"];
+const POS_BY_LANG: Record<string, string[]> = {
+  ja: ["counter", "adjectival noun", "suffix", "prefix"],
+  zh: ["measure word", "suffix", "prefix"],
+  ko: ["counter", "suffix", "prefix"],
+};
+export const posOptions = (lang?: string) => {
+  const base = lang?.split("-")[0] ?? "";
+  const rest = [...new Set([...POS_MORE, ...(POS_BY_LANG[base] ?? [])])].sort((a, b) => a.localeCompare(b));
+  return [...POS_COMMON, ...rest];
+};
 const MIN = 8;
 const MAX = 500;
 
@@ -25,7 +40,12 @@ type Props = {
   /** Các nghĩa đang có (trong state trang từ) để người dùng đối chiếu, tránh thêm trùng. */
   senses?: Record<string, any>;
   /** Gọi khi nghĩa được thêm (official / pending) để trang từ tải lại. */
-  onAdded?: () => void;
+  onAdded?: (senseId?: string) => void;
+  /** Mở nghĩa đã có (khi bị báo trùng): trang từ cuộn tới nghĩa đó. */
+  onGoto?: (senseId: string) => void;
+  /** Ngôn ngữ của từ / của bản dịch ở trang từ đang mở (sheet vẽ ngoài trang nên truyền qua props). */
+  wordLang: string;
+  userLang: string;
 };
 
 type Step =
@@ -70,15 +90,14 @@ const defOf = (sense: any, userLang?: string, wordLang?: string) =>
  * Thêm nghĩa mới: chỉ cần gõ định nghĩa. Server (cổng AI) quyết định: chính thức ngay / chờ admin duyệt /
  * đã có nghĩa tương tự / từ chối. Các nghĩa đang có hiện sẵn để đối chiếu trước khi gửi.
  */
-const AddSenseSheet = ({ word, wordId, senses, onAdded }: Props) => {
+const AddSenseSheet = ({ word, wordId, senses, onAdded, onGoto, wordLang, userLang }: Props) => {
   const { theme } = useTheme();
   const { close } = useBottomSheet();
-  const settings = useAppStore((s) => s.settings);
-  const userLang: string = settings?.translate_language ?? "vi";
-  const wordLang: string = settings?.learning_language ?? "en";
+  
 
   const [text, setText] = useState("");
   const [pos, setPos] = useState<string | null>(null);
+  const posList = useMemo(() => posOptions(wordLang), [wordLang]);
   const [showExisting, setShowExisting] = useState(false);
   const [step, setStep] = useState<Step>({ kind: "form" });
   // Hook phải gọi trước mọi return sớm bên dưới (các màn kết quả), nếu không bấm Gửi sẽ crash "Rendered fewer hooks than expected"
@@ -101,7 +120,7 @@ const AddSenseSheet = ({ word, wordId, senses, onAdded }: Props) => {
     setStep({ kind: "loading" });
     try {
       const data = await proposeSense({ wordId, userLang, definition: text.trim(), pos: pos ?? "" });
-      if (data.result === "official" || data.result === "pending") onAdded?.();
+      if (data.result === "official" || data.result === "pending") onAdded?.(data.sense?.id); // trang từ tải lại và nhảy tới nghĩa vừa thêm
       setStep({ kind: "result", data });
     } catch (e) {
       setStep({ kind: "error", error: proposeErrorKind(e) });
@@ -167,7 +186,11 @@ const AddSenseSheet = ({ word, wordId, senses, onAdded }: Props) => {
           title="Từ này đã có nghĩa tương tự"
           body="Không cần thêm lại. Đây là nghĩa đã có:"
           preview={defOf(d.sense, userLang, wordLang)}
-          primary={{ label: "Đã hiểu", onPress: close }}
+          primary={
+            d.sense?.id && onGoto
+              ? { label: "Xem nghĩa đó", onPress: () => { onGoto(d.sense.id); close(); } }
+              : { label: "Đã hiểu", onPress: close }
+          }
           secondary={{ label: "Sửa lại nội dung", onPress: edit }}
         />
       );
@@ -230,11 +253,11 @@ const AddSenseSheet = ({ word, wordId, senses, onAdded }: Props) => {
         <AppText size="sm" weight="semibold" color="subText1" style={{ marginBottom: 8 }}>
           Từ loại (tuỳ chọn)
         </AppText>
-        <View className="flex-row flex-wrap gap-2">
-          {POS.map((p) => (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 8, paddingRight: 16 }}>
+          {posList.map((p) => (
             <Chip key={p} label={p} selected={pos === p} onPress={() => setPos(pos === p ? null : p)} />
           ))}
-        </View>
+        </ScrollView>
       </View>
 
       {!wordId && (

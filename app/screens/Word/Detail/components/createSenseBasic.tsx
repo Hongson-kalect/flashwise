@@ -4,11 +4,11 @@ import AppIcon from "@/components/AppIcon";
 import AppInput from "@/components/AppInput";
 import AppText from "@/components/AppText";
 import { useAppStore } from "@/stores/appStore";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SenseType } from "./createSenseSheet";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 
 type Props = {
   senseValue: SenseType;
@@ -18,7 +18,7 @@ type Props = {
 };
 const CreateSenseBasicInfo = ({ senseValue, setSenseValue, onSuggest }: Props) => {
   const [targetLang, motherLang] = ["EN", "VI"];
-  const { settings, dbService } = useAppStore();
+  const { settings } = useAppStore();
   const { theme } = useTheme();
 
   const [translation, setTranslation] = useState("");

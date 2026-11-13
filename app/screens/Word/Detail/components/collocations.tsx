@@ -9,14 +9,6 @@ type Props = {
   list: string[];
 };
 
-const collocations = [
-  "Set the table",
-  "table data",
-  "draw the table",
-  "tạble tình",
-  "table of contents",
-];
-
 const WordCollocations = (props: Props) => {
   const { theme } = useTheme();
   const { open, canAdd } = useAddItems();
@@ -36,13 +28,13 @@ const WordCollocations = (props: Props) => {
             Chưa có.
           </AppText>
         ) : (
-          props.list.map((item, index) => (
+          props.list.map((item) => (
             <View
               style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}
               className="px-3 rounded-lg py-1.5"
-              key={index}
+              key={item}
             >
-              <AppText font="MulishRegularItalic" size={"sm"} key={index}>
+              <AppText font="MulishRegularItalic" size={"sm"} numberOfLines={1} style={{ paddingRight: 2 }}>
                 {item}
               </AppText>
             </View>

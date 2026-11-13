@@ -1,4 +1,4 @@
-import { useTheme } from "@/providers/Theme";
+
 import CollapseSection from "@/components/AppCollapsable";
 import AppCard from "@/components/AppCard";
 import AppText from "@/components/AppText";
@@ -9,7 +9,7 @@ import CommunitySuggestions from "./communitySuggestions";
 import { AudioType as AppAudioType } from "@/stores/recordingStore";
 import { DocumentPickerAsset } from "expo-document-picker";
 import { ImageResult } from "expo-image-manipulator";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Keyboard, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { LineInput } from "../../Create/components/lineInput";
@@ -17,7 +17,7 @@ import CreateSenseBasicInfo from "./createSenseBasic";
 import CreateSenseExample from "./createSenseExample";
 import CreateSenseHeader from "./createSenseHeader";
 import CreateSenseMoreInfo from "./createSenseMoreInfo";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 
 export type SenseType = {
   word?: string;
@@ -54,13 +54,13 @@ type AddSenseSheetProps = {
 const CreateSenseSheet = (props: AddSenseSheetProps) => {
   // Model sheet not sync with props, so we need to sync it manually
   const [senseValue, setSenseValue] = useState<SenseType>(props.senseValue);
-  const { settings, dbService } = useAppStore();
-  const { theme } = useTheme();
+  const { settings } = useAppStore();
+  
 
-  const toggleLanguageMode = () =>
-    dbService?.setShowTranslation(!settings?.show_translation);
+  
 
   // Sync back to main screen. if close sheet, it still remain if reopen
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   useEffect(() => props.setSenseValue(senseValue), [senseValue]);
 
   // Gợi ý nghĩa từ cộng đồng: chọn 1 nghĩa thì chỉ điền các ô đang trống, ô đã có dữ liệu giữ nguyên
