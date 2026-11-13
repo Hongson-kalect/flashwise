@@ -120,3 +120,19 @@ Thử cơ chế thô tục (`show_offensive`) và chặn nhạy cảm (`sensitiv
 | `chink` | **BANNED** | AI coi là miệt thị (cũng có nghĩa "khe hở", bị chặn theo): nếu cần từ nghĩa thường thì admin `unban` |
 
 Từ thô tục có sẵn do gợi ý theo nghĩa "chết tiệt": `shit`, `fuck`, `fucking`, `motherfucker` (đã có từ trước, `is_offensive`). Kết quả thử: gợi ý theo từ / theo nghĩa ẩn nghĩa `is_offensive` khi chưa bật `show_offensive`, hiện kèm cờ khi đã bật. Cần chạy lại `ai_worker` sau khi sửa prompt (không có `--reload`) và xoá cache Redis `word:*` của từ cũ (`WordCacheManager.cache_word_clear_specific`).
+
+## Từ nhiều nghĩa (`multi_sense.jsonl`, 66 từ) — 2026-11-13
+
+Haiku tràn 8.192 token ra khi liệt kê hết nghĩa của từ như `on`, `go`, nên 66 từ này tách riêng: agent (subagent) viết khung nghĩa (12-18 nghĩa phổ biến mỗi từ, < 20, bỏ cụm động từ / thành ngữ / tên riêng / nghĩa cổ), nạp bằng `seed_flow import-senses`, rồi chạy `run` như thường (refine Claude độc lập với người viết, enrich, verify, ảnh, concept). Run `mp1` (go, take, run) là bản thử; `mb01`-`mb11` là 11 lô 6 từ (lô cuối 3 từ), file khung ở `flashwise_api/seed_runs/multi_batches/b<NN>_senses.json` (gitignore), kế hoạch `plan.json`, dựng lô bằng `mk.py <NN>`, chạy bằng `go.sh <NN>` (trong container `django_web`). Lô chạy song song được; concept đi qua hàng đợi nên chạy `concept-worker --lang en --once` sau cùng.
+
+| | Từ | Nghĩa viết | Sau refine | Xoá | Sửa định nghĩa | Chỉ sửa usage |
+|---|---|---|---|---|---|---|
+| mp1 | go, take, run | 52 | 51 | 1 | 0 | 2 |
+| mb01-04 | 24 từ (on, out, up, back, down, make, over … bed) | 361 | 358 | 3 | 4 | 8 |
+| mb05-11 | 37 từ (light … bear) | 443 | 431 | 12 | 6 | 5 |
+
+- Tỉ lệ refine đụng vào nghĩa ≈ 4-5%, thấp hơn ngưỡng báo động 15%; nghĩa bị xoá thường là nghĩa quá hẹp (`throw` tấm phủ ghế, `lead` ruột bút chì, `bear` gấu bông, `cover` bìa sách, `card` trò chơi bài).
+- Chi phí Claude ≈ $0,31 cho mb01-11 (chưa gồm concept, ảnh), ≈ $0,0004 / nghĩa.
+- Concept: mb01-04 tạo 282 / liên kết 65 / tách mơ hồ 11; mb05-11 tạo 357 / liên kết 61 / tách mơ hồ 13.
+- **Hai từ bị bỏ qua vì đã có trong DB (thêm lúc test)**: `white` (8 nghĩa, khung viết 12) và `table` (5 nghĩa, khung viết 7). Chưa bù nghĩa còn thiếu.
+- DB sau đợt này: 997 từ COMPLETED, 4.338 nghĩa.
