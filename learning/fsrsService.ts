@@ -33,6 +33,25 @@ export const nextRetention = (current: unknown) => {
   return RETENTION_CHOICES[(i + 1) % RETENTION_CHOICES.length];
 };
 
+/** Số bước ít nhất / nhiều nhất của 1 từ ở cụm (cùng khoảng với cài đặt `cluster_steps`, `stepCountFor`). */
+const MIN_STEPS = 3;
+const MAX_STEPS = 10;
+/** Cụm ít bước nhất vẫn có mục tiêu nhớ thấp hơn vuốt chừng này (khoảng ôn vẫn dài hơn vuốt). */
+const SWIPE_GAP = 0.005;
+
+/**
+ * Mục tiêu nhớ theo số bước đã làm của 1 từ ở cụm: càng nhiều bước (nhớ lại chắc hơn) thì mục tiêu càng thấp, khoảng ôn càng dài.
+ * Chạy tuyến tính từ (swipe - 0,005) ở 3 bước tới `retention` ở 10 bước, nên mỗi bước chênh chừng 0,3-0,4 điểm % và cụm nào
+ * cũng ôn thưa hơn vuốt. 0 bước (đánh dấu "đã biết", không làm bước nào) dùng `retention`.
+ */
+export const retentionForSteps = (steps: number, retention: number, swipeRetention: number) => {
+  if (steps <= 0) return retention;
+  const top = Math.min(retention, swipeRetention - SWIPE_GAP); // mục tiêu ở 3 bước = swipe - 0,005; ở 10 bước = retention (không cao hơn)
+  const start = swipeRetention - SWIPE_GAP;
+  const t = (Math.min(MAX_STEPS, Math.max(MIN_STEPS, steps)) - MIN_STEPS) / (MAX_STEPS - MIN_STEPS);
+  return Math.round((start - (start - top) * t) * 10000) / 10000;
+};
+
 export const makeScheduler = (opts: { retention?: number; firstReviewHours?: number; fuzz?: boolean; params?: number[] | null } = {}) => {
   const hours = `${Math.max(1, Math.round(opts.firstReviewHours ?? 6))}h` as const;
   return fsrs(

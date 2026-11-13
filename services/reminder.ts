@@ -1,5 +1,8 @@
 import { dateKey, learningDayBounds } from "@/database/queries/home";
-import { planReminders } from "@/reminder/plan";
+import { loadHabitState } from "@/database/queries/habit";
+import { countReadyDue } from "@/database/queries/review";
+import { buildReminderMessage } from "@/reminder/message";
+import { learningDayOf, planReminders } from "@/reminder/plan";
 import * as Notifications from "expo-notifications";
 import { SQLiteDatabase } from "expo-sqlite";
 import { Platform } from "react-native";
@@ -13,7 +16,7 @@ import { Platform } from "react-native";
 const PREFIX = "study-reminder-";
 const CHANNEL = "study-reminder";
 
-type Db = Pick<SQLiteDatabase, "getFirstAsync" | "getAllAsync">;
+type Db = Pick<SQLiteDatabase, "getFirstAsync" | "getAllAsync" | "runAsync">;
 
 export type ReminderPermission = "granted" | "denied" | "undetermined";
 
@@ -72,11 +75,20 @@ export const rescheduleReminders = async (db: Db, now = new Date()): Promise<num
   if (!Number.isFinite(hour) || hour < 0 || hour > 23) return 0;
 
   await ensureChannel();
-  const times = planReminders({ now, hour, studiedToday: await studiedToday(db, dayStartHour, now), dayStartHour });
+  const studied = await studiedToday(db, dayStartHour, now);
+  const times = planReminders({ now, hour, studiedToday: studied, dayStartHour });
+  const userLang = String((await setting(db, "translate_language")) ?? "vi");
+  const reviewLimit = Number((await setting(db, "review_limit")) ?? 0) || 0;
+  const habit = await loadHabitState(db as any);
+  const today = learningDayOf(now, dayStartHour);
   for (const at of times) {
+    // Số thẻ sẽ đến hạn tới giờ nhắc (thẻ ôn sau 6 giờ, thẻ hẹn ngày mai...), tính ở lúc đặt lịch
+    const due = await countReadyDue(db as any, userLang, dayStartHour, at, reviewLimit);
+    const atRisk = !studied && learningDayOf(at, dayStartHour) === today;
+    const msg = buildReminderMessage({ due, streak: habit.streak ?? 0, atRisk });
     await Notifications.scheduleNotificationAsync({
       identifier: `${PREFIX}${dateKey(at)}`,
-      content: { title: "Đến giờ học từ vựng rồi", body: "Ôn vài từ để giữ chuỗi ngày học của bạn." },
+      content: { title: msg.title, body: msg.body, data: { route: msg.route } },
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at, channelId: CHANNEL },
     });
   }

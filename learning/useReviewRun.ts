@@ -158,6 +158,7 @@ export const useReviewRun = () => {
     if (status === "swiping" && swipe && swipe.phase === "swiping") data = { kind: "swipe", swipe, session: session.current, remaining };
     else if (status === "cluster" && run) data = { kind: "cluster", run, session: session.current, remaining };
     if (data) saveSnapshot(db, SCOPE, data).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [status, swipe, run]);
 
   const afterSave = useCallback(
@@ -200,6 +201,7 @@ export const useReviewRun = () => {
   // Vuốt hết chồng thẻ thì tự ghi kết quả (không có bước tự chấm)
   useEffect(() => {
     if (status === "swiping" && swipe?.phase === "done") save("quick", swipeResults(swipe));
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [status, swipe?.phase]);
 
   const dispatchSwipe = useCallback((a: SwipeAction) => setSwipe((prev) => (prev ? reduceSwipe(prev, a) : prev)), []);

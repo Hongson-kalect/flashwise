@@ -1,6 +1,6 @@
 import { CardRow, isReady, toCard } from "@/learning/cardData";
 import { CardResult } from "@/learning/engine";
-import { isUnverifiedKnown, makeScheduler, MAX_LEVEL, retrievability, ReviewMode, scheduleReview } from "@/learning/fsrsService";
+import { isUnverifiedKnown, makeScheduler, MAX_LEVEL, retentionForSteps, retrievability, ReviewMode, scheduleReview } from "@/learning/fsrsService";
 import { PoolEntry } from "@/learning/steps";
 import { fromDbTime, toDbTime } from "@/learning/time";
 import { AGAIN, glossOf, Grade, LearnCard, StepLog } from "@/learning/types";
@@ -53,7 +53,36 @@ export interface ReviewBatch {
   pool: PoolEntry[];
 }
 
-const QUICK_COUNT = 30;
+/** Số thẻ vuốt mỗi lượt khi user chưa chỉnh (cài đặt `swipe_count`). */
+export const DEFAULT_SWIPE_COUNT = 30;
+
+/**
+ * Số thẻ đến hạn mà màn ôn thật sự ôn được: như `getDueCount` nhưng bỏ thẻ nghĩa chưa có trong máy / chưa có bản dịch
+ * (cùng điều kiện `pickReviewBatch` bỏ qua), nên Home báo N thì vào ôn đủ N.
+ */
+/** Còn được ôn bao nhiêu thẻ trong ngày học này theo `review_limit` (0 = không giới hạn → Infinity); đã ôn tính từ day_learn_log. */
+export const reviewQuota = async (db: SQLiteDatabase, limit: number, dayStartHour = 4, now = new Date()) => {
+  if (!limit || limit <= 0) return Infinity;
+  const day = dateKey(learningDayBounds(dayStartHour, now).start);
+  const row = await db.getFirstAsync<{ n: number }>(`SELECT words_relearned AS n FROM day_learn_log WHERE date = ?`, [day]);
+  return Math.max(0, limit - (row?.n ?? 0));
+};
+
+export const countReadyDue = async (db: SQLiteDatabase, userLang: string, dayStartHour = 4, now = new Date(), reviewLimit = 0) => {
+  const cutoff = learningDayBounds(dayStartHour, now).end;
+  const rows = await db.getAllAsync<{ original_sense_id: string; sense_id: string }>(
+    `SELECT p.original_sense_id,
+            COALESCE((SELECT i.sense_id FROM collection_items i
+                      WHERE COALESCE(i.original_id, i.sense_id) = p.original_sense_id AND i.is_deleted = 0
+                      ORDER BY i.updated_at DESC LIMIT 1), p.original_sense_id) AS sense_id
+     FROM user_sense_progress p WHERE ${DUE_SQL}`,
+    [toDbTime(cutoff), toDbTime(now)],
+  );
+  if (!rows.length) return 0;
+  const cards = await fetchSenseCards(db, [...new Set(rows.map((r) => r.sense_id))], userLang);
+  const ready = rows.filter((r) => cards.has(r.sense_id)).length;
+  return Math.min(ready, await reviewQuota(db, reviewLimit, dayStartHour, now));
+};
 
 /**
  * Thẻ đến hạn ôn (luật như server tracking/learn.py pick_review): đã học, không ẩn, `next_review_at` trước cuối ngày học,
@@ -116,7 +145,10 @@ export const pickReviewBatch = async (
   };
   const quickAll = mode === "traditional" ? [] : due.filter((c) => c.level >= settings.swipeMinLevel && !c.unverified);
   const normalAll = mode === "traditional" ? due : due.filter((c) => c.level < settings.swipeMinLevel || c.unverified);
-  const normal = pick(normalAll, settings.clusterSize);
+  // Ôn nhẹ: hết hạn mức ôn của ngày thì không đưa thêm (phần dồn lại để ngày sau); vuốt trước, còn chỗ thì cụm
+  const quota = await reviewQuota(db, settings.reviewLimit, settings.dayStartHour, now);
+  const quickPicked = pick(quickAll, Math.min(settings.swipeCount, quota));
+  const normal = pick(normalAll, Math.min(settings.clusterSize, quota - quickPicked.length));
 
   // Đáp án nhiễu cho cụm: các thẻ đến hạn khác, thiếu thì lấy thêm nghĩa đã học bất kỳ
   const chosen = new Set(normal.map((c) => c.card.key));
@@ -128,7 +160,13 @@ export const pickReviewBatch = async (
     const more = await fetchSenseCards(db, extra.map((r) => r.original_sense_id), userLang);
     for (const c of more.values()) if (!chosen.has(c.key) && !pool.some((p) => p.key === c.key)) pool.push({ key: c.key, word: c.word, gloss: glossOf(c) });
   }
-  return { quick: pick(quickAll, QUICK_COUNT), normal, quickTotal: quickAll.length, normalTotal: normalAll.length, pool };
+  return {
+    quick: quickPicked,
+    normal,
+    quickTotal: Math.min(quickAll.length, quota),
+    normalTotal: Math.min(normalAll.length, Math.max(0, quota - quickPicked.length)),
+    pool,
+  };
 };
 
 export interface ReviewCardResult {
@@ -182,11 +220,12 @@ export const saveReviewResult = async (db: SQLiteDatabase, input: ReviewSaveInpu
   const summary: ReviewSummary = { reviewed: 0, remembered: 0, forgotten: 0, xp: 0, seconds };
   if (await db.getFirstAsync(`SELECT id FROM learn_session WHERE id = ? AND status = 'completed'`, [input.sessionId])) return summary;
 
-  const scheduler = makeScheduler({
-    retention: input.mode === "quick" ? settings.swipeRetention : settings.retention,
-    firstReviewHours: settings.firstReviewHours,
-    params: settings.fsrsParams,
-  });
+  // Vuốt dùng swipe_retention; cụm dùng mục tiêu theo số bước của từng từ (retentionForSteps), luôn thấp hơn vuốt
+  const schedulers = new Map<number, ReturnType<typeof makeScheduler>>();
+  const schedulerFor = (retention: number) => {
+    if (!schedulers.has(retention)) schedulers.set(retention, makeScheduler({ retention, firstReviewHours: settings.firstReviewHours, params: settings.fsrsParams }));
+    return schedulers.get(retention)!;
+  };
   const kinds = new Set<string>();
   const done: string[] = [];
   let correct = 0;
@@ -204,7 +243,7 @@ export const saveReviewResult = async (db: SQLiteDatabase, input: ReviewSaveInpu
       const lastStep = r.steps.length ? Math.max(...r.steps.map((s) => s.at)) : input.endedAt;
       const at = new Date(Math.max(lastStep, last ? last.getTime() + 1000 : 0));
       const prog = scheduleReview(
-        scheduler,
+        schedulerFor(input.mode === "quick" ? settings.swipeRetention : retentionForSteps(r.steps.length, settings.retention, settings.swipeRetention)),
         {
           level: row.level, state: row.state, stability: row.stability, difficulty: row.difficulty, learningSteps: row.learning_steps,
           repetitions: row.repetitions, forgetCount: row.forget_count, lastReviewedAt: last, nextReviewAt: fromDbTime(row.next_review_at),
@@ -236,7 +275,8 @@ export const saveReviewResult = async (db: SQLiteDatabase, input: ReviewSaveInpu
            VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)`,
           [uuidv7(), ...common, step.rating, `review:${step.kind}`, row.level, step.hintCount, step.attempts, step.durationMs, toDbTime(step.at)],
         );
-        step.rating === AGAIN ? bad++ : ok++;
+        if (step.rating === AGAIN) bad++;
+        else ok++;
       }
       if (!r.steps.length) kinds.add(input.mode === "quick" ? "swipe" : "normal");
       await db.runAsync(
@@ -249,7 +289,8 @@ export const saveReviewResult = async (db: SQLiteDatabase, input: ReviewSaveInpu
           r.durationMs, prog.state, elapsed, prog.scheduledDays, prog.stability, prog.difficulty, toDbTime(at),
         ],
       );
-      r.grade === AGAIN ? bad++ : ok++;
+      if (r.grade === AGAIN) bad++;
+      else ok++;
       correct += ok;
       wrong += bad;
       done.push(r.card.key);

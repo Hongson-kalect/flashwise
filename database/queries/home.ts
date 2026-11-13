@@ -21,17 +21,17 @@ export const dateKey = (d: Date) =>
  * (state 1, 3: vừa học hoặc vừa quên, hẹn lại sau vài phút đến vài giờ) chỉ tính khi đã tới giờ, không thì vừa ôn xong Home lại báo "đến hạn".
  * Tham số theo thứ tự: cuối ngày học, bây giờ (dạng toDbTime).
  */
-export const DUE_SQL = `p.is_deleted = 0 AND p.is_hidden = 0 AND p.is_avoid = 0 AND p.next_review_at IS NOT NULL
+export const DUE_SQL = `p.is_deleted = 0 AND p.is_mastered = 0 AND p.is_hidden = 0 AND p.is_avoid = 0 AND p.next_review_at IS NOT NULL
   AND NOT (p.state = 0 AND p.repetitions = 0)
   AND datetime(p.next_review_at) <= CASE WHEN p.state IN (1, 3) THEN datetime(?2) ELSE datetime(?1) END`;
 
 const dbTime = (d: Date) => d.toISOString().replace("T", " ").slice(0, 19);
 
-/** Số thẻ đến hạn ôn (xem DUE_SQL). */
+/** Số thẻ đến hạn ôn (xem DUE_SQL), chưa tính thẻ thiếu nội dung trong máy: Home dùng `countReadyDue` (review.ts) để khớp màn ôn. */
 export const getDueCount = async (db: SQLiteDatabase, dayStartHour = 4, now = new Date()) => {
   const { end } = learningDayBounds(dayStartHour, now);
   const row = await db.getFirstAsync<{ n: number }>(
-    `SELECT COUNT(*) AS n FROM user_sense_progress p WHERE p.is_mastered = 0 AND ${DUE_SQL}`,
+    `SELECT COUNT(*) AS n FROM user_sense_progress p WHERE ${DUE_SQL}`,
     [dbTime(end), dbTime(now)],
   );
   return row?.n ?? 0;

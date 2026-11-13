@@ -49,12 +49,18 @@ export const tallyBands = (rows: LearnedRow[]): Map<string, BandStats> => {
     const checked = row.next_rating != null;
     const ok = (row.next_rating ?? 0) > 1;
     if (row.mode === "learn:known_auto") {
-      if (checked) ok ? s.autoOk++ : s.autoBad++;
+      if (checked) {
+        if (ok) s.autoOk++;
+        else s.autoBad++;
+      }
     } else {
       s.decided++;
       if (row.mode === "learn:known") {
         s.claims++;
-        if (checked) ok ? s.verifiedOk++ : s.verifiedBad++;
+        if (checked) {
+          if (ok) s.verifiedOk++;
+          else s.verifiedBad++;
+        }
       }
     }
     bands.set(band, s);

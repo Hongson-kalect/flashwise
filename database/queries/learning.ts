@@ -1,7 +1,7 @@
 import { CardResult } from "@/learning/engine";
 import { CardRow, isReady, toCard } from "@/learning/cardData";
 import { DEFAULT_MEDIAN_MS } from "@/learning/grade";
-import { makeScheduler, MAX_LEVEL, scheduleNew, validFsrsParams } from "@/learning/fsrsService";
+import { makeScheduler, MAX_LEVEL, retentionForSteps, scheduleNew, validFsrsParams } from "@/learning/fsrsService";
 import { PoolEntry } from "@/learning/steps";
 import { AGAIN, glossOf, LearnCard } from "@/learning/types";
 import { toDbTime } from "@/learning/time";
@@ -27,6 +27,10 @@ export interface LearnSettings {
   /** Thẻ từ cấp này mới được ôn bằng vuốt (docs 5.2). */
   swipeMinLevel: number;
   swipeRetention: number;
+  /** Số thẻ mỗi lượt ôn bằng vuốt. */
+  swipeCount: number;
+  /** Giới hạn số thẻ ôn mỗi ngày học (0 = không giới hạn); thẻ dồn lại sau nhiều ngày nghỉ được chia ra nhiều ngày ("ôn nhẹ"). */
+  reviewLimit: number;
   /** "left_remember" (vuốt trái = nhớ) hoặc "right_remember". */
   swipeDirection: string;
   /** Tham số FSRS riêng của user (server tối ưu, về qua sync); null = dùng mặc định. */
@@ -53,6 +57,8 @@ export const loadLearnSettings = async (db: SQLiteDatabase): Promise<LearnSettin
     writable: s.writable !== false,
     swipeMinLevel: Math.round(num(s.swipe_min_level, 3, 0, 7)),
     swipeRetention: num(s.swipe_retention, 0.93, 0.7, 0.99),
+    reviewLimit: Math.round(num(s.review_limit, 0, 0, 1000)),
+    swipeCount: Math.round(num(s.swipe_count, 30, 10, 60)),
     swipeDirection: typeof s.swipe_direction === "string" ? s.swipe_direction : "left_remember",
     fsrsParams: validFsrsParams(s.fsrs_params) ? s.fsrs_params : null,
     autoKnown: s.auto_known !== false,
@@ -172,7 +178,13 @@ export const saveLearnResult = async (db: SQLiteDatabase, input: SaveInput, sett
   const summary: SaveSummary = { learned: 0, known: 0, auto: 0, xp: 0, seconds };
   if (done) return summary;
 
-  const scheduler = makeScheduler({ retention: settings.retention, firstReviewHours: settings.firstReviewHours, params: settings.fsrsParams });
+  // Mục tiêu nhớ theo số bước của từng từ (retentionForSteps); gom scheduler theo mức để khỏi dựng lại
+  const schedulers = new Map<number, ReturnType<typeof makeScheduler>>();
+  const schedulerFor = (steps: number) => {
+    const retention = retentionForSteps(steps, settings.retention, settings.swipeRetention);
+    if (!schedulers.has(retention)) schedulers.set(retention, makeScheduler({ retention, firstReviewHours: settings.firstReviewHours, params: settings.fsrsParams }));
+    return schedulers.get(retention)!;
+  };
   const sessionRows: { sense: string; ok: number; bad: number }[] = [];
   let correct = 0;
   let wrong = 0;
@@ -182,7 +194,7 @@ export const saveLearnResult = async (db: SQLiteDatabase, input: SaveInput, sett
     for (const r of input.results) {
       const last = r.logs.length ? Math.max(...r.logs.map((l) => l.at)) : input.endedAt;
       const at = new Date(last);
-      const prog = scheduleNew(scheduler, r.grade, at, { globalDifficulty: r.card.globalDifficulty, learnerCount: r.card.learnerCount }, r.known);
+      const prog = scheduleNew(schedulerFor(r.logs.length), r.grade, at, { globalDifficulty: r.card.globalDifficulty, learnerCount: r.card.learnerCount }, r.known);
       const good = r.grade !== AGAIN ? 1 : 0;
       await db.runAsync(
         `INSERT INTO user_sense_progress
@@ -213,7 +225,8 @@ export const saveLearnResult = async (db: SQLiteDatabase, input: SaveInput, sett
            VALUES (?, ?, ?, ?, ?, ?, 0, 0, ?, ?, ?, ?)`,
           [uuidv7(), ...common, log.rating, `learn:${log.kind}`, log.hintCount, log.attempts, log.durationMs, toDbTime(log.at)],
         );
-        log.rating === AGAIN ? bad++ : ok++;
+        if (log.rating === AGAIN) bad++;
+        else ok++;
       }
       await db.runAsync(
         `INSERT OR IGNORE INTO review_log
@@ -226,7 +239,8 @@ export const saveLearnResult = async (db: SQLiteDatabase, input: SaveInput, sett
           r.logs.reduce((n, l) => n + l.durationMs, 0), prog.state, prog.scheduledDays, prog.stability, prog.difficulty, toDbTime(at),
         ],
       );
-      r.grade === AGAIN ? bad++ : ok++;
+      if (r.grade === AGAIN) bad++;
+      else ok++;
       correct += ok;
       wrong += bad;
       sessionRows.push({ sense: r.card.key, ok, bad });

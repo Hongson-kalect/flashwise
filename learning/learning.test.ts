@@ -1,11 +1,25 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { toCard } from "./cardData";
-import { checkAnswer, hintText } from "./checker";
+import { checkAnswer, checkSpoken, hintText, normalizeAnswer, toHiragana } from "./checker";
 import { currentQuestion, progressOf, reduce, resultsOf, RunState, startRun } from "./engine";
-import { blendedDifficulty, makeScheduler, scheduleNew } from "./fsrsService";
-import { autoGrade, clampGrade } from "./grade";
+import { blendedDifficulty, makeScheduler, scheduleNew , nextLevel, retrievability, scheduleReview , isUnverifiedKnown, KNOWN_VERIFY_DAYS, nextRetention, validFsrsParams } from "./fsrsService";
+import { autoGrade, autoGradeReview, clampGrade } from "./grade";
 import { LearnCard, StepLog } from "./types";
+
+// ------------------------------------------------------------------ ôn tập + vuốt
+import { directionFor, reduceSwipe, startSwipe, swipeResults, SwipeState } from "./swipe";
+import { fromDbTime, toDbTime } from "./time";
+
+
+// ------------------------------------------------------------------ nghe + nói
+
+// ---------------------------------------------------------------- viết tay
+import { checkWritten, isHandwritable, writeChars } from "./handwriting";
+
+// ---------------------------------------------------------------- FSRS riêng theo user, kiểm lời khai "đã biết"
+
+import { DEFAULT_FSRS_FOR_TEST } from "./fsrsTestHelpers";
 
 const seeded = (seed = 1) => () => {
   seed = (seed * 16807) % 2147483647;
@@ -251,12 +265,6 @@ test("toCard: tiếng Trung / Hàn hiện phiên âm Latin của từ và câu v
   assert.equal(ko.example!.roman, "");
 });
 
-// ------------------------------------------------------------------ ôn tập + vuốt
-import { autoGradeReview } from "./grade";
-import { nextLevel, retrievability, scheduleReview } from "./fsrsService";
-import { directionFor, reduceSwipe, startSwipe, swipeResults, SwipeState } from "./swipe";
-import { fromDbTime, toDbTime } from "./time";
-
 const swipeCards = () => cards(4);
 const swipeTo = (s: SwipeState, dir: "remember" | "unsure", at: number) => reduceSwipe(s, { type: "swipe", direction: dir, at });
 
@@ -367,10 +375,6 @@ test("R giảm theo thời gian và = 0,9 khi t = S; time đọc / ghi đối x�
   assert.equal(fromDbTime(null), null);
 });
 
-
-// ------------------------------------------------------------------ nghe + nói
-import { checkSpoken, normalizeAnswer, toHiragana } from "./checker";
-
 const VOICE = { hear: true, talk: true };
 const kinds = (s: RunState, key = "k0") => s.cards[key].questions.map((q) => q.kind);
 
@@ -451,9 +455,6 @@ test("tổng bước luôn khớp số bước đã làm khi xong (mọi đườ
   }
 });
 
-// ---------------------------------------------------------------- viết tay
-import { checkWritten, isHandwritable, writeChars } from "./handwriting";
-
 const jaCards = () => ["猫", "日本", "ありがとう", "犬"].map((w, i) => ({ ...makeCard(w, i), lang: "ja" }));
 
 test("viết tay: chỉ zh / ja / ko, 1..3 ký tự, toàn chữ Hán / kana / Hangul", () => {
@@ -519,11 +520,6 @@ test("không tiện nghe / nói: bước còn lại đổi sang dạng gõ / ch�
   const done = playAll(s).s;
   assert.equal(done.doneSteps, done.totalSteps);
 });
-
-// ---------------------------------------------------------------- FSRS riêng theo user, kiểm lời khai "đã biết"
-
-import { isUnverifiedKnown, KNOWN_VERIFY_DAYS, nextRetention, validFsrsParams } from "./fsrsService";
-import { DEFAULT_FSRS_FOR_TEST } from "./fsrsTestHelpers";
 
 test("'Tôi biết từ này': vẫn Easy / cấp 5 nhưng hẹn ôn kiểm tra trong 1 ngày", () => {
   const sched = makeScheduler({ fuzz: false });
@@ -599,4 +595,19 @@ test("startRun preKnown: cả cụm tự đánh dấu thì vào thẳng tổng k
 test("startRun: chế độ ôn bỏ qua preKnown", () => {
   const s = startRun({ cards: cards(2), mode: "review", preKnown: ["k0"], clusterSteps: 6, now: T0, rng: seeded() });
   assert.equal(s.cards.k0.known, false);
+});
+
+test("mục tiêu nhớ theo số bước: nhiều bước thì thấp hơn, cụm luôn thấp hơn vuốt, chênh giữa các bước nhỏ", async () => {
+  const { retentionForSteps } = await import("./fsrsService");
+  const r = (n: number) => retentionForSteps(n, 0.9, 0.93);
+  assert.equal(r(3), 0.925);
+  assert.equal(r(10), 0.9);
+  for (let n = 3; n < 10; n++) {
+    assert.ok(r(n) > r(n + 1));
+    assert.ok(r(n) - r(n + 1) < 0.005);
+  }
+  assert.ok(r(3) < 0.93);
+  assert.equal(r(1), r(3)); // dưới 3 bước tính như 3
+  assert.equal(r(0), 0.9); // "đã biết": không làm bước nào
+  assert.ok(retentionForSteps(10, 0.95, 0.93) <= 0.925); // user đặt mục tiêu cao hơn vuốt: vẫn không vượt vuốt
 });

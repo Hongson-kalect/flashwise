@@ -14,5 +14,6 @@ export const useAutoAdvance = (state: RunState | null, next: () => void) => {
     if (!quick) return;
     const t = setTimeout(next, AUTO_NEXT_MS);
     return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [quick, state?.doneSteps]);
 };

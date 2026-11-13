@@ -3,7 +3,7 @@ import { hourLabel, REMINDER_HOURS } from "@/reminder/plan";
 import { requestSync } from "@/services/sync/bus";
 import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
-import toast from "@/utils/toast";
+import { toast } from "@/utils/toast";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useEffect, useState } from "react";
 

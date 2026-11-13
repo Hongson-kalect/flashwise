@@ -13,13 +13,7 @@ import { learningLanguages, motherLanguages } from "@/constants/languages";
 import Slider from "@react-native-community/slider";
 import { router } from "expo-router";
 import React from "react";
-import {
-  StyleSheet,
-  Switch,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Switch, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Divider } from "react-native-paper";
 
@@ -69,6 +63,26 @@ export default function ProfilePage() {
     const next = nextRetention(settings?.request_retention);
     updateSetting({ request_retention: next });
     await dbService?.setSetting("request_retention", next);
+  };
+
+  // Chọn số cho phần học (số từ mỗi cụm, số bước, số thẻ vuốt, mục tiêu ngày, giới hạn ôn): hộp chọn một, ghi user_settings
+  const pickNumber = (key: string, title: string, options: number[], fallback: number, unit: string, zeroLabel?: string) => {
+    const current = typeof settings?.[key] === "number" ? (settings[key] as number) : fallback;
+    addModal({
+      type: "radio",
+      title,
+      value: current,
+      options: options.map((n) => ({ label: n === 0 && zeroLabel ? zeroLabel : `${n} ${unit}`, value: n })),
+      onSelect: async (v) => {
+        updateSetting({ [key]: Number(v) });
+        await dbService?.setSetting(key, Number(v));
+        requestSync();
+      },
+    });
+  };
+  const numValue = (key: string, fallback: number, unit: string, zeroLabel?: string) => {
+    const v = typeof settings?.[key] === "number" ? (settings[key] as number) : fallback;
+    return v === 0 && zeroLabel ? zeroLabel : `${v} ${unit}`;
   };
 
   return (
@@ -231,6 +245,51 @@ export default function ProfilePage() {
           rightContent="toggle"
           value={settings?.ask_review_mode === true}
           onPress={() => toggleLearnSetting("ask_review_mode")}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="hash" size={20} color="subText3" />}
+          showValue
+          label="Số từ mỗi cụm học"
+          value={numValue("cluster_size", 6, "từ")}
+          rightContent="internalModal"
+          onPress={() => pickNumber("cluster_size", "Số từ mỗi cụm học", [3, 4, 5, 6, 7, 8, 10, 12], 6, "từ")}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="list" size={20} color="subText3" />}
+          showValue
+          label="Số bước mỗi từ (từ mới, cụm)"
+          value={numValue("cluster_steps", 6, "bước")}
+          rightContent="internalModal"
+          onPress={() => pickNumber("cluster_steps", "Số bước mỗi từ (từ mới, cụm)", [3, 4, 5, 6, 7, 8, 10], 6, "bước")}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="chevrons-left" size={20} color="subText3" />}
+          showValue
+          label="Số thẻ mỗi lượt ôn vuốt"
+          value={numValue("swipe_count", 30, "thẻ")}
+          rightContent="internalModal"
+          onPress={() => pickNumber("swipe_count", "Số thẻ mỗi lượt ôn vuốt", [10, 20, 30, 40, 50, 60], 30, "thẻ")}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="flag" size={20} color="subText3" />}
+          showValue
+          label="Mục tiêu học mỗi ngày"
+          value={numValue("daily_goal", 20, "từ")}
+          rightContent="internalModal"
+          onPress={() => pickNumber("daily_goal", "Mục tiêu học mỗi ngày", [5, 10, 15, 20, 30, 50], 20, "từ")}
+        />
+        <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="clock" size={20} color="subText3" />}
+          showValue
+          label="Giới hạn thẻ ôn mỗi ngày"
+          value={numValue("review_limit", 0, "thẻ", "Không giới hạn")}
+          rightContent="internalModal"
+          onPress={() => pickNumber("review_limit", "Giới hạn thẻ ôn mỗi ngày", [0, 20, 50, 100, 200], 0, "thẻ", "Không giới hạn")}
         />
         <Divider />
         <SettingOption
@@ -407,4 +466,4 @@ const SettingOption = (props: SettingOptionProps) => {
   );
 };
 
-const styles = StyleSheet.create({});
+

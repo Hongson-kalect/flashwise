@@ -116,11 +116,18 @@ export const useLearnRun = (userCollectionId: string) => {
     if (status !== "empty" || !missing.current.length) return;
     let cancelled = false;
     let tries = 0;
+    let busy = false;
     const timer = setInterval(async () => {
       if (++tries > 6) return clearInterval(timer);
-      if (await prefetch(missing.current)) {
-        clearInterval(timer);
-        if (!cancelled) load();
+      if (busy) return; // lượt trước (tải bộ) chưa xong: không chồng lượt mới
+      busy = true;
+      try {
+        if (await prefetch(missing.current)) {
+          clearInterval(timer);
+          if (!cancelled) load();
+        }
+      } finally {
+        busy = false;
       }
     }, 5000);
     return () => {
@@ -148,6 +155,7 @@ export const useLearnRun = (userCollectionId: string) => {
   useEffect(() => {
     if (status !== "running" || !state || !session.current) return;
     saveSnapshot(db, scope, { state, session: session.current } satisfies SavedRun).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [status, doneSteps, phase]);
 
   const dispatch = useCallback((action: Action) => setState((prev) => (prev ? reduce(prev, action) : prev)), []);
