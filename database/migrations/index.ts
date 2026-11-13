@@ -25,7 +25,7 @@ export interface MigrationDb {
 /** user_version >= số này là mã băm của bản cũ (băm 31 bit, thực tế luôn rất lớn), không phải số phiên bản. */
 export const LEGACY_HASH_THRESHOLD = 1_000_000;
 
-export const LATEST_VERSION = 3;
+export const LATEST_VERSION = 4;
 
 /** Bước nâng từ version (n - 1) lên n. */
 export const MIGRATIONS: Record<number, (db: MigrationDb) => Promise<void>> = {
@@ -57,6 +57,12 @@ export const MIGRATIONS: Record<number, (db: MigrationDb) => Promise<void>> = {
 MIGRATIONS[3] = async (db) => {
   const cols = (await db.getAllAsync<{ name: string }>(`PRAGMA table_info(habit_log)`)).map((c) => c.name);
   for (const c of ["retain_delta", "retain_snap"]) if (cols.includes(c)) await db.execAsync(`ALTER TABLE habit_log DROP COLUMN ${c}`);
+};
+
+// 4: user_settings có updated_at thật (đẩy lên server làm mốc so bản mới hơn, trước đây dùng giờ lúc đẩy nên bản cũ đẩy muộn đè bản mới)
+MIGRATIONS[4] = async (db) => {
+  const cols = (await db.getAllAsync<{ name: string }>(`PRAGMA table_info(user_settings)`)).map((c) => c.name);
+  if (!cols.includes("updated_at")) await db.execAsync(`ALTER TABLE user_settings ADD COLUMN updated_at TEXT`);
 };
 
 export type MigrateResult = { from: number; to: number; fresh: boolean };

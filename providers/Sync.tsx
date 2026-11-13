@@ -4,6 +4,7 @@ import { maybeOptimizeFsrs } from "@/services/fsrsParams";
 import { Db, ensureSyncTracking, pendingCount, runSync, SyncReport } from "@/services/sync/engine";
 import { onSyncRequest } from "@/services/sync/bus";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { accountIdFromToken } from "@/utils/jwt";
 import NetInfo from "@react-native-community/netinfo";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
@@ -39,9 +40,13 @@ export const SyncProvider = ({ children }: { children: ReactNode }) => {
   const db = useSQLiteContext() as unknown as Db; // expo-sqlite thoả giao diện Db (kiểu tham số bind khác nhau)
   const queryClient = useQueryClient();
   const token = useAuthStore((s) => s.accessToken);
-  const accountId = String(useAuthStore((s) => s.user?.id) ?? "me");
+  // Con trỏ kéo lưu theo tài khoản: lấy từ token (có ngay sau device-login, không đổi giữa "me" và id thật như `user` của store)
+  const storeUserId = useAuthStore((s) => s.user?.id);
+  const accountId = accountIdFromToken(token) ?? String(storeUserId ?? "me");
   const [state, setState] = useState<Omit<SyncContextValue, "syncNow">>({ status: "idle", pending: 0, lastSyncedAt: null, error: null, lastReport: null });
   const running = useRef(false);
+  /** Có yêu cầu đồng bộ đến lúc đang chạy dở: chạy lại ngay sau lượt này (không chờ mốc 5 phút). */
+  const again = useRef(false);
   const tracked = useRef<Promise<void> | null>(null);
 
   const refreshPending = useCallback(async () => {
@@ -53,12 +58,22 @@ export const SyncProvider = ({ children }: { children: ReactNode }) => {
 
   // Trigger theo dõi thay đổi phải có trước khi bất kỳ màn nào ghi dữ liệu học
   useEffect(() => {
-    tracked.current = ensureSyncTracking(db).then(refreshPending, () => {});
+    tracked.current = ensureSyncTracking(db).then(refreshPending, (e: any) => {
+      // Không tạo được trigger thì thay đổi học không vào hàng đợi: báo lỗi chứ không im lặng
+      console.warn("ensureSyncTracking", e);
+      setState((s) => ({ ...s, status: "error", error: "Không bật được theo dõi đồng bộ" }));
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [db]);
 
   const syncNow = useCallback(async () => {
-    if (running.current || !token) return;
+    if (!token) return;
+    if (running.current) {
+      again.current = true;
+      return;
+    }
     running.current = true;
+    again.current = false;
     try {
       await tracked.current;
       const net = await NetInfo.fetch();
@@ -80,12 +95,14 @@ export const SyncProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       running.current = false;
       refreshPending();
+      if (again.current) setTimeout(syncNow, 500);
     }
   }, [db, token, accountId, queryClient, refreshPending]);
 
   // Có tài khoản (device-login xong) thì đồng bộ ngay
   useEffect(() => {
     if (token) syncNow();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- cố ý: chỉ chạy lại khi phụ thuộc liệt kê đổi (hàm / đối tượng còn lại đổi mỗi lần render hoặc đã ổn định)
   }, [token, accountId]);
 
   useEffect(() => {

@@ -1,3 +1,4 @@
+import { joinUrl } from "@/utils/joinUrl";
 import { lightTheme } from "@/configs/theme";
 // src/store/appStore.ts
 import {
@@ -81,7 +82,7 @@ export const useAppStore = create<AppState>((set) => ({
       }
 
       // console.log("profile", profile);
-      console.log("settings", settings);
+      if (__DEV__) console.log("settings", settings);
       // console.log("configs", configs);
       // console.log("theme", theme);
 
@@ -97,7 +98,7 @@ export const useAppStore = create<AppState>((set) => ({
         displayLanguage: locale,
       });
 
-      console.log(
+      if (__DEV__) console.log(
         "=> [Zustand] Khởi tạo dữ liệu Local DB thành công!",
         Date.now() - start,
       );
@@ -138,5 +139,5 @@ export const useAppStore = create<AppState>((set) => ({
 export const mediaUrl = (key?: string | null) => {
   if (!key) return undefined;
   if (/^https?:\/\//.test(key)) return key;
-  return useAppStore.getState().mediaBaseUrl + key;
+  return joinUrl(useAppStore.getState().mediaBaseUrl, key);
 };

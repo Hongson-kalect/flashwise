@@ -14,6 +14,8 @@ export interface Db {
   getFirstAsync<T = any>(sql: string, params?: any[]): Promise<T | null>;
   runAsync(sql: string, params?: any[]): Promise<unknown>;
   withTransactionAsync(fn: () => Promise<void>): Promise<void>;
+  /** expo-sqlite: giao dịch độc quyền trên kết nối riêng, ghi từ chỗ khác phải chờ (không chen vào lúc kéo dữ liệu). */
+  withExclusiveTransactionAsync?(fn: (txn: Db) => Promise<void>): Promise<void>;
 }
 
 export interface PushResult {
@@ -66,22 +68,30 @@ const dbTime = (value: any) => {
 // ---------------------------------------------------------------- theo dõi thay đổi
 
 /**
- * Tạo trigger ghi `sync_queue` (chạy mỗi lần mở app, IF NOT EXISTS; DB bị tạo lại khi đổi schema thì tự có lại).
+ * Tạo trigger ghi `sync_queue` (chạy mỗi lần mở app: DROP rồi tạo lại để đổi định nghĩa là áp được cho máy cũ).
  * Lần đầu còn đưa dữ liệu có sẵn vào hàng đợi (trừ cài đặt: bản mặc định không được đè cài đặt của máy khác).
  */
 export const ensureSyncTracking = async (db: Db) => {
   const guard = `WHEN NOT EXISTS (SELECT 1 FROM system_configs WHERE key = '${GUARD_KEY}')`;
-  for (const { table, key, events } of PUSH_TABLES) {
-    for (const event of events) {
-      await db.runAsync(
-        `CREATE TRIGGER IF NOT EXISTS trg_sync_${table}_${event.toLowerCase()} AFTER ${event} ON ${table} ${guard}
-         BEGIN
-           DELETE FROM sync_queue WHERE table_name = '${table}' AND record_id = NEW.${key};
-           INSERT INTO sync_queue (table_name, record_id, action) VALUES ('${table}', NEW.${key}, 'UPSERT');
-         END`,
-      );
+  // DROP rồi tạo lại mỗi lần mở app (trong 1 giao dịch): đổi định nghĩa trigger ở bản app mới thì máy cũ cũng được áp dụng
+  await db.withTransactionAsync(async () => {
+    for (const { table, key, events } of PUSH_TABLES) {
+      for (const event of events) {
+        const name = `trg_sync_${table}_${event.toLowerCase()}`;
+        await db.runAsync(`DROP TRIGGER IF EXISTS ${name}`);
+        // Cài đặt: ghi giờ sửa vào updated_at (không có lúc áp dữ liệu kéo về: giữ giờ của server)
+        const touch = table === "user_settings" ? `UPDATE user_settings SET updated_at = DATETIME('now') WHERE key = NEW.key;` : "";
+        await db.runAsync(
+          `CREATE TRIGGER ${name} AFTER ${event} ON ${table} ${guard}
+           BEGIN
+             DELETE FROM sync_queue WHERE table_name = '${table}' AND record_id = NEW.${key};
+             INSERT INTO sync_queue (table_name, record_id, action) VALUES ('${table}', NEW.${key}, 'UPSERT');
+             ${touch}
+           END`,
+        );
+      }
     }
-  }
+  });
   if (await db.getFirstAsync(`SELECT 1 FROM system_configs WHERE key = ?`, [BOOT_KEY])) return;
   await db.withTransactionAsync(async () => {
     for (const { table, key } of PUSH_TABLES) {
@@ -116,7 +126,8 @@ const toPayload = (table: string, row: any) => {
     return { ...rest, senses: parseJson(row.senses, []), methods: parseJson(row.methods, []) };
   }
   if (table === "user_settings") {
-    return { key: row.key, value: parseJson(row.value, row.value), updated_at: toDbTime(Date.now()) };
+    // Giờ sửa thật của máy này (cột updated_at do trigger ghi); dòng cũ chưa có thì dùng giờ đẩy
+    return { key: row.key, value: parseJson(row.value, row.value), updated_at: row.updated_at ? `${row.updated_at.replace(" ", "T")}Z` : new Date().toISOString() };
   }
   return row;
 };
@@ -250,7 +261,7 @@ const applyRows: Record<string, (db: Db, rows: any[]) => Promise<number>> = {
     for (const raw of rows) {
       if (typeof raw.key !== "string") continue;
       if (raw.is_deleted) await db.runAsync(`DELETE FROM user_settings WHERE key = ?`, [raw.key]);
-      else await upsert(db, "user_settings", { key: raw.key, value: JSON.stringify(raw.value) }, "key");
+      else await upsert(db, "user_settings", { key: raw.key, value: JSON.stringify(raw.value), updated_at: dbTime(raw.updated_at) }, "key");
       n++;
     }
     return n;
@@ -267,17 +278,20 @@ export const pullChanges = async (db: Db, api: SyncApi, report: SyncReport, acco
   const pending = new Set(PULL_TABLES);
   for (let round = 0; round < MAX_ROUNDS && pending.size; round++) {
     const res = await api.pull({ tables: [...pending], cursors: { ...cursors }, limit: MAX_BATCH });
-    await db.withTransactionAsync(async () => {
-      await db.runAsync(`INSERT OR REPLACE INTO system_configs (key, value) VALUES (?, '1')`, [GUARD_KEY]);
+    const apply = async (tx: Db) => {
+      await tx.runAsync(`INSERT OR REPLACE INTO system_configs (key, value) VALUES (?, '1')`, [GUARD_KEY]);
       for (const [table, page] of Object.entries(res.tables ?? {})) {
         if (!applyRows[table]) continue;
-        report.pulled += await applyRows[table](db, page.items ?? []);
+        report.pulled += await applyRows[table](tx, page.items ?? []);
         if (page.cursor) cursors[table] = page.cursor;
         if (!page.has_more) pending.delete(table);
       }
-      await db.runAsync(`DELETE FROM system_configs WHERE key = ?`, [GUARD_KEY]);
-      await db.runAsync(`INSERT OR REPLACE INTO system_configs (key, value) VALUES (?, ?)`, [`sync_cursor:${accountId}`, JSON.stringify(cursors)]);
-    });
+      await tx.runAsync(`DELETE FROM system_configs WHERE key = ?`, [GUARD_KEY]);
+      await tx.runAsync(`INSERT OR REPLACE INTO system_configs (key, value) VALUES (?, ?)`, [`sync_cursor:${accountId}`, JSON.stringify(cursors)]);
+    };
+    // Độc quyền (nếu có): ghi chấm thẻ / review_log từ nơi khác không lọt vào lúc cờ `sync_applying` đang tắt trigger
+    if (db.withExclusiveTransactionAsync) await db.withExclusiveTransactionAsync(apply);
+    else await db.withTransactionAsync(() => apply(db));
   }
   report.changed = report.changed || report.pulled > 0;
 };

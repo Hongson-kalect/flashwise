@@ -4,7 +4,8 @@ import { SQLiteDatabase } from "expo-sqlite";
 export const generateString = /*sql*/ `
 CREATE TABLE IF NOT EXISTS user_settings (
     key TEXT PRIMARY KEY,   -- Vì dưới local chỉ quản lý cài đặt của CHÍNH user đang đăng nhập
-    value TEXT
+    value TEXT,
+    updated_at TEXT         -- Giờ UTC lần sửa gần nhất (trigger sync cập nhật; server so để bản mới hơn thắng)
 );
 `;
 

@@ -102,9 +102,10 @@ serverInstance.interceptors.response.use(
     } catch (err) {
       processQueue(err, null);
 
-      // REFRESH TOKEN HẾT HẠN -> Gọi store logout
-      // Xoá token cũ; lần mở app sau (hoặc bootstrapSession) sẽ device-login lại
-      await useAuthStore.getState().logout();
+      // Chỉ khi server từ chối refresh token (hết hạn / sai) mới xoá token; mất mạng / timeout / 5xx thì giữ
+      // (tài khoản khách mất token là lần sau device-login ra tài khoản khác).
+      const status = (err as any)?.response?.status;
+      if (status === 400 || status === 401 || status === 403) await useAuthStore.getState().logout();
       return Promise.reject(err);
     } finally {
       isRefreshing = false;
@@ -118,7 +119,7 @@ export const GetPublicAPI = (url: string, params: object) => {
 };
 
 export const GetAPI = async (url: string, params?: any) => {
-  console.log(url, params);
+  if (__DEV__) console.log(url, params);
   return await serverInstance.get(url, { params });
 };
 

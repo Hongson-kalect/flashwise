@@ -50,8 +50,13 @@ class SocketManager {
     this.ws = new WebSocket(this.url);
 
     this.ws.onopen = () => {
-      console.log("✅ Socket Connected");
+      if (__DEV__) console.log("✅ Socket Connected");
       this.reconnectAttempts = 0;
+      // Nối lại sau khi rớt: đăng ký lại mọi phòng đang nghe (server không nhớ), rồi xả hàng đợi
+      const queued = new Set(this.sendQueue.map((q) => q?.action === "subscribe" && q.word_room));
+      for (const roomId of this.subscribers.keys()) {
+        if (!queued.has(roomId)) this.ws?.send(JSON.stringify({ action: "subscribe", word_room: roomId }));
+      }
       while (this.sendQueue.length > 0) {
         this.send(this.sendQueue.shift());
       }
@@ -63,8 +68,6 @@ class SocketManager {
         // Lấy room_id để biết tin nhắn này thuộc về từ vựng nào
         // Server cần trả về room_id trong mọi gói tin stream
         const roomId = res.room_id || res.word_room;
-
-        console.log("nhận message", res);
 
         if (roomId && this.subscribers.has(roomId)) {
           this.subscribers.get(roomId)?.forEach((cb) => cb(res));
@@ -81,7 +84,7 @@ class SocketManager {
     };
 
     this.ws.onclose = () => {
-      console.log("🔌 Socket Closed");
+      if (__DEV__) console.log("🔌 Socket Closed");
       if (
         !this.isManualClose &&
         this.reconnectAttempts < this.maxReconnectAttempts
@@ -91,7 +94,9 @@ class SocketManager {
           1000 * Math.pow(2, this.reconnectAttempts),
           10000,
         );
-        setTimeout(() => this.connect(), delay);
+        setTimeout(() => {
+          if (!this.isManualClose) this.connect();
+        }, delay);
       }
     };
 

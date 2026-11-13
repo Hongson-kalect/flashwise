@@ -1,3 +1,4 @@
+import { toast } from "@/utils/toast";
 import { createPressGuard } from "@/utils/pressGuard";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -21,6 +22,8 @@ export const useGuardedPress = <A extends unknown[]>(fn: ((...args: A) => unknow
   const guard = useRef(
     createPressGuard({
       cooldownMs,
+      // Handler không tự bắt lỗi thì người dùng vẫn thấy báo, không chỉ im lặng
+      onError: (e) => toast.error((e as any)?.message ? String((e as any).message) : "Có lỗi xảy ra, thử lại nhé"),
       onBusyChange: (b) => {
         if (mounted.current) setBusy(b);
       },

@@ -4,7 +4,7 @@
  * - Hàm đồng bộ: khoá thêm `cooldownMs` (chống bấm đúp mở 2 modal / push 2 màn); 0 = không khoá.
  * Thuần (không React) để test; hook `useGuardedPress` bọc lại cho component.
  */
-export const createPressGuard = (opts: { cooldownMs?: number; onBusyChange?: (busy: boolean) => void } = {}) => {
+export const createPressGuard = (opts: { cooldownMs?: number; onBusyChange?: (busy: boolean) => void; /** Promise của hàm bấm bị từ chối: báo cho nơi gọi (vd toast); mặc định chỉ console.warn. */ onError?: (e: unknown) => void } = {}) => {
   const cooldownMs = opts.cooldownMs ?? 0;
   let locked = false;
 
@@ -29,6 +29,9 @@ export const createPressGuard = (opts: { cooldownMs?: number; onBusyChange?: (bu
       (result as Promise<unknown>).then(release, (e) => {
         console.warn("[pressGuard] hàm bấm bị lỗi:", e);
         release();
+        try {
+          opts.onError?.(e);
+        } catch {}
       });
     } else if (cooldownMs > 0) {
       setTimeout(() => {

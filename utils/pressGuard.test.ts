@@ -70,3 +70,17 @@ test("hàm ném lỗi đồng bộ: mở khoá và ném tiếp", () => {
   assert.throws(() => g.run(() => { throw new Error("boom"); }));
   assert.equal(g.isLocked(), false);
 });
+
+test("Promise bị từ chối: gọi onError và mở khoá", async () => {
+  const warn = mock.method(console, "warn", () => {});
+  try {
+    const errors: unknown[] = [];
+    const g = createPressGuard({ onError: (e) => errors.push(e) });
+    g.run(() => Promise.reject(new Error("hỏng")));
+    await new Promise((r) => setTimeout(r, 0));
+    assert.equal(errors.length, 1);
+    assert.equal(g.isLocked(), false);
+  } finally {
+    warn.mock.restore();
+  }
+});

@@ -198,3 +198,18 @@ test("pull day_learn_log: bộ đếm lấy max; note và session áp được",
   assert.equal(JSON.parse((await db.getFirstAsync<any>(`SELECT methods FROM learn_session WHERE id = ?`, [U2])).methods)[0], "swipe");
   assert.equal(await pendingCount(db), 0);
 });
+
+test("cài đặt: trigger ghi updated_at, đẩy lên giờ sửa thật; dữ liệu kéo về giữ giờ của server và không đẩy ngược", async () => {
+  await db.runAsync(`INSERT INTO user_settings (key, value) VALUES ('cluster_size', '8') ON CONFLICT(key) DO UPDATE SET value = excluded.value`);
+  const row = (key: string) => db.raw.prepare(`SELECT value, updated_at FROM user_settings WHERE key = ?`).get(key) as any;
+  assert.ok(row("cluster_size").updated_at);
+  db.raw.prepare(`UPDATE user_settings SET updated_at = '2026-01-02 03:04:05' WHERE key = 'cluster_size'`).run();
+  await db.runAsync(`DELETE FROM sync_queue`);
+  await db.runAsync(`UPDATE user_settings SET value = '9' WHERE key = 'cluster_size'`); // sửa mới: giờ phải đổi
+  assert.notEqual(row("cluster_size").updated_at, "2026-01-02 03:04:05");
+  const { api, pushes } = makeApi({ user_settings: [{ items: [{ key: "swipe_count", value: 20, updated_at: "2026-03-04T05:06:07Z" }] }] });
+  await runSync(db, api);
+  assert.match(pushes[0].user_settings[0].updated_at, /^\d{4}-\d\d-\d\dT.*Z$/);
+  assert.equal(row("swipe_count").updated_at, "2026-03-04 05:06:07");
+  assert.equal(await pendingCount(db), 0);
+});
