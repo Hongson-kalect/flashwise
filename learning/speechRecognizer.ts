@@ -1,5 +1,6 @@
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from "expo-speech-recognition";
 import * as Speech from "expo-speech";
+import { Platform } from "react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Capabilities } from "./steps";
 
@@ -7,10 +8,36 @@ import { Capabilities } from "./steps";
 const LOCALES: Record<string, string> = { en: "en-US", ja: "ja-JP", vi: "vi-VN", zh: "zh-CN", ko: "ko-KR", es: "es-ES", fr: "fr-FR", de: "de-DE" };
 export const localeFor = (lang: string) => LOCALES[lang] ?? lang;
 
-/** Máy có bộ nhận dạng giọng nói không (Android cần dịch vụ nhận dạng, iOS cần Speech). Lỗi thì coi là không. */
+/** Gói dịch vụ nhận dạng mặc định của máy Android (để chẩn đoán); iOS / lỗi / chưa chọn thì rỗng. */
+const serviceName = () => {
+  try {
+    return ExpoSpeechRecognitionModule.getDefaultRecognitionService?.()?.packageName ?? "";
+  } catch {
+    return "";
+  }
+};
+
+/**
+ * Gói dịch vụ nhận dạng dùng được: "" = máy đã có dịch vụ mặc định (để máy tự dùng); chưa chọn mặc định (iQOO / vivo bản Trung Quốc:
+ * "no selected voice recognition service") thì chỉ chấp nhận dịch vụ của Google nếu nó hiện trong danh sách; dịch vụ của app khác
+ * (vd. trợ lý của hãng) không nhận dạng được gì, chọn nhầm thì màn hình treo ở "Đang nghe". null = máy không hỗ trợ.
+ */
+const GOOGLE_SERVICE = "com.google.android.googlequicksearchbox";
+const usableService = (): string | null => {
+  if (serviceName()) return "";
+  try {
+    const all = ExpoSpeechRecognitionModule.getSpeechRecognitionServices?.() ?? [];
+    return all.includes(GOOGLE_SERVICE) ? GOOGLE_SERVICE : null;
+  } catch {
+    return null;
+  }
+};
+
+/** Máy có bộ nhận dạng giọng nói dùng được không (Android cần dịch vụ nhận dạng dùng được, iOS cần Speech). Lỗi thì coi là không. */
 export const recognitionAvailable = () => {
   try {
-    return ExpoSpeechRecognitionModule.isRecognitionAvailable();
+    if (!ExpoSpeechRecognitionModule.isRecognitionAvailable()) return false;
+    return Platform.OS !== "android" || usableService() !== null;
   } catch {
     return false;
   }
@@ -21,30 +48,6 @@ export const voiceCapabilities = (s: { hearable: boolean; talkable: boolean }): 
   hear: s.hearable,
   talk: s.talkable && recognitionAvailable(),
 });
-
-/** Gói dịch vụ nhận dạng mặc định của máy Android (để chẩn đoán máy không dùng dịch vụ của Google); iOS / lỗi thì rỗng. */
-const serviceName = () => {
-  try {
-    return ExpoSpeechRecognitionModule.getDefaultRecognitionService?.()?.packageName ?? "";
-  } catch {
-    return "";
-  }
-};
-
-/**
- * Gói dịch vụ nhận dạng để chỉ định khi bắt đầu nghe. Máy chưa chọn dịch vụ mặc định (vd. iQOO / vivo bản Trung Quốc: Android báo
- * "no selected voice recognition service", lỗi client) thì tự chọn một dịch vụ có sẵn, ưu tiên của Google. Có mặc định rồi thì để máy tự dùng.
- */
-const GOOGLE_SERVICE = "com.google.android.googlequicksearchbox";
-const fallbackService = (): string | undefined => {
-  if (serviceName()) return undefined;
-  try {
-    const all = ExpoSpeechRecognitionModule.getSpeechRecognitionServices?.() ?? [];
-    return all.includes(GOOGLE_SERVICE) ? GOOGLE_SERVICE : all[0];
-  } catch {
-    return undefined;
-  }
-};
 
 export type RecognizerStatus = "idle" | "listening" | "denied" | "unavailable" | "error";
 
@@ -90,8 +93,31 @@ export const useSpeechRecognizer = (
   const matched = useRef(false);
   const statusRef = useRef<RecognizerStatus>("idle");
   statusRef.current = status;
+  // Đồng hồ canh: dịch vụ nhận dạng không báo kết quả / lỗi / kết thúc (dịch vụ hỏng, bị hệ thống chặn) thì tự huỷ, không để nút kẹt ở "Đang nghe"
+  const guard = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearGuard = () => {
+    if (guard.current) clearTimeout(guard.current);
+    guard.current = null;
+  };
+  const armGuard = (ms: number) => {
+    clearGuard();
+    guard.current = setTimeout(() => {
+      guard.current = null;
+      if (statusRef.current !== "listening") return;
+      try {
+        ExpoSpeechRecognitionModule.abort();
+      } catch {}
+      finals.current = [];
+      interim.current = [];
+      matched.current = false;
+      failed.current = false;
+      setStatus("error");
+      setMessage("Dịch vụ nhận dạng giọng nói không phản hồi, thử lại hoặc chuyển sang gõ");
+    }, ms);
+  };
 
   useSpeechRecognitionEvent("result", (e) => {
+    clearGuard();
     const alternatives = e.results.map((r) => r.transcript).filter(Boolean);
     if (alternatives[0]) setHeard(alternatives[0]);
     if (e.isFinal) finals.current = alternatives;
@@ -108,6 +134,7 @@ export const useSpeechRecognizer = (
   });
   useSpeechRecognitionEvent("error", (e) => {
     if (e.error === "aborted") return;
+    clearGuard();
     failed.current = true;
     if (e.error === "not-allowed") setStatus("denied");
     else if (e.error === "service-not-allowed" || e.error === "language-not-supported") setStatus("unavailable");
@@ -117,6 +144,7 @@ export const useSpeechRecognizer = (
     setMessage(`${ERROR_TEXT[e.error] ?? "Không nhận dạng được, thử lại nhé"} (${e.error}${serviceName() ? ` · ${serviceName()}` : ""})`);
   });
   useSpeechRecognitionEvent("end", () => {
+    clearGuard();
     // Sự kiện toàn cục: "end" do abort() của bước nói trước (đang huỷ khi chuyển bước) có thể tới bản mới còn rảnh, bỏ qua
     if (statusRef.current === "idle" && !failed.current) return;
     // Không có kết quả chốt mà đã khớp lúc đang nói thì dùng chính câu khớp đó
@@ -138,6 +166,7 @@ export const useSpeechRecognizer = (
   });
 
   useEffect(() => () => {
+    clearGuard();
     try {
       ExpoSpeechRecognitionModule.abort();
     } catch {}
@@ -159,7 +188,13 @@ export const useSpeechRecognizer = (
       failed.current = false;
       setHeard("");
       setMessage(null);
+      if (Platform.OS === "android" && usableService() === null) {
+        setStatus("unavailable");
+        setMessage("Máy này chưa có dịch vụ nhận dạng giọng nói dùng được, hãy chuyển sang gõ");
+        return;
+      }
       setStatus("listening");
+      armGuard(12000);
       ExpoSpeechRecognitionModule.start({
         lang: localeFor(lang),
         interimResults: true,
@@ -173,18 +208,22 @@ export const useSpeechRecognizer = (
           EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: 1500,
         },
         iosTaskHint: "confirmation",
-        androidRecognitionServicePackage: fallbackService(),
+        androidRecognitionServicePackage: usableService() || undefined,
       });
     } catch {
       setStatus("unavailable");
       setMessage("Máy này chưa hỗ trợ nhận dạng giọng nói");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- armGuard chỉ dùng ref và setState
   }, [lang]);
 
   const stop = useCallback(() => {
     try {
       ExpoSpeechRecognitionModule.stop();
     } catch {}
+    // Dừng mà không thấy "end" trong 2 giây thì huỷ hẳn
+    armGuard(2000);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- armGuard chỉ dùng ref và setState
   }, []);
 
   return { status, heard, message, start, stop };
