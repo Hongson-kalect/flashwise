@@ -11,6 +11,8 @@ type Props = {
   height?: number;
   radius?: number;
   blur?: number;
+  /** Nền mờ phía sau (chính ảnh đó phủ kín + lớp phủ). Tắt cho ảnh nền trong suốt, chỉ còn màu nền của khung. */
+  backdrop?: boolean;
   style?: StyleProp<ViewStyle>;
   /** Hiện khi chưa có ảnh (chữ cái đầu, biểu tượng...). */
   fallback?: ReactNode;
@@ -21,7 +23,7 @@ type Props = {
  * ảnh thật nằm giữa. Đọc kích thước ảnh khi tải xong, tỉ lệ ảnh giữa kẹp trong [1:1, tỉ lệ khung]:
  * ảnh dọc thành vuông (cắt từ trên xuống), ảnh ngang giữ nguyên, ảnh 16:9 lấp đủ khung (hết nền mờ).
  */
-const WideImage = ({ uri, aspect = 16 / 9, height, radius = 16, blur = 15, style, fallback }: Props) => {
+const WideImage = ({ uri, aspect = 16 / 9, height, radius = 16, blur = 15, backdrop = true, style, fallback }: Props) => {
   const { theme } = useTheme();
   const [ratio, setRatio] = useState(1);
   useEffect(() => setRatio(1), [uri]);
@@ -36,8 +38,12 @@ const WideImage = ({ uri, aspect = 16 / 9, height, radius = 16, blur = 15, style
     >
       {uri ? (
         <>
-          <AppImage source={{ uri }} style={{ position: "absolute", width: "100%", height: "100%" }} contentFit="cover" blurRadius={blur} transition={0} />
-          <View style={{ position: "absolute", width: "100%", height: "100%", backgroundColor: theme.background2 + "55" }} />
+          {backdrop && (
+            <>
+              <AppImage source={{ uri }} style={{ position: "absolute", width: "100%", height: "100%" }} contentFit="cover" blurRadius={blur} transition={0} />
+              <View style={{ position: "absolute", width: "100%", height: "100%", backgroundColor: theme.background2 + "55" }} />
+            </>
+          )}
           <AppImage
             source={{ uri }}
             // top/bottom cố định để chiều cao luôn xác định (khung chỉ có tỉ lệ), chiều rộng theo tỉ lệ ảnh

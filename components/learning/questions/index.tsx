@@ -1,7 +1,7 @@
 import { Attempt, Feedback } from "@/learning/engine";
 import { LearnCard, Question } from "@/learning/types";
-import { ComponentType } from "react";
-import { ScrollView, View } from "react-native";
+import { ComponentType, useEffect } from "react";
+import { Keyboard, ScrollView, View } from "react-native";
 import FeedbackBar from "../FeedbackBar";
 import ChoiceList from "./ChoiceList";
 import { PROMPTS } from "./prompts";
@@ -39,6 +39,10 @@ type Props = {
 const QuestionView = ({ card, question, attempt, feedback, hearable, onAnswer, onHint, onSpeech, onSkipSpeak, onWritten, onSkipWrite, onKnown, onSkipListen, onNext }: Props) => {
   const Prompt = PROMPTS[question.kind];
   const Answer = ANSWERS[question.answerType];
+  // Sang câu mới thì đóng bàn phím còn mở từ câu trước (ô gõ không tự focus, người học chạm vào khi muốn gõ)
+  useEffect(() => {
+    Keyboard.dismiss();
+  }, [question.cardKey, question.kind]);
   return (
     <View className="flex-1">
       <ScrollView className="flex-1" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 4, paddingBottom: 4 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>

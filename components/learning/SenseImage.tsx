@@ -1,5 +1,6 @@
 import AppText from "@/components/AppText";
 import WideImage from "@/components/WideImage";
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
 import { useTheme } from "@/providers/Theme";
 import { LearnCard } from "@/learning/types";
 import { findSenseImage } from "@/services/senseImage";
@@ -21,6 +22,7 @@ const SenseImage = ({ card, height, aspect = 16 / 9, style, showFallbackLetter =
   const { theme } = useTheme();
   // Đăng ký theo mediaBaseUrl: app-config tới sau khi thẻ đã vẽ thì ảnh tự dựng lại với địa chỉ đầy đủ
   useAppStore((s) => s.mediaBaseUrl);
+  const kbOpen = useKeyboardInset() > 0;
   const own = mediaUrl(card.imageUri);
   const [fallback, setFallback] = useState<string | null>(null);
 
@@ -35,12 +37,15 @@ const SenseImage = ({ card, height, aspect = 16 / 9, style, showFallbackLetter =
   }, [own, card.word, card.keywords.join("|")]);
 
   const uri = own ?? fallback;
-  if (!uri && !showFallbackLetter) return null;
+  // Bàn phím đang mở thì nhường chỗ cho chữ (nghĩa, ví dụ) cho người đang gõ
+  if (kbOpen || (!uri && !showFallbackLetter)) return null;
   return (
     <WideImage
       uri={uri}
       aspect={aspect}
       height={height}
+      // Ảnh backend vẽ có nền trong suốt: không cần nền mờ; ảnh mở từ Wikimedia là ảnh chụp thì vẫn cần
+      backdrop={!own}
       style={[{ backgroundColor: theme.background2 }, style]}
       fallback={
         <AppText size="3xl" weight="bold" style={{ color: theme.primary + "99" }}>

@@ -38,7 +38,7 @@ const TypeAnswer = ({ question, attempt, onAnswer, onHint }: AnswerProps) => {
         value={value}
         onChangeText={setValue}
         onSubmitEditing={submit}
-        autoFocus
+        // Không tự bật bàn phím: nghĩa, ví dụ, ảnh cần đọc trước; người học chạm vào ô khi sẵn sàng gõ
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="done"
