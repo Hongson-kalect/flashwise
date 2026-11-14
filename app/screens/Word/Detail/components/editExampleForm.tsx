@@ -40,7 +40,7 @@ const EditExampleForm = (props: Props) => {
           <AppButton
             type="primary"
             onPress={() => props.onChange(example)}
-            title="Save"
+            title="Lưu"
           >
             <AppIcon name="save" branch="fa6" size={18} color="white" />
             <AppText color="white">Save</AppText>
@@ -50,7 +50,7 @@ const EditExampleForm = (props: Props) => {
       <LineInput
         ref={textRef}
         key={"edit-example"}
-        label="Example"
+        label="Ví dụ"
         isRequired
         size="sm"
         value={example.value}
@@ -62,7 +62,7 @@ const EditExampleForm = (props: Props) => {
           <LineInput
             key={"edit-translate"}
             size="sm"
-            label="Translate"
+            label="Bản dịch"
             value={example?.translate || ""}
             setValue={(value) => setExample({ ...example, translate: value })}
           />

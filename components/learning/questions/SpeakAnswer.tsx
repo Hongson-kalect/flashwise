@@ -1,9 +1,10 @@
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
+import { checkSpoken } from "@/learning/checker";
 import { useSpeechRecognizer } from "@/learning/speechRecognizer";
 import { useTheme } from "@/providers/Theme";
 import { speakWord } from "@/utils/speak";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Pressable, View } from "react-native";
 import { AnswerProps } from "./types";
 
@@ -13,7 +14,17 @@ import { AnswerProps } from "./types";
  */
 const SpeakAnswer = ({ card, question, attempt, onSpeech, onSkipSpeak }: AnswerProps) => {
   const { theme } = useTheme();
-  const rec = useSpeechRecognizer(card.lang, onSpeech);
+  const rec = useSpeechRecognizer(card.lang, onSpeech, (alts) => checkSpoken(alts, question.answer, card.lang) === "exact");
+  // Giữ để nói (thả tay là dừng) hoặc chạm nhanh để nói (tự dừng khi im lặng hoặc khớp đáp án; chạm lại để dừng sớm)
+  const press = useRef({ at: 0, wasListening: false });
+  const onPressIn = () => {
+    press.current = { at: Date.now(), wasListening: listening };
+    if (!listening) rec.start();
+  };
+  const onPressOut = () => {
+    const { at, wasListening } = press.current;
+    if (wasListening || Date.now() - at >= 450) rec.stop();
+  };
   const listening = rec.status === "listening";
   // Từ chối quyền vẫn cho bấm lại (hỏi lại được, hoặc báo bật trong Cài đặt); chỉ máy không hỗ trợ mới khoá hẳn
   const blocked = rec.status === "unavailable";
@@ -43,7 +54,7 @@ const SpeakAnswer = ({ card, question, attempt, onSpeech, onSkipSpeak }: AnswerP
           </AppText>
         ) : (
           <AppText size="sm" color="subText2" textAlign="center">
-            Bấm micro rồi đọc to từ này
+            Chạm hoặc giữ micro rồi đọc to từ này
           </AppText>
         )}
       </View>
@@ -58,11 +69,12 @@ const SpeakAnswer = ({ card, question, attempt, onSpeech, onSkipSpeak }: AnswerP
           <AppIcon branch="feather" name="volume-2" size={20} color={theme.text} />
         </Pressable>
         <Pressable
-          onPress={rec.toggle}
+          onPressIn={onPressIn}
+          onPressOut={onPressOut}
           disabled={blocked}
           className="h-20 w-20 rounded-full items-center justify-center"
           style={{ backgroundColor: color + (listening ? "" : "1F"), borderWidth: 2, borderColor: color, opacity: blocked ? 0.5 : 1 }}
-          accessibilityLabel={listening ? "Dừng nghe" : "Bắt đầu nói"}
+          accessibilityLabel={listening ? "Dừng nghe" : "Bắt đầu nói (chạm hoặc giữ)"}
         >
           <AppIcon branch="feather" name={listening ? "square" : "mic"} size={30} color={listening ? "white" : color} />
         </Pressable>

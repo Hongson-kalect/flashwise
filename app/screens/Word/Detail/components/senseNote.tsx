@@ -60,7 +60,7 @@ const SenseNote = ({ word }: Props) => {
     <Animated.View className={"mt-6"} layout={LinearTransition}>
       <SectionHeader
         icon={<FontAwesome name="sticky-note" size={14} color={theme.title} />}
-        title="Note"
+        title="Ghi chú"
       />
       <View style={{ height: 8 }} />
       {note ? (

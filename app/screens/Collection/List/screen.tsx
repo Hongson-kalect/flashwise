@@ -1,4 +1,3 @@
-import AppCard from "@/components/AppCard";
 import AppChip from "@/components/AppChip";
 import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
@@ -61,27 +60,27 @@ const CollectionListScreen = () => {
 
   return (
     <View style={{ backgroundColor: theme.background }} className="flex-1">
-      <View className="px-4 flex-row justify-between items-center h-16">
-        <AppText size="3xl" weight="bold" color="title">
+      <View className="px-4 flex-row justify-between items-center h-14">
+        <AppText size="2xl" weight="bold" color="title">
           Bộ từ
         </AppText>
         <View className="flex-row items-center gap-2">
           <Pressable
             onPress={() => routerPush("/screens/Collection/Create/screen")}
-            className="flex-row items-center gap-1.5 h-10 px-4 rounded-full"
+            className="flex-row items-center gap-1.5 h-9 px-3.5 rounded-full"
             style={{ backgroundColor: theme.primary + "14" }}
           >
-            <AppIcon name="plus" branch="feather" color={theme.primary} size={18} />
+            <AppIcon name="plus" branch="feather" color={theme.primary} size={16} />
             <AppText weight="bold" color="primary" size="sm">
               Tạo
             </AppText>
           </Pressable>
           <Pressable
             onPress={() => routerPush("/screens/Collection/Discover/List/screen")}
-            className="flex-row items-center gap-1.5 h-10 px-4 rounded-full"
+            className="flex-row items-center gap-1.5 h-9 px-3.5 rounded-full"
             style={{ backgroundColor: theme.primary }}
           >
-            <AppIcon name="compass" branch="feather" color="white" size={18} />
+            <AppIcon name="compass" branch="feather" color="white" size={16} />
             <AppText weight="bold" color="white" size="sm">
               Khám phá
             </AppText>
@@ -105,26 +104,23 @@ const CollectionListScreen = () => {
             colors={[theme.primary]}
           />
         }
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 8 }}
         ListHeaderComponent={
-          <View className="gap-4 pb-2">
+          <View className="gap-3 pb-1">
             {!empty && (
-              <AppCard>
-                <View className="flex-row items-center gap-5">
-                  <ProgressRing value={pct} size={72} strokeWidth={8} color="primary">
-                    <AppText weight="bold">{Math.round(pct)}%</AppText>
-                  </ProgressRing>
-                  <View className="flex-1">
-                    <AppText size="sm" color="subText2">
-                      {list.data?.length ?? 0} bộ từ
-                    </AppText>
-                    <AppText size="2xl" weight="bold">
-                      {totals.learned}
-                      <AppText size="md" color="subText2">{` / ${totals.total} nghĩa đã học`}</AppText>
-                    </AppText>
-                  </View>
+              <View className="flex-row items-center gap-3 px-1">
+                <ProgressRing value={pct} size={44} strokeWidth={5} color="primary">
+                  <AppText size="xs" weight="bold">{Math.round(pct)}%</AppText>
+                </ProgressRing>
+                <View className="flex-1">
+                  <AppText weight="bold" color="title">
+                    {`${totals.learned} / ${totals.total} nghĩa đã học`}
+                  </AppText>
+                  <AppText size="xs" color="subText2">
+                    {`${list.data?.length ?? 0} bộ từ`}
+                  </AppText>
                 </View>
-              </AppCard>
+              </View>
             )}
             {(!empty || !!search) && (
               <>

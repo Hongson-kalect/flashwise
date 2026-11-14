@@ -22,6 +22,15 @@ export const voiceCapabilities = (s: { hearable: boolean; talkable: boolean }): 
   talk: s.talkable && recognitionAvailable(),
 });
 
+/** Gói dịch vụ nhận dạng mặc định của máy Android (để chẩn đoán máy không dùng dịch vụ của Google); iOS / lỗi thì rỗng. */
+const serviceName = () => {
+  try {
+    return ExpoSpeechRecognitionModule.getDefaultRecognitionService?.()?.packageName ?? "";
+  } catch {
+    return "";
+  }
+};
+
 export type RecognizerStatus = "idle" | "listening" | "denied" | "unavailable" | "error";
 
 export interface Recognizer {
@@ -29,8 +38,10 @@ export interface Recognizer {
   /** Câu đang nhận dạng (tạm thời) hoặc câu nghe được lần gần nhất. */
   heard: string;
   message: string | null;
-  /** Bấm 1 lần để bắt đầu nói; đang nghe thì bấm lại để huỷ. */
-  toggle: () => void;
+  /** Bắt đầu nghe (xin quyền micro lần đầu). Đang nghe rồi thì không làm gì. */
+  start: () => Promise<void>;
+  /** Dừng nghe và chốt kết quả đã nhận (khác huỷ: câu đã nói vẫn được chấm). */
+  stop: () => void;
 }
 
 const ERROR_TEXT: Record<string, string> = {
@@ -44,7 +55,12 @@ const ERROR_TEXT: Record<string, string> = {
  * Nhận dạng giọng nói trên máy (expo-speech-recognition): xin quyền micro khi bấm lần đầu, nhận kết quả tạm thời và các phương án cuối,
  * gọi `onFinal(phương án tốt nhất trước)`. Không phát giọng máy khi đang ghi âm.
  */
-export const useSpeechRecognizer = (lang: string, onFinal: (transcripts: string[]) => void): Recognizer => {
+export const useSpeechRecognizer = (
+  lang: string,
+  onFinal: (transcripts: string[]) => void,
+  /** Câu đang nói (tạm thời) đã khớp đáp án thì tự dừng, không cần bấm tắt. */
+  isMatch?: (transcripts: string[]) => boolean,
+): Recognizer => {
   const [status, setStatus] = useState<RecognizerStatus>("idle");
   const [heard, setHeard] = useState("");
   const [message, setMessage] = useState<string | null>(null);
@@ -52,11 +68,27 @@ export const useSpeechRecognizer = (lang: string, onFinal: (transcripts: string[
   const failed = useRef(false);
   const cb = useRef(onFinal);
   cb.current = onFinal;
+  const match = useRef(isMatch);
+  match.current = isMatch;
+  const interim = useRef<string[]>([]);
+  const matched = useRef(false);
+  const statusRef = useRef<RecognizerStatus>("idle");
+  statusRef.current = status;
 
   useSpeechRecognitionEvent("result", (e) => {
     const alternatives = e.results.map((r) => r.transcript).filter(Boolean);
     if (alternatives[0]) setHeard(alternatives[0]);
     if (e.isFinal) finals.current = alternatives;
+    else if (alternatives.length) {
+      interim.current = alternatives;
+      // Khớp đáp án ngay khi đang nói: dừng luôn (bộ nhận dạng chốt kết quả rồi báo "end")
+      if (!matched.current && match.current?.(alternatives)) {
+        matched.current = true;
+        try {
+          ExpoSpeechRecognitionModule.stop();
+        } catch {}
+      }
+    }
   });
   useSpeechRecognitionEvent("error", (e) => {
     if (e.error === "aborted") return;
@@ -64,11 +96,18 @@ export const useSpeechRecognizer = (lang: string, onFinal: (transcripts: string[
     if (e.error === "not-allowed") setStatus("denied");
     else if (e.error === "service-not-allowed" || e.error === "language-not-supported") setStatus("unavailable");
     else setStatus("error");
-    setMessage(ERROR_TEXT[e.error] ?? "Không nhận dạng được, thử lại nhé");
+    console.warn("[speech] error", e.error, e.message, serviceName());
+    // Kèm mã lỗi thật (và dịch vụ nhận dạng của máy) để biết máy nào, dịch vụ nào đang từ chối
+    setMessage(`${ERROR_TEXT[e.error] ?? "Không nhận dạng được, thử lại nhé"} (${e.error}${serviceName() ? ` · ${serviceName()}` : ""})`);
   });
   useSpeechRecognitionEvent("end", () => {
-    const result = finals.current;
+    // Sự kiện toàn cục: "end" do abort() của bước nói trước (đang huỷ khi chuyển bước) có thể tới bản mới còn rảnh, bỏ qua
+    if (statusRef.current === "idle" && !failed.current) return;
+    // Không có kết quả chốt mà đã khớp lúc đang nói thì dùng chính câu khớp đó
+    const result = finals.current.length ? finals.current : matched.current ? interim.current : [];
     finals.current = [];
+    interim.current = [];
+    matched.current = false;
     if (failed.current) {
       failed.current = false;
       return;
@@ -88,14 +127,8 @@ export const useSpeechRecognizer = (lang: string, onFinal: (transcripts: string[
     } catch {}
   }, []);
 
-  const toggle = useCallback(async () => {
-    if (status === "listening") {
-      try {
-        ExpoSpeechRecognitionModule.abort();
-      } catch {}
-      setStatus("idle");
-      return;
-    }
+  const start = useCallback(async () => {
+    if (statusRef.current === "listening") return;
     try {
       const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
       if (!perm.granted) {
@@ -105,16 +138,37 @@ export const useSpeechRecognizer = (lang: string, onFinal: (transcripts: string[
       }
       Speech.stop();
       finals.current = [];
+      interim.current = [];
+      matched.current = false;
       failed.current = false;
       setHeard("");
       setMessage(null);
       setStatus("listening");
-      ExpoSpeechRecognitionModule.start({ lang: localeFor(lang), interimResults: true, maxAlternatives: 5, continuous: false });
+      ExpoSpeechRecognitionModule.start({
+        lang: localeFor(lang),
+        interimResults: true,
+        maxAlternatives: 5,
+        continuous: false,
+        // Từ đơn: mô hình mặc định của Android (free_form) thường kết thúc ngay không trả kết quả (no-speech); web_search khuyên dùng cho từ ngắn
+        androidIntentOptions: {
+          EXTRA_LANGUAGE_MODEL: "web_search",
+          // Chờ im lặng lâu hơn một chút để người học kịp mở miệng và không bị ngắt giữa chừng
+          EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS: 2000,
+          EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: 1500,
+        },
+        iosTaskHint: "confirmation",
+      });
     } catch {
       setStatus("unavailable");
       setMessage("Máy này chưa hỗ trợ nhận dạng giọng nói");
     }
-  }, [status, lang]);
+  }, [lang]);
 
-  return { status, heard, message, toggle };
+  const stop = useCallback(() => {
+    try {
+      ExpoSpeechRecognitionModule.stop();
+    } catch {}
+  }, []);
+
+  return { status, heard, message, start, stop };
 };

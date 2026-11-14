@@ -302,7 +302,7 @@ const BasicInformation = ({
       <Animated.View className="mt-4" layout={LinearTransition}>
         <SectionHeader
           icon={<AppIcon branch="fa6" name={"book"} size={14} color="title" />}
-          title="Definition"
+          title="Định nghĩa"
         />
         <View>
           <View>

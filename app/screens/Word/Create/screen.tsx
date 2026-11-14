@@ -7,7 +7,6 @@ import { entryProblem, MAX_ENTRY_CHARS } from "@/utils/entryProblem";
 import { router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
  * Tìm kiếm từ mới: chỉ nhập từ rồi Enter. Từ chưa có sẽ được AI tạo ngay ở trang từ (tiến độ hiện dần, báo rõ nếu bị từ chối);
@@ -33,7 +32,7 @@ export default function CreateWord() {
   const ready = text.trim().length > 0;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }}>
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -99,6 +98,6 @@ export default function CreateWord() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

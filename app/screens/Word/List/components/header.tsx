@@ -9,16 +9,16 @@ const ListHeader = () => {
   const { theme } = useTheme();
 
   return (
-    <View className="flex-row justify-between items-center h-16">
-      <AppText size="3xl" weight="bold" color="title">
+    <View className="flex-row justify-between items-center h-14">
+      <AppText size="2xl" weight="bold" color="title">
         Từ vựng
       </AppText>
       <Pressable
         onPress={() => routerPush("/screens/Word/Create/screen")}
-        className="flex-row items-center gap-1.5 h-10 px-4 rounded-full"
+        className="flex-row items-center gap-1.5 h-9 px-3.5 rounded-full"
         style={{ backgroundColor: theme.primary }}
       >
-        <AppIcon name="plus" branch="feather" color="white" size={18} />
+        <AppIcon name="plus" branch="feather" color="white" size={16} />
         <AppText weight="bold" color="white" size="sm">
           Tìm từ mới
         </AppText>

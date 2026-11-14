@@ -53,9 +53,9 @@ export default function CardPage() {
         keyExtractor={(w) => w.wordId}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 12 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 8 }}
         ListHeaderComponent={
-          <View className="gap-4 pb-2">
+          <View className="gap-3 pb-1">
             <ListSumary stats={stats.data} loading={stats.isLoading} />
             <SearchBar
               value={search}

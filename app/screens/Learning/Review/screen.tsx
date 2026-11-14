@@ -15,7 +15,8 @@ import useModalStore from "@/stores/modalStore";
 import { useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useCallback, useEffect } from "react";
-import { ActivityIndicator, BackHandler, KeyboardAvoidingView, Platform, View } from "react-native";
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
+import { ActivityIndicator, BackHandler, View } from "react-native";
 
 /**
  * Ôn tập thẻ đến hạn: thẻ cấp cao ôn bằng vuốt (nhanh), thẻ cấp thấp theo cụm; xong 1 lượt thì ghi kết quả và hỏi ôn tiếp.
@@ -23,6 +24,7 @@ import { ActivityIndicator, BackHandler, KeyboardAvoidingView, Platform, View } 
  */
 export default function ReviewScreen() {
   const { theme } = useTheme();
+  const kbInset = useKeyboardInset();
   const queryClient = useQueryClient();
   const hearable = useAppStore((s) => s.settings?.hearable) !== false;
   const r = useReviewRun();
@@ -157,9 +159,9 @@ export default function ReviewScreen() {
   const progress = swipe && status === "swiping" ? swipeProgress(swipe) : run && status === "cluster" ? progressOf(run) : status === "saved" ? 1 : 0;
   const label = status === "swiping" && swipe ? `${Math.min(swipe.finalized + 1, swipe.total)} / ${swipe.total}` : status === "cluster" && run && run.phase !== "summary" ? `${Math.min(run.doneSteps + 1, run.totalSteps)} / ${run.totalSteps}` : undefined;
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.background }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <View style={{ flex: 1, backgroundColor: theme.background, paddingBottom: kbInset }}>
       <SessionHeader progress={progress} label={label} onClose={confirmExit} />
       {body()}
-    </KeyboardAvoidingView>
+    </View>
   );
 }

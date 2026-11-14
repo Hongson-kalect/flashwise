@@ -53,7 +53,7 @@ const WordAdvanceInformation = ({
     <View className="gap-5">
       <SectionHeader
         icon={<AppIcon branch="fa6" name="compass" size={14} color="title" />}
-        title="Discover"
+        title="Khám phá"
       />
 
       <Related
@@ -106,7 +106,7 @@ const WordAdvanceInformation = ({
           />
         }
         kind="tags"
-        title="Tags"
+        title="Thẻ gắn"
         values={tags || []}
       />
 
@@ -208,7 +208,7 @@ const WordAdvanceInformation = ({
             color="subText2"
           />
         }
-        label="Note"
+        label="Ghi chú"
         value="Rất trang trọng"
         onPress={() =>
           openRadioModal({

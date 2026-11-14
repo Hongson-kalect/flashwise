@@ -44,7 +44,7 @@ const TempExampleCreate = ({ onAddExample }: Props) => {
             size={"sm"}
             value={example.value}
             onChangeText={(text) => setExample({ ...example, value: text })}
-            placeholder="Write a natural example sentence"
+            placeholder="Viết một câu ví dụ tự nhiên"
           />
         </View>
       </View>
@@ -60,7 +60,7 @@ const TempExampleCreate = ({ onAddExample }: Props) => {
               onChangeText={(text) =>
                 setExample({ ...example, translate: text })
               }
-              placeholder="Translate the example sentence"
+              placeholder="Dịch câu ví dụ"
             />
           </View>
         </View>

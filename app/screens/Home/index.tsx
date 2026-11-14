@@ -41,7 +41,7 @@ export default function HomePage() {
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
-        contentContainerStyle={{ paddingTop: 8, paddingBottom: 40, gap: 24 }}
+        contentContainerStyle={{ paddingTop: 8, paddingBottom: 32, gap: 16 }}
       >
         <View className="px-4">
           <HomeHeader streak={data?.habit.state.streak} shield={data?.habit.state.shield} xp={data?.habit.totalXp} />

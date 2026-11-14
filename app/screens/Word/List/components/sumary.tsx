@@ -1,54 +1,34 @@
-import AppCard from "@/components/AppCard";
 import AppText from "@/components/AppText";
 import { WordStats } from "@/database/queries/words";
 import { ProgressRing, Skeleton } from "@/ui";
 import { View } from "react-native";
 
-const Stat = ({ value, label }: { value: number | string; label: string }) => (
-  <View className="flex-1">
-    <AppText size="xl" weight="bold" color="title">
-      {value}
-    </AppText>
-    <AppText size="xs" color="subText2">
-      {label}
-    </AppText>
-  </View>
-);
-
-/** Thẻ tổng quan: tiến độ học (vòng) + số từ / số nghĩa / đã học. */
+/** Tóm tắt gọn một dòng: vòng tiến độ + nghĩa đã học, dưới là số từ / nghĩa / chưa học. */
 const ListSumary = ({ stats, loading = false }: { stats?: WordStats; loading?: boolean }) => {
   const total = stats?.senses ?? 0;
-  const learned = stats?.learned ?? 0;
+  const learned = Math.min(stats?.learned ?? 0, total);
   const pct = total ? Math.min(100, (learned / total) * 100) : 0;
 
   return (
-    <AppCard>
-      <View className="flex-row items-center gap-5">
-        <ProgressRing value={pct} size={84} strokeWidth={9} color="primary">
-          <AppText size="lg" weight="bold">
-            {Math.round(pct)}%
+    <View className="flex-row items-center gap-3 px-1">
+      <ProgressRing value={pct} size={44} strokeWidth={5} color="primary">
+        <AppText size="xs" weight="bold">
+          {Math.round(pct)}%
+        </AppText>
+      </ProgressRing>
+      <View className="flex-1">
+        {loading ? (
+          <Skeleton width={120} height={18} />
+        ) : (
+          <AppText weight="bold" color="title">
+            {`${learned} / ${total} nghĩa đã học`}
           </AppText>
-        </ProgressRing>
-        <View className="flex-1">
-          <AppText size="sm" color="subText2">
-            Đã học
-          </AppText>
-          {loading ? (
-            <Skeleton width={90} height={28} />
-          ) : (
-            <AppText size="2xl" weight="bold">
-              {learned}
-              <AppText size="md" color="subText2">{` / ${total} nghĩa`}</AppText>
-            </AppText>
-          )}
-        </View>
+        )}
+        <AppText size="xs" color="subText2">
+          {`${stats?.words ?? 0} từ · ${Math.max(0, total - learned)} nghĩa chưa học`}
+        </AppText>
       </View>
-      <View className="flex-row mt-4 pt-4" style={{ borderTopWidth: 1, borderTopColor: "#94A3B833" }}>
-        <Stat value={stats?.words ?? 0} label="Từ" />
-        <Stat value={total} label="Nghĩa" />
-        <Stat value={Math.max(0, total - learned)} label="Chưa học" />
-      </View>
-    </AppCard>
+    </View>
   );
 };
 

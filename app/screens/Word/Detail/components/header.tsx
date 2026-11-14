@@ -205,7 +205,7 @@ const WordDetailHeader = ({ word, wordId, senses, onSenseAdded, onGotoSense, act
                     style={{ minWidth: 0, paddingHorizontal: 10 }}
                     type="error"
                     outline
-                    title="Delete"
+                    title="Xoá"
                     onPress={() => {}}
                     // Delete user word only, user never can delete official word
                   >

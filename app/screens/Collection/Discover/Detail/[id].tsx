@@ -79,8 +79,7 @@ const DiscoverDetail = () => {
           coverKeywords: [],
         }}
         radius={20}
-        watermark
-        style={{ height: 180, width: "100%" }}
+        style={{ height: 120, width: "100%" }}
       />
       <View className="gap-1">
         <View className="flex-row items-center justify-between gap-3">

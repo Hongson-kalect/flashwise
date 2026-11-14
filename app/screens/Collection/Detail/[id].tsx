@@ -237,9 +237,9 @@ const CollectionDetail = () => {
   const pct = c?.total ? Math.min(100, (c.learned / c.total) * 100) : 0;
 
   const header = !c ? null : (
-    <View className="gap-4 pb-2">
+    <View className="gap-3 pb-2">
       <View>
-        <CollectionCover collection={c} radius={20} style={{ height: 180, width: "100%" }} />
+        <CollectionCover collection={c} radius={20} style={{ height: 120, width: "100%" }} />
         {c.canEditCover && (
           <Pressable
             onPress={() =>
@@ -271,9 +271,6 @@ const CollectionDetail = () => {
       </View>
 
       <View className="gap-1">
-        <AppText size="2xl" weight="bold" color="title">
-          {c.name}
-        </AppText>
         {!!c.remixedFrom && (
           <View className="flex-row items-center gap-1.5 mt-0.5">
             <AppIcon branch="feather" name="git-branch" size={13} color={theme.subText2} />
@@ -308,10 +305,10 @@ const CollectionDetail = () => {
         )}
       </View>
 
-      <AppCard>
-        <View className="flex-row items-center gap-5">
-          <ProgressRing value={pct} size={72} strokeWidth={8} color="primary">
-            <AppText weight="bold">{Math.round(pct)}%</AppText>
+      <AppCard style={{ padding: 12 }}>
+        <View className="flex-row items-center gap-4">
+          <ProgressRing value={pct} size={52} strokeWidth={6} color="primary">
+            <AppText size="xs" weight="bold">{Math.round(pct)}%</AppText>
           </ProgressRing>
           <View className="flex-row flex-1">
             {[
@@ -320,7 +317,7 @@ const CollectionDetail = () => {
               { v: Math.max(0, c.total - c.learned), l: "Chưa học" },
             ].map((s) => (
               <View key={s.l} className="flex-1">
-                <AppText size="xl" weight="bold" color="title">
+                <AppText size="lg" weight="bold" color="title">
                   {s.v}
                 </AppText>
                 <AppText size="xs" color="subText2">
@@ -444,15 +441,15 @@ const CollectionDetail = () => {
               <Pressable
                 disabled={!c.canPublish}
                 onPress={() => router.push({ pathname: "/screens/Collection/Publish/[id]", params: { id } })}
-                className="flex-1 h-14 rounded-2xl flex-row items-center justify-center gap-2"
+                className="flex-1 h-11 rounded-2xl flex-row items-center justify-center gap-2"
                 style={{
-                  backgroundColor: c.canPublish ? theme.primary : theme.card,
-                  borderWidth: 1,
+                  backgroundColor: "transparent",
+                  borderWidth: 1.5,
                   borderColor: c.canPublish ? theme.primary : theme.border,
                 }}
               >
-                <AppIcon branch="feather" name="upload-cloud" size={18} color={c.canPublish ? "white" : theme.subText3} />
-                <AppText color={c.canPublish ? "white" : "subText3"} weight="bold" size="lg">
+                <AppIcon branch="feather" name="upload-cloud" size={16} color={c.canPublish ? theme.primary : theme.subText3} />
+                <AppText color={c.canPublish ? "primary" : "subText3"} weight="bold">
                   {c.publishState === "draft" ? "Phát hành bộ" : c.publishState === "revoked" ? "Tiếp tục phát hành" : "Cập nhật"}
                 </AppText>
               </Pressable>
@@ -460,15 +457,15 @@ const CollectionDetail = () => {
                 <Pressable
                   disabled={revoking}
                   onPress={confirmRevoke}
-                  className="h-14 px-5 rounded-2xl flex-row items-center justify-center gap-2"
+                  className="h-11 px-4 rounded-2xl flex-row items-center justify-center gap-2"
                   style={{ borderWidth: 1.5, borderColor: theme.error, opacity: revoking ? 0.5 : 1 }}
                 >
                   {revoking ? (
                     <ActivityIndicator size="small" color={theme.error} />
                   ) : (
-                    <AppIcon branch="feather" name="eye-off" size={18} color={theme.error} />
+                    <AppIcon branch="feather" name="eye-off" size={16} color={theme.error} />
                   )}
-                  <AppText weight="bold" size="lg" style={{ color: theme.error }}>
+                  <AppText weight="bold" style={{ color: theme.error }}>
                     Thu hồi
                   </AppText>
                 </Pressable>
@@ -526,7 +523,7 @@ const CollectionDetail = () => {
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       <AppReturnHeader
-        title="Bộ từ"
+        title={c?.name || "Bộ từ"}
         rightElement={
           c?.downloaded ? (
             <Pressable
@@ -568,7 +565,7 @@ const CollectionDetail = () => {
           keyExtractor={(s) => s.itemId}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 10 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, gap: 8 }}
           ListHeaderComponent={header}
           renderItem={({ item, index }) => (
             <SenseRow

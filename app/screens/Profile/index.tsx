@@ -3,7 +3,7 @@ import AppIcon from "@/components/AppIcon";
 import AppText from "@/components/AppText";
 import AppTitle from "@/components/AppTitle";
 import SyncStatus from "@/components/SyncStatus";
-import { useTheme } from "@/providers/Theme";
+import { ThemeMode, useTheme } from "@/providers/Theme";
 import { useReminder } from "@/hooks/useReminder";
 import { nextRetention } from "@/learning/fsrsService";
 import { useAppStore } from "@/stores/appStore";
@@ -22,6 +22,8 @@ const LANG_NAME: Record<string, string> = Object.fromEntries(
   [...learningLanguages, ...motherLanguages].map((l) => [l.code, l.language.split(" · ")[0]]),
 );
 
+const MODE_LABEL: Record<string, string> = { light: "Sáng", dark: "Tối", system: "Theo hệ thống" };
+
 export default function ProfilePage() {
   // Các dạng click: toggle, range, list modal, new page, disable, feedback modal
   // Mũi tên, switch/ external link/ range/ modal
@@ -31,6 +33,24 @@ export default function ProfilePage() {
   const userProfile = useAppStore((s) => s.userProfile);
   const updateSetting = useAppStore((s) => s.updateSetting);
   const reminder = useReminder();
+  const { mode, setMode } = useTheme();
+  const chooseTheme = () =>
+    useModalStore.getState().addModal({
+      type: "radio",
+      title: "Giao diện",
+      value: mode,
+      options: [
+        { label: "Sáng", value: "light" },
+        { label: "Tối", value: "dark" },
+        { label: "Theo hệ thống", value: "system" },
+      ],
+      onSelect: (v) => setMode(v as ThemeMode),
+    });
+  const toggleHaptics = async () => {
+    const next = settings?.haptics === false;
+    updateSetting({ haptics: next });
+    await dbService?.setSetting("haptics", next);
+  };
 
   // Công tắc các bước học: ghi user_settings (đồng bộ lên server) và RAM; phiên học sau đọc lại từ DB
   const toggleLearnSetting = async (key: "hearable" | "talkable" | "writable" | "auto_known" | "ask_review_mode") => {
@@ -93,30 +113,15 @@ export default function ProfilePage() {
       }}
     >
       <ScrollView className="px-2" showsVerticalScrollIndicator={false}>
-        <View className="pt-4">
+        <View className="pt-2">
           <SyncStatus />
         </View>
-        <View style={{ marginTop: 24 }} className="">
-          <View className="w-full items-center">
-            {/* <View
-              style={{ height: 100, width: 100 }}
-              className=" rounded-full border border-border"
-            ></View> */}
-            <AppText
-              font="MulishBold"
-              size={"2xl"}
-              color="error"
-              style={{ paddingVertical: 32 }}
-            >
-              Bạn đang dùng tài khoản khách
-            </AppText>
-          </View>
-
+        <View style={{ marginTop: 8 }}>
           <View className="flex-row justify-between items-center px-2 gap-2">
-            <View className="flex-row gap-2 flex-1 my-4">
+            <View className="flex-row items-center gap-3 flex-1 my-3">
               <View
                 style={{ elevation: 2, borderWidth: 1, borderColor: "#ddd" }}
-                className="h-14 w-14 rounded-full bg-background-2"
+                className="h-12 w-12 rounded-full bg-background-2"
               ></View>
               <View>
                 <AppText font="MulishSemiBold" size={10} color="primary">
@@ -145,59 +150,24 @@ export default function ProfilePage() {
             </View>
           </View>
         </View>
-        <Divider />
+        <AppTitle style={{ marginTop: 20, marginBottom: 4, paddingLeft: 8 }} title="Giao diện và ngôn ngữ" />
         <SettingOption
-          icon={
-            <AppIcon
-              branch="mui"
-              name="color-lens"
-              size={20}
-              color="subText3"
-            />
-          }
+          icon={<AppIcon branch="mui" name="color-lens" size={20} color="subText3" />}
           showValue
-          label="Theme"
-          value="light"
+          label="Giao diện"
+          value={MODE_LABEL[mode]}
+          rightContent="internalModal"
+          onPress={chooseTheme}
         />
-
         <Divider />
         <SettingOption
-          icon={
-            <AppIcon
-              branch="mui"
-              name="font-download"
-              size={20}
-              color="subText3"
-            />
-          }
-          label="Text font"
+          icon={<AppIcon branch="mui" name="vibration" size={20} color="subText3" />}
+          label="Rung khi chạm"
           rightContent="toggle"
+          value={settings?.haptics !== false}
+          onPress={toggleHaptics}
         />
         <Divider />
-        <SettingOption
-          icon={
-            <AppIcon branch="mui" name="vibration" size={20} color="subText3" />
-          }
-          label="Rung"
-          value={false}
-          rightContent="toggle"
-        />
-        <Divider />
-        <SettingOption
-          icon={
-            <AppIcon
-              branch="feather"
-              name="volume-2"
-              size={20}
-              color="subText3"
-            />
-          }
-          label="Âm lượng"
-          showValue
-          rightContent="range"
-        />
-        <Divider />
-
         <SettingOption
           icon={
             <AppIcon branch="mui" name="language" size={20} color="subText3" />
@@ -208,28 +178,7 @@ export default function ProfilePage() {
           rightContent="newPage"
           onPress={() => router.push("/screens/Profile/Language/screen")}
         />
-        <Divider />
-
-        <SettingOption
-          icon={
-            <AppIcon
-              branch="feather"
-              name="database"
-              size={20}
-              color="subText3"
-            />
-          }
-          showValue
-          label="Quản lý dữ liệu"
-          rightContent="newPage"
-        />
-
-        <Divider />
-
-        <AppTitle
-          style={{ marginVertical: 16, paddingLeft: 4 }}
-          title="Học tập"
-        />
+        <AppTitle style={{ marginTop: 20, marginBottom: 4, paddingLeft: 8 }} title="Mục tiêu và nhắc nhở" />
         <SettingOption
           icon={<AppIcon branch="feather" name="bell" size={20} color="subText3" />}
           label="Nhắc học mỗi ngày"
@@ -240,13 +189,23 @@ export default function ProfilePage() {
         />
         <Divider />
         <SettingOption
-          icon={<AppIcon branch="feather" name="layers" size={20} color="subText3" />}
-          label="Hỏi kiểu ôn khi có từ cấp cao"
-          rightContent="toggle"
-          value={settings?.ask_review_mode === true}
-          onPress={() => toggleLearnSetting("ask_review_mode")}
+          icon={<AppIcon branch="feather" name="flag" size={20} color="subText3" />}
+          showValue
+          label="Mục tiêu học mỗi ngày"
+          value={numValue("daily_goal", 20, "từ")}
+          rightContent="internalModal"
+          onPress={() => pickNumber("daily_goal", "Mục tiêu học mỗi ngày", [5, 10, 15, 20, 30, 50], 20, "từ")}
         />
         <Divider />
+        <SettingOption
+          icon={<AppIcon branch="feather" name="clock" size={20} color="subText3" />}
+          showValue
+          label="Giới hạn thẻ ôn mỗi ngày"
+          value={numValue("review_limit", 0, "thẻ", "Không giới hạn")}
+          rightContent="internalModal"
+          onPress={() => pickNumber("review_limit", "Giới hạn thẻ ôn mỗi ngày", [0, 20, 50, 100, 200], 0, "thẻ", "Không giới hạn")}
+        />
+        <AppTitle style={{ marginTop: 20, marginBottom: 4, paddingLeft: 8 }} title="Cách học" />
         <SettingOption
           icon={<AppIcon branch="feather" name="hash" size={20} color="subText3" />}
           showValue
@@ -275,21 +234,11 @@ export default function ProfilePage() {
         />
         <Divider />
         <SettingOption
-          icon={<AppIcon branch="feather" name="flag" size={20} color="subText3" />}
-          showValue
-          label="Mục tiêu học mỗi ngày"
-          value={numValue("daily_goal", 20, "từ")}
-          rightContent="internalModal"
-          onPress={() => pickNumber("daily_goal", "Mục tiêu học mỗi ngày", [5, 10, 15, 20, 30, 50], 20, "từ")}
-        />
-        <Divider />
-        <SettingOption
-          icon={<AppIcon branch="feather" name="clock" size={20} color="subText3" />}
-          showValue
-          label="Giới hạn thẻ ôn mỗi ngày"
-          value={numValue("review_limit", 0, "thẻ", "Không giới hạn")}
-          rightContent="internalModal"
-          onPress={() => pickNumber("review_limit", "Giới hạn thẻ ôn mỗi ngày", [0, 20, 50, 100, 200], 0, "thẻ", "Không giới hạn")}
+          icon={<AppIcon branch="feather" name="layers" size={20} color="subText3" />}
+          label="Hỏi kiểu ôn khi có từ cấp cao"
+          rightContent="toggle"
+          value={settings?.ask_review_mode === true}
+          onPress={() => toggleLearnSetting("ask_review_mode")}
         />
         <Divider />
         <SettingOption
@@ -315,7 +264,7 @@ export default function ProfilePage() {
           value={settings?.writable !== false}
           onPress={() => toggleLearnSetting("writable")}
         />
-        <Divider />
+        <AppTitle style={{ marginTop: 20, marginBottom: 4, paddingLeft: 8 }} title="Nâng cao" />
         <SettingOption
           icon={<AppIcon branch="feather" name="check-circle" size={20} color="subText3" />}
           label="Tự đánh dấu từ đã biết theo mức"
@@ -340,12 +289,7 @@ export default function ProfilePage() {
           value={settings?.show_offensive === true}
           onPress={toggleOffensive}
         />
-        <Divider />
-
-        <AppTitle
-          style={{ marginVertical: 16, paddingLeft: 4 }}
-          title="Thông tin"
-        />
+        <AppTitle style={{ marginTop: 20, marginBottom: 4, paddingLeft: 8 }} title="Thông tin" />
         <SettingOption
           icon={<AppIcon branch="mui" name="apps" size={20} color="subText3" />}
           showValue
@@ -354,33 +298,10 @@ export default function ProfilePage() {
         />
         <Divider />
         <SettingOption
-          icon={<AppIcon branch="fa6" name="flag" size={20} color="subText3" />}
-          label="Phản hồi, góp ý"
-          // rightContent="internalModal"
-        />
-        <Divider />
-        <SettingOption
-          icon={<AppIcon branch="mui" name="star" size={20} color="subText3" />}
-          label="Đánh giá ứng dụng"
-        />
-        <Divider />
-        <SettingOption
-          icon={
-            <AppIcon
-              branch="mui"
-              name="file-present"
-              size={20}
-              color="subText3"
-            />
-          }
+          icon={<AppIcon branch="mui" name="file-present" size={20} color="subText3" />}
           label="Điều khoản"
-        />
-        <Divider />
-        <SettingOption
-          icon={
-            <AppIcon branch="mui" name="person" size={20} color="subText3" />
-          }
-          label="Về chúng tôi"
+          rightContent="newPage"
+          onPress={() => router.push("/screens/Policy/screen")}
         />
 
         <View className="h-10"></View>
@@ -435,7 +356,7 @@ const SettingOption = (props: SettingOptionProps) => {
     <TouchableOpacity
       disabled={!props.onPress}
       onPress={props.onPress}
-      style={{ height: 64 }}
+      style={{ height: 52 }}
       className="flex-row justify-between items-center px-2"
     >
       <View className="flex-row items-center gap-2 flex-1">

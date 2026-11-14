@@ -48,6 +48,8 @@ const Text = ({
 
   return (
     <RNText
+      // Chặn cỡ chữ hệ thống phóng quá 1,15 lần: lineHeight cố định nên chữ phóng to dễ bị cắt, giao diện thấy to và ngợp
+      maxFontSizeMultiplier={1.15}
       {...rest}
       style={[
         font ? { fontFamily: font } : fontStyleFor(weight),

@@ -57,7 +57,7 @@ const CreateSenseMoreInfo = ({ senseValue, setSenseValue }: Props) => {
       <View className="px-1 py-4">
         <LineInput
           onPreset={() => {}}
-          label="Usage"
+          label="Cách dùng"
           value={senseValue.usage || ""}
           setValue={(text) => setSenseValue({ ...senseValue, usage: text })}
           size="xs"
@@ -68,11 +68,11 @@ const CreateSenseMoreInfo = ({ senseValue, setSenseValue }: Props) => {
       <View className="px-1 py-4">
         <LineInput
           onPreset={() => {}}
-          label="IPA"
+          label="Phiên âm (IPA)"
           value={senseValue.ipa || ""}
           setValue={(text) => setSenseValue({ ...senseValue, ipa: text })}
           size="xs"
-          placeholder="Pronunciation in IPA"
+          placeholder="Phiên âm theo IPA"
         />
       </View>
 

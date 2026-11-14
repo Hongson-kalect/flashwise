@@ -60,7 +60,7 @@ const CopyPrompt = ({ card, hearable, onKnown }: PromptProps) => {
     <View className="gap-3">
       <Label>Từ mới, đọc kỹ rồi gõ lại từ này</Label>
       <WordHeader card={card} autoPlay={hearable} />
-      <SenseImage card={card} aspect={16 / 9} />
+      <SenseImage card={card} aspect={2.4} />
       <Meaning card={card} />
       <Example card={card} />
       <Pressable onPress={onKnown} className="self-center flex-row items-center gap-1.5 px-4 h-10 rounded-full" style={{ borderWidth: 1, borderColor: theme.border }}>
@@ -87,7 +87,7 @@ const ChooseMeaningPrompt = ({ card, hearable }: PromptProps) => (
 const ChooseWordPrompt = ({ card }: PromptProps) => (
   <View className="gap-3">
     <Label>Từ nào có nghĩa này?</Label>
-    <SenseImage card={card} aspect={16 / 9} />
+    <SenseImage card={card} aspect={2.4} />
     <Meaning card={card} big />
     <Example card={card} mask />
   </View>
@@ -97,7 +97,7 @@ const ChooseWordPrompt = ({ card }: PromptProps) => (
 const TypeWordPrompt = ({ card }: PromptProps) => (
   <View className="gap-3">
     <Label>Gõ từ có nghĩa này</Label>
-    <SenseImage card={card} aspect={16 / 9} />
+    <SenseImage card={card} aspect={2.4} />
     <Meaning card={card} big />
     <Example card={card} mask />
   </View>
@@ -156,7 +156,7 @@ const SpeakPrompt = ({ card }: PromptProps) => (
   <View className="gap-3">
     <Label>Đọc to từ này</Label>
     <WordHeader card={card} />
-    <SenseImage card={card} aspect={16 / 9} />
+    <SenseImage card={card} aspect={2.4} />
     <Meaning card={card} />
   </View>
 );
@@ -165,7 +165,7 @@ const SpeakPrompt = ({ card }: PromptProps) => (
 const HandwritePrompt = ({ card }: PromptProps) => (
   <View className="gap-3">
     <Label>Viết từ có nghĩa này</Label>
-    <SenseImage card={card} aspect={16 / 9} />
+    <SenseImage card={card} aspect={2.4} />
     <Meaning card={card} big />
   </View>
 );

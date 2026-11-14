@@ -8,7 +8,7 @@ const PolicyScreen = () => {
   return (
     <View style={{ backgroundColor: theme.background, flex: 1 }}>
       <View>
-        <AppReturnHeader title="Return" />
+        <AppReturnHeader title="Điều khoản" />
       </View>
 
       <View>

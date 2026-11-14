@@ -18,7 +18,7 @@ const WordCollocations = (props: Props) => {
     <View>
       <SectionHeader
         icon={<AppIcon branch="fa6" name="quote-left" size={14} color="title" />}
-        title="Collocations"
+        title="Cụm từ đi kèm"
         onAdd={add}
       />
 

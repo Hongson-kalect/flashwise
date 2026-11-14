@@ -25,10 +25,10 @@ const Chip = ({
   const { theme } = useTheme();
   return (
     <View
-      className="flex-row items-center gap-1.5 px-3 py-1.5 rounded-full"
+      className="flex-row items-center gap-1 px-2.5 py-1 rounded-full"
       style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}
     >
-      <AppIcon branch="mui" name={icon} size={16} color={color} />
+      <AppIcon branch="mui" name={icon} size={14} color={color} />
       <AppText size="sm" font="MulishBold">
         {value}
       </AppText>
@@ -51,7 +51,7 @@ const HomeHeader = ({ streak: streakProp, shield, xp: xpProp }: { streak?: numbe
         <AppText size="sm" color="subText2">
           {greeting()}
         </AppText>
-        <AppText size="2xl" font="MulishBold" numberOfLines={1}>
+        <AppText size="xl" font="MulishBold" numberOfLines={1}>
           {name || "Bạn"} 👋
         </AppText>
       </View>

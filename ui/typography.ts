@@ -4,15 +4,15 @@ import { FontWeightKey, uiConfig } from "./config";
 export const TextSize = {
   tiny: { fontSize: 10, lineHeight: 13 },
   xxs: { fontSize: 10, lineHeight: 13 },
-  xs: { fontSize: 12, lineHeight: 17 },
-  sm: { fontSize: 14, lineHeight: 20 },
-  md: { fontSize: 16, lineHeight: 22 },
-  lg: { fontSize: 18, lineHeight: 25 },
-  xl: { fontSize: 20, lineHeight: 28 },
-  "2xl": { fontSize: 24, lineHeight: 32 },
-  "3xl": { fontSize: 28, lineHeight: 36 },
-  display: { fontSize: 40, lineHeight: 48 },
-  displayLarge: { fontSize: 48, lineHeight: 56 },
+  xs: { fontSize: 11, lineHeight: 15 },
+  sm: { fontSize: 13, lineHeight: 18 },
+  md: { fontSize: 15, lineHeight: 21 },
+  lg: { fontSize: 17, lineHeight: 23 },
+  xl: { fontSize: 19, lineHeight: 26 },
+  "2xl": { fontSize: 22, lineHeight: 29 },
+  "3xl": { fontSize: 26, lineHeight: 33 },
+  display: { fontSize: 36, lineHeight: 42 },
+  displayLarge: { fontSize: 44, lineHeight: 50 },
 } as const;
 export type TextSizeKey = keyof typeof TextSize;
 

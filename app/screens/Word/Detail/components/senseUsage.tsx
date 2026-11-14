@@ -39,7 +39,7 @@ const SenseUsage = (props: Props) => {
     <Animated.View className={"mt-6"} layout={LinearTransition}>
       <SectionHeader
         icon={<FontAwesome name="search" size={14} color={theme.title} />}
-        title="Usage"
+        title="Cách dùng"
       />
       {tUsage?.value ? (
         <AppPressable onLongPress={open} hitSlop={8} className="py-2">

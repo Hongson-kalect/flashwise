@@ -1,6 +1,6 @@
 import { darkTheme, lightTheme, Theme } from "@/configs/theme";
 import { useAppStore } from "@/stores/appStore";
-import { ThemeMode, UIThemeProvider, useUITheme } from "@/ui";
+import { configureUI, ThemeMode, UIThemeProvider, useUITheme } from "@/ui";
 import React, { useEffect, useMemo } from "react";
 import {
   MD3DarkTheme,
@@ -50,6 +50,11 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
 
 const AppThemeBridge = ({ children }: { children: React.ReactNode }) => {
   const { theme, isDark } = useUITheme<Theme>();
+  // Cài đặt "Rung khi chạm" (user_settings.haptics, mặc định bật) áp cho cả kit
+  const haptics = useAppStore((s) => s.settings?.haptics);
+  useEffect(() => {
+    configureUI({ haptics: haptics !== false });
+  }, [haptics]);
 
   useEffect(() => {
     // Cầu nối cho code cũ còn đọc useAppStore().themeObj.color_palette

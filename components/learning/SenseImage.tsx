@@ -3,7 +3,7 @@ import WideImage from "@/components/WideImage";
 import { useTheme } from "@/providers/Theme";
 import { LearnCard } from "@/learning/types";
 import { findSenseImage } from "@/services/senseImage";
-import { mediaUrl } from "@/stores/appStore";
+import { mediaUrl, useAppStore } from "@/stores/appStore";
 import { useEffect, useState } from "react";
 import { StyleProp, ViewStyle } from "react-native";
 
@@ -19,6 +19,8 @@ type Props = {
 /** Ảnh minh hoạ của nghĩa: ảnh riêng, không có thì ảnh mở tìm theo từ khoá (như danh sách bộ). Không có ảnh nào thì ẩn. Khung vẽ ở `WideImage`. */
 const SenseImage = ({ card, height, aspect = 16 / 9, style, showFallbackLetter = false }: Props) => {
   const { theme } = useTheme();
+  // Đăng ký theo mediaBaseUrl: app-config tới sau khi thẻ đã vẽ thì ảnh tự dựng lại với địa chỉ đầy đủ
+  useAppStore((s) => s.mediaBaseUrl);
   const own = mediaUrl(card.imageUri);
   const [fallback, setFallback] = useState<string | null>(null);
 

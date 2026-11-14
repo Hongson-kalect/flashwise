@@ -24,15 +24,15 @@ const Progress = ({
   const max = Math.max(1, ...totals);
 
   return (
-    <AppCard style={{ padding: 20 }}>
-      <View className="flex-row items-center gap-5">
+    <AppCard style={{ padding: 16 }}>
+      <View className="flex-row items-center gap-4">
         <ProgressRing
           value={pct * 100}
-          size={88}
-          strokeWidth={9}
+          size={64}
+          strokeWidth={7}
           color={pct >= 1 ? "success" : "primary"}
         >
-          <AppText size="lg" weight="bold">
+          <AppText size="sm" weight="bold">
             {Math.round(pct * 100)}%
           </AppText>
         </ProgressRing>
@@ -52,17 +52,17 @@ const Progress = ({
         </View>
       </View>
 
-      <View className="flex-row items-end justify-between mt-6 h-24">
+      <View className="flex-row items-end justify-between mt-4 h-16">
         {week.map((d, i) => {
           const isToday = i === week.length - 1;
-          const h = totals[i] === 0 ? 4 : Math.max(8, (totals[i] / max) * 72);
+          const h = totals[i] === 0 ? 4 : Math.max(8, (totals[i] / max) * 40);
           return (
             <View key={d.date} className="flex-1 items-center justify-end gap-1.5">
               <View
                 style={{
                   height: h,
-                  width: 14,
-                  borderRadius: 7,
+                  width: 12,
+                  borderRadius: 6,
                   backgroundColor:
                     totals[i] === 0
                       ? theme.border

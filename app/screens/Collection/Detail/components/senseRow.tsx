@@ -49,12 +49,12 @@ const SenseRow = ({ item, edit }: { item: CollectionSense; edit?: RowEdit }) => 
       onPress={() =>
         router.push({ pathname: "/screens/Word/Detail/[value]", params: { value: item.value } })
       }
-      className="flex-row items-center gap-3 p-3 rounded-2xl"
+      className="flex-row items-center gap-3 p-2.5 rounded-2xl"
       style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}
     >
       <View
         className="rounded-xl overflow-hidden items-center justify-center"
-        style={{ height: 60, width: 60, backgroundColor: theme.background2 }}
+        style={{ height: 52, width: 52, backgroundColor: theme.background2 }}
       >
         {uri ? (
           <AppImage source={{ uri }} style={{ width: "100%", height: "100%" }} />
@@ -67,7 +67,7 @@ const SenseRow = ({ item, edit }: { item: CollectionSense; edit?: RowEdit }) => 
 
       <View className="flex-1">
         <View className="flex-row items-center gap-2">
-          <AppText numberOfLines={1} size="lg" weight="bold" color="title" style={{ flexShrink: 1 }}>
+          <AppText numberOfLines={1} size="md" weight="bold" color="title" style={{ flexShrink: 1 }}>
             {cap(item.value)}
           </AppText>
           {item.pos ? (

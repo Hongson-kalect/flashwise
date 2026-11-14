@@ -369,7 +369,7 @@ const WordSelectForm = (props: Props) => {
                         type="error"
                         size="xs"
                         onPress={() => setEditMode(false)}
-                        title="Delete"
+                        title="Xoá"
                       />
                     </Animated.View>
                   ) : (

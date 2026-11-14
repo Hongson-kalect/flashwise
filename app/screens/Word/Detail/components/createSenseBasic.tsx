@@ -58,7 +58,7 @@ const CreateSenseBasicInfo = ({ senseValue, setSenseValue, onSuggest }: Props) =
             ) : (
               ""
             )}
-            Definition
+            Định nghĩa
             <AppText color="error"> *</AppText>
           </AppText>
 
@@ -103,7 +103,7 @@ const CreateSenseBasicInfo = ({ senseValue, setSenseValue, onSuggest }: Props) =
                 <AppText color="title" font="MulishBold" size={"sm"}>
                   {motherLang}
                 </AppText>{" "}
-                Definition
+                Định nghĩa
                 {/* <AppText color="error"> *</AppText> */}
               </AppText>
 
@@ -122,7 +122,7 @@ const CreateSenseBasicInfo = ({ senseValue, setSenseValue, onSuggest }: Props) =
             <View className="flex-row gap-2">
               <View className="flex-1">
                 <AppInput
-                  placeholder="Describe this sense in Vietnamese"
+                  placeholder="Mô tả nghĩa này bằng tiếng Việt"
                   numberOfLines={3}
                   multiline
                   containerStyle={{ backgroundColor: theme.background }}

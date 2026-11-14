@@ -192,7 +192,9 @@ export const getWordStats = async (db: SQLiteDatabase): Promise<WordStats> => {
     `SELECT COUNT(DISTINCT word_id) AS words, COUNT(*) AS senses FROM ai_sense WHERE is_deleted = 0`,
   );
   const l = await db.getFirstAsync<{ n: number }>(
-    `SELECT COUNT(*) AS n FROM user_sense_progress WHERE is_deleted = 0 AND (state > 0 OR repetitions > 0)`,
+    `SELECT COUNT(DISTINCT p.original_sense_id) AS n FROM user_sense_progress p
+     JOIN ai_sense s ON COALESCE(s.original_id, s.id) = p.original_sense_id AND s.is_deleted = 0
+     WHERE p.is_deleted = 0 AND (p.state > 0 OR p.repetitions > 0)`,
   );
   return { words: r?.words ?? 0, senses: r?.senses ?? 0, learned: l?.n ?? 0 };
 };

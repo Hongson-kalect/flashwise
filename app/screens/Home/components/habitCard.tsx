@@ -85,7 +85,7 @@ const HabitCard = ({ view }: { view?: HabitView }) => {
 
   return (
     <Pressable onPress={() => present({ title: "Thói quen học", size: "full", render: () => <HabitDetail view={view} /> })}>
-      <AppCard style={{ padding: 20, gap: 14 }}>
+      <AppCard style={{ padding: 16, gap: 12 }}>
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-2">
             <AppIcon branch="mui" name="local-fire-department" size={22} color={theme.accent} />

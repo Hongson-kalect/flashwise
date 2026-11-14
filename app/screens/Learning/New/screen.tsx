@@ -10,10 +10,13 @@ import { useLearnRun } from "@/learning/useLearnRun";
 import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
 import useModalStore from "@/stores/modalStore";
+import { findNextStudy } from "@/database/queries/nextStudy";
 import { useQueryClient } from "@tanstack/react-query";
+import { useSQLiteContext } from "expo-sqlite";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect } from "react";
-import { ActivityIndicator, BackHandler, KeyboardAvoidingView, Platform, View } from "react-native";
+import { useKeyboardInset } from "@/hooks/useKeyboardInset";
+import { ActivityIndicator, BackHandler, View } from "react-native";
 
 /**
  * Học từ mới của 1 bộ (param `id` = id UserCollection): 1 cụm vài nghĩa, mỗi nghĩa đi qua các bước (xem thẻ + gõ lại, chọn nghĩa,
@@ -22,10 +25,20 @@ import { ActivityIndicator, BackHandler, KeyboardAvoidingView, Platform, View } 
 export default function LearnNewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { theme } = useTheme();
+  const kbInset = useKeyboardInset();
   const queryClient = useQueryClient();
   const hearable = useAppStore((s) => s.settings?.hearable) !== false;
   const run = useLearnRun(id);
   const { state, status } = run;
+  const db = useSQLiteContext();
+  const userLang = useAppStore((s) => s.settings?.translate_language) ?? "vi";
+  // Hết từ mới trong bộ này: sang bộ kế tiếp còn từ (theo thứ tự tab Bộ từ), bộ chưa tải thì mở để tải, học hết cả rồi thì tới Khám phá
+  const goNext = useCallback(async () => {
+    const n = await findNextStudy(db, userLang);
+    if (n.kind === "learn") router.replace({ pathname: "/screens/Learning/New/screen", params: { id: n.id } });
+    else if (n.kind === "download") router.replace({ pathname: "/screens/Collection/Detail/[id]", params: { id: n.id } });
+    else router.replace("/screens/Collection/Discover/List/screen");
+  }, [db, userLang]);
 
   const addModal = useModalStore((s) => s.addModal);
   const leave = useCallback(() => router.back(), []);
@@ -112,7 +125,7 @@ export default function LearnNewScreen() {
                 ? "Bộ này chưa có nghĩa nào. Thêm từ vào bộ rồi quay lại học."
                 : "Bạn đã học hết từ mới trong bộ này. Thêm từ vào bộ hoặc chọn bộ khác."
           }
-          actions={[{ label: "Quay lại bộ từ", onPress: leave, primary: true }]}
+          actions={waiting ? [{ label: "Quay lại bộ từ", onPress: leave, primary: true }] : [{ label: "Học bộ từ tiếp theo", onPress: goNext, primary: true }, { label: "Quay lại bộ từ", onPress: leave }]}
         />
       );
     }
@@ -127,7 +140,8 @@ export default function LearnNewScreen() {
           message={`${run.summary.learned} từ mới${run.summary.known ? ` (${run.summary.known} từ đã biết${run.summary.auto ? `, ${run.summary.auto} từ tự đánh dấu vì bạn luôn biết mức này; sẽ kiểm tra lại sau 1 ngày` : ""})` : ""} · +${run.summary.xp} XP · ${minutes} phút. Từ sẽ quay lại ôn theo lịch.${habitLine(run.summary.habit)}`}
           actions={[
             ...(remaining > 0 ? [{ label: `Học cụm tiếp (còn ${remaining} từ)`, onPress: run.reload, primary: true }] : []),
-            { label: "Về bộ từ", onPress: leave, primary: remaining === 0 },
+            ...(remaining === 0 ? [{ label: "Học bộ từ tiếp theo", onPress: goNext, primary: true }] : []),
+            { label: "Về bộ từ", onPress: leave },
           ]}
         />
       );
@@ -162,13 +176,13 @@ export default function LearnNewScreen() {
 
   const running = status === "running" && !!state && state.phase !== "summary";
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.background }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <View style={{ flex: 1, backgroundColor: theme.background, paddingBottom: kbInset }}>
       <SessionHeader
         progress={state ? (state.phase === "summary" || status === "done" ? 1 : progressOf(state)) : 0}
         label={running && state ? `${Math.min(state.doneSteps + 1, state.totalSteps)} / ${state.totalSteps}` : undefined}
         onClose={confirmExit}
       />
       {body()}
-    </KeyboardAvoidingView>
+    </View>
   );
 }

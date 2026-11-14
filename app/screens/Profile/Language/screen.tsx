@@ -6,7 +6,6 @@ import { useTheme } from "@/providers/Theme";
 import { useAppStore } from "@/stores/appStore";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 /**
  * Cá nhân → Ngôn ngữ: đổi ngôn ngữ đang học và ngôn ngữ dịch (tiếng mẹ đẻ). Ghi `user_settings` (đồng bộ lên server)
@@ -44,7 +43,7 @@ const LanguageSettingsScreen = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
+    <View className="flex-1" style={{ backgroundColor: theme.background }}>
       <AppReturnHeader title="Ngôn ngữ" />
       <ScrollView className="px-4" contentContainerStyle={{ paddingBottom: 32 }}>
         <Section title="Ngôn ngữ đang học" hint="Từ bạn tra và học là ngôn ngữ này.">
@@ -60,7 +59,7 @@ const LanguageSettingsScreen = () => {
             ))}
         </Section>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -81,9 +80,9 @@ const Row = ({ lang, selected, onPress }: { lang: Lang; selected: boolean; onPre
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center justify-between px-4 rounded-2xl mb-2"
+      className="flex-row items-center justify-between px-4 rounded-xl mb-1.5"
       style={{
-        height: 52,
+        height: 46,
         backgroundColor: selected ? theme.primary + "14" : theme.card,
         borderWidth: 1,
         borderColor: selected ? theme.primary : theme.border,

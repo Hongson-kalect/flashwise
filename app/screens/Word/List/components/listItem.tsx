@@ -31,7 +31,7 @@ const WordListItem = ({ word, onLongPress }: Props) => {
           params: { value: word.value },
         })
       }
-      className="flex-row items-center gap-3 p-3 rounded-2xl"
+      className="flex-row items-center gap-3 p-2.5 rounded-2xl"
       style={{
         backgroundColor: theme.card,
         borderWidth: 1,
@@ -39,8 +39,8 @@ const WordListItem = ({ word, onLongPress }: Props) => {
       }}
     >
       <View
-        className="rounded-xl overflow-hidden items-center justify-center"
-        style={{ height: 76, width: 96, backgroundColor: theme.background2 }}
+        className="rounded-[10px] overflow-hidden items-center justify-center"
+        style={{ height: 60, width: 72, backgroundColor: theme.background2 }}
       >
         {image ? (
           <AppImage source={{ uri: image }} style={{ width: "100%", height: "100%" }} />
@@ -53,7 +53,7 @@ const WordListItem = ({ word, onLongPress }: Props) => {
 
       <View className="flex-1">
         <View className="flex-row items-center gap-2">
-          <AppText numberOfLines={1} size="lg" weight="bold" color="title" style={{ flexShrink: 1 }}>
+          <AppText numberOfLines={1} size="md" weight="bold" color="title" style={{ flexShrink: 1 }}>
             {cap(word.value)}
           </AppText>
           {word.learned && (
@@ -64,15 +64,15 @@ const WordListItem = ({ word, onLongPress }: Props) => {
           {word.gloss || " "}
         </AppText>
 
-        <View className="flex-row items-center justify-between mt-2">
+        <View className="flex-row items-center justify-between mt-1.5">
           <View className="flex-row items-center gap-2 flex-1">
             <Pressable
               hitSlop={8}
               onPress={() => Speech.speak(word.value, { language: word.languageCode })}
-              className="h-7 w-7 rounded-full items-center justify-center"
+              className="h-6 w-6 rounded-full items-center justify-center"
               style={{ backgroundColor: theme.primary + "1F" }}
             >
-              <AppIcon branch="feather" name="volume-2" size={14} color={theme.primary} />
+              <AppIcon branch="feather" name="volume-2" size={12} color={theme.primary} />
             </Pressable>
             <AppText numberOfLines={1} size="xs" color="subText2" style={{ flexShrink: 1 }}>
               {word.ipa}
@@ -81,7 +81,7 @@ const WordListItem = ({ word, onLongPress }: Props) => {
           <View className="flex-row items-center gap-1.5">
             {word.level ? (
               <View
-                className="px-2 h-6 rounded-md items-center justify-center"
+                className="px-1.5 h-5 rounded-md items-center justify-center"
                 style={{ backgroundColor: theme.accent + "26" }}
               >
                 <AppText size="xs" weight="semibold" style={{ color: theme.accent }}>
@@ -92,7 +92,7 @@ const WordListItem = ({ word, onLongPress }: Props) => {
             {word.posList.slice(0, 2).map((p) => (
               <View
                 key={p}
-                className="px-2 h-6 rounded-md items-center justify-center"
+                className="px-1.5 h-5 rounded-md items-center justify-center"
                 style={{ backgroundColor: theme.primary + "14" }}
               >
                 <AppText size="xs" weight="semibold" color="primary">

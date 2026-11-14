@@ -18,13 +18,13 @@ const CollectionCard = ({ item }: { item: MyCollection }) => {
       onPress={() =>
         router.push({ pathname: "/screens/Collection/Detail/[id]", params: { id: item.id } })
       }
-      className="flex-row items-center gap-3 p-3 rounded-2xl"
+      className="flex-row items-center gap-3 p-2.5 rounded-2xl"
       style={{ backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }}
     >
-      <CollectionCover collection={item} style={{ height: 76, width: 96 }} radius={12} />
+      <CollectionCover collection={item} style={{ height: 60, width: 72 }} radius={10} />
 
       <View className="flex-1">
-        <AppText numberOfLines={1} size="lg" weight="bold" color="title">
+        <AppText numberOfLines={1} size="md" weight="bold" color="title">
           {item.name}
         </AppText>
 
@@ -55,9 +55,9 @@ const CollectionCard = ({ item }: { item: MyCollection }) => {
           )}
         </View>
 
-        <View className="flex-row items-center gap-3 mt-2.5">
+        <View className="flex-row items-center gap-3 mt-2">
           <View
-            className="flex-1 h-2 rounded-full overflow-hidden"
+            className="flex-1 h-1.5 rounded-full overflow-hidden"
             style={{ backgroundColor: theme.background2 }}
           >
             <View
