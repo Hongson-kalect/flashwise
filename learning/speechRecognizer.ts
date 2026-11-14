@@ -1,6 +1,8 @@
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from "expo-speech-recognition";
 import * as Speech from "expo-speech";
 import { Platform } from "react-native";
+import { recognizeErrorText, recognizeSpeech } from "@/services/api/speech";
+import { CLOUD_AUDIO_MIME, CloudSession, requestMicPermission, startCloudRecording } from "./cloudRecorder";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Capabilities } from "./steps";
 
@@ -54,16 +56,22 @@ export const speechDiagnostics = () => {
   try {
     nativeAvailable = ExpoSpeechRecognitionModule.isRecognitionAvailable();
   } catch {}
-  return { defaultService: serviceName(), usable: usableService(), listed, nativeAvailable, available: recognitionAvailable() };
+  return { defaultService: serviceName(), usable: usableService(), listed, nativeAvailable, available: recognitionAvailable(), engine: recognitionEngine() };
 };
 
-/** Khả năng nghe / nói của phiên: theo cài đặt `hearable` / `talkable` và thiết bị. Thiếu thì bước nghe / nói bị bỏ khỏi phiên. */
+/**
+ * Khả năng nghe / nói của phiên: theo cài đặt `hearable` / `talkable`. Máy không có bộ nhận dạng sẵn vẫn nói được qua đám mây
+ * (ghi âm, gửi backend, Gemini; cần mạng): lỗi mạng thì báo ở bước nói và có nút "Không tiện nói, chuyển sang gõ".
+ */
 export const voiceCapabilities = (s: { hearable: boolean; talkable: boolean }): Capabilities => ({
   hear: s.hearable,
-  talk: s.talkable && recognitionAvailable(),
+  talk: s.talkable,
 });
 
-export type RecognizerStatus = "idle" | "listening" | "denied" | "unavailable" | "error";
+/** Cách nhận dạng trên máy này: "native" (hệ điều hành) hoặc "cloud" (ghi âm + backend Gemini). */
+export const recognitionEngine = (): "native" | "cloud" => (recognitionAvailable() ? "native" : "cloud");
+
+export type RecognizerStatus = "idle" | "listening" | "processing" | "denied" | "unavailable" | "error";
 
 export interface Recognizer {
   status: RecognizerStatus;
@@ -109,6 +117,37 @@ export const useSpeechRecognizer = (
   const matched = useRef(false);
   const statusRef = useRef<RecognizerStatus>("idle");
   statusRef.current = status;
+  // Nhận dạng qua đám mây: phiên ghi âm đang chạy, và hàm chốt (để tự dừng gọi được bản mới nhất)
+  const cloudRef = useRef<CloudSession | null>(null);
+  const finishRef = useRef<(() => Promise<void>) | null>(null);
+  finishRef.current = async () => {
+    const session = cloudRef.current;
+    if (!session) return;
+    cloudRef.current = null;
+    const rec = await session.stop();
+    // Không nghe thấy tiếng nói thì không gửi lên server (âm thanh trống làm mô hình bịa chữ)
+    if (!rec.uri || !rec.heardSpeech) {
+      setStatus("error");
+      setMessage(ERROR_TEXT["no-speech"]);
+      return;
+    }
+    setStatus("processing");
+    try {
+      const text = await recognizeSpeech(rec.uri, lang, CLOUD_AUDIO_MIME);
+      if (!text) {
+        setStatus("error");
+        setMessage(ERROR_TEXT["no-speech"]);
+        return;
+      }
+      setHeard(text);
+      setStatus("idle");
+      cb.current([text]);
+    } catch (e) {
+      console.warn("[speech] cloud error", e);
+      setStatus("error");
+      setMessage(recognizeErrorText(e));
+    }
+  };
   // Đồng hồ canh: dịch vụ nhận dạng không báo kết quả / lỗi / kết thúc (dịch vụ hỏng, bị hệ thống chặn) thì tự huỷ, không để nút kẹt ở "Đang nghe"
   const guard = useRef<ReturnType<typeof setTimeout> | null>(null);
   const clearGuard = () => {
@@ -132,7 +171,10 @@ export const useSpeechRecognizer = (
     }, ms);
   };
 
+  // Đang ghi âm / chờ server (đám mây) thì bỏ qua sự kiện của bộ nhận dạng gốc (sự kiện toàn cục, có thể là của bước trước đang huỷ)
+  const inCloud = () => cloudRef.current !== null || statusRef.current === "processing";
   useSpeechRecognitionEvent("result", (e) => {
+    if (inCloud()) return;
     clearGuard();
     const alternatives = e.results.map((r) => r.transcript).filter(Boolean);
     if (alternatives[0]) setHeard(alternatives[0]);
@@ -149,7 +191,7 @@ export const useSpeechRecognizer = (
     }
   });
   useSpeechRecognitionEvent("error", (e) => {
-    if (e.error === "aborted") return;
+    if (e.error === "aborted" || inCloud()) return;
     clearGuard();
     failed.current = true;
     if (e.error === "not-allowed") setStatus("denied");
@@ -164,6 +206,7 @@ export const useSpeechRecognizer = (
     setMessage(`${ERROR_TEXT[e.error] ?? "Không nhận dạng được, thử lại nhé"} (${e.error}${serviceName() ? ` · ${serviceName()}` : ""})`);
   });
   useSpeechRecognitionEvent("end", () => {
+    if (inCloud()) return;
     clearGuard();
     // Sự kiện toàn cục: "end" do abort() của bước nói trước (đang huỷ khi chuyển bước) có thể tới bản mới còn rảnh, bỏ qua
     if (statusRef.current === "idle" && !failed.current) return;
@@ -187,13 +230,37 @@ export const useSpeechRecognizer = (
 
   useEffect(() => () => {
     clearGuard();
+    cloudRef.current?.stop().catch(() => {});
+    cloudRef.current = null;
     try {
       ExpoSpeechRecognitionModule.abort();
     } catch {}
   }, []);
 
   const start = useCallback(async () => {
-    if (statusRef.current === "listening") return;
+    if (statusRef.current === "listening" || statusRef.current === "processing") return;
+    // Máy không có bộ nhận dạng sẵn (vd. iQOO / vivo bản Trung Quốc): ghi âm rồi gửi backend (Gemini)
+    if (!onDevice && !recognitionAvailable()) {
+      try {
+        const perm = await requestMicPermission();
+        if (!perm.granted) {
+          setStatus("denied");
+          setMessage(perm.canAskAgain ? "Cần cho phép dùng micro để luyện nói" : "Micro đang bị tắt, bật lại trong Cài đặt của máy");
+          return;
+        }
+        Speech.stop();
+        setHeard("");
+        setMessage(null);
+        setStatus("listening");
+        cloudRef.current = await startCloudRecording(() => {
+          finishRef.current?.();
+        });
+      } catch {
+        setStatus("error");
+        setMessage("Không dùng được micro");
+      }
+      return;
+    }
     try {
       const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
       if (!perm.granted) {
@@ -239,6 +306,10 @@ export const useSpeechRecognizer = (
   }, [lang, onDevice]);
 
   const stop = useCallback(() => {
+    if (cloudRef.current) {
+      finishRef.current?.();
+      return;
+    }
     try {
       ExpoSpeechRecognitionModule.stop();
     } catch {}

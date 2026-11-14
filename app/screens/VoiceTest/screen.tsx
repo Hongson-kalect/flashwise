@@ -20,6 +20,7 @@ const VoiceTestScreen = () => {
   const diag = useMemo(() => speechDiagnostics(), []);
   const rec = useSpeechRecognizer(lang.code, (t) => setResults((r) => [t, ...r].slice(0, 5)), undefined, onDevice);
   const listening = rec.status === "listening";
+  const processing = rec.status === "processing";
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
@@ -55,7 +56,7 @@ const VoiceTestScreen = () => {
 
         <View style={{ alignItems: "center", gap: 12 }}>
           <Pressable
-            onPress={() => (listening ? rec.stop() : rec.start())}
+            onPress={() => (processing ? undefined : listening ? rec.stop() : rec.start())}
             style={{
               width: 88,
               height: 88,
@@ -70,7 +71,7 @@ const VoiceTestScreen = () => {
             <AppIcon branch="feather" name={listening ? "square" : "mic"} size={32} color={listening ? "#fff" : theme.primary} />
           </Pressable>
           <AppText size="sm" color="subText1">
-            {listening ? "Đang nghe, bạn nói đi..." : "Chạm micro để bắt đầu"}
+            {processing ? "Đang nhận dạng..." : listening ? "Đang nghe, bạn nói đi..." : "Chạm micro để bắt đầu"}
           </AppText>
           <AppText weight="bold" size="xl" textAlign="center">
             {rec.heard || " "}
@@ -101,11 +102,12 @@ const VoiceTestScreen = () => {
             Thông tin máy
           </AppText>
           <AppText size="xs">Trạng thái: {rec.status}</AppText>
+          <AppText size="xs">Cách nhận dạng: {diag.engine === "native" ? "của máy" : "đám mây (ghi âm + backend Gemini)"}</AppText>
           <AppText size="xs">Hệ thống báo hỗ trợ: {String(diag.nativeAvailable)}</AppText>
           <AppText size="xs">Dịch vụ mặc định: {diag.defaultService || "(chưa chọn)"}</AppText>
           <AppText size="xs">Dịch vụ app dùng: {diag.usable === null ? "(không có)" : diag.usable || "(mặc định của máy)"}</AppText>
           <AppText size="xs">Dịch vụ tìm thấy: {diag.listed.join(", ") || "(không có)"}</AppText>
-          <AppText size="xs">Bước nói trong phiên học: {diag.available ? "bật" : "tắt (máy không hỗ trợ)"}</AppText>
+          <AppText size="xs">Bước nói trong phiên học: bật ({diag.engine === "native" ? "nhận dạng của máy" : "qua đám mây, cần mạng"})</AppText>
         </View>
       </ScrollView>
     </View>

@@ -26,6 +26,8 @@ const SpeakAnswer = ({ card, question, attempt, onSpeech, onSkipSpeak }: AnswerP
     if (wasListening || Date.now() - at >= 450) rec.stop();
   };
   const listening = rec.status === "listening";
+  // Nhận dạng qua đám mây: đang chờ server trả chữ (khoá nút, không nhận thêm thao tác)
+  const processing = rec.status === "processing";
   // Từ chối quyền vẫn cho bấm lại (hỏi lại được, hoặc báo bật trong Cài đặt); chỉ máy không hỗ trợ mới khoá hẳn
   const blocked = rec.status === "unavailable";
   const denied = rec.status === "denied";
@@ -40,7 +42,11 @@ const SpeakAnswer = ({ card, question, attempt, onSpeech, onSkipSpeak }: AnswerP
   return (
     <View className="items-center gap-3">
       <View className="min-h-[44px] items-center justify-center">
-        {listening ? (
+        {processing ? (
+          <AppText color="subText1" textAlign="center">
+            Đang nhận dạng...
+          </AppText>
+        ) : listening ? (
           <AppText color="subText1" textAlign="center">
             {rec.heard || "Đang nghe, bạn nói đi..."}
           </AppText>
@@ -71,9 +77,9 @@ const SpeakAnswer = ({ card, question, attempt, onSpeech, onSkipSpeak }: AnswerP
         <Pressable
           onPressIn={onPressIn}
           onPressOut={onPressOut}
-          disabled={blocked}
+          disabled={blocked || processing}
           className="h-20 w-20 rounded-full items-center justify-center"
-          style={{ backgroundColor: color + (listening ? "" : "1F"), borderWidth: 2, borderColor: color, opacity: blocked ? 0.5 : 1 }}
+          style={{ backgroundColor: color + (listening ? "" : "1F"), borderWidth: 2, borderColor: color, opacity: blocked || processing ? 0.5 : 1 }}
           accessibilityLabel={listening ? "Dừng nghe" : "Bắt đầu nói (chạm hoặc giữ)"}
         >
           <AppIcon branch="feather" name={listening ? "square" : "mic"} size={30} color={listening ? "white" : color} />
