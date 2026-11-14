@@ -26,6 +26,7 @@ const GOOGLE_SERVICE = "com.google.android.googlequicksearchbox";
 const usableService = (): string | null => {
   if (serviceName()) return "";
   try {
+    // Gọi thẳng Google theo tên khi nó không hiện trong danh sách đã thử trên iQOO: hệ thống trả "too-many-requests" (không bind được), nên không dùng
     const all = ExpoSpeechRecognitionModule.getSpeechRecognitionServices?.() ?? [];
     return all.includes(GOOGLE_SERVICE) ? GOOGLE_SERVICE : null;
   } catch {
@@ -41,6 +42,19 @@ export const recognitionAvailable = () => {
   } catch {
     return false;
   }
+};
+
+/** Thông tin chẩn đoán nhận dạng giọng nói của máy (màn "Thử giọng nói"). */
+export const speechDiagnostics = () => {
+  let listed: string[] = [];
+  try {
+    listed = ExpoSpeechRecognitionModule.getSpeechRecognitionServices?.() ?? [];
+  } catch {}
+  let nativeAvailable = false;
+  try {
+    nativeAvailable = ExpoSpeechRecognitionModule.isRecognitionAvailable();
+  } catch {}
+  return { defaultService: serviceName(), usable: usableService(), listed, nativeAvailable, available: recognitionAvailable() };
 };
 
 /** Khả năng nghe / nói của phiên: theo cài đặt `hearable` / `talkable` và thiết bị. Thiếu thì bước nghe / nói bị bỏ khỏi phiên. */

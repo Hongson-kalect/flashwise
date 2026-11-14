@@ -1,7 +1,9 @@
 import { useTheme } from "@/providers/Theme";
-import { useFocusEffect } from "expo-router";
+import AppIcon from "@/components/AppIcon";
+import AppText from "@/components/AppText";
+import { router, useFocusEffect } from "expo-router";
 import { ReactNode, useCallback, useState } from "react";
-import { RefreshControl, View } from "react-native";
+import { Pressable, RefreshControl, View } from "react-native";
 import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
 import HabitCard from "./components/habitCard";
 import HomeHeader from "./components/header";
@@ -48,6 +50,19 @@ export default function HomePage() {
         </View>
         <View className="px-4" onLayout={(e) => setSearchY(e.nativeEvent.layout.y)}>
           <HomeSearch anchorY={searchY} scrollY={scrollY} setOverlay={setOverlay} />
+        </View>
+        {/* Tạm: thử micro + nhận dạng giọng nói không cần vào phiên học (bỏ khi voice đã ổn trên các máy) */}
+        <View className="px-4">
+          <Pressable
+            onPress={() => router.push("/screens/VoiceTest/screen")}
+            className="flex-row items-center justify-center gap-2 h-10 rounded-full"
+            style={{ borderWidth: 1, borderColor: theme.border, borderStyle: "dashed" }}
+          >
+            <AppIcon branch="feather" name="mic" size={16} color={theme.primary} />
+            <AppText size="sm" weight="semibold" style={{ color: theme.primary }}>
+              Thử giọng nói
+            </AppText>
+          </Pressable>
         </View>
         <View className="px-4">
           <StudyCard due={data?.due ?? 0} loading={isLoading} />
