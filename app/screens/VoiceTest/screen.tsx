@@ -15,9 +15,10 @@ const LANGS = [
 const VoiceTestScreen = () => {
   const { theme } = useTheme();
   const [lang, setLang] = useState<(typeof LANGS)[number]>(LANGS[0]);
+  const [onDevice, setOnDevice] = useState(false);
   const [results, setResults] = useState<string[][]>([]);
   const diag = useMemo(() => speechDiagnostics(), []);
-  const rec = useSpeechRecognizer(lang.code, (t) => setResults((r) => [t, ...r].slice(0, 5)));
+  const rec = useSpeechRecognizer(lang.code, (t) => setResults((r) => [t, ...r].slice(0, 5)), undefined, onDevice);
   const listening = rec.status === "listening";
 
   return (
@@ -38,6 +39,15 @@ const VoiceTestScreen = () => {
             </Pressable>
           ))}
         </View>
+
+        <Pressable
+          onPress={() => setOnDevice((v) => !v)}
+          className="flex-row items-center gap-2 self-start px-3 h-9 rounded-full"
+          style={{ borderWidth: 1, borderColor: theme.border, backgroundColor: onDevice ? theme.primary + "22" : theme.card }}
+        >
+          <AppIcon branch="feather" name={onDevice ? "check-square" : "square"} size={16} color={theme.primary} />
+          <AppText size="sm">Nhận dạng ngay trên máy (on-device)</AppText>
+        </Pressable>
 
         <AppText size="sm" color="subText1">
           Đọc to: “{lang.sample}”

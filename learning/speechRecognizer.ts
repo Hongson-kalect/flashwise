@@ -93,6 +93,8 @@ export const useSpeechRecognizer = (
   onFinal: (transcripts: string[]) => void,
   /** Câu đang nói (tạm thời) đã khớp đáp án thì tự dừng, không cần bấm tắt. */
   isMatch?: (transcripts: string[]) => boolean,
+  /** Nhận dạng ngay trên máy (Android 13+, không qua dịch vụ mặc định; cần gói ngôn ngữ). Dùng để thử ở màn "Thử giọng nói". */
+  onDevice = false,
 ): Recognizer => {
   const [status, setStatus] = useState<RecognizerStatus>("idle");
   const [heard, setHeard] = useState("");
@@ -155,6 +157,10 @@ export const useSpeechRecognizer = (
     else setStatus("error");
     console.warn("[speech] error", e.error, e.message, serviceName());
     // Kèm mã lỗi thật (và dịch vụ nhận dạng của máy) để biết máy nào, dịch vụ nào đang từ chối
+    if (onDevice && e.message?.includes("On-device recognition is not available")) {
+      setMessage("Máy chưa có nhận dạng ngay trên máy (thiếu gói giọng nói / ngôn ngữ của Google)");
+      return;
+    }
     setMessage(`${ERROR_TEXT[e.error] ?? "Không nhận dạng được, thử lại nhé"} (${e.error}${serviceName() ? ` · ${serviceName()}` : ""})`);
   });
   useSpeechRecognitionEvent("end", () => {
@@ -202,7 +208,7 @@ export const useSpeechRecognizer = (
       failed.current = false;
       setHeard("");
       setMessage(null);
-      if (Platform.OS === "android" && usableService() === null) {
+      if (!onDevice && Platform.OS === "android" && usableService() === null) {
         setStatus("unavailable");
         setMessage("Máy này chưa có dịch vụ nhận dạng giọng nói dùng được, hãy chuyển sang gõ");
         return;
@@ -222,14 +228,15 @@ export const useSpeechRecognizer = (
           EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: 1500,
         },
         iosTaskHint: "confirmation",
-        androidRecognitionServicePackage: usableService() || undefined,
+        requiresOnDeviceRecognition: onDevice,
+        androidRecognitionServicePackage: onDevice ? undefined : usableService() || undefined,
       });
     } catch {
       setStatus("unavailable");
       setMessage("Máy này chưa hỗ trợ nhận dạng giọng nói");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps -- armGuard chỉ dùng ref và setState
-  }, [lang]);
+  }, [lang, onDevice]);
 
   const stop = useCallback(() => {
     try {
