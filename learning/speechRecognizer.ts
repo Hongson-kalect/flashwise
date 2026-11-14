@@ -31,6 +31,21 @@ const serviceName = () => {
   }
 };
 
+/**
+ * Gói dịch vụ nhận dạng để chỉ định khi bắt đầu nghe. Máy chưa chọn dịch vụ mặc định (vd. iQOO / vivo bản Trung Quốc: Android báo
+ * "no selected voice recognition service", lỗi client) thì tự chọn một dịch vụ có sẵn, ưu tiên của Google. Có mặc định rồi thì để máy tự dùng.
+ */
+const GOOGLE_SERVICE = "com.google.android.googlequicksearchbox";
+const fallbackService = (): string | undefined => {
+  if (serviceName()) return undefined;
+  try {
+    const all = ExpoSpeechRecognitionModule.getSpeechRecognitionServices?.() ?? [];
+    return all.includes(GOOGLE_SERVICE) ? GOOGLE_SERVICE : all[0];
+  } catch {
+    return undefined;
+  }
+};
+
 export type RecognizerStatus = "idle" | "listening" | "denied" | "unavailable" | "error";
 
 export interface Recognizer {
@@ -49,6 +64,7 @@ const ERROR_TEXT: Record<string, string> = {
   "speech-timeout": "Không nghe thấy gì, thử nói lại nhé",
   network: "Cần mạng để nhận dạng giọng nói trên máy này",
   "audio-capture": "Không dùng được micro",
+  client: "Máy chưa có dịch vụ nhận dạng giọng nói dùng được",
 };
 
 /**
@@ -157,6 +173,7 @@ export const useSpeechRecognizer = (
           EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS: 1500,
         },
         iosTaskHint: "confirmation",
+        androidRecognitionServicePackage: fallbackService(),
       });
     } catch {
       setStatus("unavailable");
